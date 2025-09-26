@@ -1,0 +1,37 @@
+name: Node.js CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm from package.json
+        uses: pnpm/action-setup@v4
+        # No 'with:' block needed; the action automatically reads
+        # the 'packageManager' field from package.json
+
+      - name: Set up Node.js using .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run linter
+        run: pnpm lint --if-present
+
+      - name: Check formatting
+        run: pnpm prettier:check --if-present
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build project
+        run: pnpm build --if-present
