@@ -1,24 +1,7 @@
-import { ChainedTokenCredential, GetTokenOptions } from '@azure/identity';
+import { DefaultAzureCredential } from '@azure/identity';
 import { KeyClient, KeyClientOptions } from '@azure/keyvault-keys';
 
-class NoopCredential extends ChainedTokenCredential {
-  async getToken(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _scopes: string | string[],
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _options?: GetTokenOptions,
-  ): Promise<{
-    expiresOnTimestamp: number;
-    token: string;
-  }> {
-    return Promise.resolve({
-      expiresOnTimestamp: new Date().getTime() + 30000,
-      token: 'noop',
-    });
-  }
-}
-
-const credential = new NoopCredential();
+const credential = new DefaultAzureCredential();
 const url = 'https://localhost:3443';
 const options: KeyClientOptions = {
   serviceVersion: '7.4',

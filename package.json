@@ -6,6 +6,7 @@
     "node": ">= 22.11 < 23"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.51.0",
     "@eslint/js": "~9.17",
     "@types/eslint__js": "~8.42",
     "@types/node": "~20",
@@ -24,7 +25,7 @@
     "vitest": "~2.1"
   },
   "scripts": {
-    "dev": "NODE_TLS_REJECT_UNAUTHORIZED=0 vite-node --watch src/main.ts",
+    "dev": "dotenvx run -f .env.development -- vite-node --watch src/main.ts",
     "start": "node build/src/main.js",
     "clean": "rimraf coverage build tmp",
     "prebuild": "npm run lint",
