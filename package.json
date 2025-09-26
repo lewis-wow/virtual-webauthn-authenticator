@@ -25,7 +25,7 @@
     "vitest": "~2.1"
   },
   "scripts": {
-    "dev": "dotenvx run -f .env.development -- vite-node --watch src/main.ts",
+    "dev": "pnpm dotenvx vite-node --watch src/main.ts",
     "start": "node build/src/main.js",
     "clean": "rimraf coverage build tmp",
     "prebuild": "npm run lint",
@@ -37,7 +37,8 @@
     "test:coverage": "vitest run unit --config __tests__/vitest.config.ts --coverage.enabled --coverage.all",
     "prettier": "prettier \"{src,__{tests}__}/**/*.{ts,mts}\" --config .prettierrc --write",
     "prettier:check": "prettier \"{src,__{tests}__}/**/*.{ts,mts}\" --config .prettierrc --check",
-    "test:watch": "vitest unit"
+    "test:watch": "vitest unit",
+    "dotenvx": "./scripts/dotenvx.sh"
   },
   "license": "MIT",
   "packageManager": "pnpm@10.11.1",
