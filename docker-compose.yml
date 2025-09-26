@@ -1,15 +1,15 @@
 services:
   lowkey-vault:
-    container_name: docker-compose-lowkey-vault
+    container_name: lowkey-vault
     image: nagyesta/lowkey-vault:4.0.27@sha256:1edfe3f23c057aabf1cc5078a740d5130bdf795b00a66aac1d29faf859251f69
     ports:
-      - "8443:8443"
+      - "3443:3443"
     volumes:
-      - example-import:/import/:rw
-      - example-config:/config/:ro
+      - lowkey-vault-import:/import/:rw
+      - lowkey-vault-config:/config/:ro
     environment:
       # Set arguments for Lowkey Vault configuring key parameters, such as:
-      # - setting the port we want to use: --server.port=8443
+      # - setting the port we want to use: --server.port=3443
       # - overriding the key store type: --server.ssl.key-store-type=JKS
       # - overriding the key store path: --server.ssl.key-store=/config/cert.jks
       # - overriding the key store password: --server.ssl.key-store-password=password
@@ -20,7 +20,7 @@ services:
       # - defining the value of {{port}} placeholders in the import: --LOWKEY_IMPORT_TEMPLATE_PORT=8443
       # More details at: https://github.com/nagyesta/lowkey-vault/tree/main/lowkey-vault-app#startup-parameters
       LOWKEY_ARGS: >
-        --server.port=8443
+        --server.port=3443
         --server.ssl.key-store-type=JKS
         --server.ssl.key-store=/config/cert.jks
         --server.ssl.key-store-password=password
@@ -28,28 +28,25 @@ services:
         --LOWKEY_DEBUG_REQUEST_LOG=true
         --LOWKEY_IMPORT_LOCATION=/import/keyvault.json.hbs
         --LOWKEY_IMPORT_TEMPLATE_HOST=localhost
-        --LOWKEY_IMPORT_TEMPLATE_PORT=8443
+        --LOWKEY_IMPORT_TEMPLATE_PORT=3443
   assumed-identity:
-    container_name: docker-compose-assumed-identity
+    container_name: assumed-identity
     image: nagyesta/assumed-identity:2.1.17@sha256:60cd8ada7450238a9b1d82848fc2cfbe5499f68afd9b99b3a594f24b60a61044
     ports:
-      - "8080:8080"
+      - "3080:3080"
     environment:
       # Set port number to the one we want to use on the host machine
-      ASSUMED_ID_PORT: "8080"
+      ASSUMED_ID_PORT: "3080"
 volumes:
-  # Create a volume, allowing us to share the backup file with the container by mounting it
-  example-import:
+  lowkey-vault-import:
     driver: local
     driver_opts:
       type: "none"
       o: "bind"
-      # set the ./import directory as volume root
-      device: "$PWD/import"
-  example-config:
+      device: "$PWD/.lowkey-vault/import"
+  lowkey-vault-config:
     driver: local
     driver_opts:
       type: "none"
       o: "bind"
-      # set the ./config directory as volume root
-      device: "$PWD/config"
+      device: "$PWD/.lowkey-vault/config"
