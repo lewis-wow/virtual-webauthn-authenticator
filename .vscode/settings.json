@@ -1,0 +1,17 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "terminal.integrated.env.linux": {
+    "ENVIRONMENT": "development"
+  },
+  "terminal.integrated.env.osx": {
+    "ENVIRONMENT": "development"
+  },
+  "terminal.integrated.env.windows": {
+    "ENVIRONMENT": "development"
+  },
+}
