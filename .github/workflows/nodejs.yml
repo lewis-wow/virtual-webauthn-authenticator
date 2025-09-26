@@ -28,7 +28,7 @@ jobs:
         # This command starts all services defined in your docker-compose.yml
         # in the background (-d). The '--wait' flag tells Compose to wait
         # until the containers report a "healthy" status.
-        run: docker-compose up -d --wait
+        run: docker compose up -d --wait
 
       - name: Run linter
         run: pnpm lint
@@ -49,5 +49,5 @@ jobs:
         # This step runs even if previous steps fail, ensuring
         # that the Docker Compose services are always stopped.
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
