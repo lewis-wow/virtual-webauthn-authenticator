@@ -25,13 +25,13 @@ jobs:
         run: pnpm install
 
       - name: Run linter
-        run: pnpm lint --if-present
+        run: pnpm lint
 
       - name: Check formatting
-        run: pnpm prettier:check --if-present
+        run: pnpm prettier:check
 
       - name: Run tests
         run: pnpm test
 
       - name: Build project
-        run: pnpm build --if-present
+        run: pnpm build
