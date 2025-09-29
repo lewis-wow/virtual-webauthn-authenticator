@@ -1,4 +1,4 @@
-import { describe, expect, beforeEach, vi } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CredentialsController } from './Credentials.controller.js';
 import { CredentialsService } from '../services/Credentials.service.js';
