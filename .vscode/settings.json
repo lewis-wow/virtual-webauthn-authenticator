@@ -13,5 +13,5 @@
   },
   "terminal.integrated.env.windows": {
     "ENVIRONMENT": "development"
-  },
+  }
 }

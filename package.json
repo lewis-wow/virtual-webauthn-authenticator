@@ -1,53 +1,22 @@
 {
-  "name": "diploma-thesis",
-  "version": "0.0.0",
-  "type": "module",
-  "engines": {
-    "node": ">= 22.11 < 23"
+  "name": "diplomka_turbo",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.51.0",
-    "@eslint/js": "~9.17",
-    "@types/eslint__js": "~8.42",
-    "@types/node": "~20",
-    "@typescript-eslint/parser": "~8.19",
-    "@vitest/coverage-v8": "~2.1",
-    "@vitest/eslint-plugin": "~1.1",
-    "eslint": "~9.17",
-    "eslint-config-prettier": "~9.1",
-    "globals": "~15.14",
-    "prettier": "~3.4",
-    "rimraf": "~6.0",
-    "ts-api-utils": "~2.0",
-    "typescript": "~5.7",
-    "typescript-eslint": "~8.19",
-    "vite-node": "^3.2.4",
-    "vitest": "~2.1"
+    "@types/node": "^24.5.2",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.8",
+    "typescript": "5.9.2"
   },
-  "scripts": {
-    "dev": "pnpm dotenvx vite-node --watch src/main.ts",
-    "start": "node build/src/main.js",
-    "clean": "rimraf coverage build tmp",
-    "prebuild": "npm run lint",
-    "build": "tsc -p tsconfig.json",
-    "build:watch": "tsc -w -p tsconfig.json",
-    "build:release": "npm run clean && tsc -p tsconfig.release.json",
-    "lint": "eslint .",
-    "test": "ENVIRONMENT=test pnpm dotenvx vitest run unit --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run unit --config __tests__/vitest.config.ts --coverage.enabled --coverage.all",
-    "prettier": "prettier \"{src,__{tests}__}/**/*.{ts,mts}\" --config .prettierrc --write",
-    "prettier:check": "prettier \"{src,__{tests}__}/**/*.{ts,mts}\" --config .prettierrc --check",
-    "test:watch": "vitest unit",
-    "dotenvx": "./scripts/dotenvx.sh"
-  },
-  "license": "MIT",
-  "packageManager": "pnpm@10.11.1",
-  "dependencies": {
-    "@azure/identity": "^4.12.0",
-    "@azure/keyvault-keys": "^4.10.0",
-    "@azure/keyvault-secrets": "^4.10.0",
-    "@t3-oss/env-core": "^0.13.8",
-    "tslib": "~2.8",
-    "zod": "^4.1.11"
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
   }
 }

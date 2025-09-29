@@ -3,7 +3,7 @@ services:
     container_name: lowkey-vault
     image: nagyesta/lowkey-vault:4.0.27@sha256:1edfe3f23c057aabf1cc5078a740d5130bdf795b00a66aac1d29faf859251f69
     ports:
-      - "3443:3443"
+      - '3443:3443'
     volumes:
       - lowkey-vault-import:/import/:rw
       - lowkey-vault-config:/config/:ro
@@ -33,20 +33,20 @@ services:
     container_name: assumed-identity
     image: nagyesta/assumed-identity:2.1.17@sha256:60cd8ada7450238a9b1d82848fc2cfbe5499f68afd9b99b3a594f24b60a61044
     ports:
-      - "3080:3080"
+      - '3080:3080'
     environment:
       # Set port number to the one we want to use on the host machine
-      ASSUMED_ID_PORT: "3080"
+      ASSUMED_ID_PORT: '3080'
 volumes:
   lowkey-vault-import:
     driver: local
     driver_opts:
-      type: "none"
-      o: "bind"
-      device: "$PWD/.lowkey-vault/import"
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/.lowkey-vault/import'
   lowkey-vault-config:
     driver: local
     driver_opts:
-      type: "none"
-      o: "bind"
-      device: "$PWD/.lowkey-vault/config"
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/.lowkey-vault/config'
