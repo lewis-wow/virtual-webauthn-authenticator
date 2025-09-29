@@ -1,6 +1,0 @@
-{
-  "azureKeyVaultHost": "https://localhost:3443",
-  "azureKeyClientOptions": {
-    "disableChallengeResourceVerification": true
-  }
-}
