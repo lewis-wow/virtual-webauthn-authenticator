@@ -3,10 +3,9 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "tsConfigPath": "tsconfig.build.json",
     "deleteOutDir": true,
-    "builder": "swc",
-    "typeCheck": true,
+    "webpack": true,
+    "tsConfigPath": "tsconfig.build.json",
     "plugins": [
       {
         "name": "@nestjs/swagger",

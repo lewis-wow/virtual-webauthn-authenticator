@@ -1,11 +1,11 @@
-import { ValueOf } from '../types.js';
+import { ValueOf } from '@repo/types';
 
 /**
  * Enum for cryptographic algorithms defined in the IANA COSE registry.
  * @see https://www.iana.org/assignments/cose/cose.xhtml#algorithms
  * @see https://w3c.github.io/webauthn/#sctn-alg-identifier
  */
-export const COSEAlgorithmIdentifier = {
+export const CoseAlgorithmIdentifier = {
   /** ECDSA w/ SHA-256 */
   ES256: -7,
   /** ECDSA w/ SHA-384 */
@@ -35,4 +35,4 @@ export const COSEAlgorithmIdentifier = {
   EdDSA: -8,
 } as const;
 
-export type COSEAlgorithmIdentifier = ValueOf<typeof COSEAlgorithmIdentifier>;
+export type CoseAlgorithmIdentifier = ValueOf<typeof CoseAlgorithmIdentifier>;

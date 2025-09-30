@@ -5,7 +5,9 @@ import { IsString, IsOptional } from 'class-validator';
  * Represents a relying party entity for a public key credential.
  * @see {@link https://w3c.github.io/webauthn/#dictdef-publickeycredentialrpentity}
  */
-export class PublicKeyCredentialRpEntityDto {
+export class PublicKeyCredentialRpEntityDto
+  implements PublicKeyCredentialRpEntity
+{
   /**
    * The name of the relying party.
    * @see {@link https://w3c.github.io/webauthn/#dom-publickeycredentialentity-name}

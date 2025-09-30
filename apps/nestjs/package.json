@@ -33,7 +33,9 @@
     "@azure/identity": "^4.12.0",
     "@azure/keyvault-keys": "^4.10.0",
     "@azure/keyvault-secrets": "^4.10.0",
-    "zod": "^4.1.11"
+    "zod": "^4.1.11",
+    "@repo/enums": "workspace:*",
+    "@repo/utils": "workspace:*"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.0",

@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNumber } from 'class-validator';
-import { COSEAlgorithmIdentifier } from '../enums/COSEAlgorithmIdentifier.js';
-import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType.js';
+import { CoseAlgorithmIdentifier, PublicKeyCredentialType } from '@repo/enums';
 
 /**
  * Specifies the parameters for a public key credential.
  * @see {@link https://w3c.github.io/webauthn/#dictdef-publickeycredentialparameters}
  */
-export class PublicKeyCredentialParametersDto {
+export class PublicKeyCredentialParametersDto
+  implements PublicKeyCredentialParameters
+{
   /**
    * The type of the credential.
    * @see {@link https://w3c.github.io/webauthn/#dom-publickeycredentialparameters-type}
@@ -25,8 +26,8 @@ export class PublicKeyCredentialParametersDto {
    */
   @ApiProperty({
     description: 'The algorithm to be used for the credential.',
-    enum: COSEAlgorithmIdentifier,
+    enum: CoseAlgorithmIdentifier,
   })
   @IsNumber()
-  public alg!: COSEAlgorithmIdentifier;
+  public alg!: CoseAlgorithmIdentifier;
 }

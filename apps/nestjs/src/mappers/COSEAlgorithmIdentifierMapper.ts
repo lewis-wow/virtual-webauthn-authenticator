@@ -1,38 +1,28 @@
-import { COSEAlgorithmIdentifier } from '../enums/COSEAlgorithmIdentifier.js';
+import { CoseAlgorithmIdentifier } from '@repo/enums';
 import {
   KnownKeyTypes as KnownJsonWebKeyType,
   KnownKeyCurveNames as KnownJsonWebKeyCurveName,
+  KnownSignatureAlgorithms as KnownJsonWebKeySignatureAlgorithm,
 } from '@azure/keyvault-keys';
 
-/**
- * A mapper for converting COSE algorithm identifiers to other formats.
- */
-export class COSEAlgorithmIdentifierMapper {
-  /**
-   * Converts a COSE algorithm identifier to its corresponding JSON Web Key type.
-   * @param {COSEAlgorithmIdentifier} algorithm - The numeric COSE algorithm identifier.
-   * @returns {KnownJsonWebKeyType} The matching JSON Web Key type ('EC' or 'RSA').
-   * @throws {Error} If the algorithm identifier is unknown or unsupported.
-   */
+export class CoseAlgorithmIdentifierMapper {
   static toKnownJsonWebKeyType(
-    algorithm: COSEAlgorithmIdentifier,
+    algorithm: CoseAlgorithmIdentifier,
   ): KnownJsonWebKeyType.EC | KnownJsonWebKeyType.RSA {
     switch (algorithm) {
-      // Elliptic Curve Algorithms
-      case COSEAlgorithmIdentifier.ES256:
-      case COSEAlgorithmIdentifier.ES384:
-      case COSEAlgorithmIdentifier.ES512:
-      case COSEAlgorithmIdentifier.EdDSA:
+      case CoseAlgorithmIdentifier.ES256:
+      case CoseAlgorithmIdentifier.ES384:
+      case CoseAlgorithmIdentifier.ES512:
+      case CoseAlgorithmIdentifier.EdDSA:
         return KnownJsonWebKeyType.EC;
 
-      // RSA Algorithms
-      case COSEAlgorithmIdentifier.PS256:
-      case COSEAlgorithmIdentifier.PS384:
-      case COSEAlgorithmIdentifier.PS512:
-      case COSEAlgorithmIdentifier.RS256:
-      case COSEAlgorithmIdentifier.RS384:
-      case COSEAlgorithmIdentifier.RS512:
-      case COSEAlgorithmIdentifier.RS1:
+      case CoseAlgorithmIdentifier.PS256:
+      case CoseAlgorithmIdentifier.PS384:
+      case CoseAlgorithmIdentifier.PS512:
+      case CoseAlgorithmIdentifier.RS256:
+      case CoseAlgorithmIdentifier.RS384:
+      case CoseAlgorithmIdentifier.RS512:
+      case CoseAlgorithmIdentifier.RS1:
         return KnownJsonWebKeyType.RSA;
 
       default:
@@ -40,23 +30,50 @@ export class COSEAlgorithmIdentifierMapper {
     }
   }
 
-  /**
-   * Converts a COSE algorithm identifier to its corresponding JSON Web Key curve name.
-   * @param {COSEAlgorithmIdentifier} algorithm - The numeric COSE algorithm identifier.
-   * @returns {KnownJsonWebKeyCurveName} The matching curve name for ECDSA algorithms, or undefined for others.
-   */
   static toKnownJsonWebKeyCurveName(
-    algorithm: COSEAlgorithmIdentifier,
+    algorithm: CoseAlgorithmIdentifier,
   ): KnownJsonWebKeyCurveName | undefined {
     switch (algorithm) {
-      case COSEAlgorithmIdentifier.ES256:
+      case CoseAlgorithmIdentifier.ES256:
         return KnownJsonWebKeyCurveName.P256;
-      case COSEAlgorithmIdentifier.ES384:
+      case CoseAlgorithmIdentifier.ES384:
         return KnownJsonWebKeyCurveName.P384;
-      case COSEAlgorithmIdentifier.ES512:
+      case CoseAlgorithmIdentifier.ES512:
         return KnownJsonWebKeyCurveName.P521;
       default:
         return undefined;
+    }
+  }
+
+  static toKnownJsonWebKeySignatureAlgorithm(
+    algorithm: CoseAlgorithmIdentifier,
+  ): KnownJsonWebKeySignatureAlgorithm {
+    switch (algorithm) {
+      case CoseAlgorithmIdentifier.ES256:
+        return KnownJsonWebKeySignatureAlgorithm.ES256;
+      case CoseAlgorithmIdentifier.ES384:
+        return KnownJsonWebKeySignatureAlgorithm.ES384;
+      case CoseAlgorithmIdentifier.ES512:
+        return KnownJsonWebKeySignatureAlgorithm.ES512;
+      case CoseAlgorithmIdentifier.PS256:
+        return KnownJsonWebKeySignatureAlgorithm.PS256;
+      case CoseAlgorithmIdentifier.PS384:
+        return KnownJsonWebKeySignatureAlgorithm.PS384;
+      case CoseAlgorithmIdentifier.PS512:
+        return KnownJsonWebKeySignatureAlgorithm.PS512;
+      case CoseAlgorithmIdentifier.RS256:
+        return KnownJsonWebKeySignatureAlgorithm.RS256;
+      case CoseAlgorithmIdentifier.RS384:
+        return KnownJsonWebKeySignatureAlgorithm.RS384;
+      case CoseAlgorithmIdentifier.RS512:
+        return KnownJsonWebKeySignatureAlgorithm.RS512;
+
+      // Note: EdDSA and RS1 are valid COSE algorithms but are not included in
+      // the KnownJsonWebKeySignatureAlgorithm enum from Azure Key Vault.
+      default:
+        throw new Error(
+          `Unsupported or unmappable COSE algorithm identifier for signature: ${algorithm}`,
+        );
     }
   }
 }

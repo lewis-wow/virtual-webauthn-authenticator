@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsString, IsOptional, IsArray } from 'class-validator';
-import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType.js';
+import { AuthenticatorTransport, PublicKeyCredentialType } from '@repo/enums';
 
 /**
  * Describes a public key credential.
  * @see {@link https://w3c.github.io/webauthn/#dictdef-publickeycredentialdescriptor}
  */
-export class PublicKeyCredentialDescriptorDto {
+export class PublicKeyCredentialDescriptorDto
+  implements PublicKeyCredentialDescriptor
+{
   /**
    * The type of the credential.
    * @see {@link https://w3c.github.io/webauthn/#dom-publickeycredentialdescriptor-type}
@@ -24,7 +26,7 @@ export class PublicKeyCredentialDescriptorDto {
    */
   @ApiProperty({ description: 'The ID of the credential.' })
   @IsString()
-  public id!: string;
+  public id!: BufferSource;
 
   /**
    * The transports for the credential.
@@ -36,6 +38,6 @@ export class PublicKeyCredentialDescriptorDto {
   })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  public transports?: string[];
+  @IsEnum(AuthenticatorTransport, { each: true })
+  public transports?: AuthenticatorTransport[];
 }

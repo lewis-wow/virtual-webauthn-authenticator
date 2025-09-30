@@ -1,4 +1,4 @@
-import { ValueOf } from '../types.js';
+import { ValueOf } from '@repo/types';
 
 export const Environment = {
   PRODUCTION: 'production',
