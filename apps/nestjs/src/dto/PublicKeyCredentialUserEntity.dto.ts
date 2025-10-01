@@ -1,20 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsString } from 'class-validator';
-import { transformUint8Array } from '../transformers/transformUint8Array.js';
+import { transformBufferSource } from '../transformers/transformBufferSource.js';
 
 /**
  * Represents a user entity for a public key credential.
  * @see {@link https://w3c.github.io/webauthn/#dictdef-publickeycredentialuserentity}
  */
-export class PublicKeyCredentialUserEntityDto {
+export class PublicKeyCredentialUserEntityDto
+  implements PublicKeyCredentialUserEntity
+{
   /**
    * The user's ID.
    * @see {@link https://w3c.github.io/webauthn/#dom-publickeycredentialuserentity-id}
    */
   @ApiProperty({ description: "The user's ID." })
-  @Transform(transformUint8Array)
-  public id!: Uint8Array;
+  @Transform(transformBufferSource)
+  public id!: BufferSource;
 
   /**
    * The user's name.

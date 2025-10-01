@@ -1,27 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum,
-  IsString,
   IsNumber,
   IsOptional,
   IsArray,
   ValidateNested,
   ArrayMinSize,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Attestation } from '../enums/Attestation.js';
+import { Transform, Type } from 'class-transformer';
+import { Attestation } from '@repo/enums';
 import { PublicKeyCredentialRpEntityDto } from './PublicKeyCredentialRpEntity.dto.js';
 import { PublicKeyCredentialUserEntityDto } from './PublicKeyCredentialUserEntity.dto.js';
 import { PublicKeyCredentialParametersDto } from './PublicKeyCredentialParameters.dto.js';
 import { PublicKeyCredentialDescriptorDto } from './PublicKeyCredentialDescriptor.dto.js';
 import { AuthenticatorSelectionCriteriaDto } from './AuthenticatorSelectionCriteria.dto.js';
 import { AuthenticationExtensionsClientInputsDto } from './AuthenticationExtensionsClientInputs.dto.js';
+import { transformBufferSource } from '../transformers/transformBufferSource.js';
 
 /**
  * Represents the options for creating a new public key credential.
  * @see {@link https://w3c.github.io/webauthn/#dictionary-makecredentialoptions}
  */
-export class PublicKeyCredentialCreationOptionsDto {
+export class PublicKeyCredentialCreationOptionsDto
+  implements PublicKeyCredentialCreationOptions
+{
   /**
    * The relying party entity.
    * @see {@link https://w3c.github.io/webauthn/#dom-publickeycredentialcreationoptions-rp}
@@ -47,8 +49,8 @@ export class PublicKeyCredentialCreationOptionsDto {
   @ApiProperty({
     description: 'A challenge to be signed by the authenticator.',
   })
-  @IsString()
-  public challenge!: string;
+  @Transform(transformBufferSource)
+  public challenge!: BufferSource;
 
   /**
    * The parameters for the public key credential.

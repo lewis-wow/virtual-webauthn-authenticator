@@ -1,14 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
-import { AuthenticatorAttachment } from '../enums/AuthenticatorAttachment.js';
-import { ResidentKeyRequirement } from '../enums/ResidentKeyRequirement.js';
-import { UserVerificationRequirement } from '../enums/UserVerificationRequirement.js';
+import {
+  AuthenticatorAttachment,
+  UserVerificationRequirement,
+  ResidentKeyRequirement,
+} from '@repo/enums';
 
 /**
  * Specifies the criteria for selecting an authenticator.
  * @see {@link https://w3c.github.io/webauthn/#dictionary-authenticatorselection}
  */
-export class AuthenticatorSelectionCriteriaDto {
+export class AuthenticatorSelectionCriteriaDto
+  implements AuthenticatorSelectionCriteria
+{
   /**
    * Specifies the type of authenticator to be used.
    * @see {@link https://w3c.github.io/webauthn/#dom-authenticatorselectioncriteria-authenticatorattachment}
