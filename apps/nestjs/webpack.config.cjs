@@ -9,7 +9,7 @@ module.exports = {
     __dirname: true,
   },
   output: {
-    filename: 'main.cjs',
+    filename: 'main.js',
   },
   externals: [
     nodeExternals({
