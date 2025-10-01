@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.0",
     "@repo/enums": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "@repo/utils": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "class-transformer": "^0.5.1",
