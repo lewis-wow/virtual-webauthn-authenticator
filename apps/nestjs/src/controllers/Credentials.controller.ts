@@ -2,10 +2,14 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { CredentialsService } from '../services/Credentials.service.js';
 import { PublicKeyCredentialCreationOptionsDto } from '../dto/PublicKeyCredentialCreationOptions.dto.js';
 import { ApiBody } from '@nestjs/swagger';
+import { PrismaService } from '../services/Prisma.service.js';
 
 @Controller()
 export class CredentialsController {
-  constructor(private readonly credentialsService: CredentialsService) {}
+  constructor(
+    private readonly credentialsService: CredentialsService,
+    private readonly prismaService: PrismaService,
+  ) {}
 
   @Post('/credentials')
   @ApiBody({ type: [PublicKeyCredentialCreationOptionsDto] })
@@ -13,6 +17,13 @@ export class CredentialsController {
     @Body()
     publicKeyCredentialCreationOptionsDto: PublicKeyCredentialCreationOptionsDto,
   ) {
+    console.log(
+      'prismaService',
+      await this.prismaService.test.create({
+        data: {},
+      }),
+    );
+
     const result = await this.credentialsService.create(
       publicKeyCredentialCreationOptionsDto,
     );

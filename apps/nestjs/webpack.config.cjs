@@ -8,6 +8,7 @@ module.exports = {
     // Also required for `bull` to work, see https://github.com/OptimalBits/bull/issues/811
     __dirname: true,
   },
+  devtool: 'source-map',
   output: {
     filename: 'main.js',
   },

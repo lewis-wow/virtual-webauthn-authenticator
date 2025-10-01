@@ -1,16 +1,20 @@
 {
   "$schema": "https://swc.rs/schema.json",
+  "sourceMaps": true,
+  "inlineSourcesContent": true,
   "jsc": {
     "parser": {
       "syntax": "typescript",
       "decorators": true
     },
     "transform": {
+      "legacyDecorator": true,
       "decoratorMetadata": true
     }
   },
   "module": {
-    "type": "es6",
-    "resolveFully": true
+    "type": "commonjs",
+    "strict": false,
+    "noInterop": false
   }
 }
