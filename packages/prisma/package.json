@@ -10,17 +10,19 @@
     "build": "prisma generate",
     "post-install": "prisma generate",
     "format": "prisma format",
-    "db:generate": "prisma migrate dev",
-    "db:migrate": "prisma migrate deploy",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:generate": "pnpm dotenvx prisma migrate dev",
+    "db:migrate": "pnpm dotenvx prisma migrate deploy",
+    "db:push": "pnpm dotenvx prisma db push",
+    "db:studio": "pnpm dotenvx prisma studio",
+    "dotenvx": "../../scripts/dotenvx.sh"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "prisma": "^6.16.3",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "@dotenvx/dotenvx": "^1.51.0"
   },
   "dependencies": {
     "@prisma/client": "^6.16.3"

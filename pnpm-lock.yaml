@@ -205,6 +205,9 @@ importers:
         specifier: ^6.16.3
         version: 6.16.3(prisma@6.16.3(typescript@5.9.2))(typescript@5.9.2)
     devDependencies:
+      '@dotenvx/dotenvx':
+        specifier: ^1.51.0
+        version: 1.51.0
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config

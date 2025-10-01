@@ -5,6 +5,7 @@ import { CredentialsService } from './services/Credentials.service.js';
 import { CredentialsController } from './controllers/Credentials.controller.js';
 import { KeyClientService } from './services/KeyClient.service.js';
 import { EnvProvider } from './services/Env.provider.js';
+import { PrismaService } from './services/Prisma.service.js';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EnvProvider } from './services/Env.provider.js';
     KeyClientProvider,
     KeyClientService,
     CredentialsService,
+    PrismaService,
   ],
 })
 export class AppModule {}
