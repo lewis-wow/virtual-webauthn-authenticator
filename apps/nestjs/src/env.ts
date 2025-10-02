@@ -7,7 +7,13 @@ export const env = createEnv({
     NODE_TLS_REJECT_UNAUTHORIZED: z.coerce.number().min(0).max(1).default(1),
     AZURE_POD_IDENTITY_AUTHORITY_HOST: z.url(),
     AZURE_KEY_VAULT_HOST: z.url(),
+
     ENVIRONMENT: z.enum(Environment),
+
+    GITHUB_CLIENT_ID: z.string(),
+    GITHUB_CLIENT_SECRET: z.string(),
+
+    JWT_SECRET: z.string(),
   },
 
   /**
@@ -19,7 +25,12 @@ export const env = createEnv({
     AZURE_POD_IDENTITY_AUTHORITY_HOST:
       process.env.AZURE_POD_IDENTITY_AUTHORITY_HOST,
     AZURE_KEY_VAULT_HOST: process.env.AZURE_KEY_VAULT_HOST,
+
     ENVIRONMENT: process.env.ENVIRONMENT,
+
+    GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET,
+    JWT_SECRET: process.env.JWT_SECRET,
   },
 
   /**

@@ -17,13 +17,6 @@ export class CredentialsController {
     @Body()
     publicKeyCredentialCreationOptionsDto: PublicKeyCredentialCreationOptionsDto,
   ) {
-    console.log(
-      'prismaService',
-      await this.prismaService.test.create({
-        data: {},
-      }),
-    );
-
     const result = await this.credentialsService.create(
       publicKeyCredentialCreationOptionsDto,
     );
