@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "NODE_OPTIONS='--experimental-require-module' pnpm dotenvx nest start",
-    "start:dev": "NODE_OPTIONS='--experimental-require-module' pnpm dotenvx nest start --watch",
+    "dev": "NODE_OPTIONS='--experimental-require-module' pnpm dotenvx nest start --watch",
     "start:debug": "NODE_OPTIONS='--experimental-require-module' pnpm dotenvx nest start --debug --watch",
     "start:prod": "NODE_OPTIONS='--experimental-require-module' pnpm dotenvx node dist/main",
     "lint": "eslint .",
