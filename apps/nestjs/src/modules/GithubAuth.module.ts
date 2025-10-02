@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { AuthService } from '../services/Auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from '../controllers/Auth.controller';
 import { GithubStrategy } from '../strategies/Github.strategy';
 import { UsersModule } from './Users.module';
 import { EnvProvider } from '../services/Env.provider';
@@ -31,6 +30,6 @@ import { JwtStrategy } from '../strategies/Jwt.strategy';
     UsersService,
     EnvProvider,
   ],
-  controllers: [AuthController],
+  controllers: [GithubAuthModule],
 })
-export class AuthModule {}
+export class GithubAuthModule {}

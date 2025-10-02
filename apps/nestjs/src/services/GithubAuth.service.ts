@@ -6,7 +6,7 @@ import { User } from '@repo/prisma';
 import { Profile as GithubProfile } from 'passport-github2';
 
 @Injectable()
-export class AuthService {
+export class GithhubAuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly usersService: UsersService,

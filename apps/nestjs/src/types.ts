@@ -1,1 +1,5 @@
-export type ValueOf<T> = T[keyof T];
+export type JwtPayload = {
+  sub: string;
+  email: string;
+  name: string | null;
+};
