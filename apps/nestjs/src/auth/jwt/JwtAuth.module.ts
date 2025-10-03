@@ -22,6 +22,6 @@ import { EnvModule } from '@/env/Env.module';
     }),
   ],
   providers: [JwtStrategy, JwtAuthService],
-  exports: [JwtAuthService],
+  exports: [JwtAuthService, JwtModule],
 })
 export class JwtAuthModule {}

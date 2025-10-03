@@ -1,5 +1,6 @@
+import { TokenType } from '@repo/enums';
+
 export type JwtPayload = {
   sub: string;
-  email: string;
-  name: string | null;
+  tokenType: TokenType;
 };

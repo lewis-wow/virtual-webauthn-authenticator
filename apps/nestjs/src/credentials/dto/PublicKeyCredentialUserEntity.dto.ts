@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsString } from 'class-validator';
-import { transformBufferSource } from '../transformers/transformBufferSource.js';
+import { transformBufferSource } from '../../lib/transformers/transformBufferSource.js';
 
 /**
  * Represents a user entity for a public key credential.

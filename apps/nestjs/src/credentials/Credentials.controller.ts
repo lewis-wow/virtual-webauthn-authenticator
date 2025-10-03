@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { CredentialsService } from './Credentials.service';
-import { PublicKeyCredentialCreationOptionsDto } from '@/lib/dto/PublicKeyCredentialCreationOptions.dto';
+import { PublicKeyCredentialCreationOptionsDto } from '@/credentials/dto/PublicKeyCredentialCreationOptions.dto';
 import { ApiBody } from '@nestjs/swagger';
 import { PrismaService } from '../services/Prisma.service';
 
