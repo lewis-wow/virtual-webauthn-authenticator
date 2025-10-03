@@ -1,6 +1,6 @@
 import { Injectable, UseFilters } from '@nestjs/common';
-import { PrismaService } from '../../services/Prisma.service';
-import { UsersService } from '../../services/Users.service';
+import { PrismaService } from '@/services/Prisma.service';
+import { UsersService } from '@/users/Users.service';
 import { PrismaClientExceptionFilter } from '../../lib/filters/PrismaClientException.filter';
 import { User } from '@repo/prisma';
 import { Profile as GithubProfile } from 'passport-github2';

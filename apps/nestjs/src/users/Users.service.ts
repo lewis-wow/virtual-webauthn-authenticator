@@ -1,6 +1,6 @@
 import { Injectable, UseFilters } from '@nestjs/common';
 import { User } from '@repo/prisma';
-import { PrismaService } from './Prisma.service';
+import { PrismaService } from '@/services/Prisma.service';
 import { PrismaClientExceptionFilter } from '../lib/filters/PrismaClientException.filter';
 
 @Injectable()
