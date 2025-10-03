@@ -5,6 +5,8 @@ import { ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from './jwt/JwtAuth.guard';
 import type { Request } from 'express';
 import { JwtPayload } from '@/lib/types';
+import { RequiredTokenType } from './jwt/RequiredTokenType.decorator';
+import { TokenType } from '@repo/enums';
 
 @Controller('auth')
 export class AuthController {
@@ -12,6 +14,7 @@ export class AuthController {
 
   @Post('token')
   @ApiBody({ type: CreateApiTokenDto })
+  @RequiredTokenType(TokenType.PERSONAL_TOKEN)
   @UseGuards(JwtAuthGuard)
   async createTemporaryApiToken(
     @Req() req: Request,
