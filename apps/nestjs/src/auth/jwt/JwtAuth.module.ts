@@ -13,7 +13,7 @@ import { EnvModule } from '@/env/Env.module';
     JwtModule.registerAsync({
       imports: [EnvModule],
       useFactory: async (envService: EnvService) => ({
-        secretOrPrivateKey: envService.get('JWT_SECRET'),
+        secret: envService.get('JWT_SECRET'),
         signOptions: {
           expiresIn: '1h',
         },
