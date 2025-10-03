@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CryptographyClient } from '@azure/keyvault-keys';
 import { CoseAlgorithmIdentifier } from '@repo/enums';
-import { CoseAlgorithmIdentifierMapper } from 'src/mappers/CoseAlgorithmIdentifierMapper.js';
+import { CoseAlgorithmIdentifierMapper } from '@/lib/mappers/CoseAlgorithmIdentifierMapper.js';
 
 @Injectable()
 export class CryptographyClientService {

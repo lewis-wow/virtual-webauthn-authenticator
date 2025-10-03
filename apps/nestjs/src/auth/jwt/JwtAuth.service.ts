@@ -1,22 +1,25 @@
 import { Injectable, UseFilters } from '@nestjs/common';
-import { PrismaClientExceptionFilter } from '../filters/PrismaClientException.filter';
+import { PrismaClientExceptionFilter } from '@/lib/filters/PrismaClientException.filter';
 import { User } from '@repo/prisma';
-import { JwtPayload } from '../types';
+import { JwtPayload } from '@/lib/types';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class JwtAuthService {
-  constructor() {}
+  constructor(private readonly jwtService: JwtService) {}
 
   @UseFilters(PrismaClientExceptionFilter)
   async validateJwtUser(
     user: Pick<User, 'id' | 'name' | 'email'>,
-  ): Promise<JwtPayload> {
+  ): Promise<{ accessToken: string }> {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       name: user.name,
     };
 
-    return payload;
+    return {
+      accessToken: await this.jwtService.signAsync(payload),
+    };
   }
 }

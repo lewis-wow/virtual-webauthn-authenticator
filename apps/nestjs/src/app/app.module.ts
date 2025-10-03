@@ -6,8 +6,8 @@ import { ConfigModule } from '@nestjs/config';
 // import { KeyClientService } from '../services/KeyClient.service.js';
 // import { EnvProvider } from '../services/Env.provider.js';
 // import { PrismaService } from '../services/Prisma.service.js';
-import { AuthModule } from './Auth.module.js';
-import { UsersModule } from './Users.module.js';
+import { AuthModule } from '../auth/Auth.module.js';
+import { UsersModule } from '../users/Users.module.js';
 
 @Module({
   imports: [

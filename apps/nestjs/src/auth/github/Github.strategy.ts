@@ -1,18 +1,18 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, Profile } from 'passport-github2';
-import { AuthService } from '../services/Auth.service';
-import { type Env, EnvProviderToken } from '../services/Env.provider';
+import { AuthService } from '../Auth.service';
+import { EnvService } from '@/env/Env.service';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
     private readonly authService: AuthService,
-    @Inject(EnvProviderToken) readonly envProvider: Env,
+    readonly envService: EnvService,
   ) {
     super({
-      clientID: envProvider.GITHUB_CLIENT_ID,
-      clientSecret: envProvider.GITHUB_CLIENT_SECRET,
+      clientID: envService.get('GITHUB_CLIENT_ID'),
+      clientSecret: envService.get('GITHUB_CLIENT_SECRET'),
       callbackURL: 'http://localhost:3000/auth/github/callback',
       scope: ['user:email'],
     });

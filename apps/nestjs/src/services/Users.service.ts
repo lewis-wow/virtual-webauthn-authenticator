@@ -1,7 +1,7 @@
 import { Injectable, UseFilters } from '@nestjs/common';
 import { User } from '@repo/prisma';
 import { PrismaService } from './Prisma.service';
-import { PrismaClientExceptionFilter } from '../filters/PrismaClientException.filter';
+import { PrismaClientExceptionFilter } from '../lib/filters/PrismaClientException.filter';
 
 @Injectable()
 export class UsersService {

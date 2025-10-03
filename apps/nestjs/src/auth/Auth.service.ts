@@ -1,12 +1,12 @@
 import { Injectable, UseFilters } from '@nestjs/common';
-import { PrismaService } from './Prisma.service';
-import { UsersService } from './Users.service';
-import { PrismaClientExceptionFilter } from '../filters/PrismaClientException.filter';
+import { PrismaService } from '@/services/Prisma.service';
+import { UsersService } from '@/services/Users.service';
+import { PrismaClientExceptionFilter } from '../lib/filters/PrismaClientException.filter';
 import { User } from '@repo/prisma';
 import { Profile as GithubProfile } from 'passport-github2';
 
 @Injectable()
-export class GithhubAuthService {
+export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly usersService: UsersService,

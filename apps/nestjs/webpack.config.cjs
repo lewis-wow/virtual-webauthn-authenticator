@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
+const path = require('path');
 
 module.exports = {
   node: {
@@ -10,7 +11,12 @@ module.exports = {
   },
   devtool: 'source-map',
   output: {
-    filename: 'main.js',
+    // Use [name] placeholder to preserve file names and paths
+    filename: '[name].js',
+    // Define the output directory
+    path: path.resolve(__dirname, 'dist'),
+    // Clean the output directory before each build
+    clean: true,
   },
   externals: [
     nodeExternals({
