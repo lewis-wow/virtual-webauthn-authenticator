@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/main.ts",
+    "test": "vitest run",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
@@ -15,9 +16,11 @@
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
     "tsx": "^4.20.6",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/utils": "workspace:*",
     "cbor": "^10.0.11",
     "cbor2": "^2.0.1"
   }

@@ -18,7 +18,7 @@ import { RegistrationResponseJSON } from '@simplewebauthn/types';
 // --- START: WebAuthn Standard Interfaces ---
 
 interface PublicKeyCredentialRpEntity {
-  id: string;
+  id?: string;
   name: string;
 }
 
@@ -62,6 +62,14 @@ class VirtualAuthenticator {
   public createCredential(
     options: PublicKeyCredentialCreationOptions,
   ): PublicKeyCredential {
+    // In a real browser, a missing rp.id defaults to the current origin.
+    // In this simulation, we have no origin, so we must require it.
+    if (!options.rp.id) {
+      throw new Error(
+        "VirtualAuthenticator requires 'rp.id' to be set in the creation options because it cannot infer the origin like a real browser.",
+      );
+    }
+
     // 1. Generate a new key pair for the credential.
     const { privateKey, publicKey } = generateKeyPairSync('ec', {
       namedCurve: 'P-256',
@@ -113,16 +121,51 @@ class VirtualAuthenticator {
     };
     const clientDataJSON = JSON.stringify(clientData);
 
-    // 5. Create the Attestation Statement
-    // For 'none' attestation format, the attestation statement MUST be an empty map.
-    const attestationStatement = new Map();
+    // 5. Create the Attestation Object based on the requested attestation type
+    const attestationType = options.attestation || 'none';
+    let attestationObject: Map<string, any>;
 
-    // Use an explicit Map for the attestationObject
-    const attestationObject = new Map<string, any>([
-      ['fmt', 'none'],
-      ['attStmt', attestationStatement],
-      ['authData', authData],
-    ]);
+    switch (attestationType) {
+      case 'direct':
+      case 'indirect':
+        // For this simulation, we'll treat 'direct' and 'indirect' as a 'packed' self-attestation.
+        const clientDataHash = createHash('sha256')
+          .update(clientDataJSON)
+          .digest();
+        const dataToSign = Buffer.concat([authData, clientDataHash]);
+
+        if (!this.privateKey) {
+          throw new Error('Private key was not generated.');
+        }
+
+        const signer = createSign('sha256');
+        signer.update(dataToSign);
+        const signature = signer.sign(this.privateKey);
+
+        const attestationStatement = new Map<string, any>([
+          ['alg', -7], // ES256, matches our key generation
+          ['sig', signature],
+        ]);
+
+        attestationObject = new Map<string, any>([
+          ['fmt', 'packed'],
+          ['attStmt', attestationStatement],
+          ['authData', authData],
+        ]);
+        break;
+
+      case 'none':
+      default:
+        // For 'none' attestation format, the attestation statement MUST be an empty map.
+        const emptyAttestationStatement = new Map();
+
+        attestationObject = new Map<string, any>([
+          ['fmt', 'none'],
+          ['attStmt', emptyAttestationStatement],
+          ['authData', authData],
+        ]);
+        break;
+    }
 
     // 6. Assemble the final PublicKeyCredential object
     const attestationObjectCbor = cbor.encode(attestationObject);
@@ -195,7 +238,7 @@ async function main() {
     challenge: Buffer.from('a'.repeat(32)), // A dummy challenge
     pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
     timeout: 60000,
-    attestation: 'none',
+    attestation: 'direct', // Requesting 'direct' to test the new packed/self-attestation path
   };
 
   console.log('\n[INPUT] Standard creation options:');
@@ -224,6 +267,12 @@ async function main() {
   );
 
   try {
+    if (!creationOptions.rp.id) {
+      throw new Error(
+        'Cannot run verification without rp.id in creationOptions.',
+      );
+    }
+
     const expectedChallenge = this._bufferToBase64Url(
       creationOptions.challenge,
     );

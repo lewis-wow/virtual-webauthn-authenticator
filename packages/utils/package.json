@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./bufferFromBufferSource": "./src/bufferFromBufferSource.ts"
+    "./toBuffer": "./src/toBuffer.ts",
+    "./KnownException": "./src/KnownException.ts"
   },
   "scripts": {
     "lint": "eslint .",
