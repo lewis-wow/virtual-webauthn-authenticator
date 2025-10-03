@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { KeyClient, KeyVaultKey } from '@azure/keyvault-keys';
 import { CoseAlgorithmIdentifier } from '@repo/enums';
-import { CoseAlgorithmIdentifierMapper } from '../mappers/CoseAlgorithmIdentifierMapper.js';
+import { CoseAlgorithmIdentifierMapper } from '../lib/mappers/CoseAlgorithmIdentifierMapper.js';
 import { bufferFromBufferSource } from '@repo/utils/bufferFromBufferSource';
 import { randomUUID } from 'node:crypto';
 

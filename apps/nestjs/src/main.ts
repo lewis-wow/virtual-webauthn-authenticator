@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js';
+import { AppModule } from './app/app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
@@ -7,4 +7,4 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

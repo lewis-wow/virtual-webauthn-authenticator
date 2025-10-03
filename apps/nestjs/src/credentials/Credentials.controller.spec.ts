@@ -1,8 +1,8 @@
 import { describe, test, expect, beforeEach, vi } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CredentialsController } from './Credentials.controller.js';
-import { CredentialsService } from '../services/Credentials.service.js';
-import { KeyClientService } from '../services/KeyClient.service.js';
+import { CredentialsService } from './Credentials.service.js';
+import { KeyClientService } from '../key_client/KeyClient.service.js';
 import { KeyClient } from '@azure/keyvault-keys';
 
 describe('CredentialsController', () => {

@@ -6,3 +6,4 @@ export * from './PublicKeyCredentialType.js';
 export * from './ResidentKeyRequirement.js';
 export * from './UserVerificationRequirement.js';
 export * from './AuthenticatorTransport.js';
+export * from './TokenType.js';

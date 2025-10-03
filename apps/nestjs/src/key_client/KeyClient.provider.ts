@@ -1,6 +1,6 @@
 import { KeyClient, KeyClientOptions } from '@azure/keyvault-keys';
 import { Provider } from '@nestjs/common';
-import { EnvProviderToken, Env } from './Env.provider.js';
+import { EnvProviderToken, Env } from '../env/Env.provider.js';
 import { DefaultAzureCredential } from '@azure/identity';
 
 export const KeyClientProvider: Provider = {

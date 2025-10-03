@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { KeyClientService } from './KeyClient.service.js';
+import { KeyClientService } from '../key_client/KeyClient.service.js';
 
 @Injectable()
 export class CredentialsService {

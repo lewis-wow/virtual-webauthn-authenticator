@@ -15,7 +15,7 @@ import { PublicKeyCredentialParametersDto } from './PublicKeyCredentialParameter
 import { PublicKeyCredentialDescriptorDto } from './PublicKeyCredentialDescriptor.dto.js';
 import { AuthenticatorSelectionCriteriaDto } from './AuthenticatorSelectionCriteria.dto.js';
 import { AuthenticationExtensionsClientInputsDto } from './AuthenticationExtensionsClientInputs.dto.js';
-import { transformBufferSource } from '../transformers/transformBufferSource.js';
+import { transformBufferSource } from '../../lib/transformers/transformBufferSource.js';
 
 /**
  * Represents the options for creating a new public key credential.

@@ -17,14 +17,16 @@
     "dotenvx": "../../scripts/dotenvx.sh"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.51.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "prisma": "^6.16.3",
-    "typescript": "^5.5.4",
-    "@dotenvx/dotenvx": "^1.51.0"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@prisma/client": "^6.16.3"
+    "@nestjs/jwt": "^11.0.0",
+    "@prisma/client": "^6.16.3",
+    "bcrypt": "^6.0.0"
   }
 }

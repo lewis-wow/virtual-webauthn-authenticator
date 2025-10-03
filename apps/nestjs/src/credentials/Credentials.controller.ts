@@ -1,8 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { CredentialsService } from '../services/Credentials.service.js';
-import { PublicKeyCredentialCreationOptionsDto } from '../dto/PublicKeyCredentialCreationOptions.dto.js';
+import { CredentialsService } from './Credentials.service';
+import { PublicKeyCredentialCreationOptionsDto } from '@/credentials/dto/PublicKeyCredentialCreationOptions.dto';
 import { ApiBody } from '@nestjs/swagger';
-import { PrismaService } from '../services/Prisma.service.js';
+import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
 export class CredentialsController {
@@ -17,13 +17,6 @@ export class CredentialsController {
     @Body()
     publicKeyCredentialCreationOptionsDto: PublicKeyCredentialCreationOptionsDto,
   ) {
-    console.log(
-      'prismaService',
-      await this.prismaService.test.create({
-        data: {},
-      }),
-    );
-
     const result = await this.credentialsService.create(
       publicKeyCredentialCreationOptionsDto,
     );
