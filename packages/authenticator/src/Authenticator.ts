@@ -8,6 +8,7 @@ import type {
   IPublicKeyCredential,
   ISigner,
   IPublicJsonWebKeyFactory,
+  ICollectedClientData,
 } from './types.js';
 import { assert, isString } from 'typanion';
 
@@ -65,7 +66,7 @@ export class Authenticator {
       attestedCredentialData,
     ]);
 
-    const clientData = {
+    const clientData: ICollectedClientData = {
       type: 'webauthn.create',
       challenge: toBase64Url(options.challenge),
       origin: options.rp.id,
@@ -75,7 +76,7 @@ export class Authenticator {
     const clientDataJSON = JSON.stringify(clientData);
 
     // 5. Create the Attestation Object based on the requested attestation type
-    const attestationType = options.attestation || 'none';
+    const attestationType = options.attestation ?? 'none';
 
     const attestationStatement = await match({ attestationType })
       .returnType<Promise<Map<string, unknown>>>()
@@ -138,8 +139,8 @@ export class Authenticator {
     return cbor.encode(coseKey);
   }
 
-  private _generateCredentialId(): Buffer<ArrayBuffer> {
-    return randomBytes(32) as Buffer<ArrayBuffer>;
+  private _generateCredentialId(): Buffer {
+    return randomBytes(32);
   }
 
   private _sha256(data: Buffer): Buffer {

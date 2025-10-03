@@ -9,6 +9,9 @@ import type {
 import { assert, isString, isInstanceOf, isUnknown, isLiteral } from 'typanion';
 
 export type PublicKeyCredentialDtoOptions = {
+  /**
+   * Base64 URL
+   */
   id: string;
   rawId: Buffer;
   response: IAuthenticatorAttestationResponse | IAuthenticatorAssertionResponse;

@@ -42,6 +42,9 @@ export interface IAuthenticatorAssertionResponse
  * as it exists on the server, using Buffers for binary data.
  */
 export interface IPublicKeyCredential {
+  /**
+   * Base64 URL
+   */
   id: string;
   rawId: Buffer;
   response: IAuthenticatorAttestationResponse | IAuthenticatorAssertionResponse;
@@ -53,10 +56,25 @@ export interface IPublicKeyCredential {
 }
 
 export interface IPublicKeyCredentialJSONResponse {
+  /**
+   * Base64 URL
+   */
   clientDataJSON: string;
+  /**
+   * Base64 URL
+   */
   attestationObject?: string;
+  /**
+   * Base64 URL
+   */
   authenticatorData?: string;
+  /**
+   * Base64 URL
+   */
   signature?: string;
+  /**
+   * Base64 URL
+   */
   userHandle?: string;
 }
 
@@ -65,7 +83,13 @@ export interface IPublicKeyCredentialJSONResponse {
  * where all binary data has been encoded as base64url strings.
  */
 export interface IPublicKeyCredentialJSON {
+  /**
+   * Base64 URL
+   */
   id: string;
+  /**
+   * Base64 URL
+   */
   rawId: string;
   type: 'public-key';
   clientExtensionResults: IAuthenticationExtensionsClientOutputs;
@@ -79,4 +103,19 @@ export interface IPublicJsonWebKeyFactory {
 
 export interface ISigner {
   sign(data: Buffer): MaybePromise<Uint8Array>;
+}
+
+export interface ICollectedClientData {
+  type: 'webauthn.create' | 'webauthn.get';
+  /**
+   * Base64 URL
+   */
+  challenge: string;
+  origin: string;
+  crossOrigin?: boolean;
+  // tokenBinding is an optional property from the spec, often omitted.
+  tokenBinding?: {
+    status: 'present' | 'supported';
+    id?: string;
+  };
 }
