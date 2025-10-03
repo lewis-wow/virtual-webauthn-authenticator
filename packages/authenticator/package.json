@@ -1,0 +1,24 @@
+{
+  "name": "@repo/authenticator",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@simplewebauthn/server": "^13.2.1",
+    "@simplewebauthn/types": "^12.0.0",
+    "@types/node": "^22.5.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "cbor": "^10.0.11",
+    "cbor2": "^2.0.1"
+  }
+}
