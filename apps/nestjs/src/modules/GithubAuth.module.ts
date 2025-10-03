@@ -9,6 +9,7 @@ import { UsersService } from '../services/Users.service';
 import { env } from '../env';
 import { PrismaService } from '../services/Prisma.service';
 import { JwtStrategy } from '../strategies/Jwt.strategy';
+import { GithubAuthController } from '../controllers/GithubAuth.controller';
 
 @Module({
   imports: [
@@ -30,6 +31,6 @@ import { JwtStrategy } from '../strategies/Jwt.strategy';
     UsersService,
     EnvProvider,
   ],
-  controllers: [GithubAuthModule],
+  controllers: [GithubAuthController],
 })
 export class GithubAuthModule {}
