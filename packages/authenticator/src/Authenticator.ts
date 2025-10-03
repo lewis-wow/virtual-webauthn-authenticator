@@ -38,7 +38,7 @@ export class Authenticator {
     // Bit 0 (UP - User Present): 0 - As requested, we are NOT proving user presence.
     // Bit 2 (UV - User Verified): 0 - We are not proving user verification.
     // Bit 6 (AT - Attested Credential Data Included): 1 - We are including attested data.
-    const flags = Buffer.from([0b01000000]);
+    const flags = Buffer.from([0b01000100]);
 
     const signCountBuffer = Buffer.alloc(4);
     signCountBuffer.writeUInt32BE(0, 0);

@@ -65,7 +65,7 @@ describe('Authenticator', () => {
       expectedChallenge: expectedChallenge,
       expectedOrigin: creationOptions.rp.id!,
       expectedRPID: creationOptions.rp.id,
-      requireUserVerification: false, // Authenticator doesn't perform UV
+      requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
     });
 
