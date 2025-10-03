@@ -8,12 +8,7 @@ import { JwtAuthModule } from './jwt/JwtAuth.module';
 import { EnvModule } from '@/env/Env.module';
 
 @Module({
-  imports: [
-    forwardRef(() => GithubAuthModule),
-    EnvModule,
-    UsersModule,
-    JwtAuthModule,
-  ],
+  imports: [GithubAuthModule, EnvModule, UsersModule, JwtAuthModule],
   providers: [PrismaService, AuthService],
   exports: [AuthService],
   controllers: [AuthController],

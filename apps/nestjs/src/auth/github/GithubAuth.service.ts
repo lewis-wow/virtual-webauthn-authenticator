@@ -8,7 +8,7 @@ import { Pick } from '@/lib/decorators/pick.decorator';
 import { USER_PUBLIC_FIELDS } from '@/lib/fields/USER_PUBLIC_FIELDS';
 
 @Injectable()
-export class GithhubAuthService {
+export class GithubAuthService {
   private static readonly GITHUB_PROVIDER_NAME = 'github';
 
   constructor(
@@ -24,7 +24,7 @@ export class GithhubAuthService {
     const account = await this.prismaService.account.findUnique({
       where: {
         provider_providerAccountId: {
-          provider: GithhubAuthService.GITHUB_PROVIDER_NAME,
+          provider: GithubAuthService.GITHUB_PROVIDER_NAME,
           providerAccountId: profile.id,
         },
       },
@@ -47,7 +47,7 @@ export class GithhubAuthService {
       data: {
         userId: user.id,
         type: 'oauth',
-        provider: GithhubAuthService.GITHUB_PROVIDER_NAME,
+        provider: GithubAuthService.GITHUB_PROVIDER_NAME,
         providerAccountId: profile.id,
       },
     });

@@ -3,10 +3,14 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { JwtPayload } from '@/lib/types';
 import { EnvService } from '@/env/Env.service';
+import { JwtAuthService } from './JwtAuth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(envService: EnvService) {
+  constructor(
+    envService: EnvService,
+    private readonly jwtAuthService: JwtAuthService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
