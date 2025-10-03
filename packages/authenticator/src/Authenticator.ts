@@ -1,6 +1,5 @@
 import { createHash, randomBytes } from 'crypto';
 import cbor from 'cbor';
-import { MissingRelyingPartyEntityId } from './known_exceptions/MissingRelyingPartyEntityId.js';
 import { toBuffer } from '@repo/utils/toBuffer';
 import { toBase64Url } from '@repo/utils/toBase64Url';
 import { match } from 'ts-pattern';
@@ -10,6 +9,7 @@ import type {
   ISigner,
   IPublicJsonWebKeyFactory,
 } from './types.js';
+import { assert, isString } from 'typanion';
 
 export type AuthenticatorOptions = {
   signer: ISigner;
@@ -28,9 +28,7 @@ export class Authenticator {
   public async createCredential(
     options: PublicKeyCredentialCreationOptions,
   ): Promise<IPublicKeyCredential> {
-    if (!options.rp.id) {
-      throw new MissingRelyingPartyEntityId();
-    }
+    assert(options.rp.id, isString());
 
     const credentialID = this._generateCredentialId();
     const rpIdHash = this._sha256(toBuffer(options.rp.id));

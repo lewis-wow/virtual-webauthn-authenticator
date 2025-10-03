@@ -6,6 +6,7 @@ import type {
   IPublicKeyCredentialJSON,
   IPublicKeyCredentialJSONResponse,
 } from '../types.js';
+import { assert, isString, isInstanceOf, isUnknown, isLiteral } from 'typanion';
 
 export type PublicKeyCredentialDtoOptions = {
   id: string;
@@ -40,19 +41,10 @@ export class PublicKeyCredentialDto implements IPublicKeyCredential {
       authenticatorAttachment = null,
     } = credential;
 
-    if (!id || !rawId || !response || !type) {
-      throw new Error(
-        'Missing required properties: id, rawId, response, or type.',
-      );
-    }
-
-    if (type !== 'public-key') {
-      throw new Error("Type must be 'public-key'.");
-    }
-
-    if (!(rawId instanceof Buffer)) {
-      throw new TypeError('`rawId` must be a Buffer.');
-    }
+    assert(id, isString());
+    assert(rawId, isInstanceOf(Buffer));
+    assert(response, isUnknown());
+    assert(type, isLiteral('public-key'));
 
     this.id = id;
     this.rawId = rawId;

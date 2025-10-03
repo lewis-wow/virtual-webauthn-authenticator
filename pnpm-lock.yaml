@@ -204,6 +204,9 @@ importers:
       ts-pattern:
         specifier: ^5.8.0
         version: 5.8.0
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -3835,6 +3838,9 @@ packages:
   turbo@2.5.8:
     resolution: {integrity: sha512-5c9Fdsr9qfpT3hA0EyYSFRZj1dVVsb6KIWubA9JBYZ/9ZEAijgUEae0BBR/Xl/wekt4w65/lYLTFaP3JmwSO8w==}
     hasBin: true
+
+  typanion@3.14.0:
+    resolution: {integrity: sha512-ZW/lVMRabETuYCd9O9ZvMhAh8GslSqaUjxmK/JLPCh6l73CvLBiuXswj/+7LdnWOgYsQ130FqLzFz5aGT4I3Ug==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -7729,6 +7735,8 @@ snapshots:
       turbo-linux-arm64: 2.5.8
       turbo-windows-64: 2.5.8
       turbo-windows-arm64: 2.5.8
+
+  typanion@3.14.0: {}
 
   type-check@0.4.0:
     dependencies:
