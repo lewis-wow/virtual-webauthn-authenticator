@@ -10,6 +10,7 @@ export class UsersController {
   @Pick(USER_PUBLIC_FIELDS)
   @UseGuards(JwtAuthGuard)
   getProfile(@Req() req: Request) {
+    console.log(req);
     return req.user;
   }
 }

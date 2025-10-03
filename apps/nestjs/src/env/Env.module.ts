@@ -5,6 +5,6 @@ import { EnvProvider } from './Env.provider';
 @Module({
   imports: [],
   providers: [EnvProvider, EnvService],
-  exports: [EnvService],
+  exports: [EnvProvider, EnvService],
 })
 export class EnvModule {}
