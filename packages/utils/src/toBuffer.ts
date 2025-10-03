@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { BinaryLike } from 'crypto';
+import type { BinaryLike } from 'node:crypto';
 
 /**
  * Safely converts any BufferSource into a Node.js Buffer,

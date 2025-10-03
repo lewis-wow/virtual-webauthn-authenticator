@@ -19,6 +19,7 @@
     "strictNullChecks": true,
     "strictBindCallApply": true,
     "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true
   }
 }

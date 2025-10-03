@@ -1,44 +1,39 @@
-import {
-  createHash,
-  createPrivateKey,
-  createPublicKey,
-  createSign,
-  KeyObject,
-  randomBytes,
-} from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 import cbor from 'cbor';
-import { MissingRelayingPartyEntityId } from './known_exceptions/MissingRelayingPartyEntityId.js';
+import { MissingRelyingPartyEntityId } from './known_exceptions/MissingRelyingPartyEntityId.js';
 import { toBuffer } from '@repo/utils/toBuffer';
-
-export interface IKeyPairGenerator {
-  generateKeyPair(): { privateKey: Buffer; publicKey: Buffer };
-}
+import { toBase64Url } from '@repo/utils/toBase64Url';
+import { match } from 'ts-pattern';
+import { PublicKeyCredentialDto } from './dto/PublicKeyCredentialDto.js';
+import type {
+  IPublicKeyCredential,
+  ISigner,
+  IPublicJsonWebKeyFactory,
+} from './types.js';
 
 export type AuthenticatorOptions = {
-  keyPairGenerator: IKeyPairGenerator;
+  signer: ISigner;
+  publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
 };
 
 export class Authenticator {
-  private signCount: number = 0;
-  private readonly keyPairGenerator: IKeyPairGenerator;
+  private readonly signer: ISigner;
+  private readonly publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
 
   constructor(opts: AuthenticatorOptions) {
-    this.keyPairGenerator = opts.keyPairGenerator;
+    this.signer = opts.signer;
+    this.publicJsonWebKeyFactory = opts.publicJsonWebKeyFactory;
   }
 
-  public createCredential(
+  public async createCredential(
     options: PublicKeyCredentialCreationOptions,
-  ): PublicKeyCredential {
+  ): Promise<IPublicKeyCredential> {
     if (!options.rp.id) {
-      throw new MissingRelayingPartyEntityId();
+      throw new MissingRelyingPartyEntityId();
     }
 
-    const { privateKey, publicKey } = this.keyPairGenerator.generateKeyPair();
-
     const credentialID = this._generateCredentialId();
-
-    // 3. Construct the Authenticator Data (authData)
-    const rpIdHash = createHash('sha256').update(options.rp.id).digest();
+    const rpIdHash = this._sha256(toBuffer(options.rp.id));
 
     // --- FLAGS ---
     // Bit 0 (UP - User Present): 0 - As requested, we are NOT proving user presence.
@@ -47,15 +42,15 @@ export class Authenticator {
     const flags = Buffer.from([0b01000000]);
 
     const signCountBuffer = Buffer.alloc(4);
-    signCountBuffer.writeUInt32BE(this.signCount, 0);
+    signCountBuffer.writeUInt32BE(0, 0);
 
     const aaguid = Buffer.alloc(16); // Zeroed-out AAGUID
 
     const credentialIdLength = Buffer.alloc(2);
     credentialIdLength.writeUInt16BE(credentialID.length, 0);
 
-    const cosePublicKey = this._publicKeyToCOSE(
-      this._publicKeyToKeyObject(publicKey),
+    const cosePublicKey = this._publicJsonWebKeyToCOSE(
+      await this.publicJsonWebKeyFactory.getPublicJsonWebKey(),
     );
 
     const attestedCredentialData = Buffer.concat([
@@ -74,93 +69,62 @@ export class Authenticator {
 
     const clientData = {
       type: 'webauthn.create',
-      challenge: toBuffer(options.challenge).toString('base64url'),
+      challenge: toBase64Url(options.challenge),
       origin: options.rp.id,
       crossOrigin: false,
     };
+
     const clientDataJSON = JSON.stringify(clientData);
 
     // 5. Create the Attestation Object based on the requested attestation type
     const attestationType = options.attestation || 'none';
-    let attestationObject: Map<string, any>;
 
-    switch (attestationType) {
-      case 'direct':
-      case 'indirect': {
-        // For this simulation, we'll treat 'direct' and 'indirect' as a 'packed' self-attestation.
-        const clientDataHash = createHash('sha256')
-          .update(clientDataJSON)
-          .digest();
-        const dataToSign = Buffer.concat([authData, clientDataHash]);
+    const attestationStatement = await match({ attestationType })
+      .returnType<Promise<Map<string, unknown>>>()
+      .with(
+        { attestationType: 'direct' },
+        { attestationType: 'indirect' },
+        async () => {
+          const clientDataHash = this._sha256(toBuffer(clientDataJSON));
+          const dataToSign = Buffer.concat([authData, clientDataHash]);
 
-        const signer = createSign('sha256');
-        signer.update(dataToSign);
-        const signature = signer.sign(this._privateKeyToKeyObject(privateKey));
+          const signature = await this.signer.sign(dataToSign);
 
-        const attestationStatement = new Map<string, any>([
-          ['alg', -7], // ES256, matches our key generation
-          ['sig', signature],
-        ]);
+          return new Map<string, unknown>([
+            ['alg', -7], // ES256, matches our key generation
+            ['sig', signature],
+          ]);
+        },
+      )
+      .with({ attestationType: 'none' }, async () => {
+        return new Map<string, unknown>([]);
+      })
+      .otherwise(() => {
+        throw new Error();
+      });
 
-        attestationObject = new Map<string, any>([
-          ['fmt', 'packed'],
-          ['attStmt', attestationStatement],
-          ['authData', authData],
-        ]);
-        break;
-      }
-      case 'none':
-      default: {
-        // For 'none' attestation format, the attestation statement MUST be an empty map.
-        const emptyAttestationStatement = new Map();
+    const attestationObject = new Map<string, unknown>([
+      ['fmt', attestationType],
+      ['attStmt', attestationStatement],
+      ['authData', authData],
+    ]);
 
-        attestationObject = new Map<string, any>([
-          ['fmt', 'none'],
-          ['attStmt', emptyAttestationStatement],
-          ['authData', authData],
-        ]);
-        break;
-      }
-    }
-
-    // 6. Assemble the final PublicKeyCredential object
     const attestationObjectCbor = cbor.encode(attestationObject);
 
-    return {
+    return new PublicKeyCredentialDto({
       id: credentialID.toString('base64url'),
-      rawId: credentialID.buffer,
+      rawId: credentialID,
       type: 'public-key',
       response: {
-        clientDataJSON: toBuffer(clientDataJSON).buffer,
+        clientDataJSON: Buffer.from(clientDataJSON),
         attestationObject: attestationObjectCbor,
       },
-    };
-  }
-
-  private _publicKeyToKeyObject(publicKey: Buffer) {
-    return createPublicKey({
-      key: publicKey,
-      format: 'der',
-      type: 'spki',
+      authenticatorAttachment: null,
+      clientExtensionResults: {},
     });
   }
 
-  private _privateKeyToKeyObject(privatekay: Buffer) {
-    return createPrivateKey({
-      key: privatekay,
-      format: 'der',
-      type: 'pkcs8',
-    });
-  }
-
-  /**
-   * Converts a Node.js crypto public key to COSE format for WebAuthn.
-   * @param {crypto.KeyObject} publicKey - The public key to convert.
-   * @returns {Buffer} The public key encoded in COSE format.
-   */
-  private _publicKeyToCOSE(publicKey: KeyObject): Buffer {
-    const jwk = publicKey.export({ format: 'jwk' });
-
+  private _publicJsonWebKeyToCOSE(jwk: JsonWebKey): Buffer {
     if (!jwk.x || !jwk.y) {
       throw new Error('JWK is missing x or y coordinates.');
     }
@@ -178,5 +142,9 @@ export class Authenticator {
 
   private _generateCredentialId(): Buffer<ArrayBuffer> {
     return randomBytes(32) as Buffer<ArrayBuffer>;
+  }
+
+  private _sha256(data: Buffer): Buffer {
+    return createHash('sha256').update(data).digest();
   }
 }

@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./toBuffer": "./src/toBuffer.ts",
+    "./toBase64Url": "./src/toBase64Url.ts",
     "./KnownException": "./src/KnownException.ts"
   },
   "scripts": {
