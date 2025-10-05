@@ -2,6 +2,7 @@ import { getJwkSigningAlg } from './getJwkSigningAlg.js';
 import type { Jwk } from '../types.js';
 
 const COSE_KEY_TYPES = { EC: 2, RSA: 3, oct: 4 } as const;
+
 const COSE_ALGORITHMS = {
   ES256: -7,
   ES384: -35,
@@ -12,6 +13,7 @@ const COSE_ALGORITHMS = {
   HS384: 6,
   HS512: 7,
 } as const;
+
 const COSE_EC_CURVES = {
   'P-256': 1,
   'P-384': 2,

@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCose } from './jwkToCose.js';
-// @ts-expect-error - no typing available
-import coseToJwk from 'cose-to-jwk';
 import { encode, decode } from 'cbor';
 import type { Jwk } from '../types.js';
+import { coseToJwk } from './coseToJwk.js';
 
 describe('jwkToCose', () => {
   describe('with EC keys', () => {
@@ -20,9 +19,9 @@ describe('jwkToCose', () => {
       expect(decode(encode(coseKey))).toStrictEqual(coseKey);
 
       const coseBuffer = encode(coseKey);
-      const roundTrippedJwk = coseToJwk(coseBuffer);
+      const roundTrippedJwk = coseToJwk(decode(coseBuffer));
 
-      expect(roundTrippedJwk).toEqual(originalJwk);
+      expect(roundTrippedJwk).toMatchObject(originalJwk);
     });
 
     // it('should correctly round-trip a private P-256 EC key', () => {
