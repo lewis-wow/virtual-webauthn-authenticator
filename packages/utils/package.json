@@ -6,9 +6,10 @@
   "exports": {
     "./toBuffer": "./src/toBuffer.ts",
     "./toBase64Url": "./src/toBase64Url.ts",
-    "./KnownException": "./src/KnownException.ts"
+    "./jwkToCose": "./src/jwkToCose.ts"
   },
   "scripts": {
+    "test": "vitest run",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
@@ -16,6 +17,13 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "typescript": "^5.5.4"
+    "cbor": "^10.0.11",
+    "cbor-x": "^1.6.0",
+    "cose-to-jwk": "^1.1.0",
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "typanion": "^3.14.0"
   }
 }

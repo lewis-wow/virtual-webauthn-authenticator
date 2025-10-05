@@ -1,4 +1,5 @@
 import type { MaybePromise } from '@repo/types';
+import type { JsonWebKey } from 'node:crypto';
 
 export type COSEAlgorithmIdentifier = number;
 export type PublicKeyCredentialType = 'public-key';

@@ -11,6 +11,7 @@ import type {
   ICollectedClientData,
 } from './types.js';
 import { assert, isString } from 'typanion';
+import { jwkToCose } from '@repo/utils/jwkToCose';
 
 export type AuthenticatorOptions = {
   signer: ISigner;
@@ -48,8 +49,8 @@ export class Authenticator {
     const credentialIdLength = Buffer.alloc(2);
     credentialIdLength.writeUInt16BE(credentialID.length, 0);
 
-    const cosePublicKey = this._publicJsonWebKeyToCOSE(
-      await this.publicJsonWebKeyFactory.getPublicJsonWebKey(),
+    const cosePublicKey = cbor.encode(
+      jwkToCose(await this.publicJsonWebKeyFactory.getPublicJsonWebKey()),
     );
 
     const attestedCredentialData = Buffer.concat([
@@ -121,22 +122,6 @@ export class Authenticator {
       authenticatorAttachment: null,
       clientExtensionResults: {},
     });
-  }
-
-  private _publicJsonWebKeyToCOSE(jwk: JsonWebKey): Buffer {
-    if (!jwk.x || !jwk.y) {
-      throw new Error('JWK is missing x or y coordinates.');
-    }
-
-    const coseKey = new Map<number, number | Buffer>([
-      [1, 2], // kty: EC2
-      [3, -7], // alg: ES256
-      [-1, 1], // crv: P-256
-      [-2, Buffer.from(jwk.x, 'base64')], // x-coordinate
-      [-3, Buffer.from(jwk.y, 'base64')], // y-coordinate
-    ]);
-
-    return cbor.encode(coseKey);
   }
 
   private _generateCredentialId(): Buffer {
