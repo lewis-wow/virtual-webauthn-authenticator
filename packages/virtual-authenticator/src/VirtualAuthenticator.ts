@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from 'crypto';
-import cbor from 'cbor';
+import { encode } from 'cbor-x';
 import { toBuffer } from '@repo/utils/toBuffer';
 import { toBase64Url } from '@repo/utils/toBase64Url';
 import { match } from 'ts-pattern';
@@ -11,7 +11,7 @@ import type {
   ICollectedClientData,
 } from './types.js';
 import { assert, isString } from 'typanion';
-import { jwkToCose } from '@repo/utils/jwkToCose';
+import { jwkToCose } from '@repo/keys';
 
 export type AuthenticatorOptions = {
   signer: ISigner;
@@ -49,7 +49,7 @@ export class Authenticator {
     const credentialIdLength = Buffer.alloc(2);
     credentialIdLength.writeUInt16BE(credentialID.length, 0);
 
-    const cosePublicKey = cbor.encode(
+    const cosePublicKey = encode(
       jwkToCose(await this.publicJsonWebKeyFactory.getPublicJsonWebKey()),
     );
 
@@ -109,7 +109,7 @@ export class Authenticator {
       ['authData', authData],
     ]);
 
-    const attestationObjectCbor = cbor.encode(attestationObject);
+    const attestationObjectCbor = encode(attestationObject);
 
     return new PublicKeyCredentialDto({
       id: credentialID.toString('base64url'),

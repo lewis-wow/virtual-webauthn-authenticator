@@ -1,5 +1,5 @@
 import { test, describe, expect, beforeAll } from 'vitest';
-import { Authenticator } from './Authenticator.js';
+import { Authenticator } from './VirtualAuthenticator.js';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import {
   verifyRegistrationResponse,

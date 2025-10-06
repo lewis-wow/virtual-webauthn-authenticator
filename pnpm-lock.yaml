@@ -187,52 +187,6 @@ importers:
         specifier: ^3.0.0
         version: 3.0.0
 
-  packages/authenticator:
-    dependencies:
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
-      '@repo/utils':
-        specifier: workspace:*
-        version: link:../utils
-      cbor:
-        specifier: ^10.0.11
-        version: 10.0.11
-      cbor2:
-        specifier: ^2.0.1
-        version: 2.0.1
-      ts-pattern:
-        specifier: ^5.8.0
-        version: 5.8.0
-      typanion:
-        specifier: ^3.14.0
-        version: 3.14.0
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@simplewebauthn/server':
-        specifier: ^13.2.1
-        version: 13.2.1
-      '@simplewebauthn/types':
-        specifier: ^12.0.0
-        version: 12.0.0
-      '@types/node':
-        specifier: ^22.5.2
-        version: 22.15.3
-      tsx:
-        specifier: ^4.20.6
-        version: 4.20.6
-      typescript:
-        specifier: ^5.5.4
-        version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.15.3)(terser@5.44.0)
-
   packages/enums:
     devDependencies:
       '@repo/eslint-config':
@@ -393,6 +347,58 @@ importers:
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(terser@5.44.0)
+
+  packages/virtual-authenticator:
+    dependencies:
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
+      cbor:
+        specifier: ^10.0.11
+        version: 10.0.11
+      cbor-x:
+        specifier: ^1.6.0
+        version: 1.6.0
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
+      ts-pattern:
+        specifier: ^5.8.0
+        version: 5.8.0
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@simplewebauthn/server':
+        specifier: ^13.2.1
+        version: 13.2.1
+      '@simplewebauthn/types':
+        specifier: ^12.0.0
+        version: 12.0.0
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      tsx:
+        specifier: ^4.20.6
+        version: 4.20.6
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
