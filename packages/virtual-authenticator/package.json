@@ -24,9 +24,6 @@
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
     "cbor": "^10.0.11",
-    "cbor-x": "^1.6.0",
-    "cbor2": "^2.0.1",
-    "ts-pattern": "^5.8.0",
     "typanion": "^3.14.0"
   }
 }

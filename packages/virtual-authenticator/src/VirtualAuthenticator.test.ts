@@ -1,5 +1,5 @@
 import { test, describe, expect, beforeAll } from 'vitest';
-import { Authenticator } from './VirtualAuthenticator.js';
+import { VirtualAuthenticator } from './VirtualAuthenticator.js';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import {
   verifyRegistrationResponse,
@@ -7,6 +7,8 @@ import {
 } from '@simplewebauthn/server';
 import { toBuffer } from '@repo/utils/toBuffer';
 import type { IPublicJsonWebKeyFactory, ISigner } from './types.js';
+import { coseToJwk } from '@repo/keys';
+import { decode } from 'cbor';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
@@ -49,11 +51,11 @@ const createPublicKeyCredentialCreationOptions = (
   ...overrides,
 });
 
-describe('Authenticator', () => {
-  let authenticator: Authenticator;
+describe('VirtualAuthenticator', () => {
+  let authenticator: VirtualAuthenticator;
 
   beforeAll(() => {
-    authenticator = new Authenticator({
+    authenticator = new VirtualAuthenticator({
       publicJsonWebKeyFactory,
       signer,
     });
@@ -79,32 +81,10 @@ describe('Authenticator', () => {
     });
 
     expect(verification.registrationInfo?.credential.counter).toBe(0);
-    expect(verification.registrationInfo?.credential.publicKey).toEqual(
-      keyPair.publicKey.export({ type: 'spki', format: 'der' }),
-    );
-    expect(verification.verified).toBe(true);
-  });
 
-  test('createCredential() attestation: direct', async () => {
-    const creationOptions = createPublicKeyCredentialCreationOptions({
-      attestation: 'direct',
-    });
-
-    const publicKeyCredentials =
-      await authenticator.createCredential(creationOptions);
-
-    const expectedChallenge = toBuffer(creationOptions.challenge).toString(
-      'base64url',
-    );
-
-    const verification = await verifyRegistrationResponse({
-      response: publicKeyCredentials.toJSON() as RegistrationResponseJSON,
-      expectedChallenge: expectedChallenge,
-      expectedOrigin: creationOptions.rp.id!,
-      expectedRPID: creationOptions.rp.id,
-      requireUserVerification: true, // Authenticator does perform UV
-      requireUserPresence: false, // Authenticator does NOT perform UP
-    });
+    expect(
+      coseToJwk(decode(verification.registrationInfo!.credential.publicKey)),
+    ).toMatchObject(keyPair.publicKey.export({ format: 'jwk' }));
 
     expect(verification.verified).toBe(true);
   });

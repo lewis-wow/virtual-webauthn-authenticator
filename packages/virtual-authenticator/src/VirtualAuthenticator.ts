@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { encode } from 'cbor-x';
+import { encode } from 'cbor';
 import { toBuffer } from '@repo/utils/toBuffer';
 import { toBase64Url } from '@repo/utils/toBase64Url';
 import { PublicKeyCredentialDto } from './dto/PublicKeyCredentialDto.js';
@@ -13,16 +13,16 @@ import { assert, isEnum, isString } from 'typanion';
 import { jwkToCose } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
 
-export type AuthenticatorOptions = {
+export type VirtualAuthenticatorOptions = {
   signer: ISigner;
   publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
 };
 
-export class Authenticator {
+export class VirtualAuthenticator {
   private readonly signer: ISigner;
   private readonly publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
 
-  constructor(opts: AuthenticatorOptions) {
+  constructor(opts: VirtualAuthenticatorOptions) {
     this.signer = opts.signer;
     this.publicJsonWebKeyFactory = opts.publicJsonWebKeyFactory;
   }
@@ -159,7 +159,7 @@ export class Authenticator {
     const credentialID = this._createCredentialId();
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
-    const authData = this._createAuthenticatorData({
+    const authData = await this._createAuthenticatorData({
       rpId: options.rp.id,
       credentialID,
     });
