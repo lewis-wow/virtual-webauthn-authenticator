@@ -1,4 +1,4 @@
-import { ValueOf } from '@repo/types';
+import type { ValueOf } from '@repo/types';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-transport

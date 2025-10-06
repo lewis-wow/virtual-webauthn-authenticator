@@ -1,4 +1,4 @@
-import { ValueOf } from '@repo/types';
+import type { ValueOf } from '@repo/types';
 
 /**
  * Enum for cryptographic algorithms defined in the IANA COSE registry.

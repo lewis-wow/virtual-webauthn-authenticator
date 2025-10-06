@@ -1,14 +1,11 @@
 {
-  "name": "@repo/utils",
+  "name": "@repo/keys",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    "./toBuffer": "./src/toBuffer.ts",
-    "./toBase64Url": "./src/toBase64Url.ts",
-    "./sha256": "./src/sha256.ts",
-    "./keyOf": "./src/keyOf.ts",
-    "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
+    ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -20,9 +17,7 @@
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "cbor": "^10.0.11",
     "cbor-x": "^1.6.0",
-    "cose-to-jwk": "^1.1.0",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
