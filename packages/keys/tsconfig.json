@@ -1,5 +1,5 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": ["src", "../keys/src/enums/cose.ts"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

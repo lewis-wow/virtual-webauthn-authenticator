@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import type { Jwk } from '../types.js';
+import type { Jwk } from './types.js';
 
 const COSE_TO_JWK_KTY = {
   1: 'OKP', // Octet Key Pair

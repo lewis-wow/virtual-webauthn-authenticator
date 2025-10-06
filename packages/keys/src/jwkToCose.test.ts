@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCose } from './jwkToCose.js';
-import { encode, decode } from 'cbor';
-import type { Jwk } from '../types.js';
+import { encode, decode } from 'cbor-x';
+import type { Jwk } from './types.js';
 import { coseToJwk } from './coseToJwk.js';
 
 describe('jwkToCose', () => {

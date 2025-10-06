@@ -1,4 +1,4 @@
-import { ValueOf } from '@repo/types';
+import type { ValueOf } from '@repo/types';
 
 export const TokenType = {
   PERSONAL_TOKEN: 'PERSONAL_TOKEN',

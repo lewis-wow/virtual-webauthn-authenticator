@@ -7,3 +7,4 @@ export * from './ResidentKeyRequirement.js';
 export * from './UserVerificationRequirement.js';
 export * from './AuthenticatorTransport.js';
 export * from './TokenType.js';
+export * from '../../keys/src/enums/cose.js';

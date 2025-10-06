@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { getJwkSigningAlg } from './getJwkSigningAlg.js';
 import { Buffer } from 'node:buffer';
-import type { Jwk } from '../types.js';
+import type { Jwk } from './types.js';
 
 describe('getJwkSigningAlg', () => {
   it('should return the "alg" property from the JWK if it exists, overriding other logic', () => {
@@ -24,11 +24,6 @@ describe('getJwkSigningAlg', () => {
     it('should return ES512 for curve P-521', () => {
       const jwk: Jwk = { kty: 'EC', crv: 'P-521' };
       expect(getJwkSigningAlg(jwk)).toBe('ES512');
-    });
-
-    it('should return ES256K for curve secp256k1', () => {
-      const jwk: Jwk = { kty: 'EC', crv: 'secp256k1' };
-      expect(getJwkSigningAlg(jwk)).toBe('ES256K');
     });
 
     it('should return EdDSA for curve Ed25519', () => {

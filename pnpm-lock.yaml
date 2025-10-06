@@ -278,6 +278,40 @@ importers:
         specifier: ^8.40.0
         version: 8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2)
 
+  packages/keys:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      cbor-x:
+        specifier: ^1.6.0
+        version: 1.6.0
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(terser@5.44.0)
+
   packages/prisma:
     dependencies:
       '@nestjs/jwt':
@@ -328,6 +362,9 @@ importers:
 
   packages/utils:
     dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -353,6 +390,9 @@ importers:
       cose-to-jwk:
         specifier: ^1.1.0
         version: 1.1.0
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
       typescript:
         specifier: ^5.5.4
         version: 5.9.2

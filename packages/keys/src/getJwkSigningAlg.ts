@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
-import type { Jwk } from '../types.js';
+import type { Jwk } from './types.js';
+import type { CoseAlgorithm } from './enums/index.js';
 
 /**
  * Infers a JWS signing algorithm ('alg') from a JSON Web Key (JWK).
@@ -7,10 +8,12 @@ import type { Jwk } from '../types.js';
  * @param jwk The JSON Web Key object.
  * @returns The inferred signing algorithm string (e.g., 'ES256', 'PS256') or undefined if it cannot be determined.
  */
-export const getJwkSigningAlg = (jwk: Jwk): string | undefined => {
+export const getJwkSigningAlg = (
+  jwk: Jwk,
+): keyof typeof CoseAlgorithm | undefined => {
   // 1. If 'alg' is explicitly provided, it has the highest priority.
   if (jwk.alg) {
-    return jwk.alg;
+    return jwk.alg as keyof typeof CoseAlgorithm;
   }
 
   // 2. Infer algorithm based on key type ('kty').
@@ -23,8 +26,8 @@ export const getJwkSigningAlg = (jwk: Jwk): string | undefined => {
           return 'ES384';
         case 'P-521':
           return 'ES512';
-        case 'secp256k1':
-          return 'ES256K';
+        // case 'secp256k1':
+        //   return 'ES256K';
         case 'Ed25519':
         case 'Ed448':
           return 'EdDSA';
