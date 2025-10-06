@@ -6,7 +6,9 @@
   "exports": {
     "./toBuffer": "./src/toBuffer.ts",
     "./toBase64Url": "./src/toBase64Url.ts",
-    "./jwkToCose": "./src/jwkToCose.ts"
+    "./sha256": "./src/sha256.ts",
+    "./keyOf": "./src/keyOf.ts",
+    "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
   },
   "scripts": {
     "test": "vitest run",

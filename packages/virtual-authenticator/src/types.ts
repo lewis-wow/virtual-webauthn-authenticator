@@ -1,5 +1,5 @@
+import type { Jwk } from '@repo/keys';
 import type { MaybePromise } from '@repo/types';
-import type { JsonWebKey } from 'node:crypto';
 
 export type COSEAlgorithmIdentifier = number;
 export type PublicKeyCredentialType = 'public-key';
@@ -200,7 +200,7 @@ export interface IPublicKeyCredentialJSON {
  * representation of its public key.
  */
 export interface IPublicJsonWebKeyFactory {
-  getPublicJsonWebKey(): MaybePromise<JsonWebKey>;
+  getPublicJsonWebKey(): MaybePromise<Jwk>;
 }
 
 /**
