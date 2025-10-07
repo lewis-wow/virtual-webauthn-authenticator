@@ -237,6 +237,12 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
+      cbor:
+        specifier: ^10.0.11
+        version: 10.0.11
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
