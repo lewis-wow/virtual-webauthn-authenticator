@@ -5,10 +5,9 @@ import {
   CoseEcCurve,
   CoseEcParam,
   CoseKeyType,
-  CoseOctParam,
   CoseRsaParam,
 } from './enums/index.js';
-import { getJwkSigningAlg } from './getJwkSigningAlg.js';
+import { getJwkAsymetricSigningAlg } from './getJwkAsymetricSigningAlg.js';
 import type { Jwk } from './types.js';
 import { encode, decode } from 'cbor';
 import { assert, isEnum, isNumber, isString } from 'typanion';
@@ -20,17 +19,32 @@ export class CoseKey {
   ) {}
 
   static fromJwk(jwk: Jwk): CoseKey {
-    const algName = getJwkSigningAlg(jwk);
+    const asymetricSigningAlgorithm = getJwkAsymetricSigningAlg(jwk);
 
-    assert(algName, isEnum(objectKeys(CoseAlgorithm)));
+    assert(asymetricSigningAlgorithm, isString());
 
-    const alg = CoseAlgorithm[algName as keyof typeof CoseAlgorithm];
+    const coseAlgorithm = CoseAlgorithm[asymetricSigningAlgorithm];
 
     const coseMap = new Map<number, string | number | Buffer>();
 
-    coseMap.set(CoseKeyParam.alg, alg);
+    coseMap.set(CoseKeyParam.alg, coseAlgorithm);
 
     switch (jwk.kty) {
+      case 'OKP': {
+        const kty = CoseKeyType.OKP;
+        const crv = CoseEcCurve[jwk.crv as keyof typeof CoseEcCurve];
+
+        assert(crv, isNumber());
+        assert(jwk.x, isString());
+
+        coseMap.set(CoseKeyParam.kty, kty);
+        coseMap.set(CoseEcParam.crv, crv);
+        coseMap.set(CoseEcParam.x, Buffer.from(jwk.x, 'base64url'));
+        if (jwk.d) {
+          coseMap.set(CoseEcParam.d, Buffer.from(jwk.d, 'base64url'));
+        }
+        break;
+      }
       case 'EC': {
         const kty = CoseKeyType.EC;
         const crv = CoseEcCurve[jwk.crv as keyof typeof CoseEcCurve];
@@ -60,15 +74,6 @@ export class CoseKey {
         if (jwk.d) {
           coseMap.set(CoseRsaParam.d, Buffer.from(jwk.d, 'base64url'));
         }
-        break;
-      }
-      case 'oct': {
-        const kty = CoseKeyType.oct;
-
-        assert(jwk.k, isString());
-
-        coseMap.set(CoseKeyParam.kty, kty);
-        coseMap.set(CoseOctParam.k, Buffer.from(jwk.k, 'base64url'));
         break;
       }
       default:

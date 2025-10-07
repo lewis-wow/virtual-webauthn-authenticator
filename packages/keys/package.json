@@ -22,9 +22,10 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/utils": "workspace:*",
     "@repo/enums": "workspace:*",
+    "@repo/utils": "workspace:*",
     "cbor": "^10.0.11",
+    "ts-pattern": "^5.8.0",
     "typanion": "^3.14.0"
   }
 }
