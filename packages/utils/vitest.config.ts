@@ -1,8 +1,12 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
+import vitestSharedConfig from '../../vitest.config';
+import pkg from './package.json';
 
-export default defineConfig({
-  test: {
-    globals: true,
-    testTimeout: 30_000,
-  },
-});
+export default mergeConfig(
+  vitestSharedConfig,
+  defineConfig({
+    test: {
+      name: pkg.name,
+    },
+  }),
+);

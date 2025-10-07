@@ -10,7 +10,7 @@ import type {
   ICollectedClientData,
 } from './types.js';
 import { assert, isEnum, isString } from 'typanion';
-import { jwkToCose } from '@repo/keys';
+import { CoseKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
 
 export type VirtualAuthenticatorOptions = {
@@ -68,9 +68,9 @@ export class VirtualAuthenticator {
     // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty"
     // and algorithm "alg" (see Section 8 of [RFC8152]).
     // Length (in bytes): {variable}
-    const credentialPublicKey = encode(
-      jwkToCose(await this.publicJsonWebKeyFactory.getPublicJsonWebKey()),
-    );
+    const credentialPublicKey = CoseKey.fromJwk(
+      await this.publicJsonWebKeyFactory.getPublicJsonWebKey(),
+    ).toBuffer();
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
     // Attested credential data is a variable-length byte array added to the
