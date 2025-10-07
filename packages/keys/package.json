@@ -17,13 +17,15 @@
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "cbor-x": "^1.6.0",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "cbor": "^10.0.11",
+    "ts-pattern": "^5.8.0",
     "typanion": "^3.14.0"
   }
 }

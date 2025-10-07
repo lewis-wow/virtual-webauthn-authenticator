@@ -7,7 +7,7 @@
     "./toBuffer": "./src/toBuffer.ts",
     "./toBase64Url": "./src/toBase64Url.ts",
     "./sha256": "./src/sha256.ts",
-    "./keyOf": "./src/keyOf.ts",
+    "./objectKeys": "./src/objectKeys.ts",
     "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
   },
   "scripts": {
