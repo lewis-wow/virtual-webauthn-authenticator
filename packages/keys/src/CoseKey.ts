@@ -26,9 +26,9 @@ export class CoseKey {
 
     const alg = CoseAlgorithm[algName as keyof typeof CoseAlgorithm];
 
-    const coseKey = new Map<number, string | number | Buffer>();
+    const coseMap = new Map<number, string | number | Buffer>();
 
-    coseKey.set(CoseKeyParam.alg, alg);
+    coseMap.set(CoseKeyParam.alg, alg);
 
     switch (jwk.kty) {
       case 'EC': {
@@ -39,12 +39,12 @@ export class CoseKey {
         assert(jwk.x, isString());
         assert(jwk.y, isString());
 
-        coseKey.set(CoseKeyParam.kty, kty);
-        coseKey.set(CoseEcParam.crv, crv);
-        coseKey.set(CoseEcParam.x, Buffer.from(jwk.x, 'base64url'));
-        coseKey.set(CoseEcParam.y, Buffer.from(jwk.y, 'base64url'));
+        coseMap.set(CoseKeyParam.kty, kty);
+        coseMap.set(CoseEcParam.crv, crv);
+        coseMap.set(CoseEcParam.x, Buffer.from(jwk.x, 'base64url'));
+        coseMap.set(CoseEcParam.y, Buffer.from(jwk.y, 'base64url'));
         if (jwk.d) {
-          coseKey.set(CoseEcParam.d, Buffer.from(jwk.d, 'base64url'));
+          coseMap.set(CoseEcParam.d, Buffer.from(jwk.d, 'base64url'));
         }
         break;
       }
@@ -54,11 +54,11 @@ export class CoseKey {
         assert(jwk.n, isString());
         assert(jwk.e, isString());
 
-        coseKey.set(CoseKeyParam.kty, kty);
-        coseKey.set(CoseRsaParam.n, Buffer.from(jwk.n, 'base64url'));
-        coseKey.set(CoseRsaParam.e, Buffer.from(jwk.e, 'base64url'));
+        coseMap.set(CoseKeyParam.kty, kty);
+        coseMap.set(CoseRsaParam.n, Buffer.from(jwk.n, 'base64url'));
+        coseMap.set(CoseRsaParam.e, Buffer.from(jwk.e, 'base64url'));
         if (jwk.d) {
-          coseKey.set(CoseRsaParam.d, Buffer.from(jwk.d, 'base64url'));
+          coseMap.set(CoseRsaParam.d, Buffer.from(jwk.d, 'base64url'));
         }
         break;
       }
@@ -67,8 +67,8 @@ export class CoseKey {
 
         assert(jwk.k, isString());
 
-        coseKey.set(CoseKeyParam.kty, kty);
-        coseKey.set(CoseOctParam.k, Buffer.from(jwk.k, 'base64url'));
+        coseMap.set(CoseKeyParam.kty, kty);
+        coseMap.set(CoseOctParam.k, Buffer.from(jwk.k, 'base64url'));
         break;
       }
       default:
@@ -77,7 +77,7 @@ export class CoseKey {
         );
     }
 
-    return new CoseKey(coseKey);
+    return new CoseKey(coseMap);
   }
 
   static fromBuffer(buffer: Buffer): CoseKey {
