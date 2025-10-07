@@ -1,43 +1,32 @@
-import { describe, it, expect } from 'vitest';
-import { jwkToCose } from './jwkToCose.js';
-import { encode, decode } from 'cbor-x';
+import { describe, test, expect } from 'vitest';
 import type { Jwk } from './types.js';
-import { coseToJwk } from './coseToJwk.js';
+import { CoseKey } from './CoseKey.js';
 
-describe('jwkToCose', () => {
-  describe('with EC keys', () => {
-    it('should correctly round-trip a public P-256 EC key', () => {
-      const originalJwk: Jwk = {
+describe('CoseKey', () => {
+  describe('EC', () => {
+    describe('P-256 round-trip', () => {
+      const p256PublicKey = {
         kty: 'EC',
         crv: 'P-256',
         x: '46h_Gf2I-GAe3AnwT3a4u2bYgPKFF5eQ8eZ5LLu-DPg',
         y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
       };
 
-      const coseKey = jwkToCose(originalJwk);
-      expect(coseKey).toBeDefined();
-      expect(decode(encode(coseKey))).toStrictEqual(coseKey);
+      test('public', () => {
+        const coseKey = CoseKey.fromJwk(p256PublicKey);
+        expect(coseKey.toJwk()).toMatchObject(p256PublicKey);
+      });
 
-      const coseBuffer = encode(coseKey);
-      const roundTrippedJwk = coseToJwk(decode(coseBuffer));
+      test('private', () => {
+        const p256PrivateKey: Jwk = {
+          ...p256PublicKey,
+          d: 'RGs-NTMbC3S8EYM-LI_2a2yN2AnTpF2YAbK2DPa1fS4',
+        };
 
-      expect(roundTrippedJwk).toMatchObject(originalJwk);
+        const coseKey = CoseKey.fromJwk(p256PrivateKey);
+        expect(coseKey.toJwk()).toMatchObject(p256PrivateKey);
+      });
     });
-
-    // it('should correctly round-trip a private P-256 EC key', () => {
-    //   const originalJwk: JsonWebKey = {
-    //     kty: 'EC',
-    //     crv: 'P-256',
-    //     x: '46h_Gf2I-GAe3AnwT3a4u2bYgPKFF5eQ8eZ5LLu-DPg',
-    //     y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
-    //     d: 'RGs-NTMbC3S8EYM-LI_2a2yN2AnTpF2YAbK2DPa1fS4',
-    //   };
-
-    //   const coseKey = jwkToCose(originalJwk);
-    //   const roundTrippedJwk = coseToJwk(encode(coseKey!));
-
-    //   expect(roundTrippedJwk).toEqual(originalJwk);
-    // });
 
     //   it('should correctly round-trip a public Ed25519 key', () => {
     //     const originalJwk: JsonWebKey = {
