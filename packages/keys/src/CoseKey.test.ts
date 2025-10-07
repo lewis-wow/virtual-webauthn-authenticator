@@ -12,12 +12,12 @@ describe('CoseKey', () => {
         y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
       };
 
-      test('public', () => {
+      test('public key', () => {
         const coseKey = CoseKey.fromJwk(p256PublicKey);
         expect(coseKey.toJwk()).toMatchObject(p256PublicKey);
       });
 
-      test('private', () => {
+      test('private key', () => {
         const p256PrivateKey: Jwk = {
           ...p256PublicKey,
           d: 'RGs-NTMbC3S8EYM-LI_2a2yN2AnTpF2YAbK2DPa1fS4',
@@ -28,72 +28,60 @@ describe('CoseKey', () => {
       });
     });
 
-    //   it('should correctly round-trip a public Ed25519 key', () => {
-    //     const originalJwk: JsonWebKey = {
-    //       kty: 'OKP', // `cose-to-jwk` uses OKP for EdDSA, so we match it
-    //       crv: 'Ed25519',
-    //       x: 'zdpL23z340A-vWQVZkAn9jS5WIxfeotI5b4L4x4j4VA',
-    //     };
-    //     // Our function infers 'EdDSA' alg and maps OKP kty from EC/Ed25519 crv
-    //     const coseKey = jwkToCose({
-    //       kty: 'EC',
-    //       crv: 'Ed25519',
-    //       x: originalJwk.x,
-    //       y: '',
-    //     }); // y is required by our function signature but not used for OKP
-    //     const roundTrippedJwk = coseToJwk(cborEncode(coseKey!));
+    describe('Ed25519 round-trip', () => {
+      const ed25519PublicKey: Jwk = {
+        kty: 'OKP', // `cose-to-jwk` uses OKP for EdDSA, so we match it
+        crv: 'Ed25519',
+        x: 'zdpL23z340A-vWQVZkAn9jS5WIxfeotI5b4L4x4j4VA',
+      };
 
-    //     // `cose-to-jwk` correctly outputs kty: 'OKP' for Ed25519
-    //     expect(roundTrippedJwk).toEqual(originalJwk);
-    //   });
-    // });
+      test('public key', () => {
+        const coseKey = CoseKey.fromJwk(ed25519PublicKey);
+        expect(coseKey.toJwk()).toMatchObject(ed25519PublicKey);
+      });
+    });
+  });
 
-    // describe('with RSA keys', () => {
-    //   it('should correctly round-trip a public RSA key', () => {
-    //     const originalJwk: JsonWebKey = {
-    //       kty: 'RSA',
-    //       n: 'uBoA40a4DDs5bSoYVq0a9sO-e8d9-z0oYXB2yN-s5E8yY8Pj8hY-u3-L8L_E9VvS4L8uXDjA1BqJ1A9o_j-J8sB-E8w_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_A1A8w-E8B_D1c8E8w',
-    //       e: 'AQAB',
-    //     };
+  describe('RSA', () => {
+    const rsaPublicKey: Jwk = {
+      kty: 'RSA',
+      n: 'uBoA40a4DDs5bSoYVq0a9sO-e8d9-z0oYXB2yN-s5E8yY8Pj8hY-u3-L8L_E9VvS4L8uXDjA1BqJ1A9o_j-J8sB-E8w_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_A1A8w-E8B_D1c8E8w',
+      e: 'AQAB',
+    };
 
-    //     const coseKey = jwkToCose(originalJwk);
-    //     expect(coseKey).toBeDefined();
+    test('round-trip public key', () => {
+      const coseKey = CoseKey.fromJwk(rsaPublicKey);
+      expect(coseKey.toJwk()).toMatchObject(rsaPublicKey);
+    });
+  });
 
-    //     const roundTrippedJwk = coseToJwk(cborEncode(coseKey!));
-    //     expect(roundTrippedJwk).toEqual(originalJwk);
-    //   });
-    // });
+  describe('Symmetric oct', () => {
+    const key: Jwk = {
+      kty: 'oct',
+      k: 'Vlaj4r4n-22t3s5xGfpPlQh5z2ZAbG-ci554zYy_GzI',
+    };
 
-    // describe('with Symmetric (oct) keys', () => {
-    //   it('should correctly round-trip a 256-bit symmetric key', () => {
-    //     const originalJwk: JsonWebKey = {
-    //       kty: 'oct',
-    //       k: 'Vlaj4r4n-22t3s5xGfpPlQh5z2ZAbG-ci554zYy_GzI',
-    //     };
+    test('round-trip key', () => {
+      const coseKey = CoseKey.fromJwk(key);
+      expect(coseKey.toJwk()).toMatchObject(key);
+    });
+  });
 
-    //     const coseKey = jwkToCose(originalJwk);
-    //     expect(coseKey).toBeDefined();
+  describe('Unsupported keys', () => {
+    test('should return undefined for a key with an unsupported algorithm', () => {
+      // Our function does not have a COSE mapping for RS512
+      const jwk: Jwk = { kty: 'RSA', alg: 'RS512', n: 'n', e: 'e' };
+      expect(() => CoseKey.fromJwk(jwk)).toThrow();
+    });
 
-    //     const roundTrippedJwk = coseToJwk(cborEncode(coseKey!));
-    //     expect(roundTrippedJwk).toEqual(originalJwk);
-    //   });
-    // });
+    test('should return undefined for an EC key with a missing crv', () => {
+      const jwk: Jwk = { kty: 'EC', x: 'x', y: 'y' };
+      expect(() => CoseKey.fromJwk(jwk)).toThrow();
+    });
 
-    // describe('with unsupported keys', () => {
-    //   it('should return undefined for a key with an unsupported algorithm', () => {
-    //     // Our function does not have a COSE mapping for RS512
-    //     const jwk: JsonWebKey = { kty: 'RSA', alg: 'RS512', n: 'n', e: 'e' };
-    //     expect(jwkToCose(jwk)).toBeUndefined();
-    //   });
-
-    //   it('should return undefined for an EC key with a missing crv', () => {
-    //     const jwk: JsonWebKey = { kty: 'EC', x: 'x', y: 'y' };
-    //     expect(jwkToCose(jwk)).toBeUndefined();
-    //   });
-
-    //   it('should return undefined for an RSA key with missing params', () => {
-    //     const jwk: JsonWebKey = { kty: 'RSA', e: 'AQAB' };
-    //     expect(jwkToCose(jwk)).toBeUndefined();
-    //   });
+    test('should return undefined for an RSA key with missing params', () => {
+      const jwk: Jwk = { kty: 'RSA', e: 'AQAB' };
+      expect(() => CoseKey.fromJwk(jwk)).toThrow();
+    });
   });
 });
