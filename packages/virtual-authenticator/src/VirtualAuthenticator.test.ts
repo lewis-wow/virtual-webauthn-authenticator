@@ -7,8 +7,7 @@ import {
 } from '@simplewebauthn/server';
 import { toBuffer } from '@repo/utils/toBuffer';
 import type { IPublicJsonWebKeyFactory, ISigner } from './types.js';
-import { coseToJwk } from '@repo/keys';
-import { decode } from 'cbor';
+import { CoseKey } from '@repo/keys';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
@@ -83,7 +82,9 @@ describe('VirtualAuthenticator', () => {
     expect(verification.registrationInfo?.credential.counter).toBe(0);
 
     expect(
-      coseToJwk(decode(verification.registrationInfo!.credential.publicKey)),
+      CoseKey.fromBuffer(
+        verification.registrationInfo!.credential.publicKey,
+      ).toJwk(),
     ).toMatchObject(keyPair.publicKey.export({ format: 'jwk' }));
 
     expect(verification.verified).toBe(true);

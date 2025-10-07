@@ -12,6 +12,7 @@ import type { Jwk } from './types.js';
 import { encode, decode } from 'cbor';
 import { assert, isEnum, isNumber, isString } from 'typanion';
 import { objectKeys } from '@repo/utils/objectKeys';
+import type { BufferLike } from '@repo/types';
 
 export class CoseKey {
   constructor(
@@ -85,7 +86,7 @@ export class CoseKey {
     return new CoseKey(coseMap);
   }
 
-  static fromBuffer(buffer: Buffer): CoseKey {
+  static fromBuffer(buffer: BufferLike): CoseKey {
     return new CoseKey(decode(buffer));
   }
 
