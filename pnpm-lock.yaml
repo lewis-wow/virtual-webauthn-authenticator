@@ -259,9 +259,6 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
-      cbor-x:
-        specifier: ^1.6.0
-        version: 1.6.0
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
