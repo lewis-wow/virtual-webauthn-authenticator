@@ -367,6 +367,40 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
+  packages/transformers:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      deep-pick-omit:
+        specifier: ^1.2.1
+        version: 1.2.1
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(terser@5.44.0)
+
   packages/types:
     devDependencies:
       '@repo/eslint-config':
@@ -429,6 +463,9 @@ importers:
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
+      '@repo/transformers':
+        specifier: workspace:*
+        version: link:../transformers
       '@repo/types':
         specifier: workspace:*
         version: link:../types
@@ -438,6 +475,12 @@ importers:
       cbor:
         specifier: ^10.0.11
         version: 10.0.11
+      class-transformer:
+        specifier: ^0.5.1
+        version: 0.5.1
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -6466,7 +6509,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.5.2)(@vitest/ui@3.2.4)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -9030,7 +9073,7 @@ snapshots:
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.6
-      rollup: 4.52.3
+      rollup: 4.52.4
     optionalDependencies:
       '@types/node': 22.15.3
       fsevents: 2.3.3
@@ -9040,7 +9083,7 @@ snapshots:
     dependencies:
       esbuild: 0.21.5
       postcss: 8.5.6
-      rollup: 4.52.3
+      rollup: 4.52.4
     optionalDependencies:
       '@types/node': 24.5.2
       fsevents: 2.3.3

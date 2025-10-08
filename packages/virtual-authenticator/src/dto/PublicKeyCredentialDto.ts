@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import type {
   IAuthenticationExtensionsClientOutputs,
   IAuthenticatorAssertionResponse,
@@ -6,11 +7,25 @@ import type {
   IPublicKeyCredentialJSON,
   IPublicKeyCredentialJSONResponse,
 } from '../types.js';
-import { assert, isString, isInstanceOf, isUnknown, isLiteral } from 'typanion';
+import {
+  assert,
+  isString,
+  isInstanceOf,
+  isUnknown,
+  isLiteral,
+  isNullable,
+  isEnum,
+  isRecord,
+} from 'typanion';
+import { Expose, Transform, Type } from 'class-transformer';
+import { bufferTransformer, Transformable } from '@repo/transformers';
+import { AuthenticatorAttachment } from '../enums/AuthenticatorAttachment.js';
+import { AuthenticatorAttestationResponseDto } from './AuthenticatorAttestationResponseDto.js';
+import { AuthenticatorAssertionResponseDto } from './AuthenticatorAssertionResponseDto.js';
 
 export type PublicKeyCredentialDtoOptions = {
   /**
-   * Base64 URL
+   * Base64URL
    */
   id: string;
   rawId: Buffer;
@@ -24,17 +39,48 @@ export type PublicKeyCredentialDtoOptions = {
  * A simple TypeScript class to represent the W3C WebAuthn PublicKeyCredential interface.
  * This DTO (Data Transfer Object) is designed to work on a server, where binary data is handled as Buffers.
  */
-export class PublicKeyCredentialDto implements IPublicKeyCredential {
+export class PublicKeyCredentialDto
+  extends Transformable
+  implements IPublicKeyCredential
+{
+  @Expose()
   public readonly id: string;
+
+  @Transform(bufferTransformer('base64url'))
   public readonly rawId: Buffer;
+
+  @Type(() => Object, {
+    keepDiscriminatorProperty: true,
+    discriminator: {
+      property: 'type',
+      subTypes: [
+        {
+          value: AuthenticatorAttestationResponseDto,
+          name: 'AuthenticatorAttestationResponseDto',
+        },
+        {
+          value: AuthenticatorAssertionResponseDto,
+          name: 'AuthenticatorAssertionResponseDto',
+        },
+      ],
+    },
+  })
   public readonly response:
     | IAuthenticatorAttestationResponse
     | IAuthenticatorAssertionResponse;
+
+  @Expose()
   public readonly type: 'public-key';
+
+  @Expose()
   public readonly clientExtensionResults: IAuthenticationExtensionsClientOutputs;
+
+  @Expose()
   public readonly authenticatorAttachment: AuthenticatorAttachment | null;
 
   constructor(credential: PublicKeyCredentialDtoOptions) {
+    super();
+
     const {
       id,
       rawId,
@@ -46,8 +92,13 @@ export class PublicKeyCredentialDto implements IPublicKeyCredential {
 
     assert(id, isString());
     assert(rawId, isInstanceOf(Buffer));
-    assert(response, isUnknown());
+    assert(response, isRecord(isUnknown()));
     assert(type, isLiteral('public-key'));
+    assert(clientExtensionResults, isRecord(isUnknown()));
+    assert(
+      authenticatorAttachment,
+      isNullable(isEnum(Object.values(AuthenticatorAttachment))),
+    );
 
     this.id = id;
     this.rawId = rawId;
