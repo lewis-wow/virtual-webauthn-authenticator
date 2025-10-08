@@ -13,10 +13,10 @@ import {
   assert,
   isArray,
   isEnum,
-  isLiteral,
-  isObject,
   isString,
   isUnknown,
+  hasMinLength,
+  applyCascade,
 } from 'typanion';
 import { CoseKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
@@ -29,6 +29,7 @@ export type VirtualAuthenticatorOptions = {
 export class VirtualAuthenticator {
   private readonly signer: ISigner;
   private readonly publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
+  private _counter = 0;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.signer = opts.signer;
@@ -99,6 +100,7 @@ export class VirtualAuthenticator {
    */
   private async _createAuthenticatorData(opts: {
     rpId: string;
+    counter: number;
     credentialID?: Buffer;
   }): Promise<Buffer> {
     // SHA-256 hash of the RP ID the credential is scoped to.
@@ -112,12 +114,14 @@ export class VirtualAuthenticator {
     // Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
     // Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
     // Length (in bytes): 1
-    const flags = Buffer.from([0b01000100]);
+    const flags = Buffer.from([
+      (opts.credentialID ? 0b01000000 : 0) | 0b00000101,
+    ]);
 
     // Signature counter, 32-bit unsigned big-endian integer.
     // Length (in bytes): 4
     const signCountBuffer = Buffer.alloc(4);
-    signCountBuffer.writeUInt32BE(0, 0);
+    signCountBuffer.writeUInt32BE(opts.counter, 0);
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authenticatorData = Buffer.concat(
@@ -151,20 +155,8 @@ export class VirtualAuthenticator {
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
-      isArray(
-        isObject({
-          id: isUnknown(),
-          transports: isArray(isUnknown()),
-          type: isLiteral('public-key'),
-        }),
-      ),
+      applyCascade(isArray(isUnknown()), hasMinLength(1)),
     );
-
-    if (!options.allowCredentials || options.allowCredentials.length === 0) {
-      throw new Error(
-        'The `allowCredentials` option must be a non-empty array.',
-      );
-    }
 
     const rpId = options.rpId;
 
@@ -184,7 +176,11 @@ export class VirtualAuthenticator {
     const clientDataJSON = Buffer.from(JSON.stringify(clientData));
     const clientDataHash = sha256(clientDataJSON);
 
-    const authData = await this._createAuthenticatorData({ rpId });
+    this._counter += 1;
+    const authData = await this._createAuthenticatorData({
+      rpId,
+      counter: this._counter,
+    });
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
 
@@ -234,10 +230,12 @@ export class VirtualAuthenticator {
 
     const credentialID = this._createCredentialId();
 
+    this._counter = 0;
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
       rpId: options.rp.id,
       credentialID,
+      counter: this._counter,
     });
 
     const attestationObject = new Map<string, unknown>([
