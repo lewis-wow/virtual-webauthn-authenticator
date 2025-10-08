@@ -9,7 +9,15 @@ import type {
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
 } from './types.js';
-import { assert, isEnum, isString } from 'typanion';
+import {
+  assert,
+  isArray,
+  isEnum,
+  isString,
+  isUnknown,
+  hasMinLength,
+  applyCascade,
+} from 'typanion';
 import { CoseKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
 
@@ -21,6 +29,7 @@ export type VirtualAuthenticatorOptions = {
 export class VirtualAuthenticator {
   private readonly signer: ISigner;
   private readonly publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
+  private _counter = 0;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.signer = opts.signer;
@@ -91,13 +100,13 @@ export class VirtualAuthenticator {
    */
   private async _createAuthenticatorData(opts: {
     rpId: string;
-    credentialID: Buffer;
+    counter: number;
+    credentialID?: Buffer;
   }): Promise<Buffer> {
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
     const rpIdHash = sha256(toBuffer(opts.rpId));
 
-    // --- FLAGS ---
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
     // Bit 2 (UV - User Verified): Result of the user verification test (1 = verified, 0 = not verified).
@@ -105,28 +114,91 @@ export class VirtualAuthenticator {
     // Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
     // Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
     // Length (in bytes): 1
-    const flags = Buffer.from([0b01000100]);
+    const flags = Buffer.from([
+      (opts.credentialID ? 0b01000000 : 0) | 0b00000101,
+    ]);
 
     // Signature counter, 32-bit unsigned big-endian integer.
     // Length (in bytes): 4
     const signCountBuffer = Buffer.alloc(4);
-    signCountBuffer.writeUInt32BE(0, 0);
+    signCountBuffer.writeUInt32BE(opts.counter, 0);
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
-    const authenticatorData = Buffer.concat([
-      rpIdHash,
-      flags,
-      signCountBuffer,
-      await this._createAttestedCredentialData(opts),
-      // --- OPTIONAL CREDENTIALS --- (
-      //    Extension-defined authenticator data.
-      //    This is a CBOR [RFC8949] map with extension identifiers as keys,
-      //    and authenticator extension outputs as values.
-      //    https://www.w3.org/TR/webauthn-2/#sctn-extensions
-      // )
-    ]);
+    const authenticatorData = Buffer.concat(
+      [
+        rpIdHash,
+        flags,
+        signCountBuffer,
+        opts.credentialID
+          ? await this._createAttestedCredentialData({
+              credentialID: opts.credentialID,
+            })
+          : undefined,
+        // --- OPTIONAL CREDENTIALS --- (
+        //    Extension-defined authenticator data.
+        //    This is a CBOR [RFC8949] map with extension identifiers as keys,
+        //    and authenticator extension outputs as values.
+        //    https://www.w3.org/TR/webauthn-2/#sctn-extensions
+        // )
+      ].filter((value) => value !== undefined),
+    );
 
     return authenticatorData;
+  }
+
+  /**
+   * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
+   */
+  public async getCredential(
+    options: PublicKeyCredentialRequestOptions,
+  ): Promise<IPublicKeyCredential> {
+    assert(options.rpId, isString());
+    assert(
+      options.allowCredentials,
+      applyCascade(isArray(isUnknown()), hasMinLength(1)),
+    );
+
+    const rpId = options.rpId;
+
+    // A real authenticator would search its storage for a private key corresponding to one
+    // of the provided credential IDs. Since this virtual authenticator only manages one
+    // key pair at a time, we assume the first allowed credential is the one it "owns".
+    const credentialDescriptor = options.allowCredentials[0]!;
+    const credentialID = toBuffer(credentialDescriptor.id);
+
+    const clientData: ICollectedClientData = {
+      type: 'webauthn.get',
+      challenge: toBase64Url(options.challenge),
+      origin: options.rpId,
+      crossOrigin: false,
+    };
+
+    const clientDataJSON = Buffer.from(JSON.stringify(clientData));
+    const clientDataHash = sha256(clientDataJSON);
+
+    this._counter += 1;
+    const authData = await this._createAuthenticatorData({
+      rpId,
+      counter: this._counter,
+    });
+
+    const dataToSign = Buffer.concat([authData, clientDataHash]);
+
+    const signature = await this.signer.sign(dataToSign);
+
+    return new PublicKeyCredentialDto({
+      id: toBase64Url(credentialID),
+      rawId: credentialID,
+      type: 'public-key',
+      response: {
+        clientDataJSON,
+        authenticatorData: authData,
+        signature,
+        userHandle: null,
+      },
+      authenticatorAttachment: null,
+      clientExtensionResults: {},
+    });
   }
 
   /**
@@ -158,10 +230,12 @@ export class VirtualAuthenticator {
 
     const credentialID = this._createCredentialId();
 
+    this._counter = 0;
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
       rpId: options.rp.id,
       credentialID,
+      counter: this._counter,
     });
 
     const attestationObject = new Map<string, unknown>([

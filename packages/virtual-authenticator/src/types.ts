@@ -208,5 +208,5 @@ export interface IPublicJsonWebKeyFactory {
  * server-side challenge.
  */
 export interface ISigner {
-  sign(data: Buffer): MaybePromise<Uint8Array>;
+  sign(data: Buffer): MaybePromise<Buffer>;
 }

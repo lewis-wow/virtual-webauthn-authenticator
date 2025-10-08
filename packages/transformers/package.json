@@ -1,32 +1,28 @@
 {
-  "name": "@repo/virtual-authenticator",
+  "name": "@repo/transformers",
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "dev": "tsx src/main.ts",
     "test": "vitest run",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@simplewebauthn/server": "^13.2.1",
-    "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
-    "tsx": "^4.20.6",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/transformers": "workspace:*",
-    "@repo/keys": "workspace:*",
-    "@repo/types": "workspace:*",
-    "@repo/utils": "workspace:*",
-    "cbor": "^10.0.11",
+    "@repo/enums": "workspace:*",
     "class-transformer": "^0.5.1",
-    "reflect-metadata": "^0.2.2",
-    "typanion": "^3.14.0"
+    "deep-pick-omit": "^1.2.1",
+    "reflect-metadata": "^0.2.2"
   }
 }
