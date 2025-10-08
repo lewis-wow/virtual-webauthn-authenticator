@@ -9,7 +9,15 @@ import type {
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
 } from './types.js';
-import { assert, isEnum, isString } from 'typanion';
+import {
+  assert,
+  isArray,
+  isEnum,
+  isLiteral,
+  isObject,
+  isString,
+  isUnknown,
+} from 'typanion';
 import { CoseKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
 
@@ -91,13 +99,12 @@ export class VirtualAuthenticator {
    */
   private async _createAuthenticatorData(opts: {
     rpId: string;
-    credentialID: Buffer;
+    credentialID?: Buffer;
   }): Promise<Buffer> {
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
     const rpIdHash = sha256(toBuffer(opts.rpId));
 
-    // --- FLAGS ---
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
     // Bit 2 (UV - User Verified): Result of the user verification test (1 = verified, 0 = not verified).
@@ -113,20 +120,89 @@ export class VirtualAuthenticator {
     signCountBuffer.writeUInt32BE(0, 0);
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
-    const authenticatorData = Buffer.concat([
-      rpIdHash,
-      flags,
-      signCountBuffer,
-      await this._createAttestedCredentialData(opts),
-      // --- OPTIONAL CREDENTIALS --- (
-      //    Extension-defined authenticator data.
-      //    This is a CBOR [RFC8949] map with extension identifiers as keys,
-      //    and authenticator extension outputs as values.
-      //    https://www.w3.org/TR/webauthn-2/#sctn-extensions
-      // )
-    ]);
+    const authenticatorData = Buffer.concat(
+      [
+        rpIdHash,
+        flags,
+        signCountBuffer,
+        opts.credentialID
+          ? await this._createAttestedCredentialData({
+              credentialID: opts.credentialID,
+            })
+          : undefined,
+        // --- OPTIONAL CREDENTIALS --- (
+        //    Extension-defined authenticator data.
+        //    This is a CBOR [RFC8949] map with extension identifiers as keys,
+        //    and authenticator extension outputs as values.
+        //    https://www.w3.org/TR/webauthn-2/#sctn-extensions
+        // )
+      ].filter((value) => value !== undefined),
+    );
 
     return authenticatorData;
+  }
+
+  /**
+   * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
+   */
+  public async getCredential(
+    options: PublicKeyCredentialRequestOptions,
+  ): Promise<IPublicKeyCredential> {
+    assert(options.rpId, isString());
+    assert(
+      options.allowCredentials,
+      isArray(
+        isObject({
+          id: isUnknown(),
+          transports: isArray(isUnknown()),
+          type: isLiteral('public-key'),
+        }),
+      ),
+    );
+
+    if (!options.allowCredentials || options.allowCredentials.length === 0) {
+      throw new Error(
+        'The `allowCredentials` option must be a non-empty array.',
+      );
+    }
+
+    const rpId = options.rpId;
+
+    // A real authenticator would search its storage for a private key corresponding to one
+    // of the provided credential IDs. Since this virtual authenticator only manages one
+    // key pair at a time, we assume the first allowed credential is the one it "owns".
+    const credentialDescriptor = options.allowCredentials[0]!;
+    const credentialID = toBuffer(credentialDescriptor.id);
+
+    const clientData: ICollectedClientData = {
+      type: 'webauthn.get',
+      challenge: toBase64Url(options.challenge),
+      origin: options.rpId,
+      crossOrigin: false,
+    };
+
+    const clientDataJSON = Buffer.from(JSON.stringify(clientData));
+    const clientDataHash = sha256(clientDataJSON);
+
+    const authData = await this._createAuthenticatorData({ rpId });
+
+    const dataToSign = Buffer.concat([authData, clientDataHash]);
+
+    const signature = await this.signer.sign(dataToSign);
+
+    return new PublicKeyCredentialDto({
+      id: toBase64Url(credentialID),
+      rawId: credentialID,
+      type: 'public-key',
+      response: {
+        clientDataJSON,
+        authenticatorData: authData,
+        signature,
+        userHandle: null,
+      },
+      authenticatorAttachment: null,
+      clientExtensionResults: {},
+    });
   }
 
   /**
