@@ -5,6 +5,8 @@ import {
   type PermissionResource,
   type Permission,
   Prisma,
+  RoleName,
+  type Role,
 } from '@repo/prisma';
 
 export type IamManagerOptions = {
@@ -65,16 +67,54 @@ export class IamManager {
     return !!userWithPermission;
   }
 
-  async createPermission(data: {
-    action: PermissionAction;
-    resource: PermissionResource | null;
-    isWildcard: boolean;
-  }): Promise<Permission> {
+  async assignRole(data: { role: RoleName }): Promise<Role> {
+    const role = await this.prisma.role.create({ data: { name: data.role } });
+
+    await this.prisma.userRole.create({
+      data: { roleId: role.id, userId: this.user.id },
+    });
+
+    return role;
+  }
+
+  async removeRole(data: { role: RoleName }): Promise<Role | null> {
+    const userRole = await this.prisma.userRole.findFirst({
+      where: { role: { name: data.role }, userId: this.user.id },
+    });
+
+    if (!userRole) {
+      return null;
+    }
+
+    const role = await this.prisma.role.delete({
+      where: { id: userRole.roleId },
+    });
+
+    return role;
+  }
+
+  async createPermission(
+    role: RoleName,
+    data: {
+      action: PermissionAction;
+      resource: PermissionResource | null;
+      isWildcard: boolean;
+    },
+  ): Promise<Permission> {
     const { action, resource, isWildcard } = data;
 
     try {
       return await this.prisma.permission.create({
         data: {
+          rolePermissions: {
+            create: {
+              role: {
+                create: {
+                  name: role,
+                },
+              },
+            },
+          },
           action,
           isWildcard: isWildcard,
           resource: resource ?? null,

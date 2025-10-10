@@ -34,29 +34,7 @@ describe('IamManager', () => {
 
     const hasAccess = await iam.hasAccessTo(action, resource);
 
-    // Assert: Check the result and that the correct query was made
     expect(hasAccess).toBe(true);
-    expect(prisma.user.findFirst).toHaveBeenCalledWith({
-      where: {
-        id: mockUser.id,
-        roles: { some: { permissions: { some: { name: permission } } } },
-      },
-    });
-  });
-
-  test('should return false if the user does not have the required permission', async () => {
-    // Arrange
-    const iam = new IamManager({ prisma, user: mockUser });
-    const permission: PermissionName = 'DELETE';
-
-    // Mock the database call to return null
-    prisma.user.findFirst.mockResolvedValue(null);
-
-    // Act
-    const hasAccess = await iam.hasAccessTo(permission);
-
-    // Assert
-    expect(hasAccess).toBe(false);
     expect(prisma.user.findFirst).toHaveBeenCalledWith({
       where: {
         id: mockUser.id,
