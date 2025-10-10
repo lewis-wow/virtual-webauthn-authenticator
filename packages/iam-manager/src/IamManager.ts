@@ -65,7 +65,7 @@ export class IamManager {
     return !!userWithPermission;
   }
 
-  async createPermissionOrThrow(data: {
+  async createPermission(data: {
     action: PermissionAction;
     resource: PermissionResource | null;
     isWildcard: boolean;
