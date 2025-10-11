@@ -5,13 +5,12 @@
   "type": "module",
   "exports": {
     "./toBuffer": "./src/toBuffer.ts",
-    "./toBase64Url": "./src/toBase64Url.ts",
     "./sha256": "./src/sha256.ts",
     "./objectKeys": "./src/objectKeys.ts",
     "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },

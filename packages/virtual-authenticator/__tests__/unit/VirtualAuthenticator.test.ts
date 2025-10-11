@@ -11,9 +11,11 @@ import {
 import { toBuffer } from '@repo/utils/toBuffer';
 import type {
   IPublicJsonWebKeyFactory,
-  IPublicKeyCredential,
+  IPublicKeyCredentialAuthenticatorAttestationResponse,
+  IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredentialRequestOptions,
   ISigner,
-} from '../../src/types.js';
+} from '@repo/types';
 import { CoseKey } from '@repo/keys';
 
 const keyPair = generateKeyPairSync('ec', {
@@ -37,8 +39,8 @@ const signer: ISigner = {
 };
 
 const createPublicKeyCredentialRequestOptions = (
-  credentialID: BufferSource,
-): PublicKeyCredentialRequestOptions => ({
+  credentialID: Buffer,
+): IPublicKeyCredentialRequestOptions => ({
   challenge: Buffer.from('b'.repeat(32)), // A different dummy challenge for get
   rpId: 'localhost',
   allowCredentials: [
@@ -52,11 +54,11 @@ const createPublicKeyCredentialRequestOptions = (
 
 describe('VirtualAuthenticator', () => {
   let authenticator: VirtualAuthenticator;
-  let publicKeyCredentials: IPublicKeyCredential;
+  let publicKeyCredentials: IPublicKeyCredentialAuthenticatorAttestationResponse;
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
 
-  const creationOptions: PublicKeyCredentialCreationOptions = {
+  const creationOptions: IPublicKeyCredentialCreationOptions = {
     rp: {
       name: 'My Simulated Service',
       id: 'localhost',
@@ -86,7 +88,19 @@ describe('VirtualAuthenticator', () => {
     );
 
     registrationVerification = await verifyRegistrationResponse({
-      response: publicKeyCredentials.toJSON() as RegistrationResponseJSON,
+      response: {
+        ...publicKeyCredentials,
+        rawId: publicKeyCredentials.rawId.toString('base64url'),
+        response: {
+          ...publicKeyCredentials.response,
+          attestationObject:
+            publicKeyCredentials.response.attestationObject.toString(
+              'base64url',
+            ),
+          clientDataJSON:
+            publicKeyCredentials.response.clientDataJSON.toString('base64url'),
+        },
+      } as RegistrationResponseJSON,
       expectedChallenge: expectedChallenge,
       expectedOrigin: creationOptions.rp.id!,
       expectedRPID: creationOptions.rp.id,
@@ -124,9 +138,26 @@ describe('VirtualAuthenticator', () => {
       await authenticator.getCredential(requestOptions);
 
     const authenticationVerification = await verifyAuthenticationResponse({
-      response:
-        assertionCredential.toJSON() as unknown as AuthenticationResponseJSON,
-      expectedChallenge,
+      response: {
+        ...assertionCredential,
+        rawId: assertionCredential.rawId.toString('base64url'),
+        response: {
+          ...assertionCredential.response,
+          authenticatorData:
+            assertionCredential.response.authenticatorData.toString(
+              'base64url',
+            ),
+          clientDataJSON:
+            assertionCredential.response.clientDataJSON.toString('base64url'),
+          signature:
+            assertionCredential.response.signature.toString('base64url'),
+          userHandle:
+            assertionCredential.response.userHandle?.toString('base64url'),
+        },
+      } as AuthenticationResponseJSON,
+      expectedChallenge: toBuffer(requestOptions.challenge).toString(
+        'base64url',
+      ),
       expectedOrigin: requestOptions.rpId!,
       expectedRPID: requestOptions.rpId!,
       credential: {
@@ -137,7 +168,11 @@ describe('VirtualAuthenticator', () => {
       requireUserVerification: true,
     });
 
+    // The most important check: confirm that the authentication was successful.
     expect(authenticationVerification.verified).toBe(true);
+
+    // A critical security check: ensure the signature counter has incremented.
+    // This prevents replay attacks. The server must store this new value.
     expect(authenticationVerification.authenticationInfo.newCounter).toBe(1);
   });
 });

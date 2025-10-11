@@ -7,7 +7,9 @@ export type SerializeArgs = {
 };
 
 export class Transformable {
-  serialize(args?: SerializeArgs): Record<string, unknown> {
+  serialize<T extends Record<string, unknown> = Record<string, unknown>>(
+    args?: SerializeArgs,
+  ): T {
     let plain = instanceToPlain(this);
 
     if (args?.omit) {
@@ -18,7 +20,7 @@ export class Transformable {
       plain = deepPickUnsafe(plain, args.pick);
     }
 
-    return plain;
+    return plain as T;
   }
 
   stringify(args?: SerializeArgs): string {

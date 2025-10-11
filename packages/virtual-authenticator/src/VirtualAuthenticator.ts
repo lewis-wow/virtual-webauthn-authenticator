@@ -1,14 +1,15 @@
 import { randomBytes } from 'crypto';
 import { encode } from 'cbor';
 import { toBuffer } from '@repo/utils/toBuffer';
-import { toBase64Url } from '@repo/utils/toBase64Url';
-import { PublicKeyCredentialDto } from './dto/PublicKeyCredentialDto.js';
 import type {
-  IPublicKeyCredential,
   ISigner,
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
-} from './types.js';
+  IPublicKeyCredentialRequestOptions,
+  IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredentialAuthenticatorAttestationResponse,
+  IPublicKeyCredentialAuthenticatorAssertionResponse,
+} from '@repo/types';
 import {
   assert,
   isArray,
@@ -150,8 +151,8 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
    */
   public async getCredential(
-    options: PublicKeyCredentialRequestOptions,
-  ): Promise<IPublicKeyCredential> {
+    options: IPublicKeyCredentialRequestOptions,
+  ): Promise<IPublicKeyCredentialAuthenticatorAssertionResponse> {
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
@@ -168,7 +169,7 @@ export class VirtualAuthenticator {
 
     const clientData: ICollectedClientData = {
       type: 'webauthn.get',
-      challenge: toBase64Url(options.challenge),
+      challenge: toBuffer(options.challenge).toString('base64url'),
       origin: options.rpId,
       crossOrigin: false,
     };
@@ -186,8 +187,8 @@ export class VirtualAuthenticator {
 
     const signature = await this.signer.sign(dataToSign);
 
-    return new PublicKeyCredentialDto({
-      id: toBase64Url(credentialID),
+    return {
+      id: toBuffer(credentialID).toString('base64url'),
       rawId: credentialID,
       type: 'public-key',
       response: {
@@ -198,7 +199,7 @@ export class VirtualAuthenticator {
       },
       authenticatorAttachment: null,
       clientExtensionResults: {},
-    });
+    };
   }
 
   /**
@@ -206,8 +207,8 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation
    */
   public async createCredential(
-    options: PublicKeyCredentialCreationOptions,
-  ): Promise<IPublicKeyCredential> {
+    options: IPublicKeyCredentialCreationOptions,
+  ): Promise<IPublicKeyCredentialAuthenticatorAttestationResponse> {
     assert(options.rp.id, isString());
     assert(options.attestation, isEnum(['none']));
 
@@ -246,12 +247,12 @@ export class VirtualAuthenticator {
 
     const clientData: ICollectedClientData = {
       type: 'webauthn.create',
-      challenge: toBase64Url(options.challenge),
+      challenge: toBuffer(options.challenge).toString('base64url'),
       origin: options.rp.id,
       crossOrigin: false,
     };
 
-    return new PublicKeyCredentialDto({
+    return {
       id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: 'public-key',
@@ -261,6 +262,6 @@ export class VirtualAuthenticator {
       },
       authenticatorAttachment: null,
       clientExtensionResults: {},
-    });
+    };
   }
 }
