@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-attachment
@@ -8,4 +8,6 @@ export const AuthenticatorAttachment = {
   CROSS_PLATFORM: 'cross-platform',
 } as const;
 
-export type AuthenticatorAttachment = ValueOf<typeof AuthenticatorAttachment>;
+export type AuthenticatorAttachment = ValueOfEnum<
+  typeof AuthenticatorAttachment
+>;

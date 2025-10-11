@@ -1,14 +1,14 @@
 import { randomBytes } from 'crypto';
 import { encode } from 'cbor';
 import { toBuffer } from '@repo/utils/toBuffer';
-import { toBase64Url } from '@repo/utils/toBase64Url';
 import type {
   ISigner,
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
   IPublicKeyCredentialRequestOptions,
   IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredential,
+  IPublicKeyCredentialAuthenticatorAttestationResponse,
+  IPublicKeyCredentialAuthenticatorAssertionResponse,
 } from '@repo/types';
 import {
   assert,
@@ -152,7 +152,7 @@ export class VirtualAuthenticator {
    */
   public async getCredential(
     options: IPublicKeyCredentialRequestOptions,
-  ): Promise<IPublicKeyCredential> {
+  ): Promise<IPublicKeyCredentialAuthenticatorAssertionResponse> {
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
@@ -169,7 +169,7 @@ export class VirtualAuthenticator {
 
     const clientData: ICollectedClientData = {
       type: 'webauthn.get',
-      challenge: toBase64Url(options.challenge),
+      challenge: toBuffer(options.challenge).toString('base64url'),
       origin: options.rpId,
       crossOrigin: false,
     };
@@ -188,7 +188,7 @@ export class VirtualAuthenticator {
     const signature = await this.signer.sign(dataToSign);
 
     return {
-      id: toBase64Url(credentialID),
+      id: toBuffer(credentialID).toString('base64url'),
       rawId: credentialID,
       type: 'public-key',
       response: {
@@ -208,7 +208,7 @@ export class VirtualAuthenticator {
    */
   public async createCredential(
     options: IPublicKeyCredentialCreationOptions,
-  ): Promise<IPublicKeyCredential> {
+  ): Promise<IPublicKeyCredentialAuthenticatorAttestationResponse> {
     assert(options.rp.id, isString());
     assert(options.attestation, isEnum(['none']));
 
@@ -247,7 +247,7 @@ export class VirtualAuthenticator {
 
     const clientData: ICollectedClientData = {
       type: 'webauthn.create',
-      challenge: toBase64Url(options.challenge),
+      challenge: toBuffer(options.challenge).toString('base64url'),
       origin: options.rp.id,
       crossOrigin: false,
     };

@@ -1,5 +1,5 @@
+import type { BufferLike } from '@repo/types';
 import { Buffer } from 'buffer';
-import type { BinaryLike } from 'node:crypto';
 
 /**
  * Safely converts any BufferSource into a Node.js Buffer,
@@ -9,9 +9,9 @@ import type { BinaryLike } from 'node:crypto';
  * @returns A Node.js Buffer containing the data.
  */
 export const toBuffer = (
-  data: BufferSource | BinaryLike,
+  data: BufferLike,
   encoding?: BufferEncoding,
-): Buffer<ArrayBuffer> => {
+): Buffer => {
   if (data instanceof Buffer) {
     return data;
   }

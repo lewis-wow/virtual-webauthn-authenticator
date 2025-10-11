@@ -4,15 +4,14 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/enums/index.ts"
   },
   "scripts": {
-    "build": "../../scripts/generate_barrels.ts src",
+    "build": "../../scripts/generate_barrels.ts src/enums",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/types": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",

@@ -1,6 +1,8 @@
-import type { AuthenticatorTransportFuture } from './AuthenticatorTransportFuture.js';
+import type {
+  AuthenticatorTransport,
+  COSEAlgorithmIdentifier,
+} from '@repo/enums';
 import type { Base64URLString } from './Base64URLString.js';
-import type { COSEAlgorithmIdentifier } from './COSEAlgorithmIdentifier.js';
 
 /**
  * A specific JSON representation of an authenticator's response during a
@@ -14,7 +16,7 @@ export interface IAuthenticatorAttestationResponseJSON {
   /** An optional, decoded Base64URL-encoded string of the authenticator data. */
   authenticatorData?: Base64URLString;
   /** The transports the authenticator is believed to support. */
-  transports?: AuthenticatorTransportFuture[];
+  transports?: AuthenticatorTransport[];
   /** The algorithm used for the public key. */
   publicKeyAlgorithm?: COSEAlgorithmIdentifier;
   /** A Base64URL-encoded string of the public key. */

@@ -1,5 +1,7 @@
-import type { PublicKeyCredentialType } from './PublicKeyCredentialType.js';
-import type { COSEAlgorithmIdentifier } from './COSEAlgorithmIdentifier.js';
+import type {
+  PublicKeyCredentialType,
+  COSEAlgorithmIdentifier,
+} from '@repo/enums';
 
 export interface IPublicKeyCredentialParameters {
   type: PublicKeyCredentialType;

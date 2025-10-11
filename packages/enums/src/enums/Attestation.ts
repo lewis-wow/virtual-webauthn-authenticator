@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-attestation-conveyance-preference
@@ -10,4 +10,4 @@ export const Attestation = {
   INDIRECT: 'indirect',
 } as const;
 
-export type Attestation = ValueOf<typeof Attestation>;
+export type Attestation = ValueOfEnum<typeof Attestation>;

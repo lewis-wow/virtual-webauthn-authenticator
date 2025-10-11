@@ -1,6 +1,8 @@
-import type { AuthenticatorAttachment } from './AuthenticatorAttachment.js';
-import type { ResidentKeyRequirement } from './ResidentKeyRequirement.js';
-import type { UserVerificationRequirement } from './UserVerificationRequirement.js';
+import type {
+  AuthenticatorAttachment,
+  ResidentKeyRequirement,
+  UserVerificationRequirement,
+} from '@repo/enums';
 
 export interface IAuthenticatorSelectionCriteria {
   authenticatorAttachment?: AuthenticatorAttachment;

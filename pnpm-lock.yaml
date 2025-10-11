@@ -169,9 +169,6 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -350,6 +347,9 @@ importers:
 
   packages/types:
     devDependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -432,6 +432,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      npm-run-all:
+        specifier: ^4.1.5
+        version: 4.1.5
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1

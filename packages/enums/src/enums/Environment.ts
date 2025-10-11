@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 export const Environment = {
   PRODUCTION: 'production',
@@ -6,4 +6,4 @@ export const Environment = {
   TEST: 'test',
 } as const;
 
-export type Environment = ValueOf<typeof Environment>;
+export type Environment = ValueOfEnum<typeof Environment>;

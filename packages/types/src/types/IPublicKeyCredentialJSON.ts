@@ -1,8 +1,10 @@
-import type { AuthenticatorAttachment } from './AuthenticatorAttachment.js';
+import type {
+  AuthenticatorAttachment,
+  PublicKeyCredentialType,
+} from '@repo/enums';
 import type { Base64URLString } from './Base64URLString.js';
 import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
 import type { IPublicKeyCredentialJSONResponse } from './IPublicKeyCredentialJSONResponse.js';
-import type { PublicKeyCredentialType } from './PublicKeyCredentialType.js';
 
 /**
  * A generic JSON-serializable representation of a `PublicKeyCredential`.

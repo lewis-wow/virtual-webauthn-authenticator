@@ -1,9 +1,11 @@
-import type { AuthenticatorAttachment } from './AuthenticatorAttachment.js';
+import type {
+  AuthenticatorAttachment,
+  PublicKeyCredentialType,
+} from '@repo/enums';
 import type { Base64URLString } from './Base64URLString.js';
 import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
 import type { IAuthenticatorAssertionResponse } from './IAuthenticatorAssertionResponse.js';
 import type { IAuthenticatorAttestationResponse } from './IAuthenticatorAttestationResponse.js';
-import type { PublicKeyCredentialType } from './PublicKeyCredentialType.js';
 
 /**
  * Represents a complete `PublicKeyCredential` object on the server. This is the

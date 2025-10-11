@@ -13,6 +13,7 @@
     "generate-barrels:types": "../../scripts/generate_barrels.ts src/types"
   },
   "devDependencies": {
+    "@repo/enums": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",

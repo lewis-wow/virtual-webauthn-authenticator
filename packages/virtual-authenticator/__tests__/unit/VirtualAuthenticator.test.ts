@@ -12,6 +12,7 @@ import { toBuffer } from '@repo/utils/toBuffer';
 import type {
   IPublicJsonWebKeyFactory,
   IPublicKeyCredential,
+  IPublicKeyCredentialAuthenticatorAttestationResponse,
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialRequestOptions,
   ISigner,
@@ -54,7 +55,7 @@ const createPublicKeyCredentialRequestOptions = (
 
 describe('VirtualAuthenticator', () => {
   let authenticator: VirtualAuthenticator;
-  let publicKeyCredentials: IPublicKeyCredential;
+  let publicKeyCredentials: IPublicKeyCredentialAuthenticatorAttestationResponse;
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
 
@@ -88,7 +89,19 @@ describe('VirtualAuthenticator', () => {
     );
 
     registrationVerification = await verifyRegistrationResponse({
-      response: publicKeyCredentials.toJSON() as RegistrationResponseJSON,
+      response: {
+        ...publicKeyCredentials,
+        rawId: publicKeyCredentials.rawId.toString('base64url'),
+        response: {
+          ...publicKeyCredentials.response,
+          attestationObject:
+            publicKeyCredentials.response.attestationObject.toString(
+              'base64url',
+            ),
+          clientDataJSON:
+            publicKeyCredentials.response.clientDataJSON.toString('base64url'),
+        },
+      } as RegistrationResponseJSON,
       expectedChallenge: expectedChallenge,
       expectedOrigin: creationOptions.rp.id!,
       expectedRPID: creationOptions.rp.id,
@@ -126,8 +139,23 @@ describe('VirtualAuthenticator', () => {
       await authenticator.getCredential(requestOptions);
 
     const authenticationVerification = await verifyAuthenticationResponse({
-      response:
-        assertionCredential.toJSON() as unknown as AuthenticationResponseJSON,
+      response: {
+        ...assertionCredential,
+        rawId: assertionCredential.rawId.toString('base64url'),
+        response: {
+          ...assertionCredential.response,
+          authenticatorData:
+            assertionCredential.response.authenticatorData.toString(
+              'base64url',
+            ),
+          clientDataJSON:
+            assertionCredential.response.clientDataJSON.toString('base64url'),
+          signature:
+            assertionCredential.response.signature.toString('base64url'),
+          userHandle:
+            assertionCredential.response.userHandle?.toString('base64url'),
+        },
+      } as AuthenticationResponseJSON,
       expectedChallenge: toBuffer(requestOptions.challenge).toString(
         'base64url',
       ),

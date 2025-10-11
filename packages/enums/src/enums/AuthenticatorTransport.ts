@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-transport
@@ -11,4 +11,4 @@ export const AuthenticatorTransport = {
   INTERNAL: 'internal',
 } as const;
 
-export type AuthenticatorTransport = ValueOf<typeof AuthenticatorTransport>;
+export type AuthenticatorTransport = ValueOfEnum<typeof AuthenticatorTransport>;

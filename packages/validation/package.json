@@ -7,15 +7,18 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "run-p generate-barrels",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "generate-barrels": "../../scripts/generate_barrels.ts src/enums"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
+    "npm-run-all": "^4.1.5",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"

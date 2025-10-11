@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-userVerificationRequirement
@@ -9,6 +9,6 @@ export const UserVerificationRequirement = {
   DISCOURAGED: 'discouraged',
 } as const;
 
-export type UserVerificationRequirement = ValueOf<
+export type UserVerificationRequirement = ValueOfEnum<
   typeof UserVerificationRequirement
 >;

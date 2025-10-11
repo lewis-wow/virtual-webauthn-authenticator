@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-residentKeyRequirement
@@ -9,4 +9,4 @@ export const ResidentKeyRequirement = {
   DISCOURAGED: 'discouraged',
 } as const;
 
-export type ResidentKeyRequirement = ValueOf<typeof ResidentKeyRequirement>;
+export type ResidentKeyRequirement = ValueOfEnum<typeof ResidentKeyRequirement>;

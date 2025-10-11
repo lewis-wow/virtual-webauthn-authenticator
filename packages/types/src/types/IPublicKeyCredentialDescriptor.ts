@@ -1,5 +1,7 @@
-import type { AuthenticatorTransportFuture } from './AuthenticatorTransportFuture.js';
-import type { PublicKeyCredentialType } from './PublicKeyCredentialType.js';
+import type {
+  AuthenticatorTransport,
+  PublicKeyCredentialType,
+} from '@repo/enums';
 
 /**
  * Describes a `PublicKeyCredential` that can be used for authentication.
@@ -10,5 +12,5 @@ export interface IPublicKeyCredentialDescriptor {
   /** The ID of the credential. */
   id: Buffer;
   /** The transports that can be used to authenticate with the credential. */
-  transports?: AuthenticatorTransportFuture[];
+  transports?: AuthenticatorTransport[];
 }
