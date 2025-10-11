@@ -23,7 +23,6 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/transformers": "workspace:*",
     "@repo/validation": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",

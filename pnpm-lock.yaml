@@ -311,40 +311,6 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
-  packages/transformers:
-    dependencies:
-      '@repo/enums':
-        specifier: workspace:*
-        version: link:../enums
-      class-transformer:
-        specifier: ^0.5.1
-        version: 0.5.1
-      deep-pick-omit:
-        specifier: ^1.2.1
-        version: 1.2.1
-      reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^22.5.2
-        version: 22.15.3
-      typescript:
-        specifier: ^5.5.4
-        version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(terser@5.44.0)
-
   packages/types:
     devDependencies:
       '@repo/enums':
@@ -453,9 +419,6 @@ importers:
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
-      '@repo/transformers':
-        specifier: workspace:*
-        version: link:../transformers
       '@repo/types':
         specifier: workspace:*
         version: link:../types
@@ -1808,9 +1771,6 @@ packages:
 
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
-
-  deep-pick-omit@1.2.1:
-    resolution: {integrity: sha512-2J6Kc/m3irCeqVG42T+SaUMesaK7oGWaedGnQQK/+O0gYc+2SP5bKh/KKTE7d7SJ+GCA9UUE1GRzh6oDe0EnGw==}
 
   deepmerge-ts@7.1.5:
     resolution: {integrity: sha512-HOJkrhaYsweh+W+e74Yn7YStZOilkoPb6fycpwNLKzSPtruFs48nYis0zy5yJz1+ktUhHxoRDJ27RQAWLIJVJw==}
@@ -4656,8 +4616,6 @@ snapshots:
   deep-eql@5.0.2: {}
 
   deep-is@0.1.4: {}
-
-  deep-pick-omit@1.2.1: {}
 
   deepmerge-ts@7.1.5: {}
 
