@@ -6,7 +6,7 @@ import type {
   IPublicKeyCredential,
   IPublicKeyCredentialJSON,
   IPublicKeyCredentialJSONResponse,
-} from '../types.js';
+} from '@repo/types';
 import {
   assert,
   isString,
@@ -19,7 +19,7 @@ import {
 } from 'typanion';
 import { Expose, Transform, Type } from 'class-transformer';
 import { bufferTransformer, Transformable } from '@repo/transformers';
-import { AuthenticatorAttachment } from '../enums/AuthenticatorAttachment.js';
+import { AuthenticatorAttachment } from '@repo/enums';
 import { AuthenticatorAttestationResponseDto } from './AuthenticatorAttestationResponseDto.js';
 import { AuthenticatorAssertionResponseDto } from './AuthenticatorAssertionResponseDto.js';
 

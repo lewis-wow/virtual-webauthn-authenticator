@@ -441,6 +441,9 @@ importers:
 
   packages/virtual-authenticator:
     dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys

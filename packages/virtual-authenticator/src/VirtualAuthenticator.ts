@@ -8,7 +8,7 @@ import type {
   ISigner,
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
-} from './types.js';
+} from '@repo/types';
 import {
   assert,
   isArray,

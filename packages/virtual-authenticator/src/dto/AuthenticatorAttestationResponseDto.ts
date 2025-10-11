@@ -1,5 +1,5 @@
 import { bufferTransformer, Transformable } from '@repo/transformers';
-import type { IAuthenticatorAttestationResponse } from '../types.js';
+import type { IAuthenticatorAttestationResponse } from '@repo/types';
 import { Expose, Transform } from 'class-transformer';
 
 export class AuthenticatorAttestationResponseDto
