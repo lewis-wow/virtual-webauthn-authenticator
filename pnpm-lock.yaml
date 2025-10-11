@@ -44,6 +44,12 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.2.2)(react@19.1.0)
+      '@repo/better-auth':
+        specifier: workspace:*
+        version: link:../../packages/better-auth
+      better-auth:
+        specifier: ^1.3.27
+        version: 1.3.27(next@15.5.4(@babel/core@7.28.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -241,7 +247,7 @@ importers:
         version: link:../prisma
       better-auth:
         specifier: ^1.3.27
-        version: 1.3.27
+        version: 1.3.27(next@15.5.4(@babel/core@7.28.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -5721,7 +5727,7 @@ snapshots:
       node-addon-api: 8.5.0
       node-gyp-build: 4.8.4
 
-  better-auth@1.3.27:
+  better-auth@1.3.27(next@15.5.4(@babel/core@7.28.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@better-auth/core': 1.3.27
       '@better-auth/utils': 0.3.0
@@ -5736,6 +5742,10 @@ snapshots:
       kysely: 0.28.8
       nanostores: 1.0.1
       zod: 4.1.12
+    optionalDependencies:
+      next: 15.5.4(@babel/core@7.28.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
 
   better-call@1.0.19:
     dependencies:
