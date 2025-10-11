@@ -1,5 +1,5 @@
 import { test, describe, expect, beforeAll } from 'vitest';
-import { VirtualAuthenticator } from './VirtualAuthenticator.js';
+import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import {
   verifyAuthenticationResponse,
@@ -8,7 +8,7 @@ import {
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
 import { toBuffer } from '@repo/utils/toBuffer';
-import type { IPublicJsonWebKeyFactory, ISigner } from './types.js';
+import type { IPublicJsonWebKeyFactory, ISigner } from '../../src/types.js';
 import { CoseKey } from '@repo/keys';
 
 const keyPair = generateKeyPairSync('ec', {

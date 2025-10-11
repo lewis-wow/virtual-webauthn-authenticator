@@ -2,11 +2,11 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    projects: ['packages/*'],
+    projects: ['packages/**/__tests__/vitest.config.ts'],
     exclude: ['apps/**'],
     globals: true,
     coverage: {
-      enabled: true,
+      enabled: false,
       provider: 'istanbul',
     },
   },

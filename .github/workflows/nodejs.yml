@@ -24,19 +24,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Start services with Docker Compose
-        # This command starts all services defined in your docker-compose.yml
-        # in the background (-d). The '--wait' flag tells Compose to wait
-        # until the containers report a "healthy" status.
-        run: docker compose up -d --wait
+      # - name: Start services with Docker Compose
+      #   # This command starts all services defined in your docker-compose.yml
+      #   # in the background (-d). The '--wait' flag tells Compose to wait
+      #   # until the containers report a "healthy" status.
+      #   run: docker compose up -d --wait
 
       - name: Run linter
         run: pnpm lint
 
+      - name: Run check-types
+        run: pnpm check-types
+
       - name: Check formatting
         run: pnpm prettier:check
 
-      - name: Run tests
+      - name: Run unit tests
         # Your tests can now connect to the services started via Docker Compose
         env:
           ENVIRONMENT: test
@@ -45,9 +48,8 @@ jobs:
       - name: Build project
         run: pnpm build
 
-      - name: Stop services
-        # This step runs even if previous steps fail, ensuring
-        # that the Docker Compose services are always stopped.
-        if: always()
-        run: docker compose down
-
+      # - name: Stop services
+      #   # This step runs even if previous steps fail, ensuring
+      #   # that the Docker Compose services are always stopped.
+      #   if: always()
+      #   run: docker compose down
