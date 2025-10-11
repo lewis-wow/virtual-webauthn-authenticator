@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import type { FieldValues } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import type { ChangeEvent } from 'react';
 import { FormLabel } from './FormLabel';
 

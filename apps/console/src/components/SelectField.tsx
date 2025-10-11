@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { FieldValues } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import {
   FormField,
   FormItem,
@@ -14,7 +14,7 @@ import {
   FormDescription,
   FormMessage,
 } from '@/components/ui/form';
-import { withDefaultFieldTransform } from '../lib/withDefaultTransform';
+import { withDefaultFieldTransform } from '@/lib/withDefaultTransform';
 import { FormLabel } from './FormLabel';
 
 export type SelectFieldItem<T> = {
@@ -51,7 +51,9 @@ export const SelectField = <TFieldValues extends FieldValues, T>({
             <FormLabel label={label} hint={hint} required={required} />
           )}
           <Select
-            onValueChange={(value) => field.onChange(transform.output(value))}
+            onValueChange={(value: string) =>
+              field.onChange(transform.output(value))
+            }
             defaultValue={transform.input(field.value)}
             required={required}
           >

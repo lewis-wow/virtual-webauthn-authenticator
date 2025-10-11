@@ -7,7 +7,7 @@ import { type ComponentProps } from 'react';
 import { match } from 'ts-pattern';
 import { Loading } from './Loading';
 import { cn } from '../lib/utils';
-import { Link } from '@/app/i18n/navigation';
+import Link from 'next/link';
 
 export type ButtonProps = {
   isLoading?: boolean;

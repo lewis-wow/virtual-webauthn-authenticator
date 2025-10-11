@@ -6,7 +6,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import type { FieldValues } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import { Checkbox } from './ui/checkbox';
 import { FormLabel } from './FormLabel';
 

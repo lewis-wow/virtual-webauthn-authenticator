@@ -10,7 +10,7 @@ import {
   FormLabel as FormLabelUI,
 } from '@/components/ui/form';
 import type { FieldValues } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import { FormLabel } from './FormLabel';
 
 export type RadioGroupFieldItem = {

@@ -1,5 +1,5 @@
 import type { FieldValues, Path, PathValue } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import {
   FormField,
   FormItem,

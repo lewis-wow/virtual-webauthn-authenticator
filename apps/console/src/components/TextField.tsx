@@ -8,7 +8,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
 import type { FieldValues } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import { FormLabel } from './FormLabel';
 import { cn } from '../lib/utils';
 

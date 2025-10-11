@@ -2,12 +2,9 @@
 
 import { Button } from '@/components/Button';
 import { FaGoogle } from 'react-icons/fa';
-import { signIn } from 'next-auth/react';
 
 export const GoogleSigninButton = () => {
-  const handleGoogleSignIn = async () => {
-    await signIn('google', { callbackUrl: 'http://localhost:3000/' });
-  };
+  const handleGoogleSignIn = async () => {};
 
   return (
     <Button

@@ -2,7 +2,7 @@
 
 import { FormDescription, FormItem } from '@/components/ui/form';
 import type { FieldValues, Path } from 'react-hook-form';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import type { ComponentType, ReactNode } from 'react';
 import { FormLabel } from './FormLabel';
 import { cn } from '../lib/utils';

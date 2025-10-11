@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/form';
 import { Button } from '@/components/Button';
 import { Input } from '@/components/ui/input';
-import type { CommonFieldProps } from '@/app/types';
+import type { CommonFieldProps } from '@/types';
 import { X } from 'lucide-react';
 import { useState, useEffect, type ChangeEvent } from 'react';
 import type { FieldValues } from 'react-hook-form';
