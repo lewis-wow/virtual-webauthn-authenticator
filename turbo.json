@@ -11,9 +11,6 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "test": {
-      "dependsOn": ["^test"]
-    },
     "check-types": {
       "dependsOn": ["^check-types"]
     },
