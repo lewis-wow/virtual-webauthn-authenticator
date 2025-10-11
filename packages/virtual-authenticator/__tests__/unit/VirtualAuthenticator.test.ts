@@ -11,7 +11,6 @@ import {
 import { toBuffer } from '@repo/utils/toBuffer';
 import type {
   IPublicJsonWebKeyFactory,
-  IPublicKeyCredential,
   IPublicKeyCredentialAuthenticatorAttestationResponse,
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialRequestOptions,
