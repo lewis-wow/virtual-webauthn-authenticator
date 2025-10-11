@@ -1,20 +1,16 @@
-"use client";
+'use client';
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/app/_components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/app/_components/ui/dropdown-menu";
-import { Building, LogOut } from "lucide-react";
-import { getInitials } from "../lib/getInitials";
-import { signOut } from "next-auth/react";
-import { Link } from "@/app/i18n/navigation";
+} from '@/components/ui/dropdown-menu';
+import { Building, LogOut } from 'lucide-react';
+import { getInitials } from '../lib/getInitials';
+import { signOut } from 'next-auth/react';
+import { Link } from '@/app/i18n/navigation';
 
 export type UserAvatarDropdownMenuProps = {
   image: string;

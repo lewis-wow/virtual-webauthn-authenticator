@@ -4,11 +4,11 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/app/_components/ui/form";
-import type { FieldValues } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
-import { Checkbox } from "./ui/checkbox";
-import { FormLabel } from "./FormLabel";
+} from '@/components/ui/form';
+import type { FieldValues } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
+import { Checkbox } from './ui/checkbox';
+import { FormLabel } from './FormLabel';
 
 export type CheckboxFieldProps<TFieldValues extends FieldValues> =
   {} & CommonFieldProps<TFieldValues>;

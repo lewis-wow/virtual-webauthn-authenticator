@@ -22,6 +22,8 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
+    "@repo/prisma": "workspace:*",
+    "better-auth": "^1.3.27",
     "typanion": "^3.14.0"
   }
 }

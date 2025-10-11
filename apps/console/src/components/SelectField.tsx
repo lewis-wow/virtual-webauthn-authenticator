@@ -4,18 +4,18 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/app/_components/ui/select";
-import type { FieldValues } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
+} from '@/components/ui/select';
+import type { FieldValues } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
 import {
   FormField,
   FormItem,
   FormControl,
   FormDescription,
   FormMessage,
-} from "@/app/_components/ui/form";
-import { withDefaultFieldTransform } from "../lib/withDefaultTransform";
-import { FormLabel } from "./FormLabel";
+} from '@/components/ui/form';
+import { withDefaultFieldTransform } from '../lib/withDefaultTransform';
+import { FormLabel } from './FormLabel';
 
 export type SelectFieldItem<T> = {
   value: T;

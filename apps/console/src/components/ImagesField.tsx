@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   FormControl,
@@ -6,15 +6,15 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/app/_components/ui/form";
-import { Button } from "@/app/_components/Button";
-import { Input } from "@/app/_components/ui/input";
-import type { CommonFieldProps } from "@/app/types";
-import { X } from "lucide-react";
-import { useState, useEffect, type ChangeEvent } from "react";
-import type { FieldValues } from "react-hook-form";
-import Image from "next/image"; // 1. Import the Image component
-import { FormLabel } from "./FormLabel";
+} from '@/components/ui/form';
+import { Button } from '@/components/Button';
+import { Input } from '@/components/ui/input';
+import type { CommonFieldProps } from '@/app/types';
+import { X } from 'lucide-react';
+import { useState, useEffect, type ChangeEvent } from 'react';
+import type { FieldValues } from 'react-hook-form';
+import Image from 'next/image'; // 1. Import the Image component
+import { FormLabel } from './FormLabel';
 
 export type ImagesFieldProps<TFieldValues extends FieldValues> = {
   maxImages?: number;
@@ -31,7 +31,7 @@ export const ImagesField = <TFieldValues extends FieldValues>({
 
   const fileDependencies = watchedFiles
     .map((f) => `${f.name}-${f.size}-${f.lastModified}`)
-    .join(",");
+    .join(',');
 
   useEffect(() => {
     if (!watchedFiles || watchedFiles.length === 0) {
@@ -65,7 +65,7 @@ export const ImagesField = <TFieldValues extends FieldValues>({
             const updatedFiles = [...currentFiles, ...filesToAdd];
             field.onChange(updatedFiles);
           }
-          e.target.value = "";
+          e.target.value = '';
         };
 
         const removePhoto = (indexToRemove: number) => {
@@ -123,8 +123,8 @@ export const ImagesField = <TFieldValues extends FieldValues>({
               <FormDescription className="pt-2">{description}</FormDescription>
             )}
             <p className="text-muted-foreground text-sm">
-              Ještě je možné nahrát{" "}
-              {Math.max(0, maxImages - currentFiles.length)} obrázků. (Max{" "}
+              Ještě je možné nahrát{' '}
+              {Math.max(0, maxImages - currentFiles.length)} obrázků. (Max{' '}
               {maxImages})
             </p>
             <FormMessage />

@@ -1,12 +1,12 @@
-import type { FieldValues, Path, PathValue } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
+import type { FieldValues, Path, PathValue } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
 import {
   FormField,
   FormItem,
   FormControl,
   FormDescription,
   FormMessage,
-} from "@/app/_components/ui/form";
+} from '@/components/ui/form';
 import {
   Command,
   CommandEmpty,
@@ -14,12 +14,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "./ui/command";
-import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
-import { ChevronsUpDown, Check } from "lucide-react";
-import { Button } from "./ui/button";
-import { cn } from "../lib/utils";
-import { FormLabel } from "./FormLabel";
+} from './ui/command';
+import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
+import { ChevronsUpDown, Check } from 'lucide-react';
+import { Button } from './ui/button';
+import { cn } from '../lib/utils';
+import { FormLabel } from './FormLabel';
 
 export type ComboboxFieldItem = {
   value: string;
@@ -35,12 +35,12 @@ const customFilter = (value: string, search: string) => {
   // Normalize both strings to remove diacritics and convert to lower case
   const normalizedValue = value
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
   const normalizedSearch = search
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 
   // Return 1 for a match, 0 for no match
   return normalizedValue.includes(normalizedSearch) ? 1 : 0;
@@ -70,8 +70,8 @@ export const ComboboxField = <TFieldValues extends FieldValues>({
                   variant="outline"
                   role="combobox"
                   className={cn(
-                    "w-full justify-between",
-                    !field.value && "text-muted-foreground",
+                    'w-full justify-between',
+                    !field.value && 'text-muted-foreground',
                   )}
                 >
                   {field.value
@@ -105,10 +105,10 @@ export const ComboboxField = <TFieldValues extends FieldValues>({
                         {item.label}
                         <Check
                           className={cn(
-                            "ml-auto",
+                            'ml-auto',
                             item.value === field.value
-                              ? "opacity-100"
-                              : "opacity-0",
+                              ? 'opacity-100'
+                              : 'opacity-0',
                           )}
                         />
                       </CommandItem>

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Button } from "@/app/_components/Button";
-import { FaGoogle } from "react-icons/fa";
-import { signIn } from "next-auth/react";
+import { Button } from '@/components/Button';
+import { FaGoogle } from 'react-icons/fa';
+import { signIn } from 'next-auth/react';
 
 export const GoogleSigninButton = () => {
   const handleGoogleSignIn = async () => {
-    await signIn("google", { callbackUrl: "http://localhost:3000/" });
+    await signIn('google', { callbackUrl: 'http://localhost:3000/' });
   };
 
   return (

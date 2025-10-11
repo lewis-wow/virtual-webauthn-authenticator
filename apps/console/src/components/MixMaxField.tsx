@@ -1,11 +1,11 @@
-// File: @/app/_components/form/MinMaxField.tsx
+// File: @/components/form/MinMaxField.tsx
 
-import { FormDescription, FormItem } from "@/app/_components/ui/form";
-import type { FieldValues, Path } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
-import type { ComponentType, ReactNode } from "react";
-import { FormLabel } from "./FormLabel";
-import { cn } from "../lib/utils";
+import { FormDescription, FormItem } from '@/components/ui/form';
+import type { FieldValues, Path } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
+import type { ComponentType, ReactNode } from 'react';
+import { FormLabel } from './FormLabel';
+import { cn } from '../lib/utils';
 
 /**
  * Props for the FieldComponent that MinMaxField will render.
@@ -20,7 +20,7 @@ type MinMaxChildFieldProps<TFieldValues extends FieldValues> =
  */
 export type MinMaxFieldProps<TFieldValues extends FieldValues> = Omit<
   CommonFieldProps<TFieldValues>,
-  "placeholder"
+  'placeholder'
 > & {
   /** The field component to render for the min and max inputs (e.g., NumericField). */
   FieldComponent: ComponentType<MinMaxChildFieldProps<TFieldValues>>;
@@ -72,7 +72,7 @@ export const MinMaxField = <TFieldValues extends FieldValues>({
   };
 
   return (
-    <FormItem className={cn("w-full", className)}>
+    <FormItem className={cn('w-full', className)}>
       {/* Render the main label and hint for the entire min/max group */}
       {(!!label || !!hint || !!required) && (
         <FormLabel label={label} hint={hint} required={required} />
@@ -83,19 +83,19 @@ export const MinMaxField = <TFieldValues extends FieldValues>({
           <FieldComponent
             {...childFieldProps}
             name={minName}
-            placeholder={placeholder?.min ?? "Min"}
+            placeholder={placeholder?.min ?? 'Min'}
           />
           <FieldComponent
             {...childFieldProps}
             name={maxName}
-            placeholder={placeholder?.max ?? "Max"}
+            placeholder={placeholder?.max ?? 'Max'}
           />
         </div>
         {suffix}
       </div>
       {/* Render the shared description below the fields */}
       {description && <FormDescription>{description}</FormDescription>}
-      {/* Note: FormMessage for each field will be rendered automatically 
+      {/* Note: FormMessage for each field will be rendered automatically
         within the FieldComponent itself, which is the desired behavior.
       */}
     </FormItem>

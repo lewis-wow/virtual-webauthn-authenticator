@@ -4,12 +4,12 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/app/_components/ui/form";
-import { Input } from "@/app/_components/ui/input";
-import type { FieldValues } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
-import type { ChangeEvent } from "react";
-import { FormLabel } from "./FormLabel";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import type { FieldValues } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
+import type { ChangeEvent } from 'react';
+import { FormLabel } from './FormLabel';
 
 export type NumericFieldProps<TFieldValues extends FieldValues> =
   {} & CommonFieldProps<TFieldValues>;
@@ -19,7 +19,7 @@ export const transformEventToNumberValue = (
 ) => {
   const stringValue = event.target.value;
 
-  if (stringValue === "") {
+  if (stringValue === '') {
     return undefined;
   }
 
@@ -50,7 +50,7 @@ export const NumericField = <TFieldValues extends FieldValues>({
               onChange={(event) =>
                 field.onChange(transformEventToNumberValue(event))
               }
-              value={field.value ?? ""}
+              value={field.value ?? ''}
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}

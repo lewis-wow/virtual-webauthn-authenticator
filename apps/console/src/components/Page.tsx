@@ -1,7 +1,7 @@
-"use client";
-import { Stack } from "@/app/_components/Stack";
-import type { ReactNode } from "react";
-import { Header } from "./Header";
+'use client';
+import { Stack } from '@/components/Stack';
+import type { ReactNode } from 'react';
+import { Header } from './Header';
 
 export type PageProps = {
   children?: ReactNode;

@@ -1,9 +1,5 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/app/_components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export const NoContentAlert = () => {
   return (

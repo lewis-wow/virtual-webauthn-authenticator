@@ -4,13 +4,13 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/app/_components/ui/form";
-import { Input } from "@/app/_components/ui/input";
-import type { FieldValues } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
-import { FormLabel } from "./FormLabel";
-import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import type { FieldValues } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
+import { FormLabel } from './FormLabel';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 
 export type FileFieldProps<TFieldValues extends FieldValues> =
   {} & CommonFieldProps<TFieldValues>;
@@ -21,14 +21,14 @@ export const FileField = <TFieldValues extends FieldValues>({
   const uploadFileMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append('file', file);
 
       const response = await axios.post<{ url: string }>(
-        "/api/file/upload",
+        '/api/file/upload',
         formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            'Content-Type': 'multipart/form-data',
           },
           onUploadProgress: (progressEvent) => {
             const percentCompleted = Math.round(

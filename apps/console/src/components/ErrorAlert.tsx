@@ -1,11 +1,7 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/app/_components/ui/alert";
-import { AlertTriangle, Wifi, RefreshCw, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertTriangle, Wifi, RefreshCw, AlertCircle } from 'lucide-react';
 
-export type ErrorAlertType = "general" | "network" | "server" | "timeout";
+export type ErrorAlertType = 'general' | 'network' | 'server' | 'timeout';
 
 export type ErrorAlertProps = {
   title?: string;
@@ -17,38 +13,38 @@ export type ErrorAlertProps = {
 export const ErrorAlert = ({
   title,
   message,
-  type = "general",
+  type = 'general',
   className,
 }: ErrorAlertProps) => {
   const getErrorConfig = () => {
     switch (type) {
-      case "network":
+      case 'network':
         return {
           icon: Wifi,
-          defaultTitle: "Připojení selhalo",
+          defaultTitle: 'Připojení selhalo',
           defaultMessage:
-            "Zkontrolujte připojení k internetu a zkuste to znovu.",
+            'Zkontrolujte připojení k internetu a zkuste to znovu.',
         };
-      case "server":
+      case 'server':
         return {
           icon: AlertTriangle,
-          defaultTitle: "Chyba serveru",
+          defaultTitle: 'Chyba serveru',
           defaultMessage:
-            "Naše servery mají momentálně potíže. Zkuste to prosím znovu později.",
+            'Naše servery mají momentálně potíže. Zkuste to prosím znovu později.',
         };
-      case "timeout":
+      case 'timeout':
         return {
           icon: RefreshCw,
-          defaultTitle: "Vypršel časový limit požadavku",
+          defaultTitle: 'Vypršel časový limit požadavku',
           defaultMessage:
-            "Požadavek trval příliš dlouho. Zkuste to prosím znovu.",
+            'Požadavek trval příliš dlouho. Zkuste to prosím znovu.',
         };
       default:
         return {
           icon: AlertCircle,
-          defaultTitle: "Něco se pokazilo",
+          defaultTitle: 'Něco se pokazilo',
           defaultMessage:
-            "Došlo k neočekávané chybě. Zkuste to prosím znovu nebo kontaktujte podporu.",
+            'Došlo k neočekávané chybě. Zkuste to prosím znovu nebo kontaktujte podporu.',
         };
     }
   };

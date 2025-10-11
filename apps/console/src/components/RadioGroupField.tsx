@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { RadioGroup, RadioGroupItem } from "@/app/_components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   FormControl,
   FormDescription,
@@ -8,10 +8,10 @@ import {
   FormItem,
   FormMessage,
   FormLabel as FormLabelUI,
-} from "@/app/_components/ui/form";
-import type { FieldValues } from "react-hook-form";
-import type { CommonFieldProps } from "@/app/types";
-import { FormLabel } from "./FormLabel";
+} from '@/components/ui/form';
+import type { FieldValues } from 'react-hook-form';
+import type { CommonFieldProps } from '@/app/types';
+import { FormLabel } from './FormLabel';
 
 export type RadioGroupFieldItem = {
   value: string;

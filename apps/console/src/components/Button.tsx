@@ -1,19 +1,19 @@
 import {
   Button as ButtonUI,
   type buttonVariants,
-} from "@/app/_components/ui/button";
-import { type VariantProps } from "class-variance-authority";
-import { type ComponentProps } from "react";
-import { match } from "ts-pattern";
-import { Loading } from "./Loading";
-import { cn } from "../lib/utils";
-import { Link } from "@/app/i18n/navigation";
+} from '@/components/ui/button';
+import { type VariantProps } from 'class-variance-authority';
+import { type ComponentProps } from 'react';
+import { match } from 'ts-pattern';
+import { Loading } from './Loading';
+import { cn } from '../lib/utils';
+import { Link } from '@/app/i18n/navigation';
 
 export type ButtonProps = {
   isLoading?: boolean;
   href?: string;
   asChild?: boolean;
-} & ComponentProps<"button"> &
+} & ComponentProps<'button'> &
   VariantProps<typeof buttonVariants>;
 
 export const Button = ({
@@ -30,7 +30,7 @@ export const Button = ({
     <ButtonUI
       {...restProps}
       asChild={_asChild}
-      className={cn("cursor-pointer", className)}
+      className={cn('cursor-pointer', className)}
     >
       {match({ isLoading, href })
         .with({ isLoading: true }, () => <Loading />)

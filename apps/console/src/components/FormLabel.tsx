@@ -1,6 +1,6 @@
-import type { ReactNode } from "react";
-import { FormLabel as FormLabelUI } from "@/app/_components/ui/form";
-import { cn } from "../lib/utils";
+import type { ReactNode } from 'react';
+import { FormLabel as FormLabelUI } from '@/components/ui/form';
+import { cn } from '../lib/utils';
 
 export type FormLabelProps = {
   label?: ReactNode;
@@ -17,7 +17,7 @@ export const FormLabel = ({
 }: FormLabelProps) => {
   return (
     <FormLabelUI>
-      <div className={cn("flex justify-between", className)}>
+      <div className={cn('flex justify-between', className)}>
         <span>
           {label}
           {required && <span className="text-destructive"> *</span>}
