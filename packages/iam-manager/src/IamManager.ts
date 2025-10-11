@@ -4,7 +4,6 @@ import {
   type PermissionAction,
   type PermissionResource,
   type Permission,
-  Prisma,
   RoleName,
   type Role,
 } from '@repo/prisma';
@@ -67,7 +66,7 @@ export class IamManager {
     return !!userWithPermission;
   }
 
-  async assignRole(data: { role: RoleName }): Promise<Role> {
+  async createRole(data: { role: RoleName }): Promise<Role> {
     const role = await this.prisma.role.create({ data: { name: data.role } });
 
     await this.prisma.userRole.create({
@@ -77,89 +76,72 @@ export class IamManager {
     return role;
   }
 
-  async removeRole(data: { role: RoleName }): Promise<Role | null> {
-    const userRole = await this.prisma.userRole.findFirst({
-      where: { role: { name: data.role }, userId: this.user.id },
+  async assignRole(role: Pick<Role, 'id'>): Promise<void> {
+    await this.prisma.userRole.create({
+      data: {
+        roleId: role.id,
+        userId: this.user.id,
+      },
     });
-
-    if (!userRole) {
-      return null;
-    }
-
-    const role = await this.prisma.role.delete({
-      where: { id: userRole.roleId },
-    });
-
-    return role;
   }
 
-  async createPermission(
-    role: RoleName,
+  async getRole(role: Pick<Role, 'id'>): Promise<Role> {
+    return await this.prisma.role.findUniqueOrThrow({
+      where: {
+        id: role.id,
+      },
+    });
+  }
+
+  async getRoles(): Promise<Role[]> {
+    return await this.prisma.role.findMany({
+      where: {
+        userRoles: {
+          every: {
+            userId: this.user.id,
+          },
+        },
+      },
+    });
+  }
+
+  async removeRole(role: Pick<Role, 'id'>): Promise<Role | null> {
+    const removedRole = await this.prisma.role.delete({
+      where: { id: role.id },
+    });
+
+    return removedRole;
+  }
+
+  async addPermission(
+    role: Pick<Role, 'id'>,
     data: {
       action: PermissionAction;
       resource: PermissionResource | null;
       isWildcard: boolean;
     },
   ): Promise<Permission> {
-    const { action, resource, isWildcard } = data;
+    const permission = await this.prisma.permission.create({
+      data,
+    });
 
-    try {
-      return await this.prisma.permission.create({
-        data: {
-          rolePermissions: {
-            create: {
-              role: {
-                create: {
-                  name: role,
-                },
-              },
-            },
-          },
-          action,
-          isWildcard: isWildcard,
-          resource: resource ?? null,
-        },
-      });
-    } catch (e) {
-      // Check if the error is a unique constraint violation (code P2002)
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
-        // The permission already exists. Find it and return it.
-        return await this.prisma.permission.findFirstOrThrow({
-          where: {
-            action: data.action,
-            resource: data.resource ?? null,
-          },
-        });
-      }
-      // If it's a different error, re-throw it.
-      throw e;
-    }
-  }
-
-  async removePermission(criteria: {
-    action: PermissionAction;
-    resource: PermissionResource | null;
-  }): Promise<Permission | null> {
-    const { action, resource } = criteria;
-
-    const permissionToDelete = await this.prisma.permission.findFirst({
-      where: {
-        action,
-        resource,
+    await this.prisma.rolePermission.create({
+      data: {
+        roleId: role.id,
+        permissionId: permission.id,
       },
     });
 
-    if (!permissionToDelete) {
-      return null;
-    }
+    return permission;
+  }
 
-    await this.prisma.permission.delete({
-      where: { id: permissionToDelete.id },
+  async removePermission(
+    permission: Pick<Permission, 'id'>,
+  ): Promise<Permission> {
+    return await this.prisma.permission.delete({
+      where: {
+        id: permission.id,
+      },
     });
-
-    return permissionToDelete;
   }
 }
