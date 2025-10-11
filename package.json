@@ -10,14 +10,16 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md}\"",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@types/ejs": "^3.1.5",
     "@types/node": "^24.5.2",
     "@vitest/coverage-istanbul": "^3.2.4",
     "@vitest/ui": "^3.2.4",
+    "ejs": "^3.1.10",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
     "turbo": "^2.5.8",
