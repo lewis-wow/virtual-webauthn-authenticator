@@ -30,6 +30,9 @@ jobs:
       #   # until the containers report a "healthy" status.
       #   run: docker compose up -d --wait
 
+      - name: Build project
+        run: pnpm build
+
       - name: Run linter
         run: pnpm lint
 
@@ -44,9 +47,6 @@ jobs:
         env:
           ENVIRONMENT: test
         run: pnpm test
-
-      - name: Build project
-        run: pnpm build
 
       # - name: Stop services
       #   # This step runs even if previous steps fail, ensuring
