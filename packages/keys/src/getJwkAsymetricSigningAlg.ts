@@ -1,4 +1,4 @@
-import type { Jwk } from './types.js';
+import type { Jwk } from '@repo/types';
 import { assert, isEnum, isOptional } from 'typanion';
 import { objectKeys } from '@repo/utils/objectKeys';
 import { AsymetricSigningAlgorithm } from '@repo/enums';

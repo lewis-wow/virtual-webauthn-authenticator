@@ -6,9 +6,10 @@ import {
   CoseEcParam,
   CoseKeyType,
   CoseRsaParam,
+  AsymetricSigningAlgorithm,
 } from '@repo/enums';
 import { getJwkAsymetricSigningAlg } from './getJwkAsymetricSigningAlg.js';
-import type { Jwk } from './types.js';
+import type { Jwk } from '@repo/types';
 import { encode, decode } from 'cbor';
 import { assert, isEnum, isNumber, isString } from 'typanion';
 import { objectKeys } from '@repo/utils/objectKeys';
@@ -22,7 +23,10 @@ export class CoseKey {
   static fromJwk(jwk: Jwk): CoseKey {
     const asymetricSigningAlgorithm = getJwkAsymetricSigningAlg(jwk);
 
-    assert(asymetricSigningAlgorithm, isString());
+    assert(
+      asymetricSigningAlgorithm,
+      isEnum(Object.values(AsymetricSigningAlgorithm)),
+    );
 
     const coseAlgorithm = CoseAlgorithm[asymetricSigningAlgorithm];
 
