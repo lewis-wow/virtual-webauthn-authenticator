@@ -12,8 +12,10 @@ import { toBuffer } from '@repo/utils/toBuffer';
 import type {
   IPublicJsonWebKeyFactory,
   IPublicKeyCredential,
+  IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredentialRequestOptions,
   ISigner,
-} from '../../src/types.js';
+} from '@repo/types';
 import { CoseKey } from '@repo/keys';
 
 const keyPair = generateKeyPairSync('ec', {
@@ -37,8 +39,8 @@ const signer: ISigner = {
 };
 
 const createPublicKeyCredentialRequestOptions = (
-  credentialID: BufferSource,
-): PublicKeyCredentialRequestOptions => ({
+  credentialID: Buffer,
+): IPublicKeyCredentialRequestOptions => ({
   challenge: Buffer.from('b'.repeat(32)), // A different dummy challenge for get
   rpId: 'localhost',
   allowCredentials: [
@@ -56,7 +58,7 @@ describe('VirtualAuthenticator', () => {
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
 
-  const creationOptions: PublicKeyCredentialCreationOptions = {
+  const creationOptions: IPublicKeyCredentialCreationOptions = {
     rp: {
       name: 'My Simulated Service',
       id: 'localhost',

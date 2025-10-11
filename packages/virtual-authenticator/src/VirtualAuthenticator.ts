@@ -8,6 +8,8 @@ import type {
   ISigner,
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
+  IPublicKeyCredentialRequestOptions,
+  IPublicKeyCredentialCreationOptions,
 } from '@repo/types';
 import {
   assert,
@@ -150,7 +152,7 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
    */
   public async getCredential(
-    options: PublicKeyCredentialRequestOptions,
+    options: IPublicKeyCredentialRequestOptions,
   ): Promise<IPublicKeyCredential> {
     assert(options.rpId, isString());
     assert(
@@ -206,7 +208,7 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation
    */
   public async createCredential(
-    options: PublicKeyCredentialCreationOptions,
+    options: IPublicKeyCredentialCreationOptions,
   ): Promise<IPublicKeyCredential> {
     assert(options.rp.id, isString());
     assert(options.attestation, isEnum(['none']));
