@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 // COSE EC Key Parameters
 export const CoseEcParam = {
@@ -8,4 +8,4 @@ export const CoseEcParam = {
   d: -4,
 } as const;
 
-export type CoseEcParam = ValueOf<typeof CoseEcParam>;
+export type CoseEcParam = ValueOfEnum<typeof CoseEcParam>;

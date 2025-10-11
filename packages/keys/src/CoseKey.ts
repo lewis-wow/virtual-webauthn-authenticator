@@ -6,7 +6,7 @@ import {
   CoseEcParam,
   CoseKeyType,
   CoseRsaParam,
-} from './enums/index.js';
+} from '@repo/enums';
 import { getJwkAsymetricSigningAlg } from './getJwkAsymetricSigningAlg.js';
 import type { Jwk } from './types.js';
 import { encode, decode } from 'cbor';

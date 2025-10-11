@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 export const EcCurve = {
   'P-256': 'P-256',
@@ -7,4 +7,4 @@ export const EcCurve = {
   Ed25519: 'Ed25519',
 } as const;
 
-export type EcCurve = ValueOf<typeof EcCurve>;
+export type EcCurve = ValueOfEnum<typeof EcCurve>;

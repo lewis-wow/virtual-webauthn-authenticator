@@ -2,8 +2,6 @@ export * from './types/index.js';
 
 import type { JsonWebKey } from 'node:crypto';
 
-export type ValueOf<T> = T[keyof T];
-
 export type MaybePromise<T> = T | Promise<T>;
 
 export type PropertyKey = string | number | symbol;

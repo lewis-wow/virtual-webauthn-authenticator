@@ -1,4 +1,4 @@
-import type { Base64URLString } from './Base64URLString.js';
+import type { Base64URLString } from '../Base64URLString.js';
 import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
 import type { IAuthenticatorAttestationResponseJSON } from './IAuthenticatorAttestationResponseJSON.js';
 import type {

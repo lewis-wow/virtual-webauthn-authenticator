@@ -1,7 +1,7 @@
 import type { Jwk } from './types.js';
 import { assert, isEnum, isOptional } from 'typanion';
 import { objectKeys } from '@repo/utils/objectKeys';
-import { AsymetricSigningAlgorithm } from './enums/AsymetricSigningAlgorithm.js';
+import { AsymetricSigningAlgorithm } from '@repo/enums';
 
 /**
  * Infers a JWS signing algorithm ('alg') from a JSON Web Key (JWK).

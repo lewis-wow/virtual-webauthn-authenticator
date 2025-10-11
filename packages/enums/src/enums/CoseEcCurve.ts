@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 import { EcCurve } from './EcCurve.js';
 
 export const CoseEcCurve = {
@@ -8,4 +8,4 @@ export const CoseEcCurve = {
   [EcCurve.Ed25519]: 6,
 } as const;
 
-export type CoseEcCurve = ValueOf<typeof CoseEcCurve>;
+export type CoseEcCurve = ValueOfEnum<typeof CoseEcCurve>;

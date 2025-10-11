@@ -1,4 +1,4 @@
-import type { Base64URLString } from './Base64URLString.js';
+import type { Base64URLString } from '../Base64URLString.js';
 
 /**
  * A generic JSON representation of the `response` part of a PublicKeyCredential.

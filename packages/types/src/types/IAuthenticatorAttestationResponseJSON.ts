@@ -2,7 +2,7 @@ import type {
   AuthenticatorTransport,
   COSEAlgorithmIdentifier,
 } from '@repo/enums';
-import type { Base64URLString } from './Base64URLString.js';
+import type { Base64URLString } from '../Base64URLString.js';
 
 /**
  * A specific JSON representation of an authenticator's response during a

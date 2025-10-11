@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 import { KeyType } from './KeyType.js';
 
 export const CoseKeyType = {
@@ -7,4 +7,4 @@ export const CoseKeyType = {
   [KeyType.RSA]: 3,
 } as const;
 
-export type CoseKeyType = ValueOf<typeof CoseKeyType>;
+export type CoseKeyType = ValueOfEnum<typeof CoseKeyType>;

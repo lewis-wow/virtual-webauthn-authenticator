@@ -1,4 +1,4 @@
-import type { ValueOf } from '@repo/types';
+import type { ValueOfEnum } from '../types.js';
 
 export const AsymetricSigningAlgorithm = {
   ES256: 'ES256',
@@ -11,6 +11,6 @@ export const AsymetricSigningAlgorithm = {
   HS512: 'HS512',
 } as const;
 
-export type AsymetricSigningAlgorithm = ValueOf<
+export type AsymetricSigningAlgorithm = ValueOfEnum<
   typeof AsymetricSigningAlgorithm
 >;

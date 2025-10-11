@@ -2,7 +2,7 @@ import type {
   AuthenticatorAttachment,
   PublicKeyCredentialType,
 } from '@repo/enums';
-import type { Base64URLString } from './Base64URLString.js';
+import type { Base64URLString } from '../Base64URLString.js';
 import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
 import type { IPublicKeyCredentialJSONResponse } from './IPublicKeyCredentialJSONResponse.js';
 
