@@ -126,7 +126,9 @@ describe('VirtualAuthenticator', () => {
     const authenticationVerification = await verifyAuthenticationResponse({
       response:
         assertionCredential.toJSON() as unknown as AuthenticationResponseJSON,
-      expectedChallenge,
+      expectedChallenge: toBuffer(requestOptions.challenge).toString(
+        'base64url',
+      ),
       expectedOrigin: requestOptions.rpId!,
       expectedRPID: requestOptions.rpId!,
       credential: {
