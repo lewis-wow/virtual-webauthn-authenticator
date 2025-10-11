@@ -1,10 +1,10 @@
 import type { ValueOfEnum } from '../types.js';
 
 // COSE RSA Key Parameters
-export const CoseRsaParam = {
+export const COSERsaParam = {
   n: -1,
   e: -2,
   d: -3,
 } as const;
 
-export type CoseRsaParam = ValueOfEnum<typeof CoseRsaParam>;
+export type COSERsaParam = ValueOfEnum<typeof COSERsaParam>;
