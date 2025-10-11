@@ -1,2 +1,2 @@
-export * from './CoseKey.js';
+export * from './COSEKey.js';
 export * from './getJwkAsymetricSigningAlg.js';
