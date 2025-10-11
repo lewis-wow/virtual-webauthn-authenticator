@@ -1,5 +1,5 @@
 {
-  "name": "@repo/virtual-authenticator",
+  "name": "@repo/validation",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,29 +7,22 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "dev": "tsx src/main.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@simplewebauthn/server": "^13.2.1",
-    "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
-    "tsx": "^4.20.6",
+    "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/transformers": "workspace:*",
-    "@repo/keys": "workspace:*",
-    "@repo/types": "workspace:*",
-    "@repo/utils": "workspace:*",
-    "cbor": "^10.0.11",
-    "class-transformer": "^0.5.1",
-    "reflect-metadata": "^0.2.2",
-    "typanion": "^3.14.0"
+    "@repo/enums": "workspace:*",
+    "typebox": "^1.0.34",
+    "zod": "^4.1.12"
   }
 }

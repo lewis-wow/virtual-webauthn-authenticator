@@ -11,7 +11,10 @@
     "@elysiajs/openapi": "^1.4.11",
     "@repo/enums": "workspace:*",
     "@repo/prisma": "workspace:*",
-    "elysia": "^1.4.10"
+    "@repo/validation": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
+    "elysia": "^1.4.10",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
