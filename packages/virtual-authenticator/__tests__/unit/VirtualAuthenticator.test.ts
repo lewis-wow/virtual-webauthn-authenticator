@@ -139,7 +139,11 @@ describe('VirtualAuthenticator', () => {
       requireUserVerification: true,
     });
 
+    // The most important check: confirm that the authentication was successful.
     expect(authenticationVerification.verified).toBe(true);
+
+    // A critical security check: ensure the signature counter has incremented.
+    // This prevents replay attacks. The server must store this new value.
     expect(authenticationVerification.authenticationInfo.newCounter).toBe(1);
   });
 });
