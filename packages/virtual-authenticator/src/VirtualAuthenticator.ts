@@ -14,6 +14,7 @@ import {
   assert,
   isArray,
   isEnum,
+  isOptional,
   isString,
   isUnknown,
   hasMinLength,
@@ -210,7 +211,7 @@ export class VirtualAuthenticator {
     options: IPublicKeyCredentialCreationOptions,
   ): Promise<IPublicKeyCredentialAuthenticatorAttestationResponse> {
     assert(options.rp.id, isString());
-    assert(options.attestation, isEnum(['none']));
+    assert(options.attestation, isOptional(isEnum(['none'])));
 
     //  If credentialCreationData.attestationConveyancePreferenceOption’s value is "none"
     //  1. Replace potentially uniquely identifying information with non-identifying versions of the same:
