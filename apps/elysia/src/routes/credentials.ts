@@ -2,6 +2,10 @@ import { Elysia } from 'elysia';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import type { IPublicJsonWebKeyFactory, ISigner } from '@repo/types';
+import {
+  PublicKeyCredentialCreationOptionsSchema,
+  PublicKeyCredentialSchema,
+} from '@repo/validation';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
@@ -47,7 +51,5 @@ export const credentials = new Elysia({ prefix: '/credentials' })
 
       return PublicKeyCredentialSchema.encode(credentials);
     },
-    {
-      response: PublicKeyCredentialSchema,
-    },
+    {},
   );
