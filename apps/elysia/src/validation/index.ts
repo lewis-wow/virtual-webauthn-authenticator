@@ -17,7 +17,7 @@ import type {
 } from '@repo/types';
 import {
   Base64URLBufferSchema,
-  CoseAlgorithmIdentifierSchema,
+  COSEAlgorithmIdentifierSchema,
   PublicKeyCredentialTypeSchema,
   AuthenticatorAttachmentSchema,
 } from '@repo/validation';
@@ -39,7 +39,7 @@ const PublicKeyCredentialUserEntitySchema = z.object({
 // Describes the cryptographic algorithms to be supported
 const PublicKeyCredentialParametersSchema = z.object({
   type: PublicKeyCredentialTypeSchema,
-  alg: CoseAlgorithmIdentifierSchema,
+  alg: COSEAlgorithmIdentifierSchema,
 }) satisfies z.ZodType<IPublicKeyCredentialParameters>;
 
 // Used to exclude existing credentials for a user
