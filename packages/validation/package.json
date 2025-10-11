@@ -7,11 +7,12 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "run-p generate-barrels",
+    "build": "run-p generate-barrels:*",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "generate-barrels": "../../scripts/generate_barrels.ts src/enums"
+    "generate-barrels:enums": "../../scripts/generate_barrels.ts src/enums",
+    "generate-barrels:credentials": "../../scripts/generate_barrels.ts src/credentials"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

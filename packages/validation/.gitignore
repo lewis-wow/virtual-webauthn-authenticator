@@ -1,1 +1,2 @@
-src/schemas/enums/index.ts
+src/enums/index.ts
+src/credentials/index.ts
