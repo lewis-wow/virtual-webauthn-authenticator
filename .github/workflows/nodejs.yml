@@ -37,7 +37,7 @@ jobs:
         run: pnpm check-types
 
       - name: Check formatting
-        run: pnpm prettier:check
+        run: pnpm format:check
 
       - name: Run unit tests
         # Your tests can now connect to the services started via Docker Compose
