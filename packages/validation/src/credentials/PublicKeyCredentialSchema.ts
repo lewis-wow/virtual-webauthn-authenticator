@@ -1,8 +1,10 @@
 import type { IPublicKeyCredential } from '@repo/types';
 import z from 'zod';
 import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
-import { AuthenticatorAttachmentSchema } from '../enums/AuthenticatorAttachmentSchema.js';
-import { PublicKeyCredentialTypeSchema } from '../enums/PublicKeyCredentialTypeSchema.js';
+import {
+  PublicKeyCredentialTypeSchema,
+  AuthenticatorAttachmentSchema,
+} from '../enums.js';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema.js';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema.js';

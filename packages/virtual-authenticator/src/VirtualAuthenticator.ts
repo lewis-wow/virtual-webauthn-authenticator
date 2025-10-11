@@ -16,13 +16,18 @@ import {
   isEnum,
   isOptional,
   isString,
-  isUnknown,
   hasMinLength,
   applyCascade,
+  isInstanceOf,
+  isObject,
+  isNumber,
+  isPartial,
 } from 'typanion';
 import { CoseKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
 import { PublicKeyCredential } from './PublicKeyCredential.js';
+import { hasMinBytes } from './assert/hasMinBytes.js';
+import { UserVerificationRequirement } from '@repo/enums';
 
 export type VirtualAuthenticatorOptions = {
   signer: ISigner;
@@ -158,7 +163,23 @@ export class VirtualAuthenticator {
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
-      applyCascade(isArray(isUnknown()), hasMinLength(1)),
+      applyCascade(
+        isArray(
+          isPartial({
+            id: isInstanceOf(Buffer),
+            type: isEnum(['public-key']),
+          }),
+        ),
+        hasMinLength(1),
+      ),
+    );
+    assert(
+      options.challenge,
+      applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
+    );
+    assert(
+      options.userVerification,
+      isOptional(isEnum(Object.values(UserVerificationRequirement))),
     );
 
     const rpId = options.rpId;
@@ -213,6 +234,24 @@ export class VirtualAuthenticator {
   ): Promise<PublicKeyCredential<IAuthenticatorAttestationResponse>> {
     assert(options.rp.id, isString());
     assert(options.attestation, isOptional(isEnum(['none'])));
+    assert(
+      options.challenge,
+      applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
+    );
+    assert(options.user, isPartial({ id: isInstanceOf(Buffer) }));
+    assert(options.user.id, applyCascade(isInstanceOf(Buffer), hasMinBytes(1)));
+    assert(
+      options.pubKeyCredParams,
+      applyCascade(
+        isArray(
+          isObject({
+            type: isEnum(['public-key']),
+            alg: isNumber(),
+          }),
+        ),
+        hasMinLength(1),
+      ),
+    );
 
     //  If credentialCreationData.attestationConveyancePreferenceOption’s value is "none"
     //  1. Replace potentially uniquely identifying information with non-identifying versions of the same:

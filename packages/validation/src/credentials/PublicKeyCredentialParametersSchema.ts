@@ -1,7 +1,9 @@
 import type { IPublicKeyCredentialParameters } from '@repo/types';
 import z from 'zod';
-import { COSEAlgorithmIdentifierSchema } from '../enums/COSEAlgorithmIdentifierSchema.js';
-import { PublicKeyCredentialTypeSchema } from '../enums/PublicKeyCredentialTypeSchema.js';
+import {
+  COSEAlgorithmIdentifierSchema,
+  PublicKeyCredentialTypeSchema,
+} from '../enums.js';
 
 // Describes the cryptographic algorithms to be supported
 export const PublicKeyCredentialParametersSchema = z.object({
