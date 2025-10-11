@@ -1,4 +1,5 @@
 export * from './types/index.js';
+export * from './Base64URLString.js';
 
 import type { JsonWebKey } from 'node:crypto';
 
