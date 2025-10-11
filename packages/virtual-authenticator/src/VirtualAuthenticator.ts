@@ -7,8 +7,8 @@ import type {
   ICollectedClientData,
   IPublicKeyCredentialRequestOptions,
   IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredentialAuthenticatorAttestationResponse,
-  IPublicKeyCredentialAuthenticatorAssertionResponse,
+  IAuthenticatorAttestationResponse,
+  IAuthenticatorAssertionResponse,
 } from '@repo/types';
 import {
   assert,
@@ -22,6 +22,7 @@ import {
 } from 'typanion';
 import { CoseKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
+import { PublicKeyCredential } from './PublicKeyCredential.js';
 
 export type VirtualAuthenticatorOptions = {
   signer: ISigner;
@@ -153,7 +154,7 @@ export class VirtualAuthenticator {
    */
   public async getCredential(
     options: IPublicKeyCredentialRequestOptions,
-  ): Promise<IPublicKeyCredentialAuthenticatorAssertionResponse> {
+  ): Promise<PublicKeyCredential<IAuthenticatorAssertionResponse>> {
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
@@ -188,7 +189,7 @@ export class VirtualAuthenticator {
 
     const signature = await this.signer.sign(dataToSign);
 
-    return {
+    return new PublicKeyCredential({
       id: toBuffer(credentialID).toString('base64url'),
       rawId: credentialID,
       type: 'public-key',
@@ -200,7 +201,7 @@ export class VirtualAuthenticator {
       },
       authenticatorAttachment: null,
       clientExtensionResults: {},
-    };
+    });
   }
 
   /**
@@ -209,7 +210,7 @@ export class VirtualAuthenticator {
    */
   public async createCredential(
     options: IPublicKeyCredentialCreationOptions,
-  ): Promise<IPublicKeyCredentialAuthenticatorAttestationResponse> {
+  ): Promise<PublicKeyCredential<IAuthenticatorAttestationResponse>> {
     assert(options.rp.id, isString());
     assert(options.attestation, isOptional(isEnum(['none'])));
 
@@ -253,7 +254,7 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
-    return {
+    return new PublicKeyCredential({
       id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: 'public-key',
@@ -263,6 +264,6 @@ export class VirtualAuthenticator {
       },
       authenticatorAttachment: null,
       clientExtensionResults: {},
-    };
+    });
   }
 }

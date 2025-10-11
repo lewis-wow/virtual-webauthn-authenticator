@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@repo/transformers": "workspace:*",
+    "@repo/validation": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/types": "workspace:*",
