@@ -1,4 +1,6 @@
 import type { AuthenticatorTransportFuture } from './AuthenticatorTransportFuture.js';
+import type { Base64URLString } from './Base64URLString.js';
+import type { COSEAlgorithmIdentifier } from './COSEAlgorithmIdentifier.js';
 
 /**
  * A specific JSON representation of an authenticator's response during a

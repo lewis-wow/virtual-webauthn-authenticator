@@ -1,3 +1,5 @@
+import type { Base64URLString } from './Base64URLString.js';
+
 /**
  * Represents the parsed `clientDataJSON` data. This object contains contextual
  * information about the WebAuthn ceremony.

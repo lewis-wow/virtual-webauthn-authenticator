@@ -1,4 +1,21 @@
 import {
+  AuthenticatorTransport,
+  PublicKeyCredentialType,
+  ResidentKeyRequirement,
+  UserVerificationRequirement,
+} from '@repo/enums';
+import type {
+  IAuthenticatorAssertionResponse,
+  IAuthenticatorAttestationResponse,
+  IAuthenticatorSelectionCriteria,
+  IPublicKeyCredential,
+  IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredentialDescriptor,
+  IPublicKeyCredentialParameters,
+  IPublicKeyCredentialRpEntity,
+  IPublicKeyCredentialUserEntity,
+} from '@repo/types';
+import {
   Base64URLBufferSchema,
   CoseAlgorithmIdentifierSchema,
   PublicKeyCredentialTypeSchema,
@@ -10,37 +27,35 @@ import { z } from 'zod';
 const PublicKeyCredentialRpEntitySchema = z.object({
   name: z.string(),
   id: z.string().optional(),
-});
+}) satisfies z.ZodType<IPublicKeyCredentialRpEntity>;
 
 // Represents the user creating the credential
 const PublicKeyCredentialUserEntitySchema = z.object({
   id: Base64URLBufferSchema,
   name: z.string(),
   displayName: z.string(),
-});
+}) satisfies z.ZodType<IPublicKeyCredentialUserEntity>;
 
 // Describes the cryptographic algorithms to be supported
 const PublicKeyCredentialParametersSchema = z.object({
   type: PublicKeyCredentialTypeSchema,
   alg: CoseAlgorithmIdentifierSchema,
-});
+}) satisfies z.ZodType<IPublicKeyCredentialParameters>;
 
 // Used to exclude existing credentials for a user
 const PublicKeyCredentialDescriptorSchema = z.object({
-  type: z.literal('public-key'),
+  type: z.enum(PublicKeyCredentialType),
   id: Base64URLBufferSchema,
-  transports: z
-    .array(z.enum(['usb', 'nfc', 'ble', 'internal', 'hybrid']))
-    .optional(),
-});
+  transports: z.array(z.enum(AuthenticatorTransport)).optional(),
+}) satisfies z.ZodType<IPublicKeyCredentialDescriptor>;
 
 // Specifies requirements for the authenticator
 const AuthenticatorSelectionCriteriaSchema = z.object({
   authenticatorAttachment: AuthenticatorAttachmentSchema.optional(),
   requireResidentKey: z.boolean().optional(),
-  residentKey: z.enum(['discouraged', 'preferred', 'required']).optional(),
-  userVerification: z.enum(['required', 'preferred', 'discouraged']).optional(),
-});
+  residentKey: z.enum(ResidentKeyRequirement).optional(),
+  userVerification: z.enum(UserVerificationRequirement).optional(),
+}) satisfies z.ZodType<IAuthenticatorSelectionCriteria>;
 
 /**
  * Zod schema for WebAuthn's PublicKeyCredentialCreationOptions.
@@ -57,7 +72,7 @@ export const PublicKeyCredentialCreationOptionsSchema = z.object({
   attestation: z.enum(['none', 'indirect', 'direct', 'enterprise']).optional(),
   // Extensions can be complex; a generic record is often sufficient for validation
   extensions: z.record(z.string(), z.unknown()).optional(),
-});
+}) satisfies z.ZodType<IPublicKeyCredentialCreationOptions>;
 
 /**
  * Corresponds to: `AuthenticationExtensionsClientOutputs`
@@ -73,7 +88,7 @@ export const AuthenticationExtensionsClientOutputsSchema = z
 export const AuthenticatorAttestationResponseSchema = z.object({
   clientDataJSON: Base64URLBufferSchema,
   attestationObject: Base64URLBufferSchema,
-});
+}) satisfies z.ZodType<IAuthenticatorAttestationResponse>;
 
 /**
  * Corresponds to: `IAuthenticatorAssertionResponse`
@@ -84,7 +99,7 @@ export const AuthenticatorAssertionResponseSchema = z.object({
   authenticatorData: Base64URLBufferSchema,
   signature: Base64URLBufferSchema,
   userHandle: Base64URLBufferSchema.nullable(),
-});
+}) satisfies z.ZodType<IAuthenticatorAssertionResponse>;
 
 /**
  * Corresponds to: `IPublicKeyCredential`
@@ -102,5 +117,5 @@ export const PublicKeyCredentialSchema = z.object({
     AuthenticatorAssertionResponseSchema,
   ]),
   clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
-  authenticatorAttachment: AuthenticatorAttachmentSchema,
-});
+  authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
+}) satisfies z.ZodType<IPublicKeyCredential>;

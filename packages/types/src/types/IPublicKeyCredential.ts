@@ -1,7 +1,9 @@
+import type { AuthenticatorAttachment } from './AuthenticatorAttachment.js';
+import type { Base64URLString } from './Base64URLString.js';
 import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
 import type { IAuthenticatorAssertionResponse } from './IAuthenticatorAssertionResponse.js';
 import type { IAuthenticatorAttestationResponse } from './IAuthenticatorAttestationResponse.js';
-import type { IRegistrationResponseJSON } from './IRegistrationResponseJSON.js';
+import type { PublicKeyCredentialType } from './PublicKeyCredentialType.js';
 
 /**
  * Represents a complete `PublicKeyCredential` object on the server. This is the
@@ -21,8 +23,8 @@ export interface IPublicKeyCredential {
   clientExtensionResults: IAuthenticationExtensionsClientOutputs;
   /** The attachment type of the authenticator, if known. */
   authenticatorAttachment: AuthenticatorAttachment | null;
-  /** A method to retrieve the client extension results. */
-  getClientExtensionResults(): IAuthenticationExtensionsClientOutputs;
-  /** A method to convert the credential into a JSON-serializable format. */
-  toJSON(): IRegistrationResponseJSON;
+  // /** A method to retrieve the client extension results. */
+  // getClientExtensionResults(): IAuthenticationExtensionsClientOutputs;
+  // /** A method to convert the credential into a JSON-serializable format. */
+  // toJSON(): IRegistrationResponseJSON;
 }

@@ -60,6 +60,9 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@rollup/plugin-commonjs':
         specifier: ^28.0.6
         version: 28.0.6(rollup@4.52.4)

@@ -1,14 +1,11 @@
 import { Elysia } from 'elysia';
-import {
-  VirtualAuthenticator,
-  type IPublicJsonWebKeyFactory,
-  type ISigner,
-} from '@repo/virtual-authenticator';
+import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import {
   PublicKeyCredentialCreationOptionsSchema,
   PublicKeyCredentialSchema,
 } from '../validation/index.js';
+import type { IPublicJsonWebKeyFactory, ISigner } from '@repo/types';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
@@ -35,7 +32,7 @@ const authenticator = new VirtualAuthenticator({
   signer,
 });
 
-const credentials = new Elysia({ prefix: '/credentials' })
+export const credentials = new Elysia({ prefix: '/credentials' })
   .post(
     '/',
     async ({ body }) => {
@@ -48,4 +45,14 @@ const credentials = new Elysia({ prefix: '/credentials' })
       response: PublicKeyCredentialSchema,
     },
   )
-  .get('/', (ctx) => {});
+  .get(
+    '/',
+    async ({ params }) => {
+      const credentials = await authenticator.getCredential(params as any);
+
+      return credentials;
+    },
+    {
+      response: PublicKeyCredentialSchema,
+    },
+  );

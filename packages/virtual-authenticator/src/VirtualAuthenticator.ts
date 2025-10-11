@@ -2,14 +2,13 @@ import { randomBytes } from 'crypto';
 import { encode } from 'cbor';
 import { toBuffer } from '@repo/utils/toBuffer';
 import { toBase64Url } from '@repo/utils/toBase64Url';
-import { PublicKeyCredentialDto } from './dto/PublicKeyCredentialDto.js';
 import type {
-  IPublicKeyCredential,
   ISigner,
   IPublicJsonWebKeyFactory,
   ICollectedClientData,
   IPublicKeyCredentialRequestOptions,
   IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredential,
 } from '@repo/types';
 import {
   assert,
@@ -188,7 +187,7 @@ export class VirtualAuthenticator {
 
     const signature = await this.signer.sign(dataToSign);
 
-    return new PublicKeyCredentialDto({
+    return {
       id: toBase64Url(credentialID),
       rawId: credentialID,
       type: 'public-key',
@@ -200,7 +199,7 @@ export class VirtualAuthenticator {
       },
       authenticatorAttachment: null,
       clientExtensionResults: {},
-    });
+    };
   }
 
   /**
@@ -253,7 +252,7 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
-    return new PublicKeyCredentialDto({
+    return {
       id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: 'public-key',
@@ -263,6 +262,6 @@ export class VirtualAuthenticator {
       },
       authenticatorAttachment: null,
       clientExtensionResults: {},
-    });
+    };
   }
 }
