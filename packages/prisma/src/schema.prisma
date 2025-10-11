@@ -14,6 +14,7 @@ model User {
   emailVerified DateTime?
   image         String?
   accounts      Account[]
+  userRoles     UserRole[]
   apiTokens     ApiToken[]
 
   createdAt DateTime @default(now())
@@ -49,4 +50,65 @@ model ApiToken {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  assignedAt DateTime @default(now())
+  // assignedBy String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Role {
+  id              String           @id @default(cuid())
+  name            RoleName         @unique
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userRoles       UserRole[]
+  rolePermissions RolePermission[]
+}
+
+enum RoleName {
+  OWNER
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  assignedAt DateTime @default(now())
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Permission {
+  id              String              @id @default(cuid())
+  action          PermissionAction
+  resource        PermissionResource?
+  isWildcard      Boolean             @default(false)
+  rolePermissions RolePermission[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@unique([action, resource])
+}
+
+enum PermissionAction {
+  READ
+  UPDATE
+  DELETE
+  CREATE
+}
+
+enum PermissionResource {
+  POST
 }

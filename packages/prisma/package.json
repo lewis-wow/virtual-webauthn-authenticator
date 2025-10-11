@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/main.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "build": "prisma generate",
@@ -14,6 +14,7 @@
     "db:migrate": "pnpm dotenvx prisma migrate deploy",
     "db:push": "pnpm dotenvx prisma db push",
     "db:studio": "pnpm dotenvx prisma studio",
+    "db:reset": "pnpm dotenvx prisma migrate reset",
     "dotenvx": "../../scripts/dotenvx.sh"
   },
   "devDependencies": {
