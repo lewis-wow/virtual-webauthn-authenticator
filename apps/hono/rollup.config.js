@@ -6,6 +6,7 @@ import tsconfigPaths from 'rollup-plugin-tsconfig-paths';
 import del from 'rollup-plugin-delete';
 import json from '@rollup/plugin-json';
 import run from '@rollup/plugin-run';
+import esmShim from '@rollup/plugin-esm-shim';
 import { defineConfig } from 'rollup';
 
 // A helper to determine if we are in watch mode
@@ -43,6 +44,8 @@ export default defineConfig({
     // Convert CommonJS modules to ES modules
     commonjs(),
 
+    esmShim(),
+
     // Allow importing JSON files
     json(),
 
@@ -61,8 +64,6 @@ export default defineConfig({
       sourceMaps: true,
     }),
 
-    // --- NEW PLUGIN FOR DEVELOPMENT ---
-    // This plugin will only run when in watch mode
     isWatching && run(),
   ],
 });
