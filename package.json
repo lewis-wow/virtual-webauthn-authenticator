@@ -1,5 +1,5 @@
 {
-  "name": "diploma_thesis",
+  "name": "virtual-webauthn-authenticator",
   "private": true,
   "type": "module",
   "scripts": {
