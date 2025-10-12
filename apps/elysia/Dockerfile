@@ -31,7 +31,7 @@ RUN turbo prune @repo/elysia --docker
 FROM builder-base AS installer
 
 COPY --from=builder /app/out/json/ .
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --prod=false
 
 COPY --from=builder /app/out/full/ .
 RUN pnpm --filter="@repo/elysia" build

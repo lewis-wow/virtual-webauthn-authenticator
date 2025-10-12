@@ -48,8 +48,8 @@ services:
       ASSUMED_ID_PORT: '3080'
   console:
     build:
-      context: ./apps/console
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./apps/console/Dockerfile
     ports:
       - '3000:3000'
     depends_on:
@@ -58,20 +58,10 @@ services:
       - assumed-identity
   elysia:
     build:
-      context: ./apps/elysia
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./apps/elysia/Dockerfile
     ports:
-      - '3001:3001'
-    depends_on:
-      - postgres
-      - lowkey-vault
-      - assumed-identity
-  hono:
-    build:
-      context: ./apps/hono
-      dockerfile: Dockerfile
-    ports:
-      - '3002:3002'
+      - '3001:3000'
     depends_on:
       - postgres
       - lowkey-vault
