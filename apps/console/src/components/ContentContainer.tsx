@@ -1,8 +1,8 @@
-import type { ReactNode } from "react";
-import { match, P } from "ts-pattern";
-import { Loading } from "./Loading";
-import { ErrorAlert } from "./ErrorAlert";
-import { NoContentAlert } from "./NoContentAlert";
+import type { ReactNode } from 'react';
+import { match, P } from 'ts-pattern';
+import { Loading } from './Loading';
+import { ErrorAlert } from './ErrorAlert';
+import { NoContentAlert } from './NoContentAlert';
 
 export type ContentContainerProps = {
   isLoading?: boolean;

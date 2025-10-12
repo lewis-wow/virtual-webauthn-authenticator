@@ -1,4 +1,4 @@
-import type { FieldTransform } from "../types";
+import type { FieldTransform } from '../types';
 
 export const withDefaultFieldTransform = <
   T extends {
