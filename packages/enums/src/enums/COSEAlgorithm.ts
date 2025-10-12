@@ -1,7 +1,7 @@
 import type { ValueOfEnum } from '../types.js';
 import { AsymetricSigningAlgorithm } from './AsymetricSigningAlgorithm.js';
 
-export const CoseAlgorithm = {
+export const COSEAlgorithm = {
   [AsymetricSigningAlgorithm.ES256]: -7,
   [AsymetricSigningAlgorithm.ES384]: -35,
   [AsymetricSigningAlgorithm.ES512]: -36,
@@ -12,4 +12,4 @@ export const CoseAlgorithm = {
   [AsymetricSigningAlgorithm.HS512]: 7,
 } as const;
 
-export type CoseAlgorithm = ValueOfEnum<typeof CoseAlgorithm>;
+export type COSEAlgorithm = ValueOfEnum<typeof COSEAlgorithm>;

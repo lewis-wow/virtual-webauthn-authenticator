@@ -16,7 +16,7 @@ import type {
   IPublicKeyCredentialRequestOptions,
   ISigner,
 } from '@repo/types';
-import { CoseKey } from '@repo/keys';
+import { COSEKey } from '@repo/keys';
 import type { PublicKeyCredential } from '../../src/PublicKeyCredential.js';
 
 const keyPair = generateKeyPairSync('ec', {
@@ -104,7 +104,7 @@ describe('VirtualAuthenticator', () => {
     );
 
     expect(
-      CoseKey.fromBuffer(
+      COSEKey.fromBuffer(
         registrationVerification.registrationInfo!.credential.publicKey,
       ).toJwk(),
     ).toMatchObject(keyPair.publicKey.export({ format: 'jwk' }));

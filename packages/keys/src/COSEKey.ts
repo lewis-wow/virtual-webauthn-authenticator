@@ -1,11 +1,11 @@
 import { swapKeysAndValues } from '@repo/utils/swapKeysAndValues';
 import {
-  CoseAlgorithm,
-  CoseKeyParam,
-  CoseEcCurve,
-  CoseEcParam,
-  CoseKeyType,
-  CoseRsaParam,
+  COSEAlgorithm,
+  COSEKeyParam,
+  COSEEcCurve,
+  COSEEcParam,
+  COSEKeyType,
+  COSERsaParam,
   AsymetricSigningAlgorithm,
 } from '@repo/enums';
 import { getJwkAsymetricSigningAlg } from './getJwkAsymetricSigningAlg.js';
@@ -15,12 +15,12 @@ import { assert, isEnum, isNumber, isString } from 'typanion';
 import { objectKeys } from '@repo/utils/objectKeys';
 import type { BufferLike } from '@repo/types';
 
-export class CoseKey {
+export class COSEKey {
   constructor(
     private readonly coseMap = new Map<number, string | number | Buffer>(),
   ) {}
 
-  static fromJwk(jwk: Jwk): CoseKey {
+  static fromJwk(jwk: Jwk): COSEKey {
     const asymetricSigningAlgorithm = getJwkAsymetricSigningAlg(jwk);
 
     assert(
@@ -28,76 +28,76 @@ export class CoseKey {
       isEnum(Object.values(AsymetricSigningAlgorithm)),
     );
 
-    const coseAlgorithm = CoseAlgorithm[asymetricSigningAlgorithm];
+    const coseAlgorithm = COSEAlgorithm[asymetricSigningAlgorithm];
 
     const coseMap = new Map<number, string | number | Buffer>();
 
-    coseMap.set(CoseKeyParam.alg, coseAlgorithm);
+    coseMap.set(COSEKeyParam.alg, coseAlgorithm);
 
     switch (jwk.kty) {
       case 'OKP': {
-        const kty = CoseKeyType.OKP;
-        const crv = CoseEcCurve[jwk.crv as keyof typeof CoseEcCurve];
+        const kty = COSEKeyType.OKP;
+        const crv = COSEEcCurve[jwk.crv as keyof typeof COSEEcCurve];
 
         assert(crv, isNumber());
         assert(jwk.x, isString());
 
-        coseMap.set(CoseKeyParam.kty, kty);
-        coseMap.set(CoseEcParam.crv, crv);
-        coseMap.set(CoseEcParam.x, Buffer.from(jwk.x, 'base64url'));
+        coseMap.set(COSEKeyParam.kty, kty);
+        coseMap.set(COSEEcParam.crv, crv);
+        coseMap.set(COSEEcParam.x, Buffer.from(jwk.x, 'base64url'));
         if (jwk.d) {
-          coseMap.set(CoseEcParam.d, Buffer.from(jwk.d, 'base64url'));
+          coseMap.set(COSEEcParam.d, Buffer.from(jwk.d, 'base64url'));
         }
         break;
       }
       case 'EC': {
-        const kty = CoseKeyType.EC;
-        const crv = CoseEcCurve[jwk.crv as keyof typeof CoseEcCurve];
+        const kty = COSEKeyType.EC;
+        const crv = COSEEcCurve[jwk.crv as keyof typeof COSEEcCurve];
 
         assert(crv, isNumber());
         assert(jwk.x, isString());
         assert(jwk.y, isString());
 
-        coseMap.set(CoseKeyParam.kty, kty);
-        coseMap.set(CoseEcParam.crv, crv);
-        coseMap.set(CoseEcParam.x, Buffer.from(jwk.x, 'base64url'));
-        coseMap.set(CoseEcParam.y, Buffer.from(jwk.y, 'base64url'));
+        coseMap.set(COSEKeyParam.kty, kty);
+        coseMap.set(COSEEcParam.crv, crv);
+        coseMap.set(COSEEcParam.x, Buffer.from(jwk.x, 'base64url'));
+        coseMap.set(COSEEcParam.y, Buffer.from(jwk.y, 'base64url'));
         if (jwk.d) {
-          coseMap.set(CoseEcParam.d, Buffer.from(jwk.d, 'base64url'));
+          coseMap.set(COSEEcParam.d, Buffer.from(jwk.d, 'base64url'));
         }
         break;
       }
       case 'RSA': {
-        const kty = CoseKeyType.RSA;
+        const kty = COSEKeyType.RSA;
 
         assert(jwk.n, isString());
         assert(jwk.e, isString());
 
-        coseMap.set(CoseKeyParam.kty, kty);
-        coseMap.set(CoseRsaParam.n, Buffer.from(jwk.n, 'base64url'));
-        coseMap.set(CoseRsaParam.e, Buffer.from(jwk.e, 'base64url'));
+        coseMap.set(COSEKeyParam.kty, kty);
+        coseMap.set(COSERsaParam.n, Buffer.from(jwk.n, 'base64url'));
+        coseMap.set(COSERsaParam.e, Buffer.from(jwk.e, 'base64url'));
         if (jwk.d) {
-          coseMap.set(CoseRsaParam.d, Buffer.from(jwk.d, 'base64url'));
+          coseMap.set(COSERsaParam.d, Buffer.from(jwk.d, 'base64url'));
         }
         break;
       }
       default:
         throw new Error(
-          `Invalid JWK 'kty' parameter. Expected one of: ${objectKeys(CoseKeyType).join(', ')}.`,
+          `Invalid JWK 'kty' parameter. Expected one of: ${objectKeys(COSEKeyType).join(', ')}.`,
         );
     }
 
-    return new CoseKey(coseMap);
+    return new COSEKey(coseMap);
   }
 
-  static fromBuffer(buffer: BufferLike): CoseKey {
-    return new CoseKey(decode(buffer));
+  static fromBuffer(buffer: BufferLike): COSEKey {
+    return new COSEKey(decode(buffer));
   }
 
   toJwk(): Jwk {
-    const COSE_TO_JWK_KTY = swapKeysAndValues(CoseKeyType);
-    const COSE_TO_JWK_ALG = swapKeysAndValues(CoseAlgorithm);
-    const COSE_TO_JWK_CRV = swapKeysAndValues(CoseEcCurve);
+    const COSE_TO_JWK_KTY = swapKeysAndValues(COSEKeyType);
+    const COSE_TO_JWK_ALG = swapKeysAndValues(COSEAlgorithm);
+    const COSE_TO_JWK_CRV = swapKeysAndValues(COSEEcCurve);
 
     const jwk: Jwk = {};
 
@@ -105,7 +105,7 @@ export class CoseKey {
     for (const [key, value] of this.coseMap.entries()) {
       switch (key) {
         case 1: // kty
-          assert(value, isEnum(Object.values(CoseKeyType)));
+          assert(value, isEnum(Object.values(COSEKeyType)));
 
           jwk.kty = COSE_TO_JWK_KTY[value as keyof typeof COSE_TO_JWK_KTY];
           break;
