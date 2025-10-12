@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import type { Jwk } from '@repo/types';
-import { COSEKey } from '../../src/CoseKey.js';
+import { COSEKey } from '../../src/COSEKey.js';
 
 describe('COSEKey', () => {
   describe('EC', () => {
