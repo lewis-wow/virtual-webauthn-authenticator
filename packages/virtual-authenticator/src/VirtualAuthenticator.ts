@@ -23,7 +23,7 @@ import {
   isNumber,
   isPartial,
 } from 'typanion';
-import { CoseKey } from '@repo/keys';
+import { COSEKey } from '@repo/keys';
 import { sha256 } from '@repo/utils/sha256';
 import { PublicKeyCredential } from './PublicKeyCredential.js';
 import { hasMinBytes } from './assert/hasMinBytes.js';
@@ -85,7 +85,7 @@ export class VirtualAuthenticator {
     // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty"
     // and algorithm "alg" (see Section 8 of [RFC8152]).
     // Length (in bytes): {variable}
-    const credentialPublicKey = CoseKey.fromJwk(
+    const credentialPublicKey = COSEKey.fromJwk(
       await this.publicJsonWebKeyFactory.getPublicJsonWebKey(),
     ).toBuffer();
 

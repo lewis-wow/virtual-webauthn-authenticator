@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'vitest';
 import type { Jwk } from '@repo/types';
-import { CoseKey } from '../../src/CoseKey.js';
+import { COSEKey } from '../../src/COSEKey.js';
 
-describe('CoseKey', () => {
+describe('COSEKey', () => {
   describe('EC', () => {
     describe('P-256 round-trip', () => {
       const p256PublicKey: Jwk = {
@@ -13,7 +13,7 @@ describe('CoseKey', () => {
       };
 
       test('public key', () => {
-        const coseKey = CoseKey.fromJwk(p256PublicKey);
+        const coseKey = COSEKey.fromJwk(p256PublicKey);
         const outputJwk = coseKey.toJwk();
 
         // The output should contain all original properties
@@ -28,7 +28,7 @@ describe('CoseKey', () => {
           d: 'RGs-NTMbC3S8EYM-LI_2a2yN2AnTpF2YAbK2DPa1fS4',
         };
 
-        const coseKey = CoseKey.fromJwk(p256PrivateKey);
+        const coseKey = COSEKey.fromJwk(p256PrivateKey);
         const outputJwk = coseKey.toJwk();
 
         expect(outputJwk).toMatchObject(p256PrivateKey);
@@ -44,7 +44,7 @@ describe('CoseKey', () => {
       };
 
       test('public key', () => {
-        const coseKey = CoseKey.fromJwk(ed25519PublicKey);
+        const coseKey = COSEKey.fromJwk(ed25519PublicKey);
         const outputJwk = coseKey.toJwk();
 
         expect(outputJwk).toMatchObject(ed25519PublicKey);
@@ -62,7 +62,7 @@ describe('CoseKey', () => {
     };
 
     test('round-trip public key', () => {
-      const coseKey = CoseKey.fromJwk(rsaPublicKey);
+      const coseKey = COSEKey.fromJwk(rsaPublicKey);
       const outputJwk = coseKey.toJwk();
 
       expect(outputJwk).toMatchObject(rsaPublicKey);
@@ -72,21 +72,21 @@ describe('CoseKey', () => {
 
   describe('Unsupported keys', () => {
     test('should throw for a key with an unsupported algorithm', () => {
-      // getJwkSigningAlg will return 'RS512', but it won't be found in the CoseAlgorithm enum.
+      // getJwkSigningAlg will return 'RS512', but it won't be found in the COSEAlgorithm enum.
       const jwk: Jwk = { kty: 'RSA', alg: 'RS512', n: 'n', e: 'e' };
-      expect(() => CoseKey.fromJwk(jwk)).toThrow();
+      expect(() => COSEKey.fromJwk(jwk)).toThrow();
     });
 
     test('should throw for an EC key with a missing crv', () => {
       // getJwkSigningAlg will return undefined, causing the assertion to fail.
       const jwk: Jwk = { kty: 'EC', x: 'x', y: 'y' };
-      expect(() => CoseKey.fromJwk(jwk)).toThrow();
+      expect(() => COSEKey.fromJwk(jwk)).toThrow();
     });
 
     test('should throw for an RSA key with missing params', () => {
       // The assertion for jwk.n will fail inside the 'RSA' case.
       const jwk: Jwk = { kty: 'RSA', e: 'AQAB' };
-      expect(() => CoseKey.fromJwk(jwk)).toThrow();
+      expect(() => COSEKey.fromJwk(jwk)).toThrow();
     });
   });
 });
