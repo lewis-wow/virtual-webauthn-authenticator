@@ -46,6 +46,37 @@ services:
     environment:
       # Set port number to the one we want to use on the host machine
       ASSUMED_ID_PORT: '3080'
+  console:
+    build:
+      context: ./apps/console
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+      - lowkey-vault
+      - assumed-identity
+  elysia:
+    build:
+      context: ./apps/elysia
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    depends_on:
+      - postgres
+      - lowkey-vault
+      - assumed-identity
+  hono:
+    build:
+      context: ./apps/hono
+      dockerfile: Dockerfile
+    ports:
+      - '3002:3002'
+    depends_on:
+      - postgres
+      - lowkey-vault
+      - assumed-identity
+
 volumes:
   lowkey-vault-import:
     driver: local

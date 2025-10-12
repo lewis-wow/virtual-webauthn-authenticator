@@ -30,7 +30,6 @@
     "rollup-plugin-delete": "^3.0.1",
     "rollup-plugin-node-externals": "^8.1.1",
     "rollup-plugin-tsconfig-paths": "^1.5.2",
-    "tsx": "^4.7.1",
     "typescript": "^5.8.3"
   }
 }

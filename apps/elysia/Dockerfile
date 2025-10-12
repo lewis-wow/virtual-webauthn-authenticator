@@ -1,55 +1,53 @@
+FROM node:22-alpine AS base
 
-# Base image
-FROM node:18-alpine AS base
+ENV NODE_ENV=production
+
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# =========================================================================== #
 
-# -------------------------------------------------------------------------------------------------
-# Prune the monorepo
-FROM base AS pruner
-WORKDIR /app
+FROM base AS builder-base
 
-# Copy root package.json and pnpm-lock.yaml
-COPY package.json pnpm-lock.yaml ./
+ENV TURBO_TELEMETRY_DISABLED=1
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV CI=1
 
-# Copy project files
+RUN corepack enable pnpm
+
+# =========================================================================== #
+
+FROM builder-base AS builder
+
+RUN pnpm install --global turbo
+
 COPY . .
-RUN turbo prune --scope=elysia --docker
 
-# -------------------------------------------------------------------------------------------------
-# Builder image
-FROM base AS builder
-WORKDIR /app
+# https://turbo.build/repo/docs/guides/tools/docker#the-solution
+RUN turbo prune @repo/elysia --docker
 
-# Copy pruned files
-COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+# =========================================================================== #
 
-# Install dependencies
+FROM builder-base AS installer
+
+COPY --from=builder /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY --from=pruner /app/out/full/ .
-COPY turbo.json turbo.json
+COPY --from=builder /app/out/full/ .
+RUN pnpm --filter="@repo/elysia" build
 
-# Build the app
-RUN pnpm turbo run build --filter=elysia...
+# =========================================================================== #
 
-# -------------------------------------------------------------------------------------------------
-# Runner image
-FROM base AS runner
-WORKDIR /app
+FROM base AS production
 
-# Copy build output
-COPY --from=builder /app/apps/elysia/dist ./dist
-COPY --from=builder /app/apps/elysia/node_modules ./node_modules
-COPY --from=builder /app/apps/elysia/package.json ./
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 elysia
 
+COPY --from=installer --chown=elysia:nodejs /app/apps/elysia/dist /app/dist
 
-# Expose the port
-EXPOSE 3000
+USER elysia
 
-# Start the app
-CMD ["node", "dist/index.js"]
+# HEALTHCHECK --interval=30s --timeout=10s --retries=3 \
+#   CMD wget --quiet --spider http://${SERVER_HOST}:${SERVER_PORT}/healthcheck || exit 1
+
+CMD ["node", "/app/dist/index.js"]
