@@ -7,7 +7,6 @@ import {
   PublicKeyCredentialAuthenticatorAttestationResponseSchema,
   PublicKeyCredentialCreationOptionsSchema,
   PublicKeyCredentialRequestOptionsSchema,
-  PublicKeyCredentialSchema,
 } from '@repo/validation';
 
 const keyPair = generateKeyPairSync('ec', {
