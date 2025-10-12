@@ -8,11 +8,13 @@ import {
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema.js';
 
-export const PublicKeyCredentialAuthenticatorAssertionResponseSchema = z.object({
+export const PublicKeyCredentialAuthenticatorAssertionResponseSchema = z.object(
+  {
     id: z.string().describe('The Base64URL-encoded credential ID.'),
     rawId: Base64URLBufferSchema,
     type: PublicKeyCredentialTypeSchema,
     clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
     response: AuthenticatorAssertionResponseSchema,
-  }) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAssertionResponse>;
+  },
+) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAssertionResponse>;

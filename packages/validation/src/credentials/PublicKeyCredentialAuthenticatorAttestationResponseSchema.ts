@@ -8,7 +8,8 @@ import {
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema.js';
 
-export const PublicKeyCredentialAuthenticatorAttestationResponseSchema = z.object({
+export const PublicKeyCredentialAuthenticatorAttestationResponseSchema =
+  z.object({
     id: z.string().describe('The Base64URL-encoded credential ID.'),
     rawId: Base64URLBufferSchema,
     type: PublicKeyCredentialTypeSchema,

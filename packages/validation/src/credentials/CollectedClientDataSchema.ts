@@ -6,8 +6,10 @@ export const CollectedClientDataSchema = z.object({
   challenge: z.string(),
   origin: z.string(),
   crossOrigin: z.boolean().optional(),
-  tokenBinding: z.object({
-    status: z.union([z.literal('present'), z.literal('supported')]),
-    id: z.string().optional(),
-  }).optional(),
+  tokenBinding: z
+    .object({
+      status: z.union([z.literal('present'), z.literal('supported')]),
+      id: z.string().optional(),
+    })
+    .optional(),
 }) satisfies z.ZodType<ICollectedClientData>;
