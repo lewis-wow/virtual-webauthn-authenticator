@@ -7,10 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Building, LogOut } from 'lucide-react';
-import { getInitials } from '../lib/getInitials';
-import { signOut } from 'next-auth/react';
-import { Link } from '@/app/i18n/navigation';
+import { LogOut } from 'lucide-react';
 
 export type UserAvatarDropdownMenuProps = {
   image: string;
@@ -23,16 +20,14 @@ export const UserAvatarDropdownMenu = ({
   name,
   email,
 }: UserAvatarDropdownMenuProps) => {
-  const handleLogout = async () => {
-    await signOut();
-  };
+  const handleLogout = async () => {};
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar className="cursor-pointer transition-opacity hover:opacity-80">
           <AvatarImage src={image} alt={name} />
-          <AvatarFallback>{getInitials(name)}</AvatarFallback>
+          <AvatarFallback>{name}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
@@ -41,19 +36,13 @@ export const UserAvatarDropdownMenu = ({
             {email}
           </div>
         )}
-        <Link href="/profile">
-          <DropdownMenuItem className="cursor-pointer">
-            <Building className="mr-2 h-4 w-4" />
-            Moje nabídky
-          </DropdownMenuItem>
-        </Link>
 
         <DropdownMenuItem
           onClick={handleLogout}
           className="text-destructive focus:text-destructive cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Odhlásit se
+          Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
