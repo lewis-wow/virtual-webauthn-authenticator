@@ -1,23 +1,25 @@
 import { Elysia } from 'elysia';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { createSign, generateKeyPairSync } from 'node:crypto';
-import type { IPublicJsonWebKeyFactory, ISigner } from '@repo/types';
+import type { ICredentialSigner, ICredentialPublicKey } from '@repo/types';
 import {
+  PublicKeyCredentialAuthenticatorAssertionResponseSchema,
+  PublicKeyCredentialAuthenticatorAttestationResponseSchema,
   PublicKeyCredentialCreationOptionsSchema,
-  PublicKeyCredentialSchema,
+  PublicKeyCredentialRequestOptionsSchema,
 } from '@repo/validation';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
 });
 
-const publicJsonWebKeyFactory: IPublicJsonWebKeyFactory = {
-  getPublicJsonWebKey: () => {
+const credentialPublicKey: ICredentialPublicKey = {
+  getJwk: () => {
     return keyPair.publicKey.export({ format: 'jwk' });
   },
 };
 
-const signer: ISigner = {
+const credentialSigner: ICredentialSigner = {
   sign: (data: Buffer) => {
     const signature = createSign('sha256')
       .update(data)
@@ -28,8 +30,8 @@ const signer: ISigner = {
 };
 
 const authenticator = new VirtualAuthenticator({
-  publicJsonWebKeyFactory,
-  signer,
+  credentialPublicKey,
+  credentialSigner,
 });
 
 export const credentials = new Elysia({ prefix: '/credentials' })
@@ -38,7 +40,9 @@ export const credentials = new Elysia({ prefix: '/credentials' })
     async ({ body }) => {
       const credentials = await authenticator.createCredential(body);
 
-      return PublicKeyCredentialSchema.encode(credentials);
+      return PublicKeyCredentialAuthenticatorAttestationResponseSchema.encode(
+        credentials,
+      );
     },
     {
       body: PublicKeyCredentialCreationOptionsSchema,
@@ -49,7 +53,11 @@ export const credentials = new Elysia({ prefix: '/credentials' })
     async ({ params }) => {
       const credentials = await authenticator.getCredential(params as any);
 
-      return PublicKeyCredentialSchema.encode(credentials);
+      return PublicKeyCredentialAuthenticatorAssertionResponseSchema.encode(
+        credentials,
+      );
     },
-    {},
+    {
+      params: PublicKeyCredentialRequestOptionsSchema,
+    },
   );

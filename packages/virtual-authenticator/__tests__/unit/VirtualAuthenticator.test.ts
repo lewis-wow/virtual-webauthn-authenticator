@@ -11,10 +11,10 @@ import {
 import { toBuffer } from '@repo/utils/toBuffer';
 import type {
   IAuthenticatorAttestationResponse,
-  IPublicJsonWebKeyFactory,
+  ICredentialPublicKey,
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialRequestOptions,
-  ISigner,
+  ICredentialSigner,
 } from '@repo/types';
 import { COSEKey } from '@repo/keys';
 import type { PublicKeyCredential } from '../../src/PublicKeyCredential.js';
@@ -23,13 +23,13 @@ const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
 });
 
-const publicJsonWebKeyFactory: IPublicJsonWebKeyFactory = {
-  getPublicJsonWebKey: () => {
+const credentialPublicKey: ICredentialPublicKey = {
+  getJwk: () => {
     return keyPair.publicKey.export({ format: 'jwk' });
   },
 };
 
-const signer: ISigner = {
+const credentialSigner: ICredentialSigner = {
   sign: (data: Buffer) => {
     const signature = createSign('sha256')
       .update(data)
@@ -77,8 +77,8 @@ describe('VirtualAuthenticator', () => {
 
   beforeAll(async () => {
     authenticator = new VirtualAuthenticator({
-      publicJsonWebKeyFactory,
-      signer,
+      credentialPublicKey,
+      credentialSigner,
     });
 
     publicKeyCredentials =

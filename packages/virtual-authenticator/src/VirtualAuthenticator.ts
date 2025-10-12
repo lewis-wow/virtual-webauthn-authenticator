@@ -2,13 +2,13 @@ import { randomBytes } from 'crypto';
 import { encode } from 'cbor';
 import { toBuffer } from '@repo/utils/toBuffer';
 import type {
-  ISigner,
-  IPublicJsonWebKeyFactory,
+  ICredentialSigner,
   ICollectedClientData,
   IPublicKeyCredentialRequestOptions,
   IPublicKeyCredentialCreationOptions,
   IAuthenticatorAttestationResponse,
   IAuthenticatorAssertionResponse,
+  ICredentialPublicKey,
 } from '@repo/types';
 import {
   assert,
@@ -30,18 +30,18 @@ import { hasMinBytes } from './assert/hasMinBytes.js';
 import { UserVerificationRequirement } from '@repo/enums';
 
 export type VirtualAuthenticatorOptions = {
-  signer: ISigner;
-  publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
+  credentialSigner: ICredentialSigner;
+  credentialPublicKey: ICredentialPublicKey;
 };
 
 export class VirtualAuthenticator {
-  private readonly signer: ISigner;
-  private readonly publicJsonWebKeyFactory: IPublicJsonWebKeyFactory;
+  private readonly credentialSigner: ICredentialSigner;
+  private readonly credentialPublicKey: ICredentialPublicKey;
   private _counter = 0;
 
   constructor(opts: VirtualAuthenticatorOptions) {
-    this.signer = opts.signer;
-    this.publicJsonWebKeyFactory = opts.publicJsonWebKeyFactory;
+    this.credentialSigner = opts.credentialSigner;
+    this.credentialPublicKey = opts.credentialPublicKey;
   }
 
   /**
@@ -86,7 +86,7 @@ export class VirtualAuthenticator {
     // and algorithm "alg" (see Section 8 of [RFC8152]).
     // Length (in bytes): {variable}
     const credentialPublicKey = COSEKey.fromJwk(
-      await this.publicJsonWebKeyFactory.getPublicJsonWebKey(),
+      await this.credentialPublicKey.getJwk(),
     ).toBuffer();
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
@@ -208,7 +208,7 @@ export class VirtualAuthenticator {
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
 
-    const signature = await this.signer.sign(dataToSign);
+    const signature = await this.credentialSigner.sign(dataToSign);
 
     return new PublicKeyCredential({
       id: toBuffer(credentialID).toString('base64url'),
