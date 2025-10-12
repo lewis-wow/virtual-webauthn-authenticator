@@ -10,8 +10,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma --ignore-path .gitignore",
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
