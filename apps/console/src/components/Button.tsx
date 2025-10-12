@@ -3,11 +3,12 @@ import {
   type buttonVariants,
 } from '@/components/ui/button';
 import { type VariantProps } from 'class-variance-authority';
+import Link from 'next/link';
 import { type ComponentProps } from 'react';
 import { match } from 'ts-pattern';
-import { Loading } from './Loading';
+
 import { cn } from '../lib/utils';
-import Link from 'next/link';
+import { Loading } from './Loading';
 
 export type ButtonProps = {
   isLoading?: boolean;

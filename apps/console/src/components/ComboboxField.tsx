@@ -1,12 +1,17 @@
-import type { FieldValues, Path, PathValue } from 'react-hook-form';
-import type { CommonFieldProps } from '@/types';
 import {
-  FormField,
-  FormItem,
   FormControl,
   FormDescription,
+  FormField,
+  FormItem,
   FormMessage,
 } from '@/components/ui/form';
+import type { CommonFieldProps } from '@/types';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import type { FieldValues, Path, PathValue } from 'react-hook-form';
+
+import { cn } from '../lib/utils';
+import { FormLabel } from './FormLabel';
+import { Button } from './ui/button';
 import {
   Command,
   CommandEmpty,
@@ -15,11 +20,7 @@ import {
   CommandItem,
   CommandList,
 } from './ui/command';
-import { Popover, PopoverTrigger, PopoverContent } from './ui/popover';
-import { ChevronsUpDown, Check } from 'lucide-react';
-import { Button } from './ui/button';
-import { cn } from '../lib/utils';
-import { FormLabel } from './FormLabel';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 
 export type ComboboxFieldItem = {
   value: string;

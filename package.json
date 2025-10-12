@@ -15,6 +15,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/ejs": "^3.1.5",
     "@types/node": "^24.5.2",
     "@vitest/coverage-istanbul": "^3.2.4",

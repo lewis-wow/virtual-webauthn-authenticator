@@ -1,19 +1,19 @@
-import { swapKeysAndValues } from '@repo/utils/swapKeysAndValues';
 import {
+  AsymetricSigningAlgorithm,
   COSEAlgorithm,
-  COSEKeyParam,
   COSEEcCurve,
   COSEEcParam,
+  COSEKeyParam,
   COSEKeyType,
   COSERsaParam,
-  AsymetricSigningAlgorithm,
 } from '@repo/enums';
-import { getJwkAsymetricSigningAlg } from './getJwkAsymetricSigningAlg.js';
-import type { Jwk } from '@repo/types';
-import { encode, decode } from 'cbor';
-import { assert, isEnum, isNumber, isString } from 'typanion';
+import type { BufferLike, Jwk } from '@repo/types';
 import { objectKeys } from '@repo/utils/objectKeys';
-import type { BufferLike } from '@repo/types';
+import { swapKeysAndValues } from '@repo/utils/swapKeysAndValues';
+import { decode, encode } from 'cbor';
+import { assert, isEnum, isNumber, isString } from 'typanion';
+
+import { getJwkAsymetricSigningAlg } from './getJwkAsymetricSigningAlg.js';
 
 export class COSEKey {
   constructor(

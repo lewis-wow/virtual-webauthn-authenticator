@@ -1,4 +1,5 @@
 import type { SwapKeysAndValues } from '@repo/types';
+
 /**
  * Swaps the keys and values of a constant object.
  *

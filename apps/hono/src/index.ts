@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server';
-import { Hono } from 'hono';
 import { Environment } from '@repo/enums';
+import { Hono } from 'hono';
+
 import { prisma } from './prisma.js';
 
 const app = new Hono();

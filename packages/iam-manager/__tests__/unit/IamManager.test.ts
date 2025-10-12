@@ -1,11 +1,12 @@
-import { test, describe, expect, beforeEach } from 'vitest';
 import {
-  PrismaClient,
   PermissionAction,
   PermissionResource,
+  PrismaClient,
   RoleName,
 } from '@repo/prisma';
+import { beforeEach, describe, expect, test } from 'vitest';
 import { mockDeep, mockReset } from 'vitest-mock-extended';
+
 import { IamManager } from '../../src/IamManager.js';
 
 const prisma = mockDeep<PrismaClient>();

@@ -1,6 +1,6 @@
 import type {
-  PublicKeyCredentialType,
   AuthenticatorAttachment,
+  PublicKeyCredentialType,
 } from '@repo/enums';
 import type {
   Base64URLString,

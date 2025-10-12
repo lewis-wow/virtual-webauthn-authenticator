@@ -5,10 +5,11 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import type { FieldValues } from 'react-hook-form';
 import type { CommonFieldProps } from '@/types';
-import { Textarea } from './ui/textarea';
+import type { FieldValues } from 'react-hook-form';
+
 import { FormLabel } from './FormLabel';
+import { Textarea } from './ui/textarea';
 
 export type TextareaFieldProps<TFieldValues extends FieldValues> =
   {} & CommonFieldProps<TFieldValues>;

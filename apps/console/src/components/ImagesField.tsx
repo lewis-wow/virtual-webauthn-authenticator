@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/Button';
 import {
   FormControl,
   FormDescription,
@@ -7,13 +8,14 @@ import {
   FormItem,
   FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/Button';
 import { Input } from '@/components/ui/input';
 import type { CommonFieldProps } from '@/types';
 import { X } from 'lucide-react';
-import { useState, useEffect, type ChangeEvent } from 'react';
+import Image from 'next/image';
+// 1. Import the Image component
+import { useEffect, useState, type ChangeEvent } from 'react';
 import type { FieldValues } from 'react-hook-form';
-import Image from 'next/image'; // 1. Import the Image component
+
 import { FormLabel } from './FormLabel';
 
 export type ImagesFieldProps<TFieldValues extends FieldValues> = {

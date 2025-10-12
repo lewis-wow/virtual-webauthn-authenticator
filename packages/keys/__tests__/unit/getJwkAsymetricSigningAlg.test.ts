@@ -1,7 +1,8 @@
-import { describe, test, expect } from 'vitest';
-import type { Jwk } from '@repo/types';
-import { getJwkAsymetricSigningAlg } from '../../src/getJwkAsymetricSigningAlg.js';
 import { AsymetricSigningAlgorithm } from '@repo/enums';
+import type { Jwk } from '@repo/types';
+import { describe, expect, test } from 'vitest';
+
+import { getJwkAsymetricSigningAlg } from '../../src/getJwkAsymetricSigningAlg.js';
 
 describe('getJwkAsymetricSigningAlg', () => {
   test('should return the "alg" property if test is explicitly provided', () => {

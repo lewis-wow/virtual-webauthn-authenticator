@@ -1,33 +1,34 @@
-import { randomBytes } from 'crypto';
-import { encode } from 'cbor';
-import { toBuffer } from '@repo/utils/toBuffer';
+import { UserVerificationRequirement } from '@repo/enums';
+import { COSEKey } from '@repo/keys';
 import type {
-  ICredentialSigner,
-  ICollectedClientData,
-  IPublicKeyCredentialRequestOptions,
-  IPublicKeyCredentialCreationOptions,
-  IAuthenticatorAttestationResponse,
   IAuthenticatorAssertionResponse,
+  IAuthenticatorAttestationResponse,
+  ICollectedClientData,
   ICredentialPublicKey,
+  ICredentialSigner,
+  IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredentialRequestOptions,
 } from '@repo/types';
+import { sha256 } from '@repo/utils/sha256';
+import { toBuffer } from '@repo/utils/toBuffer';
+import { encode } from 'cbor';
+import { randomBytes } from 'crypto';
 import {
+  applyCascade,
   assert,
+  hasMinLength,
   isArray,
   isEnum,
-  isOptional,
-  isString,
-  hasMinLength,
-  applyCascade,
   isInstanceOf,
-  isObject,
   isNumber,
+  isObject,
+  isOptional,
   isPartial,
+  isString,
 } from 'typanion';
-import { COSEKey } from '@repo/keys';
-import { sha256 } from '@repo/utils/sha256';
+
 import { PublicKeyCredential } from './PublicKeyCredential.js';
 import { hasMinBytes } from './assert/hasMinBytes.js';
-import { UserVerificationRequirement } from '@repo/enums';
 
 export type VirtualAuthenticatorOptions = {
   credentialSigner: ICredentialSigner;

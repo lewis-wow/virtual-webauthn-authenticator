@@ -1,4 +1,5 @@
 'use client';
+
 import { Stack } from '@/components/Stack';
 import type { ReactNode } from 'react';
 

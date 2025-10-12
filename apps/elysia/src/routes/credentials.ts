@@ -1,13 +1,13 @@
-import { Elysia } from 'elysia';
-import { VirtualAuthenticator } from '@repo/virtual-authenticator';
-import { createSign, generateKeyPairSync } from 'node:crypto';
-import type { ICredentialSigner, ICredentialPublicKey } from '@repo/types';
+import type { ICredentialPublicKey, ICredentialSigner } from '@repo/types';
 import {
   PublicKeyCredentialAuthenticatorAssertionResponseSchema,
   PublicKeyCredentialAuthenticatorAttestationResponseSchema,
   PublicKeyCredentialCreationOptionsSchema,
   PublicKeyCredentialRequestOptionsSchema,
 } from '@repo/validation';
+import { VirtualAuthenticator } from '@repo/virtual-authenticator';
+import { Elysia } from 'elysia';
+import { createSign, generateKeyPairSync } from 'node:crypto';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',

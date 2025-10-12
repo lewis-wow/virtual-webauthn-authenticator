@@ -1,7 +1,7 @@
-import type { Jwk } from '@repo/types';
-import { assert, isEnum, isOptional } from 'typanion';
-import { objectKeys } from '@repo/utils/objectKeys';
 import { AsymetricSigningAlgorithm } from '@repo/enums';
+import type { Jwk } from '@repo/types';
+import { objectKeys } from '@repo/utils/objectKeys';
+import { assert, isEnum, isOptional } from 'typanion';
 
 /**
  * Infers a JWS signing algorithm ('alg') from a JSON Web Key (JWK).

@@ -1,7 +1,8 @@
-import { Elysia } from 'elysia';
 import { node } from '@elysiajs/node';
 import { openapi } from '@elysiajs/openapi';
+import { Elysia } from 'elysia';
 import { z } from 'zod';
+
 import { credentials } from './routes/credentials.js';
 
 new Elysia({ adapter: node() })

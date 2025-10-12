@@ -1,11 +1,11 @@
 // File: @/components/form/MinMaxField.tsx
-
 import { FormDescription, FormItem } from '@/components/ui/form';
-import type { FieldValues, Path } from 'react-hook-form';
 import type { CommonFieldProps } from '@/types';
 import type { ComponentType, ReactNode } from 'react';
-import { FormLabel } from './FormLabel';
+import type { FieldValues, Path } from 'react-hook-form';
+
 import { cn } from '../lib/utils';
+import { FormLabel } from './FormLabel';
 
 /**
  * Props for the FieldComponent that MinMaxField will render.

@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
 import { FormLabel as FormLabelUI } from '@/components/ui/form';
+import type { ReactNode } from 'react';
+
 import { cn } from '../lib/utils';
 
 export type FormLabelProps = {
