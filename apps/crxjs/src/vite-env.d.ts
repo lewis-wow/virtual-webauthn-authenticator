@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
 declare module '*?script&module' {
-  const src: string
-  export default src
+  const src: string;
+  export default src;
 }
