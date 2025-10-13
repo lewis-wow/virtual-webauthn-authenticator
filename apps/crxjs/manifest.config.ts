@@ -15,7 +15,7 @@ export default defineManifest({
   ],
   web_accessible_resources: [
     {
-      resources: ['src/content/override.ts'],
+      resources: ['src/content/override.js'],
       matches: ['<all_urls>'],
     },
   ],

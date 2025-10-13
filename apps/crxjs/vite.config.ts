@@ -1,9 +1,10 @@
-import path from 'node:path'
-import { crx } from '@crxjs/vite-plugin'
-import { defineConfig } from 'vite'
-import zip from 'vite-plugin-zip-pack'
-import manifest from './manifest.config.js'
-import { name, version } from './package.json'
+import { crx } from '@crxjs/vite-plugin';
+import path from 'node:path';
+import { defineConfig } from 'vite';
+import zip from 'vite-plugin-zip-pack';
+
+import manifest from './manifest.config.js';
+import { name, version } from './package.json';
 
 export default defineConfig({
   resolve: {
@@ -17,9 +18,7 @@ export default defineConfig({
   ],
   server: {
     cors: {
-      origin: [
-        /chrome-extension:\/\//,
-      ],
+      origin: [/chrome-extension:\/\//],
     },
   },
-})
+});
