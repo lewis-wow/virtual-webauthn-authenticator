@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { signOut, useSession } from '@/lib/auth';
 import { LogOut } from 'lucide-react';
 
 export type UserAvatarDropdownMenuProps = {
@@ -20,7 +21,13 @@ export const UserAvatarDropdownMenu = ({
   name,
   email,
 }: UserAvatarDropdownMenuProps) => {
-  const handleLogout = async () => {};
+  const { data: session } = useSession();
+
+  console.log(session);
+
+  const handleSignout = async () => {
+    await signOut();
+  };
 
   return (
     <DropdownMenu>
@@ -38,11 +45,11 @@ export const UserAvatarDropdownMenu = ({
         )}
 
         <DropdownMenuItem
-          onClick={handleLogout}
+          onClick={handleSignout}
           className="text-destructive focus:text-destructive cursor-pointer"
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Log out
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

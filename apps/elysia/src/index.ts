@@ -15,6 +15,6 @@ new Elysia({ adapter: node() })
   )
   .use(credentials)
   .get('/', () => 'Hello Elysia')
-  .listen(3000, ({ hostname, port }) => {
+  .listen(3001, ({ hostname, port }) => {
     console.log(`🦊 Elysia is running at http://${hostname}:${port}`);
   });
