@@ -1,25 +1,13 @@
 const originalCredentials = navigator.credentials;
 
-const prefix = '[Injector]';
-
-export const consoleProxy = new Proxy(console, {
-  get(target, prop) {
-    const originalMethod = target[prop];
-
-    if (typeof originalMethod === 'function') {
-      return (...args) => {
-        originalMethod.apply(target, [prefix, ...args]);
-      };
-    }
-
-    return originalMethod;
-  },
-});
+const LOG_PREFIX = '[Injector]';
 
 const credentialsProxy = new Proxy(originalCredentials, {
   get(_target, prop) {
-    consoleProxy.log(`Intercepted navigator.credentials.${prop.toString()}()`);
-    consoleProxy.log(`Dispatching fetch request to google.com...`);
+    console.log(
+      LOG_PREFIX,
+      `Intercepted navigator.credentials.${prop.toString()}()`,
+    );
 
     switch (prop) {
       case 'get': {
@@ -27,15 +15,19 @@ const credentialsProxy = new Proxy(originalCredentials, {
          * @param {CredentialRequestOptions} [args]
          */
         return async (args) => {
-          consoleProxy.log(args);
-
-          await fetch(`${import.meta.env.API_BASE_URL}/credentails/`, {
-            method: 'GET',
-          })
+          await fetch(
+            `${document.currentScript.dataset.apiBaseUrl}/credentails/`,
+            {
+              method: 'GET',
+            },
+          )
             .then((res) =>
-              consoleProxy.log(`Fetch to google.com status: ${res.status}`),
+              console.log(
+                LOG_PREFIX,
+                `Fetch to google.com status: ${res.status}`,
+              ),
             )
-            .catch((err) => consoleProxy.error(`[PROXY] Fetch failed:`, err));
+            .catch((err) => console.error(LOG_PREFIX, `Fetch failed:`, err));
         };
       }
       case 'create': {
@@ -43,20 +35,24 @@ const credentialsProxy = new Proxy(originalCredentials, {
          * @param {CredentialCreationOptions} [args]
          */
         return async (args) => {
-          consoleProxy.log(args);
-
-          await fetch(`${import.meta.env.API_BASE_URL}/credentails/`, {
-            method: 'POST',
-          })
+          await fetch(
+            `${document.currentScript.dataset.apiBaseUrl}/credentails/`,
+            {
+              method: 'POST',
+            },
+          )
             .then((res) =>
-              consoleProxy.log(`Fetch to google.com status: ${res.status}`),
+              console.log(
+                LOG_PREFIX,
+                `Fetch to google.com status: ${res.status}`,
+              ),
             )
-            .catch((err) => consoleProxy.error(`Fetch failed:`, err));
+            .catch((err) => console.error(LOG_PREFIX, `Fetch failed:`, err));
         };
       }
       default: {
         throw new Error(
-          `${prefix} navigator.credentials.${prop.toString()}() is not implemented yet.`,
+          `${LOG_PREFIX} navigator.credentials.${prop.toString()}() is not implemented yet.`,
         );
       }
     }
@@ -69,6 +65,7 @@ Object.defineProperty(navigator, 'credentials', {
   configurable: true,
 });
 
-consoleProxy.log(
+console.log(
+  LOG_PREFIX,
   'navigator.credentials has been successfully replaced with a Proxy.',
 );

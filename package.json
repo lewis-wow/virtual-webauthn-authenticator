@@ -30,10 +30,5 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
-  },
-  "pnpm": {
-    "overrides": {
-      "@wxt-dev/browser": "0.4.5"
-    }
   }
 }
