@@ -4,7 +4,6 @@ import { defineConfig } from 'vite';
 import zip from 'vite-plugin-zip-pack';
 
 import manifest from './manifest.config.js';
-import { name, version } from './package.json';
 
 export default defineConfig({
   resolve: {
@@ -14,7 +13,7 @@ export default defineConfig({
   },
   plugins: [
     crx({ manifest }),
-    zip({ outDir: 'release', outFileName: `crx-${name}-${version}.zip` }),
+    zip({ outDir: 'release', outFileName: 'release.zip' }),
   ],
   server: {
     cors: {
