@@ -1,10 +1,12 @@
-import type { Base64URLString } from '../Base64URLString.js';
-import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
-import type { IAuthenticatorAttestationResponseJSON } from './IAuthenticatorAttestationResponseJSON.js';
 import type {
   AuthenticatorAttachment,
   PublicKeyCredentialType,
 } from '@repo/enums';
+
+import type { Base64URLString } from '../Base64URLString.js';
+import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
+import type { IAuthenticatorAttestationResponseJSON } from './IAuthenticatorAttestationResponseJSON.js';
+
 /**
  * The complete JSON representation of a credential after a successful **registration**.
  * This is often the object sent back to the client upon completion.

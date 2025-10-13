@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 import { Slot } from '@radix-ui/react-slot';
+import type { ReactNode } from 'react';
 
 export const StackPredefinedGap = ['between', 'around', 'evenly'] as const;
 export type StackPredefinedGap = (typeof StackPredefinedGap)[number];

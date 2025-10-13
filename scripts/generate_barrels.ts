@@ -1,8 +1,7 @@
 #!/usr/bin/env -S npx tsx
-
-import { readdir, writeFile, readFile } from 'fs/promises';
-import path from 'path';
 import ejs from 'ejs';
+import { readdir, readFile, writeFile } from 'fs/promises';
+import path from 'path';
 
 const targetDir = process.argv[2];
 if (!targetDir) {

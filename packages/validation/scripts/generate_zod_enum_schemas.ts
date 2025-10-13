@@ -1,8 +1,7 @@
 #!/usr/bin/env -S npx tsx
-
+import ejs from 'ejs';
 import { readdir, readFile, writeFile } from 'fs/promises';
 import path, { join } from 'path';
-import ejs from 'ejs';
 
 const IMPORT_ALIAS = '@repo/enums';
 const OUTPUT_PATH = join(import.meta.dirname, '..', 'src/enums.ts');

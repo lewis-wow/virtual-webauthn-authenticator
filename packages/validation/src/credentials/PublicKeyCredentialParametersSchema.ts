@@ -1,5 +1,6 @@
 import type { IPublicKeyCredentialParameters } from '@repo/types';
 import z from 'zod';
+
 import {
   COSEAlgorithmIdentifierSchema,
   PublicKeyCredentialTypeSchema,

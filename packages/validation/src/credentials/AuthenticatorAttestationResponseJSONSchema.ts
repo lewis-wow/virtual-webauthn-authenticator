@@ -1,6 +1,6 @@
+import { AuthenticatorTransport, COSEAlgorithmIdentifier } from '@repo/enums';
 import type { IAuthenticatorAttestationResponseJSON } from '@repo/types';
 import z from 'zod';
-import { AuthenticatorTransport, COSEAlgorithmIdentifier } from '@repo/enums';
 
 export const AuthenticatorAttestationResponseJSONSchema = z.object({
   clientDataJSON: z.string(),

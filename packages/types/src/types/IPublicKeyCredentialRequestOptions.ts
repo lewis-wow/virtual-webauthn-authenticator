@@ -1,4 +1,5 @@
 import type { UserVerificationRequirement } from '@repo/enums';
+
 import type { IAuthenticationExtensionsClientInputs } from './IAuthenticationExtensionsClientInputs.js';
 import type { IPublicKeyCredentialDescriptor } from './IPublicKeyCredentialDescriptor.js';
 

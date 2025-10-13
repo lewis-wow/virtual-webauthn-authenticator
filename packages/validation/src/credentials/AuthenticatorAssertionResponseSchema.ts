@@ -1,5 +1,6 @@
 import type { IAuthenticatorAssertionResponse } from '@repo/types';
 import z from 'zod';
+
 import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 
 /**

@@ -1,5 +1,5 @@
-import z from 'zod';
 import type { IPublicKeyCredentialRpEntity } from '@repo/types';
+import z from 'zod';
 
 // Represents the Relying Party (application)
 export const PublicKeyCredentialRpEntitySchema = z.object({

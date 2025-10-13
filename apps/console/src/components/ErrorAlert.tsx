@@ -1,5 +1,5 @@
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertTriangle, Wifi, RefreshCw, AlertCircle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, RefreshCw, Wifi } from 'lucide-react';
 
 export type ErrorAlertType = 'general' | 'network' | 'server' | 'timeout';
 

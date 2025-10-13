@@ -6,11 +6,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import type { CommonFieldProps } from '@/types';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
 import type { FieldValues } from 'react-hook-form';
-import type { CommonFieldProps } from '@/types';
-import { FormLabel } from './FormLabel';
+
 import { cn } from '../lib/utils';
+import { FormLabel } from './FormLabel';
 
 export type TextFieldProps<TFieldValues extends FieldValues> = {
   type?: 'text' | 'email' | 'password';

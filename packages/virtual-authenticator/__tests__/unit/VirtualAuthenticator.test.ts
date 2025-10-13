@@ -1,6 +1,12 @@
-import { test, describe, expect, beforeAll } from 'vitest';
-import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
-import { createSign, generateKeyPairSync } from 'node:crypto';
+import { COSEKey } from '@repo/keys';
+import type {
+  IAuthenticatorAttestationResponse,
+  ICredentialPublicKey,
+  ICredentialSigner,
+  IPublicKeyCredentialCreationOptions,
+  IPublicKeyCredentialRequestOptions,
+} from '@repo/types';
+import { toBuffer } from '@repo/utils/toBuffer';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
@@ -8,16 +14,11 @@ import {
   type RegistrationResponseJSON,
   type VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
-import { toBuffer } from '@repo/utils/toBuffer';
-import type {
-  IAuthenticatorAttestationResponse,
-  ICredentialPublicKey,
-  IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredentialRequestOptions,
-  ICredentialSigner,
-} from '@repo/types';
-import { COSEKey } from '@repo/keys';
+import { createSign, generateKeyPairSync } from 'node:crypto';
+import { beforeAll, describe, expect, test } from 'vitest';
+
 import type { PublicKeyCredential } from '../../src/PublicKeyCredential.js';
+import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',

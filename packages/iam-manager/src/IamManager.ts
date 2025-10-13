@@ -1,11 +1,11 @@
 import {
-  type PrismaClient,
-  type User,
+  RoleName,
+  type Permission,
   type PermissionAction,
   type PermissionResource,
-  type Permission,
-  RoleName,
+  type PrismaClient,
   type Role,
+  type User,
 } from '@repo/prisma';
 
 export type IamManagerOptions = {

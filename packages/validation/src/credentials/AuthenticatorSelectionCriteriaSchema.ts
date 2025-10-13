@@ -4,6 +4,7 @@ import {
 } from '@repo/enums';
 import type { IAuthenticatorSelectionCriteria } from '@repo/types';
 import z from 'zod';
+
 import { AuthenticatorAttachmentSchema } from '../enums.js';
 
 // Specifies requirements for the authenticator

@@ -6,9 +6,10 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import type { FieldValues } from 'react-hook-form';
 import type { CommonFieldProps } from '@/types';
 import type { ChangeEvent } from 'react';
+import type { FieldValues } from 'react-hook-form';
+
 import { FormLabel } from './FormLabel';
 
 export type NumericFieldProps<TFieldValues extends FieldValues> =

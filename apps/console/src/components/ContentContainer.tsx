@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { match, P } from 'ts-pattern';
-import { Loading } from './Loading';
+
 import { ErrorAlert } from './ErrorAlert';
+import { Loading } from './Loading';
 import { NoContentAlert } from './NoContentAlert';
 
 export type ContentContainerProps = {

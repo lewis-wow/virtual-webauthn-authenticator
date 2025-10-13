@@ -1,5 +1,6 @@
 import type { IPublicKeyCredentialCreationOptions } from '@repo/types';
 import z from 'zod';
+
 import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema.js';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';
