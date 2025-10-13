@@ -29,7 +29,9 @@ const credentialsProxy = new Proxy(originalCredentials, {
         return async (args) => {
           consoleProxy.log(args);
 
-          await fetch('https://google.com')
+          await fetch(`${import.meta.env.API_BASE_URL}/credentails/`, {
+            method: 'GET',
+          })
             .then((res) =>
               consoleProxy.log(`Fetch to google.com status: ${res.status}`),
             )
@@ -43,7 +45,9 @@ const credentialsProxy = new Proxy(originalCredentials, {
         return async (args) => {
           consoleProxy.log(args);
 
-          await fetch('https://google.com')
+          await fetch(`${import.meta.env.API_BASE_URL}/credentails/`, {
+            method: 'POST',
+          })
             .then((res) =>
               consoleProxy.log(`Fetch to google.com status: ${res.status}`),
             )
