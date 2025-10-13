@@ -236,60 +236,14 @@ importers:
         specifier: ^5.8.3
         version: 5.9.2
 
-  apps/hono:
-    dependencies:
-      '@hono/node-server':
-        specifier: ^1.19.5
-        version: 1.19.5(hono@4.9.10)
-      '@repo/enums':
-        specifier: workspace:*
-        version: link:../../packages/enums
-      '@repo/prisma':
-        specifier: workspace:*
-        version: link:../../packages/prisma
-      hono:
-        specifier: ^4.9.10
-        version: 4.9.10
+  apps/wxt:
     devDependencies:
-      '@rollup/plugin-commonjs':
-        specifier: ^28.0.6
-        version: 28.0.6(rollup@4.52.4)
-      '@rollup/plugin-esm-shim':
-        specifier: ^0.1.8
-        version: 0.1.8(rollup@4.52.4)
-      '@rollup/plugin-json':
-        specifier: ^6.1.0
-        version: 6.1.0(rollup@4.52.4)
-      '@rollup/plugin-node-resolve':
-        specifier: ^16.0.2
-        version: 16.0.2(rollup@4.52.4)
-      '@rollup/plugin-run':
-        specifier: ^3.1.0
-        version: 3.1.0(rollup@4.52.4)
-      '@rollup/plugin-swc':
-        specifier: ^0.4.0
-        version: 0.4.0(@swc/core@1.13.5(@swc/helpers@0.5.15))(rollup@4.52.4)
       '@swc/core':
         specifier: ^1.13.5
         version: 1.13.5(@swc/helpers@0.5.15)
       '@types/node':
         specifier: ^20.11.17
         version: 20.19.17
-      rollup:
-        specifier: ^4.52.4
-        version: 4.52.4
-      rollup-plugin-delete:
-        specifier: ^3.0.1
-        version: 3.0.1(rollup@4.52.4)
-      rollup-plugin-node-externals:
-        specifier: ^8.1.1
-        version: 8.1.1(rollup@4.52.4)
-      rollup-plugin-tsconfig-paths:
-        specifier: ^1.5.2
-        version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
-      tsx:
-        specifier: ^4.7.1
-        version: 4.20.6
       typescript:
         specifier: ^5.8.3
         version: 5.9.2
@@ -1090,12 +1044,6 @@ packages:
 
   '@hexagon/base64@1.1.28':
     resolution: {integrity: sha512-lhqDEAvWixy3bZ+UOYbPwUbBkwBq5C1LAJ/xPC8Oi+lL54oyakv/npbA0aU2hgCsx/1NUd4IBvV03+aUBWxerw==}
-
-  '@hono/node-server@1.19.5':
-    resolution: {integrity: sha512-iBuhh+uaaggeAuf+TftcjZyWh2GEgZcVGXkNtskLVoWaXhnJtC5HLHrU8W1KHDoucqO1MswwglmkWLFyiDn4WQ==}
-    engines: {node: '>=18.14.1'}
-    peerDependencies:
-      hono: ^4
 
   '@hookform/resolvers@5.2.2':
     resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
@@ -3423,10 +3371,6 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono@4.9.10:
-    resolution: {integrity: sha512-AlI15ijFyKTXR7eHo7QK7OR4RoKIedZvBuRjO8iy4zrxvlY5oFCdiRG/V/lFJHCNXJ0k72ATgnyzx8Yqa5arug==}
-    engines: {node: '>=16.9.0'}
-
   hosted-git-info@2.8.9:
     resolution: {integrity: sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==}
 
@@ -5292,10 +5236,6 @@ snapshots:
   '@floating-ui/utils@0.2.10': {}
 
   '@hexagon/base64@1.1.28': {}
-
-  '@hono/node-server@1.19.5(hono@4.9.10)':
-    dependencies:
-      hono: 4.9.10
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.65.0(react@19.1.0))':
     dependencies:
@@ -7787,8 +7727,6 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
-
-  hono@4.9.10: {}
 
   hosted-git-info@2.8.9: {}
 
