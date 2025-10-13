@@ -1,11 +1,25 @@
 const originalCredentials = navigator.credentials;
 
+const prefix = '[Injector]';
+
+export const consoleProxy = new Proxy(console, {
+  get(target, prop) {
+    const originalMethod = target[prop];
+
+    if (typeof originalMethod === 'function') {
+      return (...args) => {
+        originalMethod.apply(target, [prefix, ...args]);
+      };
+    }
+
+    return originalMethod;
+  },
+});
+
 const credentialsProxy = new Proxy(originalCredentials, {
   get(_target, prop) {
-    console.log(
-      `[PROXY] Intercepted navigator.credentials.${prop.toString()}()`,
-    );
-    console.log(`[PROXY] Dispatching fetch request to google.com...`);
+    consoleProxy.log(`Intercepted navigator.credentials.${prop.toString()}()`);
+    consoleProxy.log(`Dispatching fetch request to google.com...`);
 
     switch (prop) {
       case 'get': {
@@ -13,13 +27,13 @@ const credentialsProxy = new Proxy(originalCredentials, {
          * @param {CredentialRequestOptions} [args]
          */
         return async (args) => {
-          console.log(args);
+          consoleProxy.log(args);
 
           await fetch('https://google.com')
             .then((res) =>
-              console.log(`[PROXY] Fetch to google.com status: ${res.status}`),
+              consoleProxy.log(`Fetch to google.com status: ${res.status}`),
             )
-            .catch((err) => console.error(`[PROXY] Fetch failed:`, err));
+            .catch((err) => consoleProxy.error(`[PROXY] Fetch failed:`, err));
         };
       }
       case 'create': {
@@ -27,18 +41,18 @@ const credentialsProxy = new Proxy(originalCredentials, {
          * @param {CredentialCreationOptions} [args]
          */
         return async (args) => {
-          console.log(args);
+          consoleProxy.log(args);
 
           await fetch('https://google.com')
             .then((res) =>
-              console.log(`[PROXY] Fetch to google.com status: ${res.status}`),
+              consoleProxy.log(`Fetch to google.com status: ${res.status}`),
             )
-            .catch((err) => console.error(`[PROXY] Fetch failed:`, err));
+            .catch((err) => consoleProxy.error(`Fetch failed:`, err));
         };
       }
       default: {
         throw new Error(
-          `[PROXY] navigator.credentials.${prop.toString()}() is not implemented yet.`,
+          `${prefix} navigator.credentials.${prop.toString()}() is not implemented yet.`,
         );
       }
     }
@@ -51,6 +65,6 @@ Object.defineProperty(navigator, 'credentials', {
   configurable: true,
 });
 
-console.log(
+consoleProxy.log(
   'navigator.credentials has been successfully replaced with a Proxy.',
 );
