@@ -8,12 +8,20 @@ export const config: PlasmoCSConfig = {
 
 relay(
   {
-    name: 'fetch-google' as const,
+    name: 'navigator.credentials.get' as const,
   },
   async (req) => {
-    console.log(req);
-    const openResult = await sendToBackground(req);
-    console.log(openResult);
-    return openResult;
+    console.log('navigator.credentials.get', req);
+    return await sendToBackground(req);
+  },
+);
+
+relay(
+  {
+    name: 'navigator.credentials.create' as const,
+  },
+  async (req) => {
+    console.log('navigator.credentials.create', req);
+    return await sendToBackground(req);
   },
 );

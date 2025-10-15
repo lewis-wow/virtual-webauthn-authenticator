@@ -9,7 +9,7 @@
     "lib": ["es2022"],
     "module": "NodeNext",
     "moduleDetection": "force",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "bundler",
     "noUncheckedIndexedAccess": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -20,8 +20,6 @@
     "strictBindCallApply": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "verbatimModuleSyntax": true
   }
 }
