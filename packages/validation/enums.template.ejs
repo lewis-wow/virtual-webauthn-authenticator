@@ -9,4 +9,7 @@
 import { z } from 'zod';
 import { <%= enumNames.join(', ') %> } from '<%= importAlias %>';
 
-<%- enumNames.map(name => `export const ${name}Schema = z.enum(${name});`).join('\n\n') %>
+<%- enumNames.map(name => {
+  const description = name.replace(/([A-Z])/g, ' $1').trim();
+  return `export const ${name}Schema = z.enum(${name}).meta({ description: '${description}' });`;
+}).join('\n\n') %>

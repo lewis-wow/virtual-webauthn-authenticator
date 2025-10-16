@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 /**
@@ -38,3 +40,9 @@ export const COSEAlgorithmIdentifier = {
 export type COSEAlgorithmIdentifier = ValueOfEnum<
   typeof COSEAlgorithmIdentifier
 >;
+
+export const COSEAlgorithmIdentifierSchema = z
+  .enum(COSEAlgorithmIdentifier)
+  .meta({
+    description: 'COSE algorithm identifier',
+  });

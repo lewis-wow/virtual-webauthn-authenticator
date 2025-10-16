@@ -17,4 +17,6 @@ export const PublicKeyCredentialAuthenticatorAttestationResponseSchema =
     clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
     response: AuthenticatorAttestationResponseSchema,
+  }).meta({
+    description: 'The response from an authenticator for an attestation.',
   }) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAttestationResponse>;

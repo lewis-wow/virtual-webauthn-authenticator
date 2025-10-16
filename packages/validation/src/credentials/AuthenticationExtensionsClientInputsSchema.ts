@@ -4,4 +4,7 @@ import z from 'zod';
 export const AuthenticationExtensionsClientInputsSchema = z.record(
   z.string(),
   z.unknown(),
-) satisfies z.ZodType<IAuthenticationExtensionsClientInputs>;
+).meta({
+  type: 'object',
+  description: 'The client extensions passed to the authenticator.',
+}) satisfies z.ZodType<IAuthenticationExtensionsClientInputs>;

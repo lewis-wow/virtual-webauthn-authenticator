@@ -23,4 +23,6 @@ export const PublicKeyCredentialCreationOptionsSchema = z.object({
   attestation: z.enum(['none', 'indirect', 'direct', 'enterprise']).optional(),
   // Extensions can be complex; a generic record is often sufficient for validation
   extensions: z.record(z.string(), z.unknown()).optional(),
+}).meta({
+  description: 'Options for creating a new public key credential.',
 }) satisfies z.ZodType<IPublicKeyCredentialCreationOptions>;

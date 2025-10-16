@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 // COSE Symmetric Key Parameters
@@ -6,3 +8,7 @@ export const COSEOctParam = {
 } as const;
 
 export type COSEOctParam = ValueOfEnum<typeof COSEOctParam>;
+
+export const COSEOctParamSchema = z.enum(COSEOctParam).meta({
+  description: 'COSE oct param',
+});

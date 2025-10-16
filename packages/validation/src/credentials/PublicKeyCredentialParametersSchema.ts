@@ -10,4 +10,6 @@ import {
 export const PublicKeyCredentialParametersSchema = z.object({
   type: PublicKeyCredentialTypeSchema,
   alg: COSEAlgorithmIdentifierSchema,
+}).meta({
+  description: 'Describes the cryptographic algorithms to be supported.',
 }) satisfies z.ZodType<IPublicKeyCredentialParameters>;

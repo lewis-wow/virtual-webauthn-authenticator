@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 export const Environment = {
@@ -7,3 +9,7 @@ export const Environment = {
 } as const;
 
 export type Environment = ValueOfEnum<typeof Environment>;
+
+export const EnvironmentSchema = z.enum(Environment).meta({
+  description: 'Environment',
+});

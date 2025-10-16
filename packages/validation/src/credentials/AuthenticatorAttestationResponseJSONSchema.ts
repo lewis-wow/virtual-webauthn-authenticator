@@ -9,4 +9,6 @@ export const AuthenticatorAttestationResponseJSONSchema = z.object({
   transports: z.array(z.nativeEnum(AuthenticatorTransport)).optional(),
   publicKeyAlgorithm: z.nativeEnum(COSEAlgorithmIdentifier).optional(),
   publicKey: z.string().optional(),
+}).meta({
+  description: 'The JSON payload for an attestation verification.',
 }) satisfies z.ZodType<IAuthenticatorAttestationResponseJSON>;

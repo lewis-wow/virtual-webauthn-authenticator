@@ -10,4 +10,6 @@ import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 export const AuthenticatorAttestationResponseSchema = z.object({
   clientDataJSON: Base64URLBufferSchema,
   attestationObject: Base64URLBufferSchema,
+}).meta({
+  description: 'The JSON payload for a registration verification.',
 }) satisfies z.ZodType<IAuthenticatorAttestationResponse>;

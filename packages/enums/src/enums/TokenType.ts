@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 export const TokenType = {
@@ -6,3 +8,7 @@ export const TokenType = {
 } as const;
 
 export type TokenType = ValueOfEnum<typeof TokenType>;
+
+export const TokenTypeSchema = z.enum(TokenType).meta({
+  description: 'Token type',
+});

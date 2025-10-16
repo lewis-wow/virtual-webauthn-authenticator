@@ -28,4 +28,6 @@ export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> =
     ]),
     clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
+  }).meta({
+    description: 'The primary schema for validating the incoming credential object from the client during registration or authentication verification.',
   });

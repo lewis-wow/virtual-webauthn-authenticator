@@ -13,4 +13,6 @@ export const AuthenticatorSelectionCriteriaSchema = z.object({
   requireResidentKey: z.boolean().optional(),
   residentKey: z.enum(ResidentKeyRequirement).optional(),
   userVerification: z.enum(UserVerificationRequirement).optional(),
+}).meta({
+  description: 'Specifies requirements for the authenticator.',
 }) satisfies z.ZodType<IAuthenticatorSelectionCriteria>;

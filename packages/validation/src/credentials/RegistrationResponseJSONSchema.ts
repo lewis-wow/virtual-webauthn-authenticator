@@ -12,4 +12,6 @@ export const RegistrationResponseJSONSchema = z.object({
   authenticatorAttachment: z.nativeEnum(AuthenticatorAttachment).nullable(),
   clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
   type: z.nativeEnum(PublicKeyCredentialType),
+}).meta({
+  description: 'The response from a registration ceremony.',
 }) satisfies z.ZodType<IRegistrationResponseJSON>;

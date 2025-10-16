@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 /**
@@ -11,3 +13,7 @@ export const Attestation = {
 } as const;
 
 export type Attestation = ValueOfEnum<typeof Attestation>;
+
+export const AttestationSchema = z.enum(Attestation).meta({
+  description: 'Attestation',
+});

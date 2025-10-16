@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 export const AsymetricSigningAlgorithm = {
@@ -14,3 +16,9 @@ export const AsymetricSigningAlgorithm = {
 export type AsymetricSigningAlgorithm = ValueOfEnum<
   typeof AsymetricSigningAlgorithm
 >;
+
+export const AsymetricSigningAlgorithmSchema = z
+  .enum(AsymetricSigningAlgorithm)
+  .meta({
+    description: 'Asymetric signing algorithm',
+  });

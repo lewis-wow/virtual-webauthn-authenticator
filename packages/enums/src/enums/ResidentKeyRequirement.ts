@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 /**
@@ -10,3 +12,9 @@ export const ResidentKeyRequirement = {
 } as const;
 
 export type ResidentKeyRequirement = ValueOfEnum<typeof ResidentKeyRequirement>;
+
+export const ResidentKeyRequirementSchema = z
+  .enum(ResidentKeyRequirement)
+  .meta({
+    description: 'Resident key requirement',
+  });

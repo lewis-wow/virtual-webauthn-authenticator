@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 // COSE EC Key Parameters
@@ -9,3 +11,7 @@ export const COSEEcParam = {
 } as const;
 
 export type COSEEcParam = ValueOfEnum<typeof COSEEcParam>;
+
+export const COSEEcParamSchema = z.enum(COSEEcParam).meta({
+  description: 'COSE EC param',
+});

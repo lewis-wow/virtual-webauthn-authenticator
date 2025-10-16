@@ -18,4 +18,6 @@ export const PublicKeyCredentialAuthenticatorAssertionResponseSchema = z.object(
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
     response: AuthenticatorAssertionResponseSchema,
   },
-) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAssertionResponse>;
+).meta({
+  description: 'The response from an authenticator for an assertion.',
+}) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAssertionResponse>;

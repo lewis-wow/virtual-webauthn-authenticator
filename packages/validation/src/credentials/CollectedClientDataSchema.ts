@@ -12,4 +12,6 @@ export const CollectedClientDataSchema = z.object({
       id: z.string().optional(),
     })
     .optional(),
+}).meta({
+  description: 'The client data collected by the authenticator.',
 }) satisfies z.ZodType<ICollectedClientData>;

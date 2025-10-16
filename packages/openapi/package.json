@@ -1,23 +1,24 @@
 {
-  "name": "@repo/enums",
+  "name": "@repo/openapi",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/enums/index.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "../../scripts/generate_barrels.ts src/enums",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "zod": "^4.1.12"
+    "@repo/validation": "workspace:*",
+    "zod-openapi": "^5.4.3"
   }
 }

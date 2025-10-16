@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 export const EcCurve = {
@@ -8,3 +10,7 @@ export const EcCurve = {
 } as const;
 
 export type EcCurve = ValueOfEnum<typeof EcCurve>;
+
+export const EcCurveSchema = z.enum(EcCurve).meta({
+  description: 'EC curve',
+});

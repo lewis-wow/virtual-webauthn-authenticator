@@ -12,4 +12,6 @@ export const AuthenticatorAssertionResponseSchema = z.object({
   authenticatorData: Base64URLBufferSchema,
   signature: Base64URLBufferSchema,
   userHandle: Base64URLBufferSchema.nullable(),
+}).meta({
+  description: 'The JSON payload for an authentication verification.',
 }) satisfies z.ZodType<IAuthenticatorAssertionResponse>;

@@ -2,14 +2,17 @@ import { UserVerificationRequirement } from '@repo/enums';
 import type { IPublicKeyCredentialRequestOptions } from '@repo/types';
 import z from 'zod';
 
+import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema.js';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';
 
 export const PublicKeyCredentialRequestOptionsSchema = z.object({
-  challenge: z.instanceof(Buffer),
+  challenge: Base64URLBufferSchema,
   allowCredentials: z.array(PublicKeyCredentialDescriptorSchema).optional(),
   timeout: z.number().optional(),
   rpId: z.string().optional(),
   userVerification: z.nativeEnum(UserVerificationRequirement).optional(),
   extensions: AuthenticationExtensionsClientInputsSchema.optional(),
+}).meta({
+  description: 'Options for requesting a public key credential.',
 }) satisfies z.ZodType<IPublicKeyCredentialRequestOptions>;

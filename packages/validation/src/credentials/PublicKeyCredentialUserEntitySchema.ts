@@ -8,4 +8,6 @@ export const PublicKeyCredentialUserEntitySchema = z.object({
   id: Base64URLBufferSchema,
   name: z.string(),
   displayName: z.string(),
+}).meta({
+  description: 'Represents the user creating the credential.',
 }) satisfies z.ZodType<IPublicKeyCredentialUserEntity>;

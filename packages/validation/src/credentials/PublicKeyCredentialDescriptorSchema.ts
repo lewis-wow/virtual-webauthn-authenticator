@@ -9,4 +9,6 @@ export const PublicKeyCredentialDescriptorSchema = z.object({
   type: z.enum(PublicKeyCredentialType),
   id: Base64URLBufferSchema,
   transports: z.array(z.enum(AuthenticatorTransport)).optional(),
+}).meta({
+  description: 'Used to exclude existing credentials for a user.',
 }) satisfies z.ZodType<IPublicKeyCredentialDescriptor>;

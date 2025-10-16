@@ -12,4 +12,6 @@ export const PublicKeyCredentialJSONSchema = z.object({
   clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
   authenticatorAttachment: z.nativeEnum(AuthenticatorAttachment).nullable(),
   response: PublicKeyCredentialJSONResponseSchema,
+}).meta({
+  description: 'A public key credential.',
 }) satisfies z.ZodType<IPublicKeyCredentialJSON>;

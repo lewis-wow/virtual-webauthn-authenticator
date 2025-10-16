@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 /**
@@ -12,3 +14,9 @@ export const AuthenticatorTransport = {
 } as const;
 
 export type AuthenticatorTransport = ValueOfEnum<typeof AuthenticatorTransport>;
+
+export const AuthenticatorTransportSchema = z
+  .enum(AuthenticatorTransport)
+  .meta({
+    description: 'Authenticator transport',
+  });
