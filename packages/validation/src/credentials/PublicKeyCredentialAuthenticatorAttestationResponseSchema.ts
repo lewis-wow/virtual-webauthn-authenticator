@@ -20,5 +20,5 @@ export const PublicKeyCredentialAuthenticatorAttestationResponseSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialAuthenticatorAttestationResponse',
-    description: 'The response from an authenticator for an attestation.',
+    description: 'The response from an authenticator for an attestation. For more information, see https://www.w3.org/TR/webauthn/#iface-pk-cred-auth-attestation-resp.',
   }) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAttestationResponse>;

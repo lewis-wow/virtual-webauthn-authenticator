@@ -9,5 +9,5 @@ export const PublicKeyCredentialUserEntitySchema = z.object({
   name: z.string(),
   displayName: z.string(),
 }).meta({
-  description: 'Represents the user creating the credential.',
+  description: 'Represents the user creating the credential. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity.',
 }) satisfies z.ZodType<IPublicKeyCredentialUserEntity>;

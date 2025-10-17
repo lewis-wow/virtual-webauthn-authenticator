@@ -16,5 +16,5 @@ export const PublicKeyCredentialRequestOptionsSchema = z
     extensions: AuthenticationExtensionsClientInputsSchema.optional(),
   })
   .meta({
-    description: 'Options for requesting a public key credential.',
+    description: 'Options for requesting a public key credential. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions.',
   }) satisfies z.ZodType<IPublicKeyCredentialRequestOptions>;

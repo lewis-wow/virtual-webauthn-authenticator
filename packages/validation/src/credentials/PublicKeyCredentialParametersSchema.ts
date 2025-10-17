@@ -12,5 +12,5 @@ export const PublicKeyCredentialParametersSchema = z
     alg: COSEAlgorithmIdentifierSchema,
   })
   .meta({
-    description: 'Describes the cryptographic algorithms to be supported.',
+    description: 'Describes the cryptographic algorithms to be supported. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters.',
   }) satisfies z.ZodType<IPublicKeyCredentialParameters>;

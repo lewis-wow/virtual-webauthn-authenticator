@@ -28,5 +28,5 @@ export const PublicKeyCredentialCreationOptionsSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialCreationOptions',
-    description: 'Options for creating a new public key credential.',
+    description: 'Options for creating a new public key credential. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions.',
   }) satisfies z.ZodType<IPublicKeyCredentialCreationOptions>;

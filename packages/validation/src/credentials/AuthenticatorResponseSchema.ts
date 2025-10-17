@@ -7,5 +7,5 @@ export const AuthenticatorResponseSchema = z.object({
   clientDataJSON: Base64URLBufferSchema.meta({ description: 'The client data for the response.' }),
 }).meta({
   id: 'AuthenticatorResponse',
-  description: 'The response from an authenticator.',
+  description: 'The response from an authenticator. For more information, see https://www.w3.org/TR/webauthn/#authenticatorresponse.',
 }) satisfies z.ZodType<IAuthenticatorResponse>;

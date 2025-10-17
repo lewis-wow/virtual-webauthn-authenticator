@@ -18,5 +18,5 @@ export const RegistrationResponseJSONSchema = z
     type: PublicKeyCredentialTypeSchema,
   })
   .meta({
-    description: 'The response from a registration ceremony.',
+    description: 'The response from a registration ceremony. For more information, see https://www.w3.org/TR/webauthn/#iface-registrationresponsejson.',
   }) satisfies z.ZodType<IRegistrationResponseJSON>;

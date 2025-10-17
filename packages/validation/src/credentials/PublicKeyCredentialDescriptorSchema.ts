@@ -16,5 +16,5 @@ export const PublicKeyCredentialDescriptorSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialDescriptor',
-    description: 'Used to exclude existing credentials for a user.',
+    description: 'Used to exclude existing credentials for a user. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor.',
   }) satisfies z.ZodType<IPublicKeyCredentialDescriptor>;

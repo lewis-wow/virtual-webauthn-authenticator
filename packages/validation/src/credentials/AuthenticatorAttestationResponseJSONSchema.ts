@@ -16,5 +16,5 @@ export const AuthenticatorAttestationResponseJSONSchema = z
   })
   .meta({
     id: 'AuthenticatorAttestationResponseJSON',
-    description: 'The JSON payload for an attestation verification.',
+    description: 'The JSON payload for an attestation verification. For more information, see https://www.w3.org/TR/webauthn/#authenticatorattestationresponse.',
   }) satisfies z.ZodType<IAuthenticatorAttestationResponseJSON>;

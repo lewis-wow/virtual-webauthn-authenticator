@@ -31,5 +31,5 @@ export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> = z
   })
   .meta({
     description:
-      'The primary schema for validating the incoming credential object from the client during registration or authentication verification.',
+      'The primary schema for validating the incoming credential object from the client during registration or authentication verification. For more information, see https://www.w3.org/TR/webauthn/#iface-publickeycredential.',
   });

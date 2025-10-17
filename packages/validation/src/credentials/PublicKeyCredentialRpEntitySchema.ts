@@ -6,5 +6,5 @@ export const PublicKeyCredentialRpEntitySchema = z.object({
   name: z.string(),
   id: z.string().optional(),
 }).meta({
-  description: 'Represents the Relying Party (application).',
+  description: 'Represents the Relying Party (application). For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity.',
 }) satisfies z.ZodType<IPublicKeyCredentialRpEntity>;

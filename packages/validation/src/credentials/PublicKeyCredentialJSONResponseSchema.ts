@@ -9,5 +9,5 @@ export const PublicKeyCredentialJSONResponseSchema = z.object({
   userHandle: z.string().optional(),
 }).meta({
   id: 'PublicKeyCredentialJSONResponse',
-  description: 'The response from a public key credential operation.',
+  description: 'The response from a public key credential operation. For more information, see https://www.w3.org/TR/webauthn/#iface-pk-cred-json-response.',
 }) satisfies z.ZodType<IPublicKeyCredentialJSONResponse>;
