@@ -20,8 +20,6 @@
     "strictBindCallApply": true,
     "noImplicitAny": true,
     "noFallthroughCasesInSwitch": true,
-    "verbatimModuleSyntax": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "verbatimModuleSyntax": true
   }
 }

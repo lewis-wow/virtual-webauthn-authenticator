@@ -30,6 +30,9 @@ jobs:
       #   # until the containers report a "healthy" status.
       #   run: docker compose up -d --wait
 
+      - name: Check formatting
+        run: pnpm format:check
+
       - name: Build project
         run: pnpm build
 
@@ -38,9 +41,6 @@ jobs:
 
       - name: Run check-types
         run: pnpm check-types
-
-      - name: Check formatting
-        run: pnpm format:check
 
       - name: Run unit tests
         # Your tests can now connect to the services started via Docker Compose
