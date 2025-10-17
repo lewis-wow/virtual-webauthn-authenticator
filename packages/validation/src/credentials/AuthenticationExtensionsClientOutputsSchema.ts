@@ -5,7 +5,9 @@ import z from 'zod';
  */
 export const AuthenticationExtensionsClientOutputsSchema = z
   .record(z.string(), z.unknown())
-  .describe('A generic dictionary representing the client extension results.')
   .meta({
+    id: 'AuthenticationExtensionsClientOutputs',
+    description:
+      'A generic dictionary representing the client extension results.',
     type: 'object',
   });

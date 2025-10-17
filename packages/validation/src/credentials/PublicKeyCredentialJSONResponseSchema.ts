@@ -8,5 +8,6 @@ export const PublicKeyCredentialJSONResponseSchema = z.object({
   signature: z.string().optional(),
   userHandle: z.string().optional(),
 }).meta({
+  id: 'PublicKeyCredentialJSONResponse',
   description: 'The response from a public key credential operation.',
 }) satisfies z.ZodType<IPublicKeyCredentialJSONResponse>;
