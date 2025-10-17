@@ -5,4 +5,10 @@ import z from 'zod';
  */
 export const AuthenticationExtensionsClientOutputsSchema = z
   .record(z.string(), z.unknown())
-  .describe('A generic dictionary representing the client extension results.');
+  .meta({
+    id: 'AuthenticationExtensionsClientOutputs',
+    description:
+      'A generic dictionary representing the client extension results. For more information, see https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs.',
+    type: 'object',
+    examples: [{ credProps: { rk: true } }],
+  });

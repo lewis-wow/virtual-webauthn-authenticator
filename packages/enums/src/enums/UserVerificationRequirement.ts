@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 
 /**
@@ -12,3 +14,10 @@ export const UserVerificationRequirement = {
 export type UserVerificationRequirement = ValueOfEnum<
   typeof UserVerificationRequirement
 >;
+
+export const UserVerificationRequirementSchema = z
+  .enum(UserVerificationRequirement)
+  .meta({
+    description: 'User verification requirement',
+    examples: [UserVerificationRequirement.REQUIRED],
+  });

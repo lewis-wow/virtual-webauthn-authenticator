@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 import { AsymetricSigningAlgorithm } from './AsymetricSigningAlgorithm.js';
 
@@ -13,3 +15,8 @@ export const COSEAlgorithm = {
 } as const;
 
 export type COSEAlgorithm = ValueOfEnum<typeof COSEAlgorithm>;
+
+export const COSEAlgorithmSchema = z.enum(COSEAlgorithm).meta({
+  description: 'COSE Algorithm',
+  examples: [COSEAlgorithm[AsymetricSigningAlgorithm.ES256]],
+});

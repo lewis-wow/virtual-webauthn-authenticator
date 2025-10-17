@@ -1,11 +1,11 @@
+import {
+  AuthenticatorAttachmentSchema,
+  PublicKeyCredentialTypeSchema,
+} from '@repo/enums';
 import type { IPublicKeyCredential } from '@repo/types';
 import z from 'zod';
 
 import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
-import {
-  AuthenticatorAttachmentSchema,
-  PublicKeyCredentialTypeSchema,
-} from '../enums.js';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema.js';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema.js';
@@ -17,10 +17,12 @@ import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestati
  * the client during registration or authentication verification. The `response`
  * is a union type to handle both ceremonies.
  */
-export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> =
-  z.object({
+export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> = z
+  .object({
     id: z.string().describe('The Base64URL-encoded credential ID.'),
-    rawId: Base64URLBufferSchema,
+    rawId: Base64URLBufferSchema.meta({
+      description: 'The raw ID of the credential.',
+    }),
     type: PublicKeyCredentialTypeSchema,
     response: z.union([
       AuthenticatorAttestationResponseSchema,
@@ -28,4 +30,8 @@ export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> =
     ]),
     clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
+  })
+  .meta({
+    description:
+      'The primary schema for validating the incoming credential object from the client during registration or authentication verification. For more information, see https://www.w3.org/TR/webauthn/#iface-publickeycredential.',
   });
