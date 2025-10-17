@@ -2,18 +2,17 @@ import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Environment } from '@repo/enums';
 import { Hono } from 'hono';
+import { showRoutes } from 'hono/dev';
 
 import { env } from './env.js';
 import { prisma } from './prisma.js';
+import { credentials } from './routes/credentials.js';
 
 const app = new Hono();
 
 app.use('*', serveStatic({ root: './static' }));
 
-app.get('/', (c) => {
-  console.log(prisma, Environment);
-  return c.text('Hello Hono!');
-});
+app.route('/credentials', credentials);
 
 serve(
   {
@@ -22,5 +21,10 @@ serve(
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
+
+    showRoutes(app, {
+      verbose: true,
+      colorize: true,
+    });
   },
 );

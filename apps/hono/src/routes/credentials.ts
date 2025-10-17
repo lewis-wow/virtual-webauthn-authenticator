@@ -13,7 +13,7 @@ import { Hono } from 'hono';
 
 import { zResponseValidator } from '../middleware/zResponseValidator';
 
-export const credentials = new Hono().basePath('/credentials');
+export const credentials = new Hono();
 
 credentials.get(
   '/',

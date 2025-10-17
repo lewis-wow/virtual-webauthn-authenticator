@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx tsx
+#!/usr/bin/env tsx
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { stringify } from 'yaml';

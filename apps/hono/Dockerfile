@@ -3,6 +3,9 @@
 # =========================================================================== #
 FROM node:22-alpine AS base
 
+RUN apk update
+RUN apk add --no-cache libc6-compat
+
 ENV NODE_ENV=production
 WORKDIR /app
 
@@ -28,10 +31,11 @@ FROM base AS builder
 
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
+COPY --from=pruner /app/scripts ./scripts
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod=false
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod=false --fetch-retries=5 --fetch-timeout=120000
 
-RUN pnpm --filter="@repo/hono" build
+RUN pnpx turbo run build
 
 # =========================================================================== #
 # STAGE 4: Final production image
@@ -43,11 +47,12 @@ RUN pnpm add -g @dotenvx/dotenvx
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
+# Install production dependencies
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --fetch-retries=5 --fetch-timeout=120000
 
 COPY --from=builder /app/apps/hono/dist ./apps/hono/dist
 
-COPY apps/hono/static ./apps/hono/static
+COPY apps/hono/static ./static
 
 COPY apps/hono/.env.production .
 
@@ -59,3 +64,4 @@ USER hono
 EXPOSE 3001
 
 CMD ["dotenvx", "run",  "-f", ".env.production", "--", "node", "apps/hono/dist/index.js"]
+
