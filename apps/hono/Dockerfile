@@ -47,7 +47,6 @@ RUN pnpm add -g @dotenvx/dotenvx
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 
-# Install production dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --fetch-retries=5 --fetch-timeout=120000
 
 COPY --from=builder /app/apps/hono/dist ./apps/hono/dist
