@@ -1,0 +1,27 @@
+{
+  "name": "@repo/openapi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./json": "./src/generated/openapi.json"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "build": "scripts/generate_openapi_schema.ts"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.5.2",
+    "typescript": "^5.5.4",
+    "yaml": "^2.8.1"
+  },
+  "dependencies": {
+    "@repo/validation": "workspace:*",
+    "zod-openapi": "^5.4.3"
+  }
+}

@@ -7,11 +7,10 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "run-p generate:enums generate-barrels:*",
+    "build": "run-p generate-barrels:*",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "generate:enums": "scripts/generate_zod_enum_schemas.ts",
     "generate-barrels:credentials": "../../scripts/generate_barrels.ts src/credentials"
   },
   "devDependencies": {
@@ -22,7 +21,8 @@
     "npm-run-all": "^4.1.5",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "zod-openapi": "^5.4.3"
   },
   "dependencies": {
     "@repo/enums": "workspace:*",

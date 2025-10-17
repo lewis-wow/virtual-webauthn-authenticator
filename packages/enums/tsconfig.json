@@ -1,5 +1,5 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": ["src", "../keys/src/enums/cose.ts"],
+  "include": ["src", "zod-openapi.d.ts"],
   "exclude": ["node_modules"]
 }

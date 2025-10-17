@@ -7,9 +7,23 @@ import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
  * Corresponds to: `IAuthenticatorAssertionResponse`
  * This represents the JSON payload for an authentication verification.
  */
-export const AuthenticatorAssertionResponseSchema = z.object({
-  clientDataJSON: Base64URLBufferSchema,
-  authenticatorData: Base64URLBufferSchema,
-  signature: Base64URLBufferSchema,
-  userHandle: Base64URLBufferSchema.nullable(),
-}) satisfies z.ZodType<IAuthenticatorAssertionResponse>;
+export const AuthenticatorAssertionResponseSchema = z
+  .object({
+    clientDataJSON: Base64URLBufferSchema.meta({
+      description: 'The client data for the assertion.',
+    }),
+    authenticatorData: Base64URLBufferSchema.meta({
+      description: 'The authenticator data for the assertion.',
+    }),
+    signature: Base64URLBufferSchema.meta({
+      description: 'The signature for the assertion.',
+    }),
+    userHandle: Base64URLBufferSchema.meta({
+      description: 'The user handle for the assertion.',
+    }).nullable(),
+  })
+  .meta({
+    id: 'AuthenticatorAssertionResponse',
+    description:
+      'The JSON payload for an authentication verification. For more information, see https://www.w3.org/TR/webauthn/#authenticatorassertionresponse.',
+  }) satisfies z.ZodType<IAuthenticatorAssertionResponse>;

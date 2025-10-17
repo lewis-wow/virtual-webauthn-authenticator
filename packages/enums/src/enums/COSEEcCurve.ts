@@ -1,3 +1,5 @@
+import z from 'zod';
+
 import type { ValueOfEnum } from '../types.js';
 import { EcCurve } from './EcCurve.js';
 
@@ -9,3 +11,8 @@ export const COSEEcCurve = {
 } as const;
 
 export type COSEEcCurve = ValueOfEnum<typeof COSEEcCurve>;
+
+export const COSEEcCurveSchema = z.enum(COSEEcCurve).meta({
+  description: 'COSE EC curve',
+  examples: [COSEEcCurve[EcCurve['P-256']]],
+});
