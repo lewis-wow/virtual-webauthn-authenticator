@@ -241,6 +241,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.5
         version: 1.19.5(hono@4.9.10)
+      '@hono/zod-validator':
+        specifier: ^0.7.4
+        version: 0.7.4(hono@4.9.10)(zod@4.1.12)
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
@@ -250,10 +253,19 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       hono:
         specifier: ^4.9.10
         version: 4.9.10
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -1333,6 +1345,12 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
+
+  '@hono/zod-validator@0.7.4':
+    resolution: {integrity: sha512-biKGn3BRJVaftZlIPMyK+HCe/UHAjJ6sH0UyXe3+v0OcgVr9xfImDROTJFLtn9e3XEEAHGZIM9U6evu85abm8Q==}
+    peerDependencies:
+      hono: '>=3.9.0'
+      zod: ^3.25.0 || ^4.0.0
 
   '@hookform/resolvers@5.2.2':
     resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
@@ -7835,6 +7853,11 @@ snapshots:
   '@hono/node-server@1.19.5(hono@4.9.10)':
     dependencies:
       hono: 4.9.10
+
+  '@hono/zod-validator@0.7.4(hono@4.9.10)(zod@4.1.12)':
+    dependencies:
+      hono: 4.9.10
+      zod: 4.1.12
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.65.0(react@19.1.0))':
     dependencies:
