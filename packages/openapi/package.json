@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./json": "./src/generated/openapi.json"
   },
   "scripts": {
     "lint": "eslint .",

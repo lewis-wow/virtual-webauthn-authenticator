@@ -1,13 +1,17 @@
-import swc from '@rollup/plugin-swc';
-import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import esmShim from '@rollup/plugin-esm-shim';
+import json from '@rollup/plugin-json';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import run from '@rollup/plugin-run';
+import swc from '@rollup/plugin-swc';
+import { createRequire } from 'node:module';
+import { defineConfig } from 'rollup';
+import copy from 'rollup-plugin-copy';
+import del from 'rollup-plugin-delete';
 import externals from 'rollup-plugin-node-externals';
 import tsconfigPaths from 'rollup-plugin-tsconfig-paths';
-import del from 'rollup-plugin-delete';
-import json from '@rollup/plugin-json';
-import run from '@rollup/plugin-run';
-import esmShim from '@rollup/plugin-esm-shim';
-import { defineConfig } from 'rollup';
+
+const require = createRequire(import.meta.url);
 
 // A helper to determine if we are in watch mode
 const isWatching = process.env.ROLLUP_WATCH === 'true';
@@ -25,6 +29,16 @@ export default defineConfig({
 
   plugins: [
     del({ targets: 'dist/*' }),
+
+    copy({
+      targets: [
+        {
+          src: require.resolve('@repo/openapi/json'),
+          dest: 'static',
+          rename: 'openapi.json',
+        },
+      ],
+    }),
 
     // Use `exclude` to PREVENT @repo/* from being marked as external.
     // This tells Rollup to bundle these packages.

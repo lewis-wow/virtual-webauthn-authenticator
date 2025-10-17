@@ -6,7 +6,18 @@ import { stringify } from 'yaml';
 import { openApiDocument } from '../src/openApiDocument.js';
 
 const yaml = stringify(openApiDocument, { aliasDuplicateObjects: false });
+const json = JSON.stringify(openApiDocument);
 
-mkdirSync(join(import.meta.dirname, '..', 'generated'), { recursive: true });
+mkdirSync(join(import.meta.dirname, '..', 'src/generated'), {
+  recursive: true,
+});
 
-writeFileSync(join(import.meta.dirname, '..', 'generated/openapi.yml'), yaml);
+writeFileSync(
+  join(import.meta.dirname, '..', 'src/generated/openapi.yml'),
+  yaml,
+);
+
+writeFileSync(
+  join(import.meta.dirname, '..', 'src/generated/openapi.json'),
+  json,
+);
