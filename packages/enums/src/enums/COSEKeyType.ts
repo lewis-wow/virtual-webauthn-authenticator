@@ -13,4 +13,5 @@ export type COSEKeyType = ValueOfEnum<typeof COSEKeyType>;
 
 export const COSEKeyTypeSchema = z.enum(COSEKeyType).meta({
   description: 'COSE key type',
+  examples: [COSEKeyType[KeyType.OKP]],
 });

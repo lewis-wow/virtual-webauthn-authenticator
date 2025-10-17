@@ -14,4 +14,5 @@ export type COSEEcCurve = ValueOfEnum<typeof COSEEcCurve>;
 
 export const COSEEcCurveSchema = z.enum(COSEEcCurve).meta({
   description: 'COSE EC curve',
+  examples: [COSEEcCurve[EcCurve['P-256']]],
 });

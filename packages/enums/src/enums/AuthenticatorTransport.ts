@@ -19,4 +19,5 @@ export const AuthenticatorTransportSchema = z
   .enum(AuthenticatorTransport)
   .meta({
     description: 'Authenticator transport',
+    examples: [AuthenticatorTransport.USB],
   });

@@ -12,4 +12,5 @@ export type KeyType = ValueOfEnum<typeof KeyType>;
 
 export const KeyTypeSchema = z.enum(KeyType).meta({
   description: 'Key type',
+  examples: [KeyType.OKP],
 });

@@ -12,4 +12,5 @@ export type Environment = ValueOfEnum<typeof Environment>;
 
 export const EnvironmentSchema = z.enum(Environment).meta({
   description: 'Environment',
+  examples: [Environment.PRODUCTION],
 });

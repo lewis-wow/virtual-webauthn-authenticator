@@ -45,4 +45,5 @@ export const COSEAlgorithmIdentifierSchema = z
   .enum(COSEAlgorithmIdentifier)
   .meta({
     description: 'COSE algorithm identifier',
+    examples: [COSEAlgorithmIdentifier.ES256],
   });

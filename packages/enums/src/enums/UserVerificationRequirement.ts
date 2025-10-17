@@ -19,4 +19,5 @@ export const UserVerificationRequirementSchema = z
   .enum(UserVerificationRequirement)
   .meta({
     description: 'User verification requirement',
+    examples: [UserVerificationRequirement.REQUIRED],
   });

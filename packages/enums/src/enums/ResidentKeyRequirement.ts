@@ -17,4 +17,5 @@ export const ResidentKeyRequirementSchema = z
   .enum(ResidentKeyRequirement)
   .meta({
     description: 'Resident key requirement',
+    examples: [ResidentKeyRequirement.REQUIRED],
   });

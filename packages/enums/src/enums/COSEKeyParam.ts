@@ -12,4 +12,5 @@ export type COSEKeyParam = ValueOfEnum<typeof COSEKeyParam>;
 
 export const COSEKeyParamSchema = z.enum(COSEKeyParam).meta({
   description: 'COSE key param',
+  examples: [COSEKeyParam.kty],
 });

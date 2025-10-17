@@ -14,4 +14,5 @@ export type COSEEcParam = ValueOfEnum<typeof COSEEcParam>;
 
 export const COSEEcParamSchema = z.enum(COSEEcParam).meta({
   description: 'COSE EC param',
+  examples: [COSEEcParam.crv],
 });

@@ -11,4 +11,5 @@ export type TokenType = ValueOfEnum<typeof TokenType>;
 
 export const TokenTypeSchema = z.enum(TokenType).meta({
   description: 'Token type',
+  examples: [TokenType.PERSONAL_TOKEN],
 });

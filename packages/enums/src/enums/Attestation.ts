@@ -16,4 +16,5 @@ export type Attestation = ValueOfEnum<typeof Attestation>;
 
 export const AttestationSchema = z.enum(Attestation).meta({
   description: 'Attestation',
+  examples: [Attestation.NONE],
 });

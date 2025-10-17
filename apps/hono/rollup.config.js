@@ -38,6 +38,7 @@ export default defineConfig({
           rename: 'openapi.json',
         },
       ],
+      watch: require.resolve('@repo/openapi/json'),
     }),
 
     // Use `exclude` to PREVENT @repo/* from being marked as external.

@@ -21,4 +21,5 @@ export const AsymetricSigningAlgorithmSchema = z
   .enum(AsymetricSigningAlgorithm)
   .meta({
     description: 'Asymetric signing algorithm',
+    examples: [AsymetricSigningAlgorithm.ES256],
   });

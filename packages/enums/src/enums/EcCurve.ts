@@ -13,4 +13,5 @@ export type EcCurve = ValueOfEnum<typeof EcCurve>;
 
 export const EcCurveSchema = z.enum(EcCurve).meta({
   description: 'EC curve',
+  examples: [EcCurve['P-256']],
 });

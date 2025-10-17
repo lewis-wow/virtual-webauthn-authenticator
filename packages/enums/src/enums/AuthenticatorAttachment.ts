@@ -18,4 +18,5 @@ export const AuthenticatorAttachmentSchema = z
   .enum(AuthenticatorAttachment)
   .meta({
     description: 'Authenticator attachment',
+    examples: [AuthenticatorAttachment.PLATFORM],
   });

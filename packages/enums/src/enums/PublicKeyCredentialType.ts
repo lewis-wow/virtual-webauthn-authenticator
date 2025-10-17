@@ -17,4 +17,5 @@ export const PublicKeyCredentialTypeSchema = z
   .enum(PublicKeyCredentialType)
   .meta({
     description: 'Public key credential type',
+    examples: [PublicKeyCredentialType.PUBLIC_KEY],
   });

@@ -293,6 +293,9 @@ importers:
       rollup-plugin-node-externals:
         specifier: ^8.1.1
         version: 8.1.1(rollup@4.52.4)
+      rollup-plugin-shell:
+        specifier: ^1.0.9
+        version: 1.0.9
       rollup-plugin-tsconfig-paths:
         specifier: ^1.5.2
         version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
@@ -358,6 +361,9 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
+      zod-openapi:
+        specifier: ^5.4.3
+        version: 5.4.3(zod@4.1.12)
 
   packages/eslint-config:
     devDependencies:
@@ -4396,6 +4402,9 @@ packages:
     peerDependencies:
       rollup: ^4.0.0
 
+  rollup-plugin-shell@1.0.9:
+    resolution: {integrity: sha512-PdpbYuTN9Pkc9to07DQOWy71pfvpI0tpvKXsWlgdpU4GL4l5yniKVldTrkqr6qI6M02lEkRVoU/0Hme5VKs39g==}
+
   rollup-plugin-tsconfig-paths@1.5.2:
     resolution: {integrity: sha512-tyS7u2Md0eXKwbDfTuDDa1izciwqhOZsHzX7zYc5gKC1L7q5ozdSt+q1jjtD1dDqWyjrt8lZoiLtOQGhMHh1OQ==}
     peerDependencies:
@@ -6839,7 +6848,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(lightningcss@1.30.1)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@24.5.2)(@vitest/ui@3.2.4)(lightningcss@1.30.1)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -8817,6 +8826,8 @@ snapshots:
   rollup-plugin-node-externals@8.1.1(rollup@4.52.4):
     dependencies:
       rollup: 4.52.4
+
+  rollup-plugin-shell@1.0.9: {}
 
   rollup-plugin-tsconfig-paths@1.5.2(rollup@4.52.4)(typescript@5.9.2):
     dependencies:

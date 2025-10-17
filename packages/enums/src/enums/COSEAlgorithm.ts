@@ -18,4 +18,5 @@ export type COSEAlgorithm = ValueOfEnum<typeof COSEAlgorithm>;
 
 export const COSEAlgorithmSchema = z.enum(COSEAlgorithm).meta({
   description: 'COSE Algorithm',
+  examples: [COSEAlgorithm[AsymetricSigningAlgorithm.ES256]],
 });

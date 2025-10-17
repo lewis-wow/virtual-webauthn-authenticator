@@ -13,4 +13,5 @@ export type COSERsaParam = ValueOfEnum<typeof COSERsaParam>;
 
 export const COSERsaParamSchema = z.enum(COSERsaParam).meta({
   description: 'COSE RSA param',
+  examples: [COSERsaParam.n],
 });

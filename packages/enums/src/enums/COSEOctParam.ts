@@ -11,4 +11,5 @@ export type COSEOctParam = ValueOfEnum<typeof COSEOctParam>;
 
 export const COSEOctParamSchema = z.enum(COSEOctParam).meta({
   description: 'COSE oct param',
+  examples: [COSEOctParam.k],
 });
