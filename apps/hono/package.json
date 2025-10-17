@@ -1,5 +1,5 @@
 {
-  "name": "hono",
+  "name": "@repo/hono",
   "type": "module",
   "scripts": {
     "dev": "pnpm dotenvx rollup -c --watch",
