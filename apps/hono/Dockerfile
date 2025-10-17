@@ -26,14 +26,11 @@ RUN turbo prune @repo/hono --docker
 # =========================================================================== #
 FROM base AS builder
 
-### 1. Copy the pruned source code and the lockfile
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 
-### 2. Install all dependencies (including dev) to build the app
-RUN pnpm install --frozen-lockfile --prod=false
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod=false
 
-### 3. Build the specific app
 RUN pnpm --filter="@repo/hono" build
 
 # =========================================================================== #
@@ -41,21 +38,24 @@ RUN pnpm --filter="@repo/hono" build
 # =========================================================================== #
 FROM base AS production
 
-### 1. Copy the pruned source code and lockfile again
+RUN pnpm add -g @dotenvx/dotenvx
+
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 
-### 2. Install ONLY production dependencies
-RUN pnpm install --prod
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod
 
-### 3. Copy the built code from the builder stage
 COPY --from=builder /app/apps/hono/dist ./apps/hono/dist
 
-### 4. Set up non-root user and permissions
+COPY apps/hono/static ./apps/hono/static
+
+COPY apps/hono/.env.production .
+
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 hono
 RUN chown -R hono:nodejs /app
 USER hono
 
-### 5. Set the final command to run the app from its location
-CMD ["node", "apps/hono/dist/index.js"]
+EXPOSE 3001
+
+CMD ["dotenvx", "run",  "-f", ".env.production", "--", "node", "apps/hono/dist/index.js"]
