@@ -19,5 +19,6 @@ export const PublicKeyCredentialJSONSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialJSON',
-    description: 'A public key credential. For more information, see https://www.w3.org/TR/webauthn/#iface-pk-cred-json.',
+    description:
+      'A public key credential. For more information, see https://www.w3.org/TR/webauthn/#iface-pk-cred-json.',
   }) satisfies z.ZodType<IPublicKeyCredentialJSON>;

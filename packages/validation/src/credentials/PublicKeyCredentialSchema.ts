@@ -20,7 +20,9 @@ import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestati
 export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> = z
   .object({
     id: z.string().describe('The Base64URL-encoded credential ID.'),
-    rawId: Base64URLBufferSchema.meta({ description: 'The raw ID of the credential.' }),
+    rawId: Base64URLBufferSchema.meta({
+      description: 'The raw ID of the credential.',
+    }),
     type: PublicKeyCredentialTypeSchema,
     response: z.union([
       AuthenticatorAttestationResponseSchema,

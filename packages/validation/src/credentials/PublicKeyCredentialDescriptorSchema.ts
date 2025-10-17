@@ -11,10 +11,13 @@ import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 export const PublicKeyCredentialDescriptorSchema = z
   .object({
     type: PublicKeyCredentialTypeSchema,
-    id: Base64URLBufferSchema.meta({ description: 'The ID of the credential.' }),
+    id: Base64URLBufferSchema.meta({
+      description: 'The ID of the credential.',
+    }),
     transports: z.array(AuthenticatorTransportSchema).optional(),
   })
   .meta({
     id: 'PublicKeyCredentialDescriptor',
-    description: 'Used to exclude existing credentials for a user. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor.',
+    description:
+      'Used to exclude existing credentials for a user. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor.',
   }) satisfies z.ZodType<IPublicKeyCredentialDescriptor>;

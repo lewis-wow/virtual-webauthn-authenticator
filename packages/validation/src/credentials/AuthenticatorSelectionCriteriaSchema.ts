@@ -16,5 +16,6 @@ export const AuthenticatorSelectionCriteriaSchema = z
   })
   .meta({
     id: 'AuthenticatorSelectionCriteria',
-    description: 'Specifies requirements for the authenticator. For more information, see https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria.',
+    description:
+      'Specifies requirements for the authenticator. For more information, see https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria.',
   }) satisfies z.ZodType<IAuthenticatorSelectionCriteria>;

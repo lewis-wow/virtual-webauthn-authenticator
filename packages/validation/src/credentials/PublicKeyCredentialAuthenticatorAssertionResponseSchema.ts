@@ -12,12 +12,15 @@ import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionRe
 export const PublicKeyCredentialAuthenticatorAssertionResponseSchema = z
   .object({
     id: z.string().describe('The Base64URL-encoded credential ID.'),
-    rawId: Base64URLBufferSchema.meta({ description: 'The raw credential ID.' }),
+    rawId: Base64URLBufferSchema.meta({
+      description: 'The raw credential ID.',
+    }),
     type: PublicKeyCredentialTypeSchema,
     clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
     response: AuthenticatorAssertionResponseSchema,
   })
   .meta({
-    description: 'The response from an authenticator for an assertion. For more information, see https://www.w3.org/TR/webauthn/#iface-pk-cred-auth-assertion-resp.',
+    description:
+      'The response from an authenticator for an assertion. For more information, see https://www.w3.org/TR/webauthn/#iface-pk-cred-auth-assertion-resp.',
   }) satisfies z.ZodType<IPublicKeyCredentialAuthenticatorAssertionResponse>;
