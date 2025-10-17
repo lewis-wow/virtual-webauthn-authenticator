@@ -11,7 +11,7 @@ import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 export const PublicKeyCredentialDescriptorSchema = z
   .object({
     type: PublicKeyCredentialTypeSchema,
-    id: Base64URLBufferSchema,
+    id: Base64URLBufferSchema.meta({ description: 'The ID of the credential.' }),
     transports: z.array(AuthenticatorTransportSchema).optional(),
   })
   .meta({

@@ -5,7 +5,7 @@ import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
 
 // Represents the user creating the credential
 export const PublicKeyCredentialUserEntitySchema = z.object({
-  id: Base64URLBufferSchema,
+  id: Base64URLBufferSchema.meta({ description: 'The user handle for the credential.' }),
   name: z.string(),
   displayName: z.string(),
 }).meta({

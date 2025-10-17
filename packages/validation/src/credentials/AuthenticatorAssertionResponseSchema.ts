@@ -9,10 +9,10 @@ import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
  */
 export const AuthenticatorAssertionResponseSchema = z
   .object({
-    clientDataJSON: Base64URLBufferSchema,
-    authenticatorData: Base64URLBufferSchema,
-    signature: Base64URLBufferSchema,
-    userHandle: Base64URLBufferSchema.nullable(),
+    clientDataJSON: Base64URLBufferSchema.meta({ description: 'The client data for the assertion.' }),
+    authenticatorData: Base64URLBufferSchema.meta({ description: 'The authenticator data for the assertion.' }),
+    signature: Base64URLBufferSchema.meta({ description: 'The signature for the assertion.' }),
+    userHandle: Base64URLBufferSchema.meta({ description: 'The user handle for the assertion.' }).nullable(),
   })
   .meta({
     id: 'AuthenticatorAssertionResponse',

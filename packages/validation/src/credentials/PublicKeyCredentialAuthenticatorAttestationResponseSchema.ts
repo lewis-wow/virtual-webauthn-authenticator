@@ -12,7 +12,7 @@ import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestati
 export const PublicKeyCredentialAuthenticatorAttestationResponseSchema = z
   .object({
     id: z.string().describe('The Base64URL-encoded credential ID.'),
-    rawId: Base64URLBufferSchema,
+    rawId: Base64URLBufferSchema.meta({ description: 'The raw ID of the credential.' }),
     type: PublicKeyCredentialTypeSchema,
     clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
     authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),

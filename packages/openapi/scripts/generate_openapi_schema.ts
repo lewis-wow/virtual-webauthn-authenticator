@@ -8,6 +8,8 @@ import { openApiDocument } from '../src/openApiDocument.js';
 const yaml = stringify(openApiDocument, { aliasDuplicateObjects: false });
 const json = JSON.stringify(openApiDocument);
 
+console.log(yaml);
+
 mkdirSync(join(import.meta.dirname, '..', 'src/generated'), {
   recursive: true,
 });
