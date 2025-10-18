@@ -43,6 +43,9 @@ RUN pnpx turbo run build
 FROM base AS production
 
 RUN pnpm add -g @dotenvx/dotenvx
+WORKDIR /app
+
+ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/packages/prisma/src/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node"
 
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
@@ -50,10 +53,8 @@ COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --fetch-retries=5 --fetch-timeout=120000
 
 COPY --from=builder /app/apps/hono/dist ./apps/hono/dist
-
-COPY apps/hono/static ./static
-
-COPY apps/hono/.env.production .
+COPY apps/hono/static ./apps/hono/static
+COPY apps/hono/.env.production ./apps/hono/.env.production
 
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 hono
@@ -62,5 +63,5 @@ USER hono
 
 EXPOSE 3001
 
-CMD ["dotenvx", "run",  "-f", ".env.production", "--", "node", "apps/hono/dist/index.js"]
+CMD ["dotenvx", "run",  "-f", "apps/hono/.env.production", "--", "node", "apps/hono/dist/index.js"]
 
