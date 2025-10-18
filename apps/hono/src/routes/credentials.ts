@@ -1,3 +1,4 @@
+import { factory } from '@/factory';
 import { zValidator } from '@hono/zod-validator';
 import type {
   IAuthenticatorAssertionResponse,
@@ -9,11 +10,10 @@ import {
   PublicKeyCredentialCreationOptionsSchema,
   PublicKeyCredentialRequestOptionsSchema,
 } from '@repo/validation';
-import { Hono } from 'hono';
 
 import { zResponseValidator } from '../middleware/zResponseValidator';
 
-export const credentials = new Hono();
+export const credentials = factory.createApp();
 
 credentials.get(
   '/',

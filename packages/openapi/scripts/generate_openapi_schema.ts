@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { stringify } from 'yaml';
 
-import { openApiDocument } from '../src/openApiDocument.js';
+import { openApiDocument } from '../src/index.js';
 
 const yaml = stringify(openApiDocument, { aliasDuplicateObjects: false });
 const json = JSON.stringify(openApiDocument);

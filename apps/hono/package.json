@@ -8,6 +8,7 @@
     "dotenvx": "../../scripts/dotenvx.sh"
   },
   "dependencies": {
+    "@repo/better-auth": "workspace:*",
     "@hono/node-server": "^1.19.5",
     "@hono/zod-validator": "^0.7.4",
     "@repo/enums": "workspace:*",
