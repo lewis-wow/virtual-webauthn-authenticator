@@ -2,11 +2,13 @@ import { factory } from '@/factory';
 import { requireAuth } from '@/middleware/requireAuth';
 import { zValidator } from '@hono/zod-validator';
 import { auth } from '@repo/better-auth';
+import '@repo/validation';
 import {
-  CreateApiKeySchema,
-  DeleteApiKeySchema,
-  GetApiKeySchema,
-  UdpateApiKeySchema,
+  CreateApiKeyBodyRequestSchema,
+  DeleteApiKeyParamRequestSchema,
+  GetApiKeyParamRequestSchema,
+  UpdateApiKeyBodyRequestSchema,
+  UpdateApiKeyParamRequestSchema,
 } from '@repo/validation';
 
 export const apiKeys = factory.createApp().use(requireAuth());
@@ -19,37 +21,45 @@ apiKeys.get('/', async (ctx) => {
   return ctx.json(result);
 });
 
-apiKeys.post('/', zValidator('json', CreateApiKeySchema), async (ctx) => {
-  const { name, expiresIn } = ctx.req.valid('json');
+apiKeys.post(
+  '/',
+  zValidator('json', CreateApiKeyBodyRequestSchema),
+  async (ctx) => {
+    const { name, expiresIn } = ctx.req.valid('json');
 
-  const result = await auth.api.createApiKey({
-    body: {
-      name,
-      expiresIn: expiresIn,
-      userId: ctx.var.user?.id,
-      prefix: 'virtual-webauthn-authenticator',
-    },
-  });
+    const result = await auth.api.createApiKey({
+      body: {
+        name,
+        expiresIn: expiresIn,
+        userId: ctx.var.user?.id,
+        prefix: 'virtual-webauthn-authenticator',
+      },
+    });
 
-  return ctx.json(result);
-});
+    return ctx.json(result);
+  },
+);
 
-apiKeys.get('/:id', zValidator('param', GetApiKeySchema), async (ctx) => {
-  const { id } = ctx.req.valid('param');
+apiKeys.get(
+  '/:id',
+  zValidator('param', GetApiKeyParamRequestSchema),
+  async (ctx) => {
+    const { id } = ctx.req.valid('param');
 
-  const result = await auth.api.getApiKey({
-    query: {
-      id,
-    },
-  });
+    const result = await auth.api.getApiKey({
+      query: {
+        id,
+      },
+    });
 
-  return ctx.json(result);
-});
+    return ctx.json(result);
+  },
+);
 
 apiKeys.put(
   '/:id',
-  zValidator('param', GetApiKeySchema),
-  zValidator('json', UdpateApiKeySchema),
+  zValidator('param', UpdateApiKeyParamRequestSchema),
+  zValidator('json', UpdateApiKeyBodyRequestSchema),
   async (ctx) => {
     const { id: keyId } = ctx.req.valid('param');
     const { name, expiresIn } = ctx.req.valid('json');
@@ -67,14 +77,18 @@ apiKeys.put(
   },
 );
 
-apiKeys.delete('/:id', zValidator('param', DeleteApiKeySchema), async (ctx) => {
-  const { id: keyId } = ctx.req.valid('param');
+apiKeys.delete(
+  '/:id',
+  zValidator('param', DeleteApiKeyParamRequestSchema),
+  async (ctx) => {
+    const { id: keyId } = ctx.req.valid('param');
 
-  const result = await auth.api.deleteApiKey({
-    body: {
-      keyId,
-    },
-  });
+    const result = await auth.api.deleteApiKey({
+      body: {
+        keyId,
+      },
+    });
 
-  return ctx.json(result);
-});
+    return ctx.json(result);
+  },
+);

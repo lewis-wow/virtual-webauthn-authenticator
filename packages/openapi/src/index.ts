@@ -1,7 +1,6 @@
 import { createDocument } from 'zod-openapi';
 
-import { apiKeysPath } from './paths/auth/api-keys.js';
-import { credentialsPath } from './paths/credentials.js';
+import paths from './paths';
 
 export const openApiDocument: object = createDocument(
   {
@@ -10,10 +9,7 @@ export const openApiDocument: object = createDocument(
       title: 'API',
       version: '1.0.0',
     },
-    paths: {
-      '/credentials': credentialsPath,
-      '/auth/api-keys': apiKeysPath,
-    },
+    paths,
   },
   {
     allowEmptySchema: {

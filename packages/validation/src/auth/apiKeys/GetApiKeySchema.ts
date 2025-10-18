@@ -1,5 +1,7 @@
 import z from 'zod';
 
-export const GetApiKeySchema = z.object({
+export const GetApiKeyParamRequestSchema = z.object({
   id: z.string(),
 });
+
+export const GetApiKeyResponseSchema = z.object({});

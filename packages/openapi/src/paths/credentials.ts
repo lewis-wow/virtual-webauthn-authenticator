@@ -6,7 +6,7 @@ import {
 } from '@repo/validation';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
-export const credentialsPath: ZodOpenApiPathItemObject = {
+export default {
   get: {
     description:
       'Corresponds to navigator.credentials.get(), used for generating an assertion to authenticate a user as part of the WebAuthn authentication ceremony.',
@@ -43,4 +43,4 @@ export const credentialsPath: ZodOpenApiPathItemObject = {
       },
     },
   },
-};
+} as ZodOpenApiPathItemObject;

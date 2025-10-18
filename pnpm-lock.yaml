@@ -459,6 +459,9 @@ importers:
 
   packages/openapi:
     dependencies:
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation

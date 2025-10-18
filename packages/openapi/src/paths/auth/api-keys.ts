@@ -1,20 +1,19 @@
+import '@repo/validation';
 import {
-  CreateApiKeySchema,
-  DeleteApiKeySchema,
-  GetApiKeySchema,
-  UdpateApiKeySchema,
+  CreateApiKeyBodyRequestSchema,
+  CreateApiKeyResponseSchema,
+  GetApiKeyResponseSchema,
 } from '@repo/validation';
 import type { ZodOpenApiPathItemObject } from 'zod-openapi';
 
-export const apiKeysPath: ZodOpenApiPathItemObject = {
+export default {
   get: {
-    requestParams: {
-      path: GetApiKeySchema,
-    },
     responses: {
       200: {
         content: {
-          'application/json': {},
+          'application/json': {
+            schema: GetApiKeyResponseSchema,
+          },
         },
       },
     },
@@ -23,47 +22,18 @@ export const apiKeysPath: ZodOpenApiPathItemObject = {
     requestBody: {
       content: {
         'application/json': {
-          schema: CreateApiKeySchema,
+          schema: CreateApiKeyBodyRequestSchema,
         },
       },
     },
     responses: {
       200: {
         content: {
-          'application/json': {},
+          'application/json': {
+            schema: CreateApiKeyResponseSchema,
+          },
         },
       },
     },
   },
-  put: {
-    requestParams: {
-      path: GetApiKeySchema,
-    },
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: UdpateApiKeySchema,
-        },
-      },
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {},
-        },
-      },
-    },
-  },
-  delete: {
-    requestParams: {
-      path: DeleteApiKeySchema,
-    },
-    responses: {
-      200: {
-        content: {
-          'application/json': {},
-        },
-      },
-    },
-  },
-};
+} as ZodOpenApiPathItemObject;

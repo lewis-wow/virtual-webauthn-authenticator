@@ -7,7 +7,8 @@
     "./toBuffer": "./src/toBuffer.ts",
     "./sha256": "./src/sha256.ts",
     "./objectKeys": "./src/objectKeys.ts",
-    "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
+    "./swapKeysAndValues": "./src/swapKeysAndValues.ts",
+    "./keyPrefix": "./src/keyPrefix.ts"
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
