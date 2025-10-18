@@ -1,4 +1,4 @@
-#!/usr/bin/env -S npx tsx
+#!/usr/bin/env tsx
 import ejs from 'ejs';
 import { readdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
@@ -15,7 +15,7 @@ const outputFile = path.join(fullPath, 'index.ts');
 
 console.log(`🌀 Generating barrel file for "${dirName}"...`);
 
-const templatePath = path.join(import.meta.dirname, '..', 'barrel.ejs');
+const templatePath = path.join(import.meta.dirname, 'barrel.ejs');
 const ejsTemplate = await readFile(templatePath, 'utf-8');
 
 const files = await readdir(fullPath);
