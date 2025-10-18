@@ -10,7 +10,11 @@ import { credentials } from './routes/credentials.js';
 
 const app = new Hono();
 
-console.log(prisma);
+app.get('/', async (ctx) => {
+  console.log(prisma);
+
+  ctx.text('OK');
+});
 
 app.use('*', serveStatic({ root: './static' }));
 
