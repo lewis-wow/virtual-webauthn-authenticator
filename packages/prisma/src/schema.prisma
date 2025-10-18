@@ -19,7 +19,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   userRoles     UserRole[]
-  apiTokens     ApiToken[]
+  apiKeys       ApiKey[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -76,11 +76,33 @@ model Verification {
   @@map("verification")
 }
 
-model ApiToken {
-  accessToken String   @unique
-  userId      String
-  expiresAt   DateTime
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model ApiKey {
+  id     String  @id @default(cuid())
+  name   String?
+  start  String?
+  prefix String?
+  key    String  @unique // The hashed API key
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Token Bucket / Refill settings
+  refillInterval Int? // In milliseconds
+  refillAmount   Int?
+  lastRefillAt   DateTime?
+  remaining      Int?
+
+  // Rate Limiting settings
+  rateLimitEnabled    Boolean @default(false)
+  rateLimitTimeWindow Int? // In milliseconds
+  rateLimitMax        Int?
+  requestCount        Int     @default(0)
+
+  // General settings & metadata
+  enabled     Boolean   @default(true)
+  expiresAt   DateTime?
+  lastRequest DateTime?
+  permissions String? // Consider using an Enum for more type-safety
+  metadata    Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
