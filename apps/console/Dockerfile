@@ -41,6 +41,8 @@ FROM base AS production
 RUN pnpm add -g @dotenvx/dotenvx
 WORKDIR /app
 
+ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/packages/prisma/src/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node"
+
 # 1. Copy dependency-related files from the pruner stage
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 COPY --from=pruner /app/out/json/pnpm-workspace.yaml .
@@ -54,9 +56,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-l
 # 3. Copy only the necessary BUILT assets from the builder stage
 COPY --from=builder /app/apps/console/public ./apps/console/public
 COPY --from=builder /app/apps/console/.next/static ./apps/console/.next/static
-COPY --from=builder /app/apps/console/.next/standalone/apps/console/server.js ./apps/console/server.js
-COPY --from=builder /app/apps/console/.env.production .
-COPY --from=builder /app/packages/prisma/src/generated/client ./packages/prisma/src/generated/client
+COPY --from=builder /app/apps/console/.next/standalone .
+COPY --from=builder /app/apps/console/.env.production ./apps/console/.env.production
 
 # 4. Create a non-root user and set permissions
 RUN addgroup --system --gid 1001 nodejs \
@@ -67,4 +68,4 @@ USER console
 EXPOSE 3000
 
 # 5. Run the server from its new, explicit path
-CMD ["dotenvx", "run", "-f", ".env.production", "--", "node", "apps/console/server.js"]
+CMD ["dotenvx", "run", "-f", "apps/console/.env.production", "--", "node", "apps/console/server.js"]
