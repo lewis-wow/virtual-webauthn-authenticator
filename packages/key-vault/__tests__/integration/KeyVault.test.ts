@@ -5,7 +5,8 @@ import {
   KeyType,
   PublicKeyCredentialType,
 } from '@repo/enums';
-import { describe, test, expect } from 'vitest';
+import { InterceptedAzureJsonWebKey } from '@repo/types';
+import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';
 
 import { KeyVault } from '../../src/KeyVault';
@@ -25,8 +26,11 @@ describe('KeyVault', () => {
 
   const keyVault = new KeyVault({ keyClient });
 
-  test('createEcKey', async () => {
-    const { keyVaultKey, credentialId } = await keyVault.createEcKey({
+  let credentialId: string;
+  let key: InterceptedAzureJsonWebKey;
+
+  describe('EC', () => {
+    const createEcKeyOpts = {
       rp: {
         id: 'test',
       },
@@ -39,13 +43,96 @@ describe('KeyVault', () => {
           type: PublicKeyCredentialType.PUBLIC_KEY,
         },
       ],
+    };
+
+    beforeAll(async () => {
+      ({ key, credentialId } = await keyVault.createEcKey(createEcKeyOpts));
     });
 
-    expect(z.uuid().safeParse(credentialId).success).toBe(true);
+    test('createEcKey', async () => {
+      expect(z.uuid().safeParse(credentialId).success).toBe(true);
 
-    expect(keyVaultKey.key?.crv).toBe(EcCurve.P256);
-    expect(keyVaultKey.key?.kty).toBe(KeyType.EC);
-    expect(keyVaultKey.key?.x).toBeInstanceOf(Buffer);
-    expect(keyVaultKey.key?.y).toBeInstanceOf(Buffer);
+      expect(key?.crv).toBe(EcCurve.P256);
+      expect(key?.kty).toBe(KeyType.EC);
+      expect(key?.x).toBeInstanceOf(Buffer);
+      expect(key?.y).toBeInstanceOf(Buffer);
+    });
+
+    test('getKey', async () => {
+      const { key: keyGet } = await keyVault.getKey({
+        ...createEcKeyOpts,
+        credentialId,
+      });
+
+      expect(keyGet).toStrictEqual(key);
+    });
+
+    test('deleteKey', async () => {
+      const { key: keyDelete } = await keyVault.deleteKey({
+        ...createEcKeyOpts,
+        credentialId,
+      });
+
+      expect(keyDelete).toMatchObject(key);
+
+      await expect(() =>
+        keyVault.getKey({
+          ...createEcKeyOpts,
+          credentialId,
+        }),
+      ).to.rejects.toThrow();
+    });
+  });
+
+  describe('RSA', () => {
+    const createRsaKeyOpts = {
+      rp: {
+        id: 'test',
+      },
+      user: {
+        id: Buffer.from('test'),
+      },
+      pubKeyCredParams: [
+        {
+          alg: COSEAlgorithm.RS256,
+          type: PublicKeyCredentialType.PUBLIC_KEY,
+        },
+      ],
+    };
+
+    beforeAll(async () => {
+      ({ key, credentialId } = await keyVault.createRsaKey(createRsaKeyOpts));
+    });
+
+    test('createRsaKey', async () => {
+      expect(z.uuid().safeParse(credentialId).success).toBe(true);
+
+      expect(key?.kty).toBe(KeyType.RSA);
+    });
+
+    test('getKey', async () => {
+      const { key: keyGet } = await keyVault.getKey({
+        ...createRsaKeyOpts,
+        credentialId,
+      });
+
+      expect(keyGet).toStrictEqual(key);
+    });
+
+    test('deleteKey', async () => {
+      const { key: keyDelete } = await keyVault.deleteKey({
+        ...createRsaKeyOpts,
+        credentialId,
+      });
+
+      expect(keyDelete).toMatchObject(key);
+
+      await expect(() =>
+        keyVault.getKey({
+          ...createRsaKeyOpts,
+          credentialId,
+        }),
+      ).to.rejects.toThrow();
+    });
   });
 });

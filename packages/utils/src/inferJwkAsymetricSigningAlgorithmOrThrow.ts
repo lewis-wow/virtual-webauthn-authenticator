@@ -13,9 +13,9 @@ import { assert, isEnum, isOptional } from 'typanion';
  * @param jwk The JSON Web Key object.
  * @returns The inferred signing algorithm string (e.g., 'ES256', 'PS256') or undefined if it cannot be determined.
  */
-export const getJwkAsymetricSigningAlg = (
-  jwk: JsonWebKey & { alg?: AsymetricSigningAlgorithm },
-): AsymetricSigningAlgorithm | undefined => {
+export const inferJwkAsymetricSigningAlgorithmOrThrow = (
+  jwk: Pick<JsonWebKey, 'kty' | 'crv'> & { alg?: AsymetricSigningAlgorithm },
+): AsymetricSigningAlgorithm => {
   assert(jwk.alg, isOptional(isEnum(objectKeys(AsymetricSigningAlgorithm))));
 
   // If 'alg' is explicitly provided, it has the highest priority.
@@ -33,7 +33,9 @@ export const getJwkAsymetricSigningAlg = (
         case 'Ed448':
           return 'EdDSA';
         default:
-          return undefined;
+          throw new Error(
+            `Cannot infer asymetric signing algorithm for kty: ${jwk.kty}, crv: ${jwk.crv}.`,
+          );
       }
 
     // Elliptic Curve Keys w/ x- and y-coordinate pair
@@ -50,9 +52,10 @@ export const getJwkAsymetricSigningAlg = (
         case 'P-521':
           return 'ES512';
         case 'secp256k1':
-          return undefined;
         default:
-          return undefined;
+          throw new Error(
+            `Cannot infer asymetric signing algorithm for kty: ${jwk.kty}, crv: ${jwk.crv}.`,
+          );
       }
 
     case 'RSA':
@@ -63,6 +66,8 @@ export const getJwkAsymetricSigningAlg = (
       return 'PS256';
 
     default:
-      return undefined;
+      throw new Error(
+        `Cannot infer asymetric signing algorithm for kty: ${jwk.kty}.`,
+      );
   }
 };

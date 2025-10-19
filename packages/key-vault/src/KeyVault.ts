@@ -1,10 +1,23 @@
-import { KeyClient, type KeyVaultKey } from '@azure/keyvault-keys';
+import {
+  KeyClient,
+  type JsonWebKey as AzureJsonWebKey,
+  type KeyVaultKey,
+} from '@azure/keyvault-keys';
 import { COSEAlgorithm, PublicKeyCredentialType } from '@repo/enums';
-import { COSEAlgorithmToEcCurveMapper } from '@repo/mappers';
+import {
+  COSEAlgorithmToAsymetricSigningAlgorithmMapper,
+  COSEAlgorithmToEcCurveMapper,
+} from '@repo/mappers';
 import type {
+  InterceptedAzureJsonWebKey,
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialParameters,
 } from '@repo/types';
+import {
+  inferJwkAsymetricSigningAlgorithmOrThrow,
+  isEcAlgorithm,
+  isRsaAlgorithm,
+} from '@repo/utils';
 import { randomUUID } from 'node:crypto';
 import {
   applyCascade,
@@ -29,7 +42,8 @@ export type CreateKeyNamePayload = {
 };
 
 export type KeyPayload = {
-  keyVaultKey: KeyVaultKey;
+  result: KeyVaultKey;
+  key: InterceptedAzureJsonWebKey;
   credentialId: string;
 };
 
@@ -38,6 +52,17 @@ export class KeyVault {
 
   constructor(opts: KeyVaultOptions) {
     this.keyClient = opts.keyClient;
+  }
+
+  private _interceptAzureJsonWebKey(
+    azureJsonWebKey: AzureJsonWebKey,
+  ): InterceptedAzureJsonWebKey {
+    const alg = inferJwkAsymetricSigningAlgorithmOrThrow(azureJsonWebKey);
+
+    return {
+      ...azureJsonWebKey,
+      alg,
+    };
   }
 
   private createKeyName(
@@ -90,27 +115,116 @@ export class KeyVault {
   ): Promise<KeyPayload> {
     const { rp, user, pubKeyCredParams } = opts;
 
-    const { keyName, credentialId } = this.createKeyName({ rp, user });
     const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
+    assert(
+      COSEAlgorithmToAsymetricSigningAlgorithmMapper(pubKeyCredParam.alg),
+      isEcAlgorithm,
+    );
 
-    const keyVaultKey = await this.keyClient.createEcKey(keyName, {
+    const { keyName, credentialId } = this.createKeyName({ rp, user });
+
+    const result = await this.keyClient.createEcKey(keyName, {
       curve: COSEAlgorithmToEcCurveMapper(pubKeyCredParam.alg),
     });
 
-    return { keyVaultKey, credentialId };
+    return {
+      result,
+      key: this._interceptAzureJsonWebKey(result.key!),
+      credentialId,
+    };
+  }
+
+  async createRsaKey(
+    opts: PickDeep<
+      IPublicKeyCredentialCreationOptions,
+      'rp.id' | 'user.id' | 'pubKeyCredParams'
+    >,
+  ): Promise<KeyPayload> {
+    const { rp, user, pubKeyCredParams } = opts;
+
+    const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
+    assert(
+      COSEAlgorithmToAsymetricSigningAlgorithmMapper(pubKeyCredParam.alg),
+      isRsaAlgorithm,
+    );
+
+    const { keyName, credentialId } = this.createKeyName({ rp, user });
+
+    const result = await this.keyClient.createRsaKey(keyName);
+
+    return {
+      result,
+      key: this._interceptAzureJsonWebKey(result.key!),
+      credentialId,
+    };
+  }
+
+  async createKey(
+    opts: PickDeep<
+      IPublicKeyCredentialCreationOptions,
+      'rp.id' | 'user.id' | 'pubKeyCredParams'
+    >,
+  ): Promise<KeyPayload> {
+    const { pubKeyCredParams } = opts;
+    const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
+
+    if (
+      isEcAlgorithm(
+        COSEAlgorithmToAsymetricSigningAlgorithmMapper(pubKeyCredParam.alg),
+      )
+    ) {
+      return await this.createEcKey(opts);
+    }
+
+    return await this.createRsaKey(opts);
   }
 
   async getKey(
     opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
       credentialId: string;
     },
-  ): Promise<{ keyVaultKey: KeyVaultKey; credentialId: string }> {
+  ): Promise<KeyPayload> {
     const { rp, user, credentialId } = opts;
 
     const { keyName } = this.createKeyName({ rp, user, credentialId });
 
-    const keyVaultKey = await this.keyClient.getKey(keyName);
+    const result = await this.keyClient.getKey(keyName);
 
-    return { keyVaultKey, credentialId };
+    return {
+      result,
+      key: this._interceptAzureJsonWebKey(result.key!),
+      credentialId,
+    };
+  }
+
+  async deleteKey(
+    opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
+      credentialId: string;
+    },
+  ): Promise<KeyPayload> {
+    const { rp, user, credentialId } = opts;
+
+    const { keyName } = this.createKeyName({ rp, user, credentialId });
+
+    const poller = await this.keyClient.beginDeleteKey(keyName);
+    const result = await poller.pollUntilDone();
+
+    return {
+      result,
+      key: this._interceptAzureJsonWebKey(result.key!),
+      credentialId,
+    };
+  }
+
+  async purgeDeletedKey(
+    opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
+      credentialId: string;
+    },
+  ): Promise<void> {
+    const { rp, user, credentialId } = opts;
+
+    const { keyName } = this.createKeyName({ rp, user, credentialId });
+
+    await this.keyClient.purgeDeletedKey(keyName);
   }
 }
