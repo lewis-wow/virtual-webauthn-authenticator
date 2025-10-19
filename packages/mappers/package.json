@@ -1,15 +1,10 @@
 {
-  "name": "@repo/utils",
+  "name": "@repo/mappers",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./toBuffer": "./src/toBuffer.ts",
-    "./sha256": "./src/sha256.ts",
-    "./objectKeys": "./src/objectKeys.ts",
-    "./swapKeysAndValues": "./src/swapKeysAndValues.ts",
-    "./keyPrefix": "./src/keyPrefix.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
@@ -27,6 +22,7 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
+    "@repo/utils": "workspace:*",
     "typanion": "^3.14.0"
   }
 }

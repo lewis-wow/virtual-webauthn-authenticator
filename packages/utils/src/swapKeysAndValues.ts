@@ -1,4 +1,5 @@
 import type { SwapKeysAndValues } from '@repo/types';
+import type { Simplify } from 'type-fest';
 
 /**
  * Swaps the keys and values of a constant object.
@@ -10,10 +11,10 @@ export const swapKeysAndValues = <
   const T extends Record<PropertyKey, PropertyKey>,
 >(
   obj: T,
-): SwapKeysAndValues<T> => {
+): Simplify<SwapKeysAndValues<T>> => {
   const swapped = Object.fromEntries(
     Object.entries(obj).map(([key, value]) => [value, key]),
   );
 
-  return swapped as SwapKeysAndValues<T>;
+  return swapped as Simplify<SwapKeysAndValues<T>>;
 };

@@ -1,4 +1,7 @@
-import { UserVerificationRequirement } from '@repo/enums';
+import {
+  PublicKeyCredentialType,
+  UserVerificationRequirement,
+} from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import type {
   IAuthenticatorAssertionResponse,
@@ -81,7 +84,7 @@ export class VirtualAuthenticator {
     // using the CTAP2 canonical CBOR encoding form.
     // The COSE_Key-encoded credential public key MUST contain the "alg" parameter
     // and MUST NOT contain any other OPTIONAL parameters.
-    // The "alg" parameter MUST contain a COSEAlgorithmIdentifier value.
+    // The "alg" parameter MUST contain a COSEAlgorithm value.
     // The encoded credential public key MUST also contain any additional REQUIRED parameters
     // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty"
     // and algorithm "alg" (see Section 8 of [RFC8152]).
@@ -168,7 +171,7 @@ export class VirtualAuthenticator {
         isArray(
           isPartial({
             id: isInstanceOf(Buffer),
-            type: isEnum(['public-key']),
+            type: isEnum(PublicKeyCredentialType),
           }),
         ),
         hasMinLength(1),
@@ -214,7 +217,7 @@ export class VirtualAuthenticator {
     return new PublicKeyCredential({
       id: toBuffer(credentialID).toString('base64url'),
       rawId: credentialID,
-      type: 'public-key',
+      type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON,
         authenticatorData: authData,
@@ -246,7 +249,7 @@ export class VirtualAuthenticator {
       applyCascade(
         isArray(
           isObject({
-            type: isEnum(['public-key']),
+            type: isEnum(PublicKeyCredentialType),
             alg: isNumber(),
           }),
         ),
@@ -297,7 +300,7 @@ export class VirtualAuthenticator {
     return new PublicKeyCredential({
       id: credentialID.toString('base64url'),
       rawId: credentialID,
-      type: 'public-key',
+      type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: Buffer.from(JSON.stringify(clientData)),
         attestationObject: encode(attestationObject),

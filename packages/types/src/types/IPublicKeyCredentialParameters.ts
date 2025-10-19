@@ -1,9 +1,6 @@
-import type {
-  COSEAlgorithmIdentifier,
-  PublicKeyCredentialType,
-} from '@repo/enums';
+import type { COSEAlgorithm, PublicKeyCredentialType } from '@repo/enums';
 
 export interface IPublicKeyCredentialParameters {
   type: PublicKeyCredentialType;
-  alg: COSEAlgorithmIdentifier;
+  alg: COSEAlgorithm;
 }

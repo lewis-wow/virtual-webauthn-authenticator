@@ -5,6 +5,7 @@ export * from './ICredentialSigner.js';
 export * from './Jwk.js';
 export * from './MaybePromise.js';
 export * from './KeyPrefix.js';
+export * from './InterceptedAzureJsonWebKey.js';
 
 export type PropertyKey = string | number | symbol;
 

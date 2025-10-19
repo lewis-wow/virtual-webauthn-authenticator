@@ -24,11 +24,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # - name: Start services with Docker Compose
-      #   # This command starts all services defined in your docker-compose.yml
-      #   # in the background (-d). The '--wait' flag tells Compose to wait
-      #   # until the containers report a "healthy" status.
-      #   run: docker compose up -d --wait
+      - name: Start services with Docker Compose
+        # This command starts all services defined in your docker-compose.yml
+        # in the background (-d). The '--wait' flag tells Compose to wait
+        # until the containers report a "healthy" status.
+        run: ./docker-compose-test.sh
 
       - name: Check formatting
         run: pnpm format:check
@@ -43,13 +43,45 @@ jobs:
         run: pnpm check-types
 
       - name: Run unit tests
-        # Your tests can now connect to the services started via Docker Compose
         env:
           ENVIRONMENT: test
         run: pnpm test
 
-      # - name: Stop services
-      #   # This step runs even if previous steps fail, ensuring
-      #   # that the Docker Compose services are always stopped.
-      #   if: always()
-      #   run: docker compose down
+      - name: Run integration tests
+        env:
+          ENVIRONMENT: test
+        run: pnpm test:integration
+
+      - name: Log in to GitHub Container Registry
+        # This step is only run on pushes to the main branch
+        if: github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push console image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/console/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ghcr.io/${{ github.repository }}/console:latest
+
+      - name: Build and push hono image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./apps/hono/Dockerfile
+          push: ${{ github.ref == 'refs/heads/main' }}
+          tags: ghcr.io/${{ github.repository }}/hono:latest
+
+      - name: Stop services
+        # This step runs even if previous steps fail, ensuring
+        # that the Docker Compose services are always stopped.
+        if: always()
+        run: docker compose down
