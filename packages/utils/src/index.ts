@@ -4,3 +4,4 @@ export * from './sha256';
 export * from './swapKeysAndValues';
 export * from './toBuffer';
 export * from './predicates';
+export * from './interceptJsonWebKey';

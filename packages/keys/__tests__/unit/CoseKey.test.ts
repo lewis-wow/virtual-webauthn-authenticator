@@ -1,5 +1,5 @@
 import type { Jwk } from '@repo/types';
-import { interceptNodejsJwk } from '@repo/utils';
+import { interceptJsonWebKey } from '@repo/utils';
 import { describe, expect, test } from 'vitest';
 
 import { COSEKey } from '../../src/COSEKey.js';
@@ -7,7 +7,7 @@ import { COSEKey } from '../../src/COSEKey.js';
 describe('COSEKey', () => {
   describe('EC', () => {
     describe('P-256 round-trip', () => {
-      const p256PublicKey: Jwk = interceptNodejsJwk({
+      const p256PublicKey: Jwk = interceptJsonWebKey({
         kty: 'EC',
         crv: 'P-256',
         x: '46h_Gf2I-GAe3AnwT3a4u2bYgPKFF5eQ8eZ5LLu-DPg',
@@ -39,7 +39,7 @@ describe('COSEKey', () => {
     });
 
     describe('Ed25519 round-trip', () => {
-      const ed25519PublicKey: Jwk = interceptNodejsJwk({
+      const ed25519PublicKey: Jwk = interceptJsonWebKey({
         kty: 'OKP',
         crv: 'Ed25519',
         x: 'zdpL23z340A-vWQVZkAn9jS5WIxfeotI5b4L4x4j4VA',
@@ -57,7 +57,7 @@ describe('COSEKey', () => {
 
   describe('RSA', () => {
     // FIX: The original 'n' was an invalid base64url string (length 257). Corrected by removing the trailing 'w'.
-    const rsaPublicKey: Jwk = interceptNodejsJwk({
+    const rsaPublicKey: Jwk = interceptJsonWebKey({
       kty: 'RSA',
       n: 'uBoA40a4DDs5bSoYVq0a9sO-e8d9-z0oYXB2yN-s5E8yY8Pj8hY-u3-L8L_E9VvS4L8uXDjA1BqJ1A9o_j-J8sB-E8w_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_D1c8E8w-E8B_A1A8w-E8B_D1c8E8w-E8D_A1A8w-E8B_A1A8w-E8B_D1c8E8',
       e: 'AQAB',
@@ -85,7 +85,7 @@ describe('COSEKey', () => {
 
     test('should throw for an RSA key with missing params', () => {
       // The assertion for jwk.n will fail inside the 'RSA' case.
-      const jwk: Jwk = interceptNodejsJwk({ kty: 'RSA', e: 'AQAB' });
+      const jwk: Jwk = interceptJsonWebKey({ kty: 'RSA', e: 'AQAB' });
       expect(() => COSEKey.fromJwk(jwk)).toThrow();
     });
   });

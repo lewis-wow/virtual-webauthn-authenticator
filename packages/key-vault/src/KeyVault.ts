@@ -1,8 +1,4 @@
-import {
-  KeyClient,
-  type JsonWebKey as AzureJsonWebKey,
-  type KeyVaultKey,
-} from '@azure/keyvault-keys';
+import { KeyClient, type KeyVaultKey } from '@azure/keyvault-keys';
 import { COSEAlgorithm, PublicKeyCredentialType } from '@repo/enums';
 import {
   COSEAlgorithmToAsymetricSigningAlgorithmMapper,
@@ -14,9 +10,9 @@ import type {
   IPublicKeyCredentialParameters,
 } from '@repo/types';
 import {
-  inferJwkAsymetricSigningAlgorithmOrThrow,
   isEcAlgorithm,
   isRsaAlgorithm,
+  interceptJsonWebKey,
 } from '@repo/utils';
 import { randomUUID } from 'node:crypto';
 import {
@@ -52,17 +48,6 @@ export class KeyVault {
 
   constructor(opts: KeyVaultOptions) {
     this.keyClient = opts.keyClient;
-  }
-
-  private _interceptAzureJsonWebKey(
-    azureJsonWebKey: AzureJsonWebKey,
-  ): InterceptedAzureJsonWebKey {
-    const alg = inferJwkAsymetricSigningAlgorithmOrThrow(azureJsonWebKey);
-
-    return {
-      ...azureJsonWebKey,
-      alg,
-    };
   }
 
   private createKeyName(
@@ -129,7 +114,7 @@ export class KeyVault {
 
     return {
       result,
-      key: this._interceptAzureJsonWebKey(result.key!),
+      key: interceptJsonWebKey(result.key!),
       credentialId,
     };
   }
@@ -154,7 +139,7 @@ export class KeyVault {
 
     return {
       result,
-      key: this._interceptAzureJsonWebKey(result.key!),
+      key: interceptJsonWebKey(result.key!),
       credentialId,
     };
   }
@@ -192,7 +177,7 @@ export class KeyVault {
 
     return {
       result,
-      key: this._interceptAzureJsonWebKey(result.key!),
+      key: interceptJsonWebKey(result.key!),
       credentialId,
     };
   }
@@ -211,7 +196,7 @@ export class KeyVault {
 
     return {
       result,
-      key: this._interceptAzureJsonWebKey(result.key!),
+      key: interceptJsonWebKey(result.key!),
       credentialId,
     };
   }
