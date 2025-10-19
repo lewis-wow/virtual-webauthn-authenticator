@@ -1,3 +1,4 @@
+// datasource and generator remain the same
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -10,28 +11,31 @@ generator client {
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
+// -- AUTH & USER MODELS --
+
 model User {
-  id            String     @id
+  id String @id
+
   name          String
-  email         String
-  emailVerified Boolean    @default(false)
+  email         String       @unique
+  emailVerified Boolean      @default(false)
   image         String?
   sessions      Session[]
   accounts      Account[]
-  userRoles     UserRole[]
+  permissions   Permission[]
   apiKeys       ApiKey[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime @updatedAt
 
-  @@unique([email])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
+  id String @id
+
   expiresAt DateTime
-  token     String
+  token     String   @unique
   ipAddress String?
   userAgent String?
   userId    String
@@ -40,14 +44,14 @@ model Session {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([token])
   @@map("session")
 }
 
 model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
+  id String @id
+
+  providerId            String // e.g., 'google', 'github'
+  providerAccountId     String // The user's ID from the provider
   userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
@@ -61,110 +65,84 @@ model Account {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([providerId, providerAccountId]) // Ensure a user can only link an account once per provider
   @@map("account")
 }
 
 model Verification {
-  id         String   @id
-  identifier String
-  value      String
+  id String @id
+
+  identifier String // e.g., the email address
+  token      String   @unique // The verification token or code
   expiresAt  DateTime
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime @updatedAt
 
+  @@unique([identifier, token]) // A token should be unique for its identifier
   @@map("verification")
 }
 
+// -- PERMISSIONS & API KEYS --
+
 model ApiKey {
-  id     String  @id @default(cuid())
-  name   String?
-  start  String?
-  prefix String?
-  key    String  @unique // The hashed API key
-  userId String
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid())
+
+  name        String?
+  prefix      String   @unique // A short, unique prefix for the key (e.g., 'sk_live')
+  key         String   @unique // The hashed API key
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions String[] // List of granted permissions, e.g., ["products:read", "orders:write"]
 
   // Token Bucket / Refill settings
-  refillInterval Int? // In milliseconds
+  refillInterval Int?
   refillAmount   Int?
   lastRefillAt   DateTime?
   remaining      Int?
-
-  // Rate Limiting settings
-  rateLimitEnabled    Boolean @default(false)
-  rateLimitTimeWindow Int? // In milliseconds
-  rateLimitMax        Int?
-  requestCount        Int     @default(0)
 
   // General settings & metadata
   enabled     Boolean   @default(true)
   expiresAt   DateTime?
   lastRequest DateTime?
-  permissions String? // Consider using an Enum for more type-safety
   metadata    Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("apiKey")
 }
 
-model UserRole {
-  userId String
-  roleId String
-
-  assignedAt DateTime @default(now())
-  // assignedBy String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@id([userId, roleId])
-}
-
-model Role {
-  id              String           @id @default(cuid())
-  name            RoleName         @unique
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  userRoles       UserRole[]
-  rolePermissions RolePermission[]
-}
-
-enum RoleName {
-  OWNER
-}
-
-model RolePermission {
-  roleId       String
-  permissionId String
-
-  assignedAt DateTime @default(now())
-
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([roleId, permissionId])
-}
-
+// Simplified Permission Model
 model Permission {
-  id              String              @id @default(cuid())
-  action          PermissionAction
-  resource        PermissionResource?
-  isWildcard      Boolean             @default(false)
-  rolePermissions RolePermission[]
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
+  id String @id @default(cuid())
 
-  @@unique([action, resource])
+  action       PermissionAction // e.g., READ, CREATE
+  resourceType ResourceType // e.g., API_KEYS, PRODUCTS
+
+  // Optionally, specify a single resource ID this permission applies to.
+  // If null, it applies to all resources of the given type.
+  resourceId String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // A user can only have one type of action for a specific resource type/ID combination.
+  @@unique([userId, action, resourceType, resourceId])
+  @@map("permission")
+}
+
+enum ResourceType {
+  API_KEYS
+  CREDENTIALS
 }
 
 enum PermissionAction {
+  CREATE
   READ
   UPDATE
   DELETE
-  CREATE
-}
-
-enum PermissionResource {
-  POST
 }

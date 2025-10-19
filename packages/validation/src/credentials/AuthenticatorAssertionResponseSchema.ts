@@ -1,7 +1,7 @@
 import type { IAuthenticatorAssertionResponse } from '@repo/types';
 import z from 'zod';
 
-import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
+import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 
 /**
  * Corresponds to: `IAuthenticatorAssertionResponse`

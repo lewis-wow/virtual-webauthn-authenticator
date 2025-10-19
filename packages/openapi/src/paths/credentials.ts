@@ -43,4 +43,4 @@ export default {
       },
     },
   },
-} as ZodOpenApiPathItemObject;
+} satisfies ZodOpenApiPathItemObject;

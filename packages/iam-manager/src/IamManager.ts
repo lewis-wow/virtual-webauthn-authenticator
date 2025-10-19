@@ -1,11 +1,8 @@
 import {
-  RoleName,
-  type Permission,
-  type PermissionAction,
-  type PermissionResource,
   type PrismaClient,
-  type Role,
   type User,
+  PermissionAction,
+  ResourceType,
 } from '@repo/prisma';
 
 export type IamManagerOptions = {
@@ -22,126 +19,97 @@ export class IamManager {
     this.user = opts.user;
   }
 
-  async hasAccessTo(
-    action: PermissionAction,
-    resource: PermissionResource,
-  ): Promise<boolean> {
-    const userWithPermission = await this.prisma.user.findUnique({
+  /**
+   * Checks if the user has permission to perform an action on a given resource.
+   */
+  async hasAccess(opts: {
+    action: PermissionAction;
+    resourceType: ResourceType;
+    resourceId?: string;
+  }): Promise<boolean> {
+    const { action, resourceType, resourceId } = opts;
+
+    const permission = await this.prisma.permission.findFirst({
       where: {
-        // 1. Find the user by their ID
-        id: this.user.id,
-        // 2. Check if they have AT LEAST ONE (`some`) UserRole relation...
-        userRoles: {
-          some: {
-            // 3. ...where the associated Role...
-            role: {
-              // 4. ...has AT LEAST ONE (`some`) RolePermission relation...
-              rolePermissions: {
-                some: {
-                  // 5. ...where the associated Permission matches our criteria.
-                  permission: {
-                    OR: [
-                      // A specific permission matching the action and resource
-                      {
-                        action: action,
-                        resource: resource,
-                      },
-                      // A wildcard permission for the action
-                      {
-                        action: action,
-                        isWildcard: true,
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      // We only need to know if the user exists, not their data.
-      select: { id: true },
-    });
-
-    return !!userWithPermission;
-  }
-
-  async createRole(data: { role: RoleName }): Promise<Role> {
-    const role = await this.prisma.role.create({ data: { name: data.role } });
-
-    await this.prisma.userRole.create({
-      data: { roleId: role.id, userId: this.user.id },
-    });
-
-    return role;
-  }
-
-  async assignRole(role: Pick<Role, 'id'>): Promise<void> {
-    await this.prisma.userRole.create({
-      data: {
-        roleId: role.id,
         userId: this.user.id,
+        action: action,
+        resourceType: resourceType,
+        OR: [{ resourceId: resourceId }, { resourceId: null }],
       },
     });
+
+    return !!permission;
   }
 
-  async getRole(role: Pick<Role, 'id'>): Promise<Role> {
-    return await this.prisma.role.findUniqueOrThrow({
-      where: {
-        id: role.id,
-      },
-    });
-  }
+  /**
+   * Grants a user a specific permission for a resource type or a single resource instance.
+   * This operation is idempotent; it does nothing if the permission already exists.
+   */
+  async grant(opts: {
+    action: PermissionAction;
+    resourceType: ResourceType;
+    resourceId: string;
+  }): Promise<void> {
+    const { action, resourceType, resourceId } = opts;
 
-  async getRoles(): Promise<Role[]> {
-    return await this.prisma.role.findMany({
+    const data = {
+      userId: this.user.id,
+      action,
+      resourceType,
+      resourceId,
+    };
+
+    // Upsert ensures the permission is created without causing an error if it already exists.
+    await this.prisma.permission.upsert({
       where: {
-        userRoles: {
-          every: {
-            userId: this.user.id,
-          },
+        // This references the @@unique constraint in your Prisma schema
+        userId_action_resourceType_resourceId: {
+          ...data,
         },
       },
+      create: data,
+      update: {}, // Do nothing if it already exists
     });
   }
 
-  async removeRole(role: Pick<Role, 'id'>): Promise<Role | null> {
-    const removedRole = await this.prisma.role.delete({
-      where: { id: role.id },
-    });
-
-    return removedRole;
-  }
-
-  async addPermission(
-    role: Pick<Role, 'id'>,
-    data: {
-      action: PermissionAction;
-      resource: PermissionResource | null;
-      isWildcard: boolean;
-    },
-  ): Promise<Permission> {
-    const permission = await this.prisma.permission.create({
-      data,
-    });
-
-    await this.prisma.rolePermission.create({
-      data: {
-        roleId: role.id,
-        permissionId: permission.id,
-      },
-    });
-
-    return permission;
-  }
-
-  async removePermission(
-    permission: Pick<Permission, 'id'>,
-  ): Promise<Permission> {
-    return await this.prisma.permission.delete({
+  /**
+   * Revokes a specific permission from the user.
+   * This operation is idempotent; it does nothing if the permission doesn't exist.
+   */
+  async revoke(opts: {
+    action: PermissionAction;
+    resourceType: ResourceType;
+    resourceId: string;
+  }): Promise<void> {
+    // deleteMany is used because it doesn't throw an error if the record is not found.
+    await this.prisma.permission.deleteMany({
       where: {
-        id: permission.id,
+        userId: this.user.id,
+        action: opts.action,
+        resourceType: opts.resourceType,
+        resourceId: opts.resourceId,
       },
+    });
+  }
+
+  /**
+   * Grants a user full ownership permissions (CREATE, READ, UPDATE, DELETE)
+   * for a specific resource instance.
+   */
+  async grantOwnership(opts: {
+    resourceType: ResourceType;
+    resourceId: string;
+  }) {
+    const { resourceType, resourceId } = opts;
+
+    await this.prisma.permission.createMany({
+      data: Object.values(PermissionAction).map((action) => ({
+        action,
+        userId: this.user.id,
+        resourceType,
+        resourceId,
+      })),
+      skipDuplicates: true,
     });
   }
 }

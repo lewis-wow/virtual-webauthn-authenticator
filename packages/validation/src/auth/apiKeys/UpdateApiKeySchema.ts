@@ -1,12 +1,17 @@
 import z from 'zod';
 
+import { ApiKeySchema } from '../../model/ApiKeySchema';
+import { DatabaseIdSchema } from '../../model/DatabaseIdSchema';
+import { CreateApiKeyBodyRequestSchema } from './CreateApiKeySchema';
+
 export const UpdateApiKeyParamRequestSchema = z.object({
-  id: z.string(),
+  id: DatabaseIdSchema.meta({
+    description: 'The ID of the API key to update.',
+  }),
 });
 
-export const UpdateApiKeyBodyRequestSchema = z.object({
-  name: z.string(),
-  expiresIn: z.number().optional(),
-});
+export const UpdateApiKeyBodyRequestSchema = CreateApiKeyBodyRequestSchema;
 
-export const UpdateApiKeyResponseSchema = z.object({});
+export const UpdateApiKeyResponseSchema = ApiKeySchema.omit({
+  key: true,
+});

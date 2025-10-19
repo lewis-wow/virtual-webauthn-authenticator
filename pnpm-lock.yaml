@@ -180,6 +180,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
+      '@repo/iam-manager':
+        specifier: workspace:*
+        version: link:../../packages/iam-manager
       '@repo/openapi':
         specifier: workspace:*
         version: link:../../packages/openapi
