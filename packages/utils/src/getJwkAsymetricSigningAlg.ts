@@ -1,6 +1,6 @@
 import { AsymetricSigningAlgorithm } from '@repo/enums';
-import type { Jwk } from '@repo/types';
 import { objectKeys } from '@repo/utils/objectKeys';
+import type { JsonWebKey } from 'node:crypto';
 import { assert, isEnum, isOptional } from 'typanion';
 
 /**
@@ -14,7 +14,7 @@ import { assert, isEnum, isOptional } from 'typanion';
  * @returns The inferred signing algorithm string (e.g., 'ES256', 'PS256') or undefined if it cannot be determined.
  */
 export const getJwkAsymetricSigningAlg = (
-  jwk: Jwk,
+  jwk: JsonWebKey & { alg?: AsymetricSigningAlgorithm },
 ): AsymetricSigningAlgorithm | undefined => {
   assert(jwk.alg, isOptional(isEnum(objectKeys(AsymetricSigningAlgorithm))));
 

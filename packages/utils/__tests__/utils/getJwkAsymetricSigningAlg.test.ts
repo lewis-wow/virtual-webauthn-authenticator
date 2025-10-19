@@ -1,5 +1,5 @@
 import { AsymetricSigningAlgorithm } from '@repo/enums';
-import type { Jwk } from '@repo/types';
+import type { JsonWebKey } from 'node:crypto';
 import { describe, expect, test } from 'vitest';
 
 import { getJwkAsymetricSigningAlg } from '../../src/getJwkAsymetricSigningAlg.js';
@@ -7,7 +7,7 @@ import { getJwkAsymetricSigningAlg } from '../../src/getJwkAsymetricSigningAlg.j
 describe('getJwkAsymetricSigningAlg', () => {
   test('should return the "alg" property if test is explicitly provided', () => {
     // This JWK would normally infer 'ES256', but 'alg' takes precedence.
-    const jwk: Jwk = {
+    const jwk: JsonWebKey = {
       kty: 'EC',
       crv: 'P-256',
       alg: AsymetricSigningAlgorithm.ES512,
@@ -16,14 +16,14 @@ describe('getJwkAsymetricSigningAlg', () => {
   });
 
   test('should return undefined for a JWK without sufficient information', () => {
-    const jwk: Jwk = {
+    const jwk: JsonWebKey = {
       kid: 'some-key-id',
     };
     expect(getJwkAsymetricSigningAlg(jwk)).toBeUndefined();
   });
 
   test('should throw a TypanionError if an invalid "alg" is provided', () => {
-    const jwk: Jwk = {
+    const jwk: JsonWebKey = {
       kty: 'RSA',
       alg: 'invalid-algorithm',
     };
@@ -33,7 +33,7 @@ describe('getJwkAsymetricSigningAlg', () => {
 
   describe('when kty is "RSA"', () => {
     test('should infer "PS256" for RSA keys', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'RSA',
         n: '...',
         e: 'AQAB',
@@ -44,7 +44,7 @@ describe('getJwkAsymetricSigningAlg', () => {
 
   describe('when kty is "EC"', () => {
     test('should infer "ES256" for curve P-256', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'EC',
         crv: 'P-256',
         x: '...',
@@ -54,7 +54,7 @@ describe('getJwkAsymetricSigningAlg', () => {
     });
 
     test('should infer "ES384" for curve P-384', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'EC',
         crv: 'P-384',
         x: '...',
@@ -64,7 +64,7 @@ describe('getJwkAsymetricSigningAlg', () => {
     });
 
     test('should infer "ES512" for curve P-521', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'EC',
         crv: 'P-521',
         x: '...',
@@ -76,7 +76,7 @@ describe('getJwkAsymetricSigningAlg', () => {
     test('should return undefined for curve secp256k1 as per current implementation', () => {
       // Note: While 'ES256K' is a valid algorithm for this curve,
       // the function's implementation explicitly returns undefined. This test validates that behavior.
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'EC',
         crv: 'secp256k1',
         x: '...',
@@ -86,7 +86,7 @@ describe('getJwkAsymetricSigningAlg', () => {
     });
 
     test('should return undefined for an unsupported EC curve', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'EC',
         crv: 'brainpoolP256r1', // Unsupported curve
       };
@@ -96,7 +96,7 @@ describe('getJwkAsymetricSigningAlg', () => {
 
   describe('when kty is "OKP"', () => {
     test('should infer "EdDSA" for curve Ed25519', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'OKP',
         crv: 'Ed25519',
         x: '...',
@@ -105,7 +105,7 @@ describe('getJwkAsymetricSigningAlg', () => {
     });
 
     test('should infer "EdDSA" for curve Ed448', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'OKP',
         crv: 'Ed448',
         x: '...',
@@ -114,7 +114,7 @@ describe('getJwkAsymetricSigningAlg', () => {
     });
 
     test('should return undefined for an OKP curve not used for EdDSA signing (e.g., X25519)', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'OKP',
         crv: 'X25519', // Used for key agreement, not signing
       };
@@ -124,7 +124,7 @@ describe('getJwkAsymetricSigningAlg', () => {
 
   describe('when kty is unsupported', () => {
     test('should return undefined for a symmetric key type like "oct"', () => {
-      const jwk: Jwk = {
+      const jwk: JsonWebKey = {
         kty: 'oct',
         k: '...',
       };

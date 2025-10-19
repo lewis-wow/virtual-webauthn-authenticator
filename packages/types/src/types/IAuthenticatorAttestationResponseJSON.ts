@@ -1,7 +1,4 @@
-import type {
-  AuthenticatorTransport,
-  COSEAlgorithmIdentifier,
-} from '@repo/enums';
+import type { AuthenticatorTransport, COSEAlgorithm } from '@repo/enums';
 
 import type { Base64URLString } from '../Base64URLString.js';
 
@@ -19,7 +16,7 @@ export interface IAuthenticatorAttestationResponseJSON {
   /** The transports the authenticator is believed to support. */
   transports?: AuthenticatorTransport[];
   /** The algorithm used for the public key. */
-  publicKeyAlgorithm?: COSEAlgorithmIdentifier;
+  publicKeyAlgorithm?: COSEAlgorithm;
   /** A Base64URL-encoded string of the public key. */
   publicKey?: Base64URLString;
 }

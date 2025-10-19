@@ -1,2 +1,2 @@
 export * from './COSEKey.js';
-export * from './getJwkAsymetricSigningAlg.js';
+export * from '../../utils/src/getJwkAsymetricSigningAlg.js';
