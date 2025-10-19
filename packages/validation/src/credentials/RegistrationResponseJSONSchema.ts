@@ -10,7 +10,7 @@ import { AuthenticatorAttestationResponseJSONSchema } from './AuthenticatorAttes
 
 export const RegistrationResponseJSONSchema = z
   .object({
-    id: z.string().meta({
+    id: z.base64url().meta({
       description:
         'The base64url-encoded identifier for the newly created credential.',
       examples: ['ADSUuK-3498-f-39-f-S_d_9-d-f-f-A'],

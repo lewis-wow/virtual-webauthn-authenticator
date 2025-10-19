@@ -1,7 +1,7 @@
 import type { IPublicKeyCredentialUserEntity } from '@repo/types';
 import z from 'zod';
 
-import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
+import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 
 // Represents the user creating the credential
 export const PublicKeyCredentialUserEntitySchema = z

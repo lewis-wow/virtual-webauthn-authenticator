@@ -21,6 +21,7 @@
     "yaml": "^2.8.1"
   },
   "dependencies": {
+    "@repo/utils": "workspace:*",
     "@repo/validation": "workspace:*",
     "zod-openapi": "^5.4.3"
   }

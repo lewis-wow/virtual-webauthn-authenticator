@@ -5,7 +5,7 @@ import {
 import type { IPublicKeyCredentialDescriptor } from '@repo/types';
 import z from 'zod';
 
-import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
+import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 
 // Used to exclude existing credentials for a user
 export const PublicKeyCredentialDescriptorSchema = z

@@ -174,9 +174,15 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.4
         version: 0.7.4(hono@4.9.10)(zod@4.1.12)
+      '@repo/better-auth':
+        specifier: workspace:*
+        version: link:../../packages/better-auth
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
+      '@repo/iam-manager':
+        specifier: workspace:*
+        version: link:../../packages/iam-manager
       '@repo/openapi':
         specifier: workspace:*
         version: link:../../packages/openapi
@@ -539,6 +545,9 @@ importers:
 
   packages/openapi:
     dependencies:
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation

@@ -5,7 +5,7 @@ import {
 import type { IPublicKeyCredential } from '@repo/types';
 import z from 'zod';
 
-import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
+import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema.js';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema.js';
@@ -19,7 +19,7 @@ import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestati
  */
 export const PublicKeyCredentialSchema: z.ZodType<IPublicKeyCredential> = z
   .object({
-    id: z.string().describe('The Base64URL-encoded credential ID.'),
+    id: z.base64url().describe('The Base64URL-encoded credential ID.'),
     rawId: Base64URLBufferSchema.meta({
       description: 'The raw ID of the credential.',
     }),

@@ -27,6 +27,19 @@ export default defineConfig({
     chunkFileNames: '[name]-[hash].js',
   },
 
+  onwarn(warning, warn) {
+    // Suppress circular dependency warnings from Kysely
+    if (
+      warning.code === 'CIRCULAR_DEPENDENCY' &&
+      warning.message.includes('kysely')
+    ) {
+      return;
+    }
+
+    // Use the default Rollup warning handler for all other warnings
+    warn(warning);
+  },
+
   plugins: [
     del({ targets: 'dist/*' }),
 
