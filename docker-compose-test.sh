@@ -1,1 +1,1 @@
-docker compose up assumed-identity lowkey-vault
+docker compose up assumed-identity lowkey-vault -d --wait
