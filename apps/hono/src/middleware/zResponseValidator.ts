@@ -1,9 +1,9 @@
-import { createMiddleware } from 'hono/factory';
+import { factory } from '@/factory';
 import { HTTPException } from 'hono/http-exception';
 import { z, type ZodType } from 'zod';
 
 export const zResponseValidator = <T extends ZodType>(schema: T) => {
-  return createMiddleware(async (c, next) => {
+  return factory.createMiddleware(async (c, next) => {
     await next();
 
     const isJson = c.res.headers
