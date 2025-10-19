@@ -8,9 +8,10 @@
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
-    "test:integration": "vitest run integration --config __tests__/vitest.config.ts",
+    "test:integration": "pnpm dotenvx vitest run integration --config __tests__/vitest.config.ts",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "dotenvx": "../../scripts/dotenvx.sh"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

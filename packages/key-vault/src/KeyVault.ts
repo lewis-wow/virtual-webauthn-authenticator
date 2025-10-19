@@ -44,7 +44,7 @@ export class KeyVault {
   }
 
   private createKeyName(
-    opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user'> & {
+    opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
       credentialId?: string;
     },
   ): CreateKeyNamePayload {
@@ -88,7 +88,7 @@ export class KeyVault {
   async createKey(
     opts: PickDeep<
       IPublicKeyCredentialCreationOptions,
-      'rp.id' | 'user' | 'pubKeyCredParams'
+      'rp.id' | 'user.id' | 'pubKeyCredParams'
     >,
   ): Promise<KeyPayload> {
     const { rp, user, pubKeyCredParams } = opts;
@@ -96,19 +96,20 @@ export class KeyVault {
     const { keyName, credentialId } = this.createKeyName({ rp, user });
     const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
 
-    const keyVaultKey = await this.keyClient.createKey(
-      keyName,
-      COSEAlgorithmToAsymetricSigningAlgorithmMapper(pubKeyCredParam.alg),
-      {
+    const keyVaultKey = await this.keyClient
+      .createEcKey(keyName, {
         curve: COSEAlgorithmToEcCurveMapper(pubKeyCredParam.alg),
-      },
-    );
+      })
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
 
     return { keyVaultKey, credentialId };
   }
 
   async getKey(
-    opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user'> & {
+    opts: PickDeep<IPublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
       credentialId: string;
     },
   ): Promise<{ keyVaultKey: KeyVaultKey; credentialId: string }> {
