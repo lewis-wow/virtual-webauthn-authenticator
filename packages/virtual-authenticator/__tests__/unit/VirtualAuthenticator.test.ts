@@ -6,7 +6,7 @@ import type {
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialRequestOptions,
 } from '@repo/types';
-import { toBuffer } from '@repo/utils/toBuffer';
+import { toBuffer, interceptNodejsJwk } from '@repo/utils';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
@@ -26,7 +26,7 @@ const keyPair = generateKeyPairSync('ec', {
 
 const credentialPublicKey: ICredentialPublicKey = {
   getJwk: () => {
-    return keyPair.publicKey.export({ format: 'jwk' });
+    return interceptNodejsJwk(keyPair.publicKey.export({ format: 'jwk' }));
   },
 };
 

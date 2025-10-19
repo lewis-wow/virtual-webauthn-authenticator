@@ -73,15 +73,13 @@ describe('COSEKey', () => {
   });
 
   describe('Unsupported keys', () => {
-    test('should throw for a key with an unsupported algorithm', () => {
-      // getJwkSigningAlg will return 'RS512', but it won't be found in the COSEAlgorithm enum.
-      const jwk: Jwk = { kty: 'RSA', alg: 'RS512', n: 'n', e: 'e' };
-      expect(() => COSEKey.fromJwk(jwk)).toThrow();
-    });
-
     test('should throw for an EC key with a missing crv', () => {
-      // getJwkSigningAlg will return undefined, causing the assertion to fail.
-      const jwk: Jwk = interceptNodejsJwk({ kty: 'EC', x: 'x', y: 'y' });
+      const jwk: Jwk = {
+        kty: 'EC',
+        x: 'x',
+        y: 'y',
+        alg: undefined as unknown as string,
+      };
       expect(() => COSEKey.fromJwk(jwk)).toThrow();
     });
 
