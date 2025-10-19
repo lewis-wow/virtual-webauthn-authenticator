@@ -25,7 +25,6 @@
   "dependencies": {
     "@azure/identity": "^4.13.0",
     "@azure/keyvault-keys": "^4.10.0",
-    "@azure/keyvault-secrets": "^4.10.0",
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/mappers": "workspace:*",
