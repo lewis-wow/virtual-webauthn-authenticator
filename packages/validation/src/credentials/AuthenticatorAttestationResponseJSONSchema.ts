@@ -1,7 +1,4 @@
-import {
-  AuthenticatorTransportSchema,
-  COSEAlgorithmIdentifierSchema,
-} from '@repo/enums';
+import { AuthenticatorTransportSchema, COSEAlgorithmSchema } from '@repo/enums';
 import type { IAuthenticatorAttestationResponseJSON } from '@repo/types';
 import z from 'zod';
 
@@ -11,7 +8,7 @@ export const AuthenticatorAttestationResponseJSONSchema = z
     attestationObject: z.string().optional(),
     authenticatorData: z.string().optional(),
     transports: z.array(AuthenticatorTransportSchema).optional(),
-    publicKeyAlgorithm: COSEAlgorithmIdentifierSchema.optional(),
+    publicKeyAlgorithm: COSEAlgorithmSchema.optional(),
     publicKey: z
       .string()
       .optional()

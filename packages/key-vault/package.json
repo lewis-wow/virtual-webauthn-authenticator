@@ -1,17 +1,14 @@
 {
-  "name": "@repo/utils",
+  "name": "@repo/key-vault",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./toBuffer": "./src/toBuffer.ts",
-    "./sha256": "./src/sha256.ts",
-    "./objectKeys": "./src/objectKeys.ts",
-    "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run integration --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
@@ -22,10 +19,16 @@
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "zod": "^4.1.12"
   },
   "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@azure/keyvault-keys": "^4.10.0",
     "@repo/enums": "workspace:*",
+    "@repo/keys": "workspace:*",
+    "@repo/mappers": "workspace:*",
+    "@repo/utils": "workspace:*",
     "typanion": "^3.14.0"
   }
 }

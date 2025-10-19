@@ -1,5 +1,5 @@
 import {
-  COSEAlgorithmIdentifierSchema,
+  COSEAlgorithmSchema,
   PublicKeyCredentialTypeSchema,
 } from '@repo/enums';
 import type { IPublicKeyCredentialParameters } from '@repo/types';
@@ -9,7 +9,7 @@ import z from 'zod';
 export const PublicKeyCredentialParametersSchema = z
   .object({
     type: PublicKeyCredentialTypeSchema,
-    alg: COSEAlgorithmIdentifierSchema,
+    alg: COSEAlgorithmSchema,
   })
   .meta({
     description:
