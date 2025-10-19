@@ -1,9 +1,6 @@
 import { KeyClient, type KeyVaultKey } from '@azure/keyvault-keys';
 import { COSEAlgorithm, PublicKeyCredentialType } from '@repo/enums';
-import {
-  COSEAlgorithmToAsymetricSigningAlgorithmMapper,
-  COSEAlgorithmToEcCurveMapper,
-} from '@repo/mappers';
+import { COSEAlgorithmToEcCurveMapper } from '@repo/mappers';
 import type {
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialParameters,
@@ -85,7 +82,7 @@ export class KeyVault {
     return pubKeyCredParams[0]!;
   }
 
-  async createKey(
+  async createEcKey(
     opts: PickDeep<
       IPublicKeyCredentialCreationOptions,
       'rp.id' | 'user.id' | 'pubKeyCredParams'
@@ -96,14 +93,9 @@ export class KeyVault {
     const { keyName, credentialId } = this.createKeyName({ rp, user });
     const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
 
-    const keyVaultKey = await this.keyClient
-      .createEcKey(keyName, {
-        curve: COSEAlgorithmToEcCurveMapper(pubKeyCredParam.alg),
-      })
-      .catch((error) => {
-        console.error(error);
-        throw error;
-      });
+    const keyVaultKey = await this.keyClient.createEcKey(keyName, {
+      curve: COSEAlgorithmToEcCurveMapper(pubKeyCredParam.alg),
+    });
 
     return { keyVaultKey, credentialId };
   }
