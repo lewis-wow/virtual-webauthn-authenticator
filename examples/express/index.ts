@@ -3,6 +3,7 @@
  *
  * The webpages served from ./public use @simplewebauthn/browser.
  */
+import dotenv from '@dotenvx/dotenvx';
 import {
   AuthenticationResponseJSON,
   // Authentication
@@ -20,7 +21,6 @@ import {
   VerifyRegistrationResponseOpts,
   WebAuthnCredential,
 } from '@simplewebauthn/server';
-import dotenv from 'dotenv';
 import express from 'express';
 import session from 'express-session';
 import fs from 'fs';
