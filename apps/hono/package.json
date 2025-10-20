@@ -9,13 +9,15 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.5",
+    "@hono/standard-validator": "^0.1.5",
     "@hono/zod-validator": "^0.7.4",
     "@repo/enums": "workspace:*",
-    "@repo/openapi": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/validation": "workspace:*",
+    "@scalar/hono-api-reference": "^0.9.22",
     "@t3-oss/env-core": "^0.13.8",
     "hono": "^4.9.10",
+    "hono-openapi": "^1.1.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -32,6 +34,7 @@
     "rollup": "^4.52.4",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-delete": "^3.0.1",
+    "rollup-plugin-execute": "^1.1.1",
     "rollup-plugin-node-externals": "^8.1.1",
     "rollup-plugin-shell": "^1.0.9",
     "rollup-plugin-tsconfig-paths": "^1.5.2",
