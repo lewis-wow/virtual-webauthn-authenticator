@@ -11,14 +11,15 @@ generator client {
 }
 
 model User {
-  id            String       @id
-  name          String
-  email         String
-  emailVerified Boolean      @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
-  permissions   Permission[]
+  id                  String               @id
+  name                String
+  email               String
+  emailVerified       Boolean              @default(false)
+  image               String?
+  sessions            Session[]
+  accounts            Account[]
+  permissions         Permission[]
+  webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -94,6 +95,34 @@ model Permission {
   // A user can only have one type of action for a specific resource type/ID combination.
   @@unique([userId, action, resourceType, resourceId])
   @@map("permission")
+}
+
+model WebAuthnCredential {
+  id   String  @id @default(cuid())
+  name String? // A user-friendly name for the key, e.g., "My YubiKey" or "MacBook Touch ID"
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  credentialID String   @unique
+  // The public key in COSE format. Stored as raw bytes.
+  publicKey    Bytes
+  // The signature counter. On each login, this must be higher than the last one.
+  // This prevents replay attacks. Using BigInt for future-proofing.
+  counter      BigInt
+  // The AAGUID (Authenticator Attestation GUID) identifies the authenticator model.
+  aaguid       String
+  // The transport methods the authenticator supports (e.g., "usb", "nfc", "ble").
+  transports   String[]
+  // Whether the credential is backed up by the provider (e.g., iCloud Keychain, Google Password Manager).
+  isBackedUp   Boolean  @default(false)
+
+  // Standard timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("webAuthnCredential")
 }
 
 enum ResourceType {
