@@ -43,17 +43,6 @@ export default defineConfig({
   plugins: [
     del({ targets: 'dist/*' }),
 
-    copy({
-      targets: [
-        {
-          src: require.resolve('@repo/openapi/json'),
-          dest: 'static',
-          rename: 'openapi.json',
-        },
-      ],
-      watch: require.resolve('@repo/openapi/json'),
-    }),
-
     // Use `exclude` to PREVENT @repo/* from being marked as external.
     // This tells Rollup to bundle these packages.
     externals({
