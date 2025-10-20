@@ -30,8 +30,8 @@ import {
   isString,
 } from 'typanion';
 
+import { hasMinBytes } from '../../utils/src/asserts/hasMinBytes.js';
 import { PublicKeyCredential } from './PublicKeyCredential.js';
-import { hasMinBytes } from './assert/hasMinBytes.js';
 
 export type VirtualAuthenticatorOptions = {
   credentialSigner: ICredentialSigner;
@@ -224,7 +224,6 @@ export class VirtualAuthenticator {
         signature,
         userHandle: null,
       },
-      authenticatorAttachment: null,
       clientExtensionResults: {},
     });
   }
@@ -305,7 +304,6 @@ export class VirtualAuthenticator {
         clientDataJSON: Buffer.from(JSON.stringify(clientData)),
         attestationObject: encode(attestationObject),
       },
-      authenticatorAttachment: null,
       clientExtensionResults: {},
     });
   }
