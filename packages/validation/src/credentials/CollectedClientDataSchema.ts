@@ -23,15 +23,24 @@ export const CollectedClientDataSchema = z
     /**
      * This member contains the base64url encoding of the challenge provided by the Relying Party.
      */
-    challenge: z.string(),
+    challenge: z.base64url().meta({
+      description:
+        'The base64url encoding of the challenge provided by the Relying Party.',
+    }),
     /**
      * This member contains the fully qualified origin of the requester, as provided to the authenticator by the client.
      */
-    origin: z.string(),
+    origin: z.string().meta({
+      description:
+        'The fully qualified origin of the requester, as provided to the authenticator by the client.',
+    }),
     /**
      * This member contains the inverse of the `sameOriginWithAncestors` argument value.
      */
-    crossOrigin: z.boolean().optional(),
+    crossOrigin: z.boolean().optional().meta({
+      description:
+        'The inverse of the `sameOriginWithAncestors` argument value',
+    }),
     /**
      * This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party.
      * Its absence indicates that the client doesn’t support token binding.
@@ -43,7 +52,10 @@ export const CollectedClientDataSchema = z
         status: TokenBindingStatusSchema,
         id: z.string().optional(),
       })
-      .optional(),
+      .optional()
+      .meta({
+        description: `This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party. ${see('https://datatracker.ietf.org/doc/html/rfc8471#section-1')}`,
+      }),
   })
   .meta({
     id: 'CollectedClientData',

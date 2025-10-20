@@ -25,5 +25,6 @@ export const PublicKeyCredentialSchema = CredentialSchema.extend({
   ]),
   clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
 }).meta({
+  id: 'PublicKeyCredential',
   description: `The primary schema for validating the incoming credential object from the client during registration or authentication verification. ${see('https://www.w3.org/TR/webauthn/#iface-publickeycredential')}`,
 }) satisfies z.ZodType<IPublicKeyCredential>;

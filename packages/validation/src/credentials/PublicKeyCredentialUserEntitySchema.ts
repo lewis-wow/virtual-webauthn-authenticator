@@ -18,5 +18,6 @@ export const PublicKeyCredentialUserEntitySchema =
       examples: ['John Doe'],
     }),
   }).meta({
+    id: 'PublicKeyCredentialUserEntity',
     description: `Represents the user creating the credential. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity')}`,
   }) satisfies z.ZodType<IPublicKeyCredentialUserEntity>;

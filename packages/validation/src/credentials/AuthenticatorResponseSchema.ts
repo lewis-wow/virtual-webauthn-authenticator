@@ -1,6 +1,7 @@
 import type { IAuthenticatorResponse } from '@repo/types';
 import z from 'zod';
 
+import { see } from '../meta/see.js';
 import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 
 /**
@@ -15,7 +16,7 @@ export const AuthenticatorResponseSchema = z
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
      */
     clientDataJSON: Base64URLBufferSchema.meta({
-      description: 'The client data for the response.',
+      description: `The client data for the response. ${see('https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson')}`,
     }),
   })
   .meta({

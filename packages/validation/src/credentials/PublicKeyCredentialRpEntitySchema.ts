@@ -17,5 +17,6 @@ export const PublicKeyCredentialRpEntitySchema =
       examples: ['example.com'],
     }),
   }).meta({
+    id: 'PublicKeyCredentialRpEntity',
     description: `Represents the Relying Party. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity')}`,
   }) satisfies z.ZodType<IPublicKeyCredentialRpEntity>;
