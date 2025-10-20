@@ -2,7 +2,8 @@ import { AttestationSchema } from '@repo/enums';
 import type { IPublicKeyCredentialCreationOptions } from '@repo/types';
 import z from 'zod';
 
-import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
+import { see } from '../meta/see.js';
+import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema.js';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';
 import { PublicKeyCredentialParametersSchema } from './PublicKeyCredentialParametersSchema.js';
@@ -12,6 +13,8 @@ import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEn
 /**
  * Zod schema for WebAuthn's PublicKeyCredentialCreationOptions.
  * This is sent from the server to the client to initiate passkey registration.
+ *
+ * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions
  */
 export const PublicKeyCredentialCreationOptionsSchema = z
   .object({
@@ -30,6 +33,5 @@ export const PublicKeyCredentialCreationOptionsSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialCreationOptions',
-    description:
-      'Options for creating a new public key credential. For more information, see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions.',
+    description: `Options for creating a new public key credential. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions')}`,
   }) satisfies z.ZodType<IPublicKeyCredentialCreationOptions>;

@@ -1,14 +1,14 @@
 import z from 'zod';
 
+import { see } from '../meta/see';
+
 /**
- * Corresponds to: `AuthenticationExtensionsClientOutputs`
+ * @see https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs
  */
 export const AuthenticationExtensionsClientOutputsSchema = z
   .record(z.string(), z.unknown())
   .meta({
     id: 'AuthenticationExtensionsClientOutputs',
-    description:
-      'A generic dictionary representing the client extension results. For more information, see https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs.',
-    type: 'object',
+    description: `A generic dictionary representing the client extension results. ${see('https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs')}`,
     examples: [{ credProps: { rk: true } }],
   });

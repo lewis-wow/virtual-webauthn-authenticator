@@ -1,7 +1,4 @@
-import type {
-  AuthenticatorAttachment,
-  PublicKeyCredentialType,
-} from '@repo/enums';
+import type { PublicKeyCredentialType } from '@repo/enums';
 
 import type { Base64URLString } from '../Base64URLString.js';
 import type { IAuthenticationExtensionsClientOutputs } from './IAuthenticationExtensionsClientOutputs.js';
@@ -25,7 +22,7 @@ export interface IPublicKeyCredential {
   /** The client extension results from the ceremony. */
   clientExtensionResults: IAuthenticationExtensionsClientOutputs;
   /** The attachment type of the authenticator, if known. */
-  authenticatorAttachment: AuthenticatorAttachment | null;
+  // authenticatorAttachment: AuthenticatorAttachment | null;
   // /** A method to retrieve the client extension results. */
   // getClientExtensionResults(): IAuthenticationExtensionsClientOutputs;
   // /** A method to convert the credential into a JSON-serializable format. */
