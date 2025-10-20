@@ -6,7 +6,9 @@ import { openAPIRouteHandler } from 'hono-openapi';
 import { credentials } from './credentials';
 
 export const root = factory.createApp();
-root.use('*', serveStatic({ root: './static' }));
+
+root.use('/static/*', serveStatic({ root: './' }));
+
 root.get('/', async (ctx) => {
   return ctx.text('OK');
 });
