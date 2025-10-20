@@ -35,6 +35,7 @@
     "rollup": "^4.52.4",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-delete": "^3.0.1",
+    "rollup-plugin-execute": "^1.1.1",
     "rollup-plugin-node-externals": "^8.1.1",
     "rollup-plugin-shell": "^1.0.9",
     "rollup-plugin-tsconfig-paths": "^1.5.2",

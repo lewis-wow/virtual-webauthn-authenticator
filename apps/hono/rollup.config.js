@@ -4,14 +4,11 @@ import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import run from '@rollup/plugin-run';
 import swc from '@rollup/plugin-swc';
-import { createRequire } from 'node:module';
 import { defineConfig } from 'rollup';
-import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
+import execute from 'rollup-plugin-execute';
 import externals from 'rollup-plugin-node-externals';
 import tsconfigPaths from 'rollup-plugin-tsconfig-paths';
-
-const require = createRequire(import.meta.url);
 
 // A helper to determine if we are in watch mode
 const isWatching = process.env.ROLLUP_WATCH === 'true';
@@ -80,6 +77,8 @@ export default defineConfig({
       },
       sourceMaps: true,
     }),
+
+    execute('scripts/generate-openapi-spec.ts'),
 
     isWatching && run(),
   ],
