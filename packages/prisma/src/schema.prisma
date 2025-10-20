@@ -11,15 +11,14 @@ generator client {
 }
 
 model User {
-  id            String     @id
+  id            String       @id
   name          String
   email         String
-  emailVerified Boolean    @default(false)
+  emailVerified Boolean      @default(false)
   image         String?
   sessions      Session[]
   accounts      Account[]
-  userRoles     UserRole[]
-  apiTokens     ApiToken[]
+  permissions   Permission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -76,73 +75,35 @@ model Verification {
   @@map("verification")
 }
 
-model ApiToken {
-  accessToken String   @unique
-  userId      String
-  expiresAt   DateTime
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Permission {
+  id String @id @default(cuid())
+
+  action       PermissionAction // e.g., READ, CREATE
+  resourceType ResourceType // e.g., API_KEYS, PRODUCTS
+
+  // Optionally, specify a single resource ID this permission applies to.
+  // If null, it applies to all resources of the given type.
+  resourceId String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // A user can only have one type of action for a specific resource type/ID combination.
+  @@unique([userId, action, resourceType, resourceId])
+  @@map("permission")
 }
 
-model UserRole {
-  userId String
-  roleId String
-
-  assignedAt DateTime @default(now())
-  // assignedBy String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@id([userId, roleId])
-}
-
-model Role {
-  id              String           @id @default(cuid())
-  name            RoleName         @unique
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  userRoles       UserRole[]
-  rolePermissions RolePermission[]
-}
-
-enum RoleName {
-  OWNER
-}
-
-model RolePermission {
-  roleId       String
-  permissionId String
-
-  assignedAt DateTime @default(now())
-
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@id([roleId, permissionId])
-}
-
-model Permission {
-  id              String              @id @default(cuid())
-  action          PermissionAction
-  resource        PermissionResource?
-  isWildcard      Boolean             @default(false)
-  rolePermissions RolePermission[]
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-
-  @@unique([action, resource])
+enum ResourceType {
+  API_KEYS
+  CREDENTIALS
 }
 
 enum PermissionAction {
+  CREATE
   READ
   UPDATE
   DELETE
-  CREATE
-}
-
-enum PermissionResource {
-  POST
 }

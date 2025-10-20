@@ -1,1 +1,1 @@
-docker compose up assumed-identity lowkey-vault -d --wait
+docker compose up postgres assumed-identity lowkey-vault -d --wait

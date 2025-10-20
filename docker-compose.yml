@@ -26,8 +26,6 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - '5432:5432'
-    volumes:
-      - ./devstack_data/postgresql/data:/var/lib/postgresql/data
   lowkey-vault:
     container_name: lowkey-vault
     image: nagyesta/lowkey-vault:4.0.27@sha256:1edfe3f23c057aabf1cc5078a740d5130bdf795b00a66aac1d29faf859251f69
