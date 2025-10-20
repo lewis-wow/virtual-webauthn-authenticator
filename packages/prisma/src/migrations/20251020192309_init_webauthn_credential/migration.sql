@@ -3,6 +3,7 @@ CREATE TABLE "webAuthnCredential" (
     "id" TEXT NOT NULL,
     "name" TEXT,
     "userId" TEXT NOT NULL,
+    "keyVaultKeyId" TEXT NOT NULL,
     "credentialID" TEXT NOT NULL,
     "publicKey" BYTEA NOT NULL,
     "counter" BIGINT NOT NULL,
@@ -14,6 +15,9 @@ CREATE TABLE "webAuthnCredential" (
 
     CONSTRAINT "webAuthnCredential_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "webAuthnCredential_keyVaultKeyId_key" ON "webAuthnCredential"("keyVaultKeyId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "webAuthnCredential_credentialID_key" ON "webAuthnCredential"("credentialID");

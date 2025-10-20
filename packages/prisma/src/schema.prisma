@@ -104,6 +104,9 @@ model WebAuthnCredential {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
+  // The canonical, versioned URI of the key in Azure Key Vault.
+  keyVaultKeyId String @unique
+
   credentialID String   @unique
   // The public key in COSE format. Stored as raw bytes.
   publicKey    Bytes
@@ -117,7 +120,6 @@ model WebAuthnCredential {
   // Whether the credential is backed up by the provider (e.g., iCloud Keychain, Google Password Manager).
   isBackedUp   Boolean  @default(false)
 
-  // Standard timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
