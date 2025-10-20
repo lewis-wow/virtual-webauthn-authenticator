@@ -2,7 +2,7 @@ import { AttestationSchema } from '@repo/enums';
 import type { IPublicKeyCredentialCreationOptions } from '@repo/types';
 import z from 'zod';
 
-import { Base64URLBufferSchema } from '../Base64URLBufferSchema.js';
+import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema.js';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';
 import { PublicKeyCredentialParametersSchema } from './PublicKeyCredentialParametersSchema.js';
