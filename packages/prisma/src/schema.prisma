@@ -105,20 +105,18 @@ model WebAuthnCredential {
   userId String
 
   // The canonical, versioned URI of the key in Azure Key Vault.
-  keyVaultKeyId String @unique
-
-  credentialID String   @unique
+  keyVaultKeyId String   @unique
+  credentialID  String   @unique
   // The public key in COSE format. Stored as raw bytes.
-  publicKey    Bytes
+  publicKey     Bytes
   // The signature counter. On each login, this must be higher than the last one.
   // This prevents replay attacks. Using BigInt for future-proofing.
-  counter      BigInt
+  counter       BigInt
   // The AAGUID (Authenticator Attestation GUID) identifies the authenticator model.
-  aaguid       String
+  aaguid        String
   // The transport methods the authenticator supports (e.g., "usb", "nfc", "ble").
-  transports   String[]
-  // Whether the credential is backed up by the provider (e.g., iCloud Keychain, Google Password Manager).
-  isBackedUp   Boolean  @default(false)
+  transports    String[]
+  hsm           Boolean  @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -9,7 +9,7 @@ CREATE TABLE "webAuthnCredential" (
     "counter" BIGINT NOT NULL,
     "aaguid" TEXT NOT NULL,
     "transports" TEXT[],
-    "isBackedUp" BOOLEAN NOT NULL DEFAULT false,
+    "hsm" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
