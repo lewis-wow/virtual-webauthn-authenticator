@@ -78,7 +78,7 @@ export class CredentialDiscovery {
       const selectedCredential =
         this._pickSelectedCredentialCandidate(candidates);
 
-      await tx.webAuthnCredential.update({
+      return await tx.webAuthnCredential.update({
         where: {
           id: selectedCredential.id,
         },
@@ -88,8 +88,6 @@ export class CredentialDiscovery {
           },
         },
       });
-
-      return selectedCredential;
     });
 
     return selectedCredential;
