@@ -23,10 +23,7 @@ describe('COSEKey', () => {
         const coseKey = COSEKey.fromJwk(p256PublicKey);
         const outputJwk = coseKey.toJwk();
 
-        // The output should contain all original properties
         expect(outputJwk).toMatchObject(p256PublicKey);
-        // It should also have the inferred 'alg' property
-        expect(outputJwk.alg).toBe('ES256');
       });
 
       test('private key', () => {
@@ -42,7 +39,6 @@ describe('COSEKey', () => {
         const outputJwk = coseKey.toJwk();
 
         expect(outputJwk).toMatchObject(p256PrivateKey);
-        expect(outputJwk.alg).toBe('ES256');
       });
     });
   });
@@ -62,8 +58,7 @@ describe('COSEKey', () => {
       const coseKey = COSEKey.fromJwk(rsaPublicKey);
       const outputJwk = coseKey.toJwk();
 
-      expect(outputJwk).toMatchObject(rsaPublicKey);
-      expect(outputJwk.alg).toBe('PS256');
+      expect(outputJwk).toEqual(rsaPublicKey);
     });
   });
 

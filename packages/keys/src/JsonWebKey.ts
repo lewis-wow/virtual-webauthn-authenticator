@@ -1,24 +1,114 @@
 import { KeyAlgorithm, KeyCurveName, KeyType, KeyOperation } from '@repo/enums';
 import { assert, isArray, isEnum, isOptional } from 'typanion';
-import type { LiteralToPrimitiveDeep } from 'type-fest';
 
+export type JsonWebKeyOptions = {
+  alg?: string;
+  /**
+   * Key identifier.
+   */
+  kid?: string;
+  /**
+   * JsonWebKey Key Type (kty), as defined in
+   * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40. Possible values include:
+   * 'EC', 'EC-HSM', 'RSA', 'RSA-HSM'
+   */
+  kty?: string;
+  /**
+   * Json web key operations. For more
+   * information on possible key operations, see KeyOperation.
+   */
+  keyOps?: string[];
+  /**
+   * RSA modulus.
+   */
+  n?: Uint8Array | string;
+  /**
+   * RSA public exponent.
+   */
+  e?: Uint8Array | string;
+  /**
+   * RSA private exponent, or the D component of an EC private key.
+   */
+  d?: Uint8Array | string;
+  /**
+   * RSA private key parameter.
+   */
+  dp?: Uint8Array | string;
+  /**
+   * RSA private key parameter.
+   */
+  dq?: Uint8Array | string;
+  /**
+   * RSA private key parameter.
+   */
+  qi?: Uint8Array | string;
+  /**
+   * RSA secret prime.
+   */
+  p?: Uint8Array | string;
+  /**
+   * RSA secret prime, with `p < q`.
+   */
+  q?: Uint8Array | string;
+  /**
+   * Symmetric key.
+   */
+  k?: Uint8Array | string;
+  /**
+   * HSM Token, used with 'Bring Your Own Key'.
+   */
+  t?: Uint8Array | string;
+  /**
+   * Elliptic curve name. For valid values, see KeyCurveName. Possible values include:
+   * 'P-256', 'P-384', 'P-521', 'P-256K'
+   */
+  crv?: string;
+  /**
+   * X component of an EC public key.
+   */
+  x?: Uint8Array | string;
+  /**
+   * Y component of an EC public key.
+   */
+  y?: Uint8Array | string;
+};
 /**
  * @see http://tools.ietf.org/html/draft-ietf-jose-json-web-key-18
  */
 export class JsonWebKey {
-  constructor(opts: Partial<LiteralToPrimitiveDeep<JsonWebKey>>) {
+  constructor(opts: JsonWebKeyOptions) {
     assert(opts.kty, isOptional(isEnum(KeyType)));
     assert(opts.keyOps, isOptional(isArray(isEnum(KeyOperation))));
     assert(opts.crv, isOptional(isEnum(KeyCurveName)));
     assert(opts.alg, isOptional(isEnum(KeyAlgorithm)));
 
-    const alg = JsonWebKey.inferAlg(opts);
-    assert(alg, isEnum(KeyAlgorithm));
+    if (opts.kty) this.kty = opts.kty;
+    if (opts.keyOps) this.keyOps = opts.keyOps;
+    if (opts.crv) this.crv = opts.crv;
+    if (opts.alg) this.alg = opts.alg;
 
-    Object.assign(this, { ...opts, alg });
+    if (opts.n) this.n = this._toBase64url(opts.n);
+    if (opts.e) this.e = this._toBase64url(opts.e);
+    if (opts.d) this.d = this._toBase64url(opts.d);
+    if (opts.dp) this.dp = this._toBase64url(opts.dp);
+    if (opts.dq) this.dq = this._toBase64url(opts.dq);
+    if (opts.qi) this.qi = this._toBase64url(opts.qi);
+    if (opts.q) this.q = this._toBase64url(opts.q);
+    if (opts.k) this.k = this._toBase64url(opts.k);
+    if (opts.t) this.t = this._toBase64url(opts.t);
+    if (opts.x) this.x = this._toBase64url(opts.x);
+    if (opts.y) this.y = this._toBase64url(opts.y);
   }
 
-  alg!: KeyAlgorithm;
+  private _toBase64url(optValue: string | Uint8Array): string | undefined {
+    if (typeof optValue === 'string') {
+      return optValue;
+    }
+
+    return Buffer.from(optValue).toString('base64url');
+  }
+
+  alg?: KeyAlgorithm;
 
   /**
    * Key identifier.
@@ -38,43 +128,43 @@ export class JsonWebKey {
   /**
    * RSA modulus.
    */
-  n?: Uint8Array;
+  n?: string;
   /**
    * RSA public exponent.
    */
-  e?: Uint8Array;
+  e?: string;
   /**
    * RSA private exponent, or the D component of an EC private key.
    */
-  d?: Uint8Array;
+  d?: string;
   /**
    * RSA private key parameter.
    */
-  dp?: Uint8Array;
+  dp?: string;
   /**
    * RSA private key parameter.
    */
-  dq?: Uint8Array;
+  dq?: string;
   /**
    * RSA private key parameter.
    */
-  qi?: Uint8Array;
+  qi?: string;
   /**
    * RSA secret prime.
    */
-  p?: Uint8Array;
+  p?: string;
   /**
    * RSA secret prime, with `p < q`.
    */
-  q?: Uint8Array;
+  q?: string;
   /**
    * Symmetric key.
    */
-  k?: Uint8Array;
+  k?: string;
   /**
    * HSM Token, used with 'Bring Your Own Key'.
    */
-  t?: Uint8Array;
+  t?: string;
   /**
    * Elliptic curve name. For valid values, see KeyCurveName. Possible values include:
    * 'P-256', 'P-384', 'P-521', 'P-256K'
@@ -83,28 +173,24 @@ export class JsonWebKey {
   /**
    * X component of an EC public key.
    */
-  x?: Uint8Array;
+  x?: string;
   /**
    * Y component of an EC public key.
    */
-  y?: Uint8Array;
+  y?: string;
 
-  static inferAlg(
-    jwk: Partial<LiteralToPrimitiveDeep<JsonWebKey>>,
-  ): KeyAlgorithm | undefined {
-    assert(jwk.alg, isOptional(isEnum(KeyAlgorithm)));
-
+  inferAlg(): KeyAlgorithm | undefined {
     // If 'alg' is explicitly provided, it has the highest priority.
-    if (jwk.alg) {
-      return jwk.alg;
+    if (this.alg) {
+      return this.alg;
     }
 
     // Infer algorithm based on key type ('kty').
-    switch (jwk.kty) {
+    switch (this.kty) {
       // Elliptic Curve Keys w/ x- and y-coordinate pair
       case KeyType.EC:
         // `EC`: `ES256`, `ES384`, `ES512`, `ES256K`
-        switch (jwk.crv) {
+        switch (this.crv) {
           // secp256r1
           case KeyCurveName.P256:
             return KeyAlgorithm.ES256;

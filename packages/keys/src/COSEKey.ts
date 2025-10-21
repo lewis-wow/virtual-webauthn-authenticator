@@ -12,9 +12,9 @@ import type { BufferLike } from '@repo/types';
 import { objectKeys } from '@repo/utils/objectKeys';
 import { swapKeysAndValues } from '@repo/utils/swapKeysAndValues';
 import { decode, encode } from 'cbor';
-import { assert, isEnum, isInstanceOf, isNumber } from 'typanion';
+import { assert, isEnum, isNumber, isString } from 'typanion';
 
-import { JsonWebKey } from './JsonWebKey';
+import { JsonWebKey, type JsonWebKeyOptions } from './JsonWebKey';
 
 export class COSEKey {
   constructor(
@@ -22,9 +22,10 @@ export class COSEKey {
   ) {}
 
   static fromJwk(jwk: JsonWebKey): COSEKey {
-    assert(jwk.alg, isEnum(KeyAlgorithm));
+    const alg = jwk.inferAlg();
+    assert(alg, isEnum(KeyAlgorithm));
 
-    const coseAlgorithm = COSEKeyAlgorithm[jwk.alg];
+    const coseAlgorithm = COSEKeyAlgorithm[alg];
 
     const coseMap = new Map<number, number | Uint8Array>();
 
@@ -36,26 +37,28 @@ export class COSEKey {
         const crv = COSEKeyCurve[jwk.crv as keyof typeof COSEKeyCurve];
 
         assert(crv, isNumber());
-        assert(jwk.x, isInstanceOf(Uint8Array));
-        assert(jwk.y, isInstanceOf(Uint8Array));
+        assert(jwk.x, isString());
+        assert(jwk.y, isString());
 
         coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
         coseMap.set(COSEKeyCurveParam.crv, crv);
-        coseMap.set(COSEKeyCurveParam.x, jwk.x);
-        coseMap.set(COSEKeyCurveParam.y, jwk.y);
-        if (jwk.d) coseMap.set(COSEKeyCurveParam.d, jwk.d);
+        coseMap.set(COSEKeyCurveParam.x, Buffer.from(jwk.x, 'base64url'));
+        coseMap.set(COSEKeyCurveParam.y, Buffer.from(jwk.y, 'base64url'));
+        if (jwk.d)
+          coseMap.set(COSEKeyCurveParam.d, Buffer.from(jwk.d, 'base64url'));
         break;
       }
       case KeyType.RSA: {
         const kty = jwk.kty;
 
-        assert(jwk.n, isInstanceOf(Uint8Array));
-        assert(jwk.e, isInstanceOf(Uint8Array));
+        assert(jwk.n, isString());
+        assert(jwk.e, isString());
 
         coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
-        coseMap.set(COSEKeyRsaParam.n, jwk.n);
-        coseMap.set(COSEKeyRsaParam.e, jwk.e);
-        if (jwk.d) coseMap.set(COSEKeyRsaParam.d, jwk.d);
+        coseMap.set(COSEKeyRsaParam.n, Buffer.from(jwk.n, 'base64url'));
+        coseMap.set(COSEKeyRsaParam.e, Buffer.from(jwk.e, 'base64url'));
+        if (jwk.d)
+          coseMap.set(COSEKeyRsaParam.d, Buffer.from(jwk.d, 'base64url'));
         break;
       }
       default:
@@ -71,23 +74,29 @@ export class COSEKey {
     return new COSEKey(decode(buffer));
   }
 
-  toJwk(): JsonWebKey {
+  toJwk(opts?: { keepAlg?: boolean }): JsonWebKey {
+    const keepAlgOption = opts?.keepAlg ?? false;
+
     const COSE_TO_JWK_KTY = swapKeysAndValues(COSEKeyType);
     const COSE_TO_JWK_ALG = swapKeysAndValues(COSEKeyAlgorithm);
     const COSE_TO_JWK_CRV = swapKeysAndValues(COSEKeyCurve);
 
-    const jwk: Partial<JsonWebKey> = {};
+    const jwk: JsonWebKeyOptions = {};
 
     // Iterate over the rest of the COSE key parameters
     for (const [key, value] of this.coseMap.entries()) {
       switch (key) {
-        case 1: // kty
+        case COSEKeyParam.kty: // kty
           assert(value, isEnum(COSEKeyType));
 
           jwk.kty = COSE_TO_JWK_KTY[value];
           break;
-        case 3: // alg
-          jwk.alg = COSE_TO_JWK_ALG[value as keyof typeof COSE_TO_JWK_ALG];
+        case COSEKeyParam.alg: // alg
+          assert(value, isEnum(COSEKeyAlgorithm));
+
+          if (keepAlgOption) {
+            jwk.alg = COSE_TO_JWK_ALG[value];
+          }
           break;
 
         // Key-specific parameters
@@ -95,32 +104,33 @@ export class COSEKey {
           // EC params
           if (jwk.kty === KeyType.EC) {
             switch (key) {
-              case -1: // crv
-                jwk.crv =
-                  COSE_TO_JWK_CRV[value as keyof typeof COSE_TO_JWK_CRV];
+              case COSEKeyCurveParam.crv: // crv
+                assert(value, isEnum(COSEKeyCurve));
+
+                jwk.crv = COSE_TO_JWK_CRV[value];
                 break;
-              case -2: // x
-                if (Buffer.isBuffer(value)) jwk.x = value;
+              case COSEKeyCurveParam.x: // x
+                if (Buffer.isBuffer(value)) jwk.x = value.toString('base64url');
                 break;
-              case -3: // y
-                if (Buffer.isBuffer(value)) jwk.y = value;
+              case COSEKeyCurveParam.y: // y
+                if (Buffer.isBuffer(value)) jwk.y = value.toString('base64url');
                 break;
-              case -4: // d (private key)
-                if (Buffer.isBuffer(value)) jwk.d = value;
+              case COSEKeyCurveParam.d: // d (private key)
+                if (Buffer.isBuffer(value)) jwk.d = value.toString('base64url');
                 break;
             }
           }
           // RSA params
           if (jwk.kty === KeyType.RSA) {
             switch (key) {
-              case -1: // n (modulus)
-                if (Buffer.isBuffer(value)) jwk.n = value;
+              case COSEKeyRsaParam.n: // n (modulus)
+                if (Buffer.isBuffer(value)) jwk.n = value.toString('base64url');
                 break;
-              case -2: // e (exponent)
-                if (Buffer.isBuffer(value)) jwk.e = value;
+              case COSEKeyRsaParam.e: // e (exponent)
+                if (Buffer.isBuffer(value)) jwk.e = value.toString('base64url');
                 break;
-              case -3: // d (private key)
-                if (Buffer.isBuffer(value)) jwk.d = value;
+              case COSEKeyRsaParam.d: // d (private key)
+                if (Buffer.isBuffer(value)) jwk.d = value.toString('base64url');
                 break;
             }
           }
