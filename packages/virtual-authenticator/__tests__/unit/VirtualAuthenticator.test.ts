@@ -6,7 +6,6 @@ import type {
   IPublicKeyCredentialCreationOptions,
   IPublicKeyCredentialRequestOptions,
 } from '@repo/types';
-import { toBuffer, interceptJsonWebKey } from '@repo/utils';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
@@ -84,9 +83,7 @@ describe('VirtualAuthenticator', () => {
     publicKeyCredentials =
       await authenticator.createCredential(creationOptions);
 
-    expectedChallenge = toBuffer(creationOptions.challenge).toString(
-      'base64url',
-    );
+    expectedChallenge = creationOptions.challenge.toString('base64url');
 
     registrationVerification = await verifyRegistrationResponse({
       response: publicKeyCredentials.toJSON() as RegistrationResponseJSON,
@@ -128,9 +125,7 @@ describe('VirtualAuthenticator', () => {
 
     const authenticationVerification = await verifyAuthenticationResponse({
       response: assertionCredential.toJSON() as AuthenticationResponseJSON,
-      expectedChallenge: toBuffer(requestOptions.challenge).toString(
-        'base64url',
-      ),
+      expectedChallenge: requestOptions.challenge.toString('base64url'),
       expectedOrigin: requestOptions.rpId!,
       expectedRPID: requestOptions.rpId!,
       credential: {

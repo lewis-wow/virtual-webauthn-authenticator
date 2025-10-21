@@ -13,7 +13,6 @@ import type {
   IPublicKeyCredentialRequestOptions,
 } from '@repo/types';
 import { sha256 } from '@repo/utils/sha256';
-import { toBuffer } from '@repo/utils/toBuffer';
 import { encode } from 'cbor';
 import { randomBytes } from 'crypto';
 import {
@@ -117,7 +116,7 @@ export class VirtualAuthenticator {
   }): Promise<Buffer> {
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
-    const rpIdHash = sha256(toBuffer(opts.rpId));
+    const rpIdHash = sha256(Buffer.from(opts.rpId));
 
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
@@ -192,11 +191,11 @@ export class VirtualAuthenticator {
     // of the provided credential IDs. Since this virtual authenticator only manages one
     // key pair at a time, we assume the first allowed credential is the one it "owns".
     const credentialDescriptor = options.allowCredentials[0]!;
-    const credentialID = toBuffer(credentialDescriptor.id);
+    const credentialID = credentialDescriptor.id;
 
     const clientData: ICollectedClientData = {
       type: 'webauthn.get',
-      challenge: toBuffer(options.challenge).toString('base64url'),
+      challenge: options.challenge.toString('base64url'),
       origin: options.rpId,
       crossOrigin: false,
     };
@@ -215,7 +214,7 @@ export class VirtualAuthenticator {
     const signature = await this.credentialSigner.sign(dataToSign);
 
     return new PublicKeyCredential({
-      id: toBuffer(credentialID).toString('base64url'),
+      id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
@@ -291,12 +290,12 @@ export class VirtualAuthenticator {
 
     const clientData: ICollectedClientData = {
       type: 'webauthn.create',
-      challenge: toBuffer(options.challenge).toString('base64url'),
+      challenge: options.challenge.toString('base64url'),
       origin: options.rp.id,
       crossOrigin: false,
     };
 
-    return new PublicKeyCredential({
+    return {
       id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
@@ -305,6 +304,6 @@ export class VirtualAuthenticator {
         attestationObject: encode(attestationObject),
       },
       clientExtensionResults: {},
-    });
+    };
   }
 }

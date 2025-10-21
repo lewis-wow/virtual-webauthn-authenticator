@@ -1,4 +1,3 @@
-import type { IAuthenticatorAssertionResponse } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -35,4 +34,8 @@ export const AuthenticatorAssertionResponseSchema =
   }).meta({
     id: 'AuthenticatorAssertionResponse',
     description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see('https://www.w3.org/TR/webauthn/#authenticatorassertionresponse')}`,
-  }) satisfies z.ZodType<IAuthenticatorAssertionResponse>;
+  });
+
+export type AuthenticatorAssertionResponse = z.infer<
+  typeof AuthenticatorAssertionResponseSchema
+>;

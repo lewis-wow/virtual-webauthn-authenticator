@@ -471,6 +471,9 @@ importers:
       '@repo/mappers':
         specifier: workspace:*
         version: link:../mappers
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../prisma
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils

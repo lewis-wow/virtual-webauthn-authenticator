@@ -111,7 +111,7 @@ model WebAuthnCredential {
   publicKey     Bytes
   // The signature counter. On each login, this must be higher than the last one.
   // This prevents replay attacks. Using BigInt for future-proofing.
-  counter       BigInt
+  counter       BigInt   @default(0)
   // The AAGUID (Authenticator Attestation GUID) identifies the authenticator model.
   aaguid        String
   // The transport methods the authenticator supports (e.g., "usb", "nfc", "ble").
