@@ -716,6 +716,9 @@ importers:
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../prisma
       '@repo/types':
         specifier: workspace:*
         version: link:../types
@@ -756,12 +759,18 @@ importers:
       tsx:
         specifier: ^4.20.6
         version: 4.20.6
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+      vitest-mock-extended:
+        specifier: ^3.1.0
+        version: 3.1.0(typescript@5.9.2)(vitest@3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
 
 packages:
 

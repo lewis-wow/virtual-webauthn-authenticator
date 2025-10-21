@@ -30,6 +30,14 @@ jobs:
         # until the containers report a "healthy" status.
         run: ./docker-compose-test.sh
 
+      - name: Run database migrations
+        env:
+          # This URL should point to the database service in your Docker Compose file.
+          # The example below is a common default for PostgreSQL.
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
+        # Use the --filter flag to run the command in the correct package.
+        run: pnpm --filter @repo/prisma db:migrate
+
       - name: Check formatting
         run: pnpm format:check
 

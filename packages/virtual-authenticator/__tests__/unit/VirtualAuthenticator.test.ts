@@ -1,4 +1,5 @@
 import { COSEKey, JsonWebKey } from '@repo/keys';
+import { WebAuthnCredential } from '@repo/prisma';
 import {
   PublicKeyCredentialRequestOptions,
   PublicKeyCredential,
@@ -14,7 +15,9 @@ import {
 } from '@simplewebauthn/server';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import { beforeAll, describe, expect, test } from 'vitest';
+import { mock } from 'vitest-mock-extended';
 
+import { CredentialDiscovery } from '../../src/CredentialDiscovery.js';
 import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
 import { CredentialSigner } from '../../src/types/CredentialSigner.js';
 
@@ -36,6 +39,8 @@ const credentialSigner: CredentialSigner = {
   },
 };
 
+const credentialDiscoveryMock = mock<CredentialDiscovery>();
+
 const createPublicKeyCredentialRequestOptions = (
   credentialID: Buffer,
 ): PublicKeyCredentialRequestOptions => ({
@@ -55,6 +60,7 @@ describe('VirtualAuthenticator', () => {
   let publicKeyCredentials: PublicKeyCredential;
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
+  let credentialIDbase64url: string;
 
   const creationOptions: PublicKeyCredentialCreationOptions = {
     rp: {
@@ -76,6 +82,7 @@ describe('VirtualAuthenticator', () => {
     authenticator = new VirtualAuthenticator({
       credentialPublicKey: COSEKey.fromJwk(credentialPublicKey),
       credentialSigner,
+      credentialDiscovery: credentialDiscoveryMock,
     });
 
     publicKeyCredentials =
@@ -93,6 +100,14 @@ describe('VirtualAuthenticator', () => {
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
     });
+
+    ({ id: credentialIDbase64url } =
+      registrationVerification.registrationInfo!.credential);
+
+    credentialDiscoveryMock.selectCredentialAndUpdateCounter.mockResolvedValue({
+      counter: 1,
+      credentialIDbase64url,
+    } as WebAuthnCredential);
   });
 
   test('createCredential()', async () => {
@@ -120,10 +135,8 @@ describe('VirtualAuthenticator', () => {
       Buffer.from(credentialID),
     );
 
-    const assertionCredential = await authenticator.getCredential(
-      requestOptions,
-      { counter: 0 },
-    );
+    const assertionCredential =
+      await authenticator.getCredential(requestOptions);
 
     const authenticationVerification = await verifyAuthenticationResponse({
       response: PublicKeyCredentialSchema.encode(

@@ -11,14 +11,15 @@ generator client {
 }
 
 model User {
-  id            String       @id
-  name          String
-  email         String
-  emailVerified Boolean      @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
-  permissions   Permission[]
+  id                  String               @id
+  name                String
+  email               String
+  emailVerified       Boolean              @default(false)
+  image               String?
+  sessions            Session[]
+  accounts            Account[]
+  permissions         Permission[]
+  webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -94,6 +95,36 @@ model Permission {
   // A user can only have one type of action for a specific resource type/ID combination.
   @@unique([userId, action, resourceType, resourceId])
   @@map("permission")
+}
+
+model WebAuthnCredential {
+  id                    String   @id @default(cuid())
+  name                  String?
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String
+  keyVaultKeyId         String   @unique
+  credentialIDbase64url String   @unique
+  publicKey             Bytes
+  counter               Int      @default(0)
+  aaguid                String
+  transports            String[]
+
+  // ++ DISCOVERABILITY FIELDS ADDED ++
+  // The Relying Party ID (e.g., "your-website.com") this credential is scoped to.
+  // This is essential for finding all credentials for a specific site.
+  rpId String
+
+  // The user's unique identifier stored on the authenticator.
+  // This is returned during a passwordless login to identify the user.
+  userHandle Bytes
+
+  hsm       Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([rpId]) // Add an index to rpId for fast lookups
+  @@map("webAuthnCredential")
 }
 
 enum ResourceType {
