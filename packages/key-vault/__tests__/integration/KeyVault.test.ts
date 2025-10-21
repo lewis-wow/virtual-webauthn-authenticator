@@ -1,11 +1,11 @@
 import { KeyClient } from '@azure/keyvault-keys';
 import {
-  COSEAlgorithm,
-  EcCurve,
+  COSEKeyAlgorithm,
+  KeyCurveName,
   KeyType,
   PublicKeyCredentialType,
 } from '@repo/enums';
-import { InterceptedAzureJsonWebKey } from '@repo/types';
+import { JsonWebKey } from '@repo/keys';
 import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';
 
@@ -27,7 +27,7 @@ describe('KeyVault', () => {
   const keyVault = new KeyVault({ keyClient });
 
   let credentialId: string;
-  let key: InterceptedAzureJsonWebKey;
+  let jwk: JsonWebKey;
 
   describe('EC', () => {
     const createEcKeyOpts = {
@@ -39,41 +39,44 @@ describe('KeyVault', () => {
       },
       pubKeyCredParams: [
         {
-          alg: COSEAlgorithm.ES256,
+          alg: COSEKeyAlgorithm.ES256,
           type: PublicKeyCredentialType.PUBLIC_KEY,
         },
       ],
     };
 
     beforeAll(async () => {
-      ({ key, credentialId } = await keyVault.createEcKey(createEcKeyOpts));
+      ({
+        jwk,
+        meta: { credentialId },
+      } = await keyVault.createEcKey(createEcKeyOpts));
     });
 
     test('createEcKey', async () => {
       expect(z.uuid().safeParse(credentialId).success).toBe(true);
 
-      expect(key?.crv).toBe(EcCurve.P256);
-      expect(key?.kty).toBe(KeyType.EC);
-      expect(key?.x).toBeInstanceOf(Buffer);
-      expect(key?.y).toBeInstanceOf(Buffer);
+      expect(jwk?.crv).toBe(KeyCurveName.P256);
+      expect(jwk?.kty).toBe(KeyType.EC);
+      expect(z.base64url().safeParse(jwk?.x).success).toBe(true);
+      expect(z.base64url().safeParse(jwk?.y).success).toBe(true);
     });
 
     test('getKey', async () => {
-      const { key: keyGet } = await keyVault.getKey({
+      const { jwk: jwkGet } = await keyVault.getKey({
         ...createEcKeyOpts,
         credentialId,
       });
 
-      expect(keyGet).toStrictEqual(key);
+      expect(jwkGet).toStrictEqual(jwk);
     });
 
     test('deleteKey', async () => {
-      const { key: keyDelete } = await keyVault.deleteKey({
+      const { jwk: jwkDelete } = await keyVault.deleteKey({
         ...createEcKeyOpts,
         credentialId,
       });
 
-      expect(keyDelete).toMatchObject(key);
+      expect(jwkDelete).toMatchObject(jwk);
 
       await expect(() =>
         keyVault.getKey({
@@ -94,38 +97,41 @@ describe('KeyVault', () => {
       },
       pubKeyCredParams: [
         {
-          alg: COSEAlgorithm.RS256,
+          alg: COSEKeyAlgorithm.RS256,
           type: PublicKeyCredentialType.PUBLIC_KEY,
         },
       ],
     };
 
     beforeAll(async () => {
-      ({ key, credentialId } = await keyVault.createRsaKey(createRsaKeyOpts));
+      ({
+        jwk,
+        meta: { credentialId },
+      } = await keyVault.createRsaKey(createRsaKeyOpts));
     });
 
     test('createRsaKey', async () => {
       expect(z.uuid().safeParse(credentialId).success).toBe(true);
 
-      expect(key?.kty).toBe(KeyType.RSA);
+      expect(jwk?.kty).toBe(KeyType.RSA);
     });
 
     test('getKey', async () => {
-      const { key: keyGet } = await keyVault.getKey({
+      const { jwk: jwkGet } = await keyVault.getKey({
         ...createRsaKeyOpts,
         credentialId,
       });
 
-      expect(keyGet).toStrictEqual(key);
+      expect(jwkGet).toStrictEqual(jwk);
     });
 
     test('deleteKey', async () => {
-      const { key: keyDelete } = await keyVault.deleteKey({
+      const { jwk: jwkDelete } = await keyVault.deleteKey({
         ...createRsaKeyOpts,
         credentialId,
       });
 
-      expect(keyDelete).toMatchObject(key);
+      expect(jwkDelete).toMatchObject(jwk);
 
       await expect(() =>
         keyVault.getKey({
