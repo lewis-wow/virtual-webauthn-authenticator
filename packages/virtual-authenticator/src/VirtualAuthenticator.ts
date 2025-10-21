@@ -1,4 +1,5 @@
 import {
+  AuthenticatorTransport,
   PublicKeyCredentialType,
   UserVerificationRequirement,
 } from '@repo/enums';
@@ -27,20 +28,24 @@ import {
 } from 'typanion';
 
 import { hasMinBytes } from '../../utils/src/asserts/hasMinBytes.js';
+import type { CredentialDiscovery } from './CredentialDiscovery.js';
 import type { CredentialSigner } from './types/CredentialSigner.js';
 
 export type VirtualAuthenticatorOptions = {
   credentialSigner: CredentialSigner;
   credentialPublicKey: COSEKey;
+  credentialDiscovery: CredentialDiscovery;
 };
 
 export class VirtualAuthenticator {
   private readonly credentialSigner: CredentialSigner;
   private readonly credentialPublicKey: COSEKey;
+  private readonly credentialDiscovery: CredentialDiscovery;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.credentialSigner = opts.credentialSigner;
     this.credentialPublicKey = opts.credentialPublicKey;
+    this.credentialDiscovery = opts.credentialDiscovery;
   }
 
   /**
@@ -156,23 +161,18 @@ export class VirtualAuthenticator {
    */
   public async getCredential(
     options: PublicKeyCredentialRequestOptions,
-    additionalOptions: {
-      counter: number;
-    },
   ): Promise<PublicKeyCredential> {
-    const { counter } = additionalOptions;
-
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
-      applyCascade(
+      isOptional(
         isArray(
-          isPartial({
+          isObject({
             id: isInstanceOf(Buffer),
             type: isEnum(PublicKeyCredentialType),
+            transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
           }),
         ),
-        hasMinLength(1),
       ),
     );
     assert(
@@ -186,11 +186,8 @@ export class VirtualAuthenticator {
 
     const rpId = options.rpId;
 
-    // A real authenticator would search its storage for a private key corresponding to one
-    // of the provided credential IDs. Since this virtual authenticator only manages one
-    // key pair at a time, we assume the first allowed credential is the one it "owns".
-    const credentialDescriptor = options.allowCredentials[0]!;
-    const credentialID = credentialDescriptor.id;
+    const { counter, credentialIDbase64url } =
+      await this.credentialDiscovery.selectCredentialAndUpdateCounter(options);
 
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
@@ -204,7 +201,7 @@ export class VirtualAuthenticator {
 
     const authData = await this._createAuthenticatorData({
       rpId,
-      counter: counter + 1,
+      counter,
     });
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
@@ -212,8 +209,8 @@ export class VirtualAuthenticator {
     const signature = await this.credentialSigner.sign(dataToSign);
 
     return {
-      id: credentialID.toString('base64url'),
-      rawId: credentialID,
+      id: credentialIDbase64url,
+      rawId: Buffer.from(credentialIDbase64url, 'base64url'),
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON,
