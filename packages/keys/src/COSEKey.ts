@@ -22,17 +22,16 @@ export class COSEKey {
   ) {}
 
   static fromJwk(jwk: JsonWebKey): COSEKey {
-    assert(jwk.alg, isEnum(Object.values(KeyAlgorithm)));
+    assert(jwk.alg, isEnum(KeyAlgorithm));
 
     const coseAlgorithm = COSEKeyAlgorithm[jwk.alg];
 
-    const coseMap = new Map<number, number | string | Uint8Array>();
+    const coseMap = new Map<number, number | Uint8Array>();
 
     coseMap.set(COSEKeyParam.alg, coseAlgorithm);
 
     switch (jwk.kty) {
-      case KeyType.EC:
-      case KeyType.EC_HSM: {
+      case KeyType.EC: {
         const kty = jwk.kty;
         const crv = COSEKeyCurve[jwk.crv as keyof typeof COSEKeyCurve];
 
@@ -40,21 +39,20 @@ export class COSEKey {
         assert(jwk.x, isInstanceOf(Uint8Array));
         assert(jwk.y, isInstanceOf(Uint8Array));
 
-        coseMap.set(COSEKeyParam.kty, kty);
+        coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
         coseMap.set(COSEKeyCurveParam.crv, crv);
         coseMap.set(COSEKeyCurveParam.x, jwk.x);
         coseMap.set(COSEKeyCurveParam.y, jwk.y);
         if (jwk.d) coseMap.set(COSEKeyCurveParam.d, jwk.d);
         break;
       }
-      case KeyType.RSA:
-      case KeyType.RSA_HSM: {
+      case KeyType.RSA: {
         const kty = jwk.kty;
 
         assert(jwk.n, isInstanceOf(Uint8Array));
         assert(jwk.e, isInstanceOf(Uint8Array));
 
-        coseMap.set(COSEKeyParam.kty, kty);
+        coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
         coseMap.set(COSEKeyRsaParam.n, jwk.n);
         coseMap.set(COSEKeyRsaParam.e, jwk.e);
         if (jwk.d) coseMap.set(COSEKeyRsaParam.d, jwk.d);
@@ -86,7 +84,7 @@ export class COSEKey {
         case 1: // kty
           assert(value, isEnum(COSEKeyType));
 
-          jwk.kty = COSE_TO_JWK_KTY[value as keyof typeof COSE_TO_JWK_KTY];
+          jwk.kty = COSE_TO_JWK_KTY[value];
           break;
         case 3: // alg
           jwk.alg = COSE_TO_JWK_ALG[value as keyof typeof COSE_TO_JWK_ALG];
@@ -95,7 +93,7 @@ export class COSEKey {
         // Key-specific parameters
         default:
           // EC params
-          if (jwk.kty === KeyType.EC || jwk.kty === KeyType.EC_HSM) {
+          if (jwk.kty === KeyType.EC) {
             switch (key) {
               case -1: // crv
                 jwk.crv =
@@ -104,12 +102,8 @@ export class COSEKey {
               case -2: // x
                 if (Buffer.isBuffer(value)) jwk.x = value;
                 break;
-              case -3: // y (EC only)
-                if (
-                  (jwk.kty === KeyType.EC || jwk.kty === KeyType.EC_HSM) &&
-                  Buffer.isBuffer(value)
-                )
-                  jwk.y = value;
+              case -3: // y
+                if (Buffer.isBuffer(value)) jwk.y = value;
                 break;
               case -4: // d (private key)
                 if (Buffer.isBuffer(value)) jwk.d = value;
@@ -117,7 +111,7 @@ export class COSEKey {
             }
           }
           // RSA params
-          if (jwk.kty === KeyType.RSA || jwk.kty === KeyType.RSA_HSM) {
+          if (jwk.kty === KeyType.RSA) {
             switch (key) {
               case -1: // n (modulus)
                 if (Buffer.isBuffer(value)) jwk.n = value;

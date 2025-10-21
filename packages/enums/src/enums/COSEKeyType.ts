@@ -5,9 +5,7 @@ import { KeyType } from './KeyType.js';
 
 export const COSEKeyType = {
   [KeyType.EC]: 2,
-  [KeyType.EC_HSM]: 2,
   [KeyType.RSA]: 3,
-  [KeyType.RSA_HSM]: 3,
 } as const;
 
 export type COSEKeyType = ValueOfEnum<typeof COSEKeyType>;

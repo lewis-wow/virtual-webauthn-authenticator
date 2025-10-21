@@ -7,9 +7,9 @@ import type { LiteralToPrimitiveDeep } from 'type-fest';
  */
 export class JsonWebKey {
   constructor(opts: Partial<LiteralToPrimitiveDeep<JsonWebKey>>) {
-    assert(opts.kty, isEnum(KeyType));
-    assert(opts.keyOps, isArray(isEnum(KeyOperation)));
-    assert(opts.crv, isEnum(KeyCurveName));
+    assert(opts.kty, isOptional(isEnum(KeyType)));
+    assert(opts.keyOps, isOptional(isArray(isEnum(KeyOperation))));
+    assert(opts.crv, isOptional(isEnum(KeyCurveName)));
     assert(opts.alg, isOptional(isEnum(KeyAlgorithm)));
 
     const alg = JsonWebKey.inferAlg(opts);
@@ -27,7 +27,7 @@ export class JsonWebKey {
   /**
    * JsonWebKey Key Type (kty), as defined in
    * https://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-40. Possible values include:
-   * 'EC', 'EC-HSM', 'RSA', 'RSA-HSM', 'oct', "oct-HSM"
+   * 'EC', 'EC-HSM', 'RSA', 'RSA-HSM'
    */
   kty?: KeyType;
   /**
@@ -103,7 +103,6 @@ export class JsonWebKey {
     switch (jwk.kty) {
       // Elliptic Curve Keys w/ x- and y-coordinate pair
       case KeyType.EC:
-      case KeyType.EC_HSM:
         // `EC`: `ES256`, `ES384`, `ES512`, `ES256K`
         switch (jwk.crv) {
           // secp256r1
@@ -120,7 +119,6 @@ export class JsonWebKey {
         }
 
       case KeyType.RSA:
-      case KeyType.RSA_HSM:
         // PS512
         // PS384
 
