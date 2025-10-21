@@ -1,5 +1,4 @@
 import { UserVerificationRequirementSchema } from '@repo/enums';
-import type { IPublicKeyCredentialRequestOptions } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -30,5 +29,12 @@ export const PublicKeyCredentialRequestOptionsSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialRequestOptions',
-    description: `Options for requesting a public key credential. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions')}`,
-  }) satisfies z.ZodType<IPublicKeyCredentialRequestOptions>;
+    description: `Options for requesting a public key credential. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions'
+    )}`,
+  });
+
+export type PublicKeyCredentialRequestOptions = z.infer<
+  typeof PublicKeyCredentialRequestOptionsSchema
+>;
+

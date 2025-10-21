@@ -1,9 +1,4 @@
-import {
-  AuthenticatorAttachmentSchema,
-  ResidentKeyRequirementSchema,
-  UserVerificationRequirementSchema,
-} from '@repo/enums';
-import type { IAuthenticatorSelectionCriteria } from '@repo/types';
+import { AuthenticatorAttachmentSchema, ResidentKeyRequirementSchema, UserVerificationRequirementSchema } from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../meta/see';
@@ -43,5 +38,11 @@ export const AuthenticatorSelectionCriteriaSchema = z
   })
   .meta({
     id: 'AuthenticatorSelectionCriteria',
-    description: `Specifies requirements for the authenticator. ${see('https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria')}`,
-  }) satisfies z.ZodType<IAuthenticatorSelectionCriteria>;
+    description: `Specifies requirements for the authenticator. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria'
+    )}`,
+  });
+
+export type AuthenticatorSelectionCriteria = z.infer<
+  typeof AuthenticatorSelectionCriteriaSchema
+>;

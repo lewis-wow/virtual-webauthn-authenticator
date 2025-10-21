@@ -1,8 +1,4 @@
-import {
-  COSEAlgorithmSchema,
-  PublicKeyCredentialTypeSchema,
-} from '@repo/enums';
-import type { IPublicKeyCredentialParameters } from '@repo/types';
+import { COSEKeyAlgorithmSchema, PublicKeyCredentialTypeSchema } from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../meta/see';
@@ -15,9 +11,15 @@ import { see } from '../meta/see';
 export const PublicKeyCredentialParametersSchema = z
   .object({
     type: PublicKeyCredentialTypeSchema,
-    alg: COSEAlgorithmSchema,
+    alg: COSEKeyAlgorithmSchema,
   })
   .meta({
     id: 'PublicKeyCredentialParameters',
-    description: `Describes the cryptographic algorithms to be supported. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters')}`,
-  }) satisfies z.ZodType<IPublicKeyCredentialParameters>;
+    description: `Describes the cryptographic algorithms to be supported. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters'
+    )}`,
+  });
+
+export type PublicKeyCredentialParameters = z.infer<
+  typeof PublicKeyCredentialParametersSchema
+>;

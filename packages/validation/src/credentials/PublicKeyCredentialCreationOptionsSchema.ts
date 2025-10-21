@@ -1,5 +1,4 @@
 import { AttestationSchema } from '@repo/enums';
-import type { IPublicKeyCredentialCreationOptions } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -33,5 +32,12 @@ export const PublicKeyCredentialCreationOptionsSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialCreationOptions',
-    description: `Options for creating a new public key credential. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions')}`,
-  }) satisfies z.ZodType<IPublicKeyCredentialCreationOptions>;
+    description: `Options for creating a new public key credential. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions'
+    )}`,
+  });
+
+export type PublicKeyCredentialCreationOptions = z.infer<
+  typeof PublicKeyCredentialCreationOptionsSchema
+>;
+

@@ -1,4 +1,3 @@
-import type { IAuthenticatorResponse } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -16,11 +15,16 @@ export const AuthenticatorResponseSchema = z
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
      */
     clientDataJSON: Base64URLBufferSchema.meta({
-      description: `The client data for the response. ${see('https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson')}`,
+      description: `The client data for the response. ${see(
+        'https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson'
+      )}`,
     }),
   })
   .meta({
     id: 'AuthenticatorResponse',
     description:
       'The response from an authenticator. For more information, see https://www.w3.org/TR/webauthn/#authenticatorresponse.',
-  }) satisfies z.ZodType<IAuthenticatorResponse>;
+  });
+
+export type AuthenticatorResponse = z.infer<typeof AuthenticatorResponseSchema>;
+
