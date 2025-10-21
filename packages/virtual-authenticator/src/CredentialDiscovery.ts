@@ -1,16 +1,15 @@
-import { AuthenticatorTransport, PublicKeyCredentialType } from '@repo/enums';
 import type { PrismaClient, Prisma, WebAuthnCredential } from '@repo/prisma';
 import type { PublicKeyCredentialRequestOptions } from '@repo/validation';
 import {
   assert,
   isInstanceOf,
-  isEnum,
   isArray,
   isOptional,
   isObject,
   isString,
   hasMinLength,
   cascade,
+  isPartial,
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
@@ -39,7 +38,7 @@ export class CredentialDiscovery {
   async selectCredentialAndUpdateCounter(
     opts: PickDeep<
       PublicKeyCredentialRequestOptions,
-      'allowCredentials' | 'rpId'
+      `allowCredentials.${number}.id` | 'rpId'
     >,
   ): Promise<WebAuthnCredential> {
     const { rpId, allowCredentials } = opts;
@@ -50,10 +49,8 @@ export class CredentialDiscovery {
       allowCredentials,
       isOptional(
         isArray(
-          isObject({
+          isPartial({
             id: isInstanceOf(Buffer),
-            type: isEnum(PublicKeyCredentialType),
-            transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
           }),
         ),
       ),
