@@ -28,6 +28,7 @@
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/mappers": "workspace:*",
+    "@repo/validation": "workspace:*",
     "@repo/utils": "workspace:*",
     "typanion": "^3.14.0"
   }
