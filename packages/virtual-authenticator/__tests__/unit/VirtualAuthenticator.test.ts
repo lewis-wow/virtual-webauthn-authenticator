@@ -1,11 +1,5 @@
 import { COSEKey } from '@repo/keys';
-import type {
-  IAuthenticatorAttestationResponse,
-  ICredentialPublicKey,
-  ICredentialSigner,
-  IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredentialRequestOptions,
-} from '@repo/types';
+import type { ICredentialPublicKey, ICredentialSigner } from '@repo/types';
 import { toBuffer, interceptJsonWebKey } from '@repo/utils';
 import {
   verifyAuthenticationResponse,
@@ -17,7 +11,6 @@ import {
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import type { PublicKeyCredential } from '../../src/PublicKeyCredential.js';
 import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
 
 const keyPair = generateKeyPairSync('ec', {
@@ -41,7 +34,7 @@ const credentialSigner: ICredentialSigner = {
 
 const createPublicKeyCredentialRequestOptions = (
   credentialID: Buffer,
-): IPublicKeyCredentialRequestOptions => ({
+): PublicKeyCredentialRequestOptions => ({
   challenge: Buffer.from('b'.repeat(32)), // A different dummy challenge for get
   rpId: 'localhost',
   allowCredentials: [
