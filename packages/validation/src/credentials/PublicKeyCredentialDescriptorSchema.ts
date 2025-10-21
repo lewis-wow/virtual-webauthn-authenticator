@@ -1,4 +1,7 @@
-import { AuthenticatorTransportSchema, PublicKeyCredentialTypeSchema } from '@repo/enums';
+import {
+  AuthenticatorTransportSchema,
+  PublicKeyCredentialTypeSchema,
+} from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -24,7 +27,7 @@ export const PublicKeyCredentialDescriptorSchema = z
   .meta({
     id: 'PublicKeyCredentialDescriptor',
     description: `Used to exclude existing credentials for a user. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor'
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor',
     )}`,
   });
 

@@ -1,4 +1,8 @@
-import { AuthenticatorAttachmentSchema, ResidentKeyRequirementSchema, UserVerificationRequirementSchema } from '@repo/enums';
+import {
+  AuthenticatorAttachmentSchema,
+  ResidentKeyRequirementSchema,
+  UserVerificationRequirementSchema,
+} from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../meta/see';
@@ -39,7 +43,7 @@ export const AuthenticatorSelectionCriteriaSchema = z
   .meta({
     id: 'AuthenticatorSelectionCriteria',
     description: `Specifies requirements for the authenticator. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria'
+      'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria',
     )}`,
   });
 

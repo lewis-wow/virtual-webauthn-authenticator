@@ -1,4 +1,7 @@
-import { COSEKeyAlgorithmSchema, PublicKeyCredentialTypeSchema } from '@repo/enums';
+import {
+  COSEKeyAlgorithmSchema,
+  PublicKeyCredentialTypeSchema,
+} from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../meta/see';
@@ -16,7 +19,7 @@ export const PublicKeyCredentialParametersSchema = z
   .meta({
     id: 'PublicKeyCredentialParameters',
     description: `Describes the cryptographic algorithms to be supported. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters'
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters',
     )}`,
   });
 

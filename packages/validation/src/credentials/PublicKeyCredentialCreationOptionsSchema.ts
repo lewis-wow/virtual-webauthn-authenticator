@@ -33,11 +33,10 @@ export const PublicKeyCredentialCreationOptionsSchema = z
   .meta({
     id: 'PublicKeyCredentialCreationOptions',
     description: `Options for creating a new public key credential. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions'
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions',
     )}`,
   });
 
 export type PublicKeyCredentialCreationOptions = z.infer<
   typeof PublicKeyCredentialCreationOptionsSchema
 >;
-

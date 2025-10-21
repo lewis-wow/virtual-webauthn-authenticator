@@ -20,7 +20,7 @@ export const AuthenticatorAssertionResponseSchema =
      */
     authenticatorData: Base64URLBufferSchema.meta({
       description: `The authenticator data for the assertion. ${see(
-        'https://www.w3.org/TR/webauthn/#sctn-authenticator-data'
+        'https://www.w3.org/TR/webauthn/#sctn-authenticator-data',
       )}`,
     }),
     /**
@@ -30,7 +30,7 @@ export const AuthenticatorAssertionResponseSchema =
      */
     signature: Base64URLBufferSchema.meta({
       description: `The signature for the assertion. ${see(
-        'https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature'
+        'https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature',
       )}`,
     }),
 
@@ -38,11 +38,10 @@ export const AuthenticatorAssertionResponseSchema =
   }).meta({
     id: 'AuthenticatorAssertionResponse',
     description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see(
-      'https://www.w3.org/TR/webauthn/#authenticatorassertionresponse'
+      'https://www.w3.org/TR/webauthn/#authenticatorassertionresponse',
     )}`,
   });
 
 export type AuthenticatorAssertionResponse = z.infer<
   typeof AuthenticatorAssertionResponseSchema
 >;
-

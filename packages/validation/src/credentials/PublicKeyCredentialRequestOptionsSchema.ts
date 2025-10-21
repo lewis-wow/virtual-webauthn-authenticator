@@ -30,11 +30,10 @@ export const PublicKeyCredentialRequestOptionsSchema = z
   .meta({
     id: 'PublicKeyCredentialRequestOptions',
     description: `Options for requesting a public key credential. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions'
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions',
     )}`,
   });
 
 export type PublicKeyCredentialRequestOptions = z.infer<
   typeof PublicKeyCredentialRequestOptionsSchema
 >;
-

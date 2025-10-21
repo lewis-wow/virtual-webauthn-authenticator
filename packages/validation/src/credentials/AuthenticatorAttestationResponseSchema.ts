@@ -14,17 +14,16 @@ export const AuthenticatorAttestationResponseSchema =
      */
     attestationObject: Base64URLBufferSchema.meta({
       description: `The attestation object is a CBOR-encoded object containing the authenticator data and the attestation statement. It is used by the Relying Party to verify the new credential and create a binding to the user account. ${see(
-        'https://www.w3.org/TR/webauthn-2/#sctn-attestation-object'
+        'https://www.w3.org/TR/webauthn-2/#sctn-attestation-object',
       )}`,
     }),
   }).meta({
     id: 'AuthenticatorAttestationResponse',
     description: `The JSON payload for a registration verification. ${see(
-      'https://www.w3.org/TR/webauthn/#authenticatorattestationresponse'
+      'https://www.w3.org/TR/webauthn/#authenticatorattestationresponse',
     )}`,
   });
 
 export type AuthenticatorAttestationResponse = z.infer<
   typeof AuthenticatorAttestationResponseSchema
 >;
-

@@ -16,7 +16,7 @@ export const AuthenticatorResponseSchema = z
      */
     clientDataJSON: Base64URLBufferSchema.meta({
       description: `The client data for the response. ${see(
-        'https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson'
+        'https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson',
       )}`,
     }),
   })
@@ -27,4 +27,3 @@ export const AuthenticatorResponseSchema = z
   });
 
 export type AuthenticatorResponse = z.infer<typeof AuthenticatorResponseSchema>;
-
