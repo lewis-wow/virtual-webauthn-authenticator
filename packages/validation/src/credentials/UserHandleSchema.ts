@@ -1,3 +1,5 @@
+import type z from 'zod';
+
 import { see } from '../meta/see';
 import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema';
 
@@ -17,7 +19,7 @@ import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema';
 export const UserHandleSchema = Base64URLBufferSchema.meta({
   id: 'UserHandle',
   description: `The user handle for the assertion (max 64 bytes). ${see(
-    'https://www.w3.org/TR/webauthn/#user-handle'
+    'https://www.w3.org/TR/webauthn/#user-handle',
   )}`,
 }).refine((buf) => buf === null || buf.length <= 64, {
   message: 'User handle must not exceed 64 bytes in length.',
@@ -25,4 +27,3 @@ export const UserHandleSchema = Base64URLBufferSchema.meta({
 });
 
 export type UserHandle = z.infer<typeof UserHandleSchema>;
-

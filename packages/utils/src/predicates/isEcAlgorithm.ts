@@ -1,8 +1,8 @@
-import { AsymetricSigningAlgorithm } from '@repo/enums';
+import { KeyAlgorithm } from '@repo/enums';
 import { isEnum } from 'typanion';
 
 export const isEcAlgorithm = isEnum([
-  AsymetricSigningAlgorithm.ES256,
-  AsymetricSigningAlgorithm.ES384,
-  AsymetricSigningAlgorithm.ES512,
+  KeyAlgorithm.ES256,
+  KeyAlgorithm.ES384,
+  KeyAlgorithm.ES512,
 ]);
