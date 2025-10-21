@@ -1,2 +1,2 @@
 export * from './VirtualAuthenticator.js';
-export * from './PublicKeyCredential.js';
+export * from './types/CredentialSigner.js';

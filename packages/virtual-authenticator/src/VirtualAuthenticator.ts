@@ -3,17 +3,13 @@ import {
   UserVerificationRequirement,
 } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
-import type {
-  IAuthenticatorAssertionResponse,
-  IAuthenticatorAttestationResponse,
-  ICollectedClientData,
-  ICredentialPublicKey,
-  ICredentialSigner,
-  IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredentialRequestOptions,
-} from '@repo/types';
 import { sha256 } from '@repo/utils/sha256';
-import { toBuffer } from '@repo/utils/toBuffer';
+import type {
+  CollectedClientData,
+  PublicKeyCredentialCreationOptions,
+  PublicKeyCredentialRequestOptions,
+  PublicKeyCredential,
+} from '@repo/validation';
 import { encode } from 'cbor';
 import { randomBytes } from 'crypto';
 import {
@@ -31,17 +27,16 @@ import {
 } from 'typanion';
 
 import { hasMinBytes } from '../../utils/src/asserts/hasMinBytes.js';
-import { PublicKeyCredential } from './PublicKeyCredential.js';
+import type { CredentialSigner } from './types/CredentialSigner.js';
 
 export type VirtualAuthenticatorOptions = {
-  credentialSigner: ICredentialSigner;
-  credentialPublicKey: ICredentialPublicKey;
+  credentialSigner: CredentialSigner;
+  credentialPublicKey: COSEKey;
 };
 
 export class VirtualAuthenticator {
-  private readonly credentialSigner: ICredentialSigner;
-  private readonly credentialPublicKey: ICredentialPublicKey;
-  private _counter = 0;
+  private readonly credentialSigner: CredentialSigner;
+  private readonly credentialPublicKey: COSEKey;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.credentialSigner = opts.credentialSigner;
@@ -89,9 +84,7 @@ export class VirtualAuthenticator {
     // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty"
     // and algorithm "alg" (see Section 8 of [RFC8152]).
     // Length (in bytes): {variable}
-    const credentialPublicKey = COSEKey.fromJwk(
-      await this.credentialPublicKey.getJwk(),
-    ).toBuffer();
+    const credentialPublicKey = this.credentialPublicKey.toBuffer();
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
     // Attested credential data is a variable-length byte array added to the
@@ -117,7 +110,7 @@ export class VirtualAuthenticator {
   }): Promise<Buffer> {
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
-    const rpIdHash = sha256(toBuffer(opts.rpId));
+    const rpIdHash = sha256(Buffer.from(opts.rpId));
 
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
@@ -162,8 +155,13 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
    */
   public async getCredential(
-    options: IPublicKeyCredentialRequestOptions,
-  ): Promise<PublicKeyCredential<IAuthenticatorAssertionResponse>> {
+    options: PublicKeyCredentialRequestOptions,
+    additionalOptions: {
+      counter: number;
+    },
+  ): Promise<PublicKeyCredential> {
+    const { counter } = additionalOptions;
+
     assert(options.rpId, isString());
     assert(
       options.allowCredentials,
@@ -192,11 +190,11 @@ export class VirtualAuthenticator {
     // of the provided credential IDs. Since this virtual authenticator only manages one
     // key pair at a time, we assume the first allowed credential is the one it "owns".
     const credentialDescriptor = options.allowCredentials[0]!;
-    const credentialID = toBuffer(credentialDescriptor.id);
+    const credentialID = credentialDescriptor.id;
 
-    const clientData: ICollectedClientData = {
+    const clientData: CollectedClientData = {
       type: 'webauthn.get',
-      challenge: toBuffer(options.challenge).toString('base64url'),
+      challenge: options.challenge.toString('base64url'),
       origin: options.rpId,
       crossOrigin: false,
     };
@@ -204,18 +202,17 @@ export class VirtualAuthenticator {
     const clientDataJSON = Buffer.from(JSON.stringify(clientData));
     const clientDataHash = sha256(clientDataJSON);
 
-    this._counter += 1;
     const authData = await this._createAuthenticatorData({
       rpId,
-      counter: this._counter,
+      counter: counter + 1,
     });
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
 
     const signature = await this.credentialSigner.sign(dataToSign);
 
-    return new PublicKeyCredential({
-      id: toBuffer(credentialID).toString('base64url'),
+    return {
+      id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
@@ -225,7 +222,7 @@ export class VirtualAuthenticator {
         userHandle: null,
       },
       clientExtensionResults: {},
-    });
+    };
   }
 
   /**
@@ -233,8 +230,8 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation
    */
   public async createCredential(
-    options: IPublicKeyCredentialCreationOptions,
-  ): Promise<PublicKeyCredential<IAuthenticatorAttestationResponse>> {
+    options: PublicKeyCredentialCreationOptions,
+  ): Promise<PublicKeyCredential> {
     assert(options.rp.id, isString());
     assert(options.attestation, isOptional(isEnum(['none'])));
     assert(
@@ -275,12 +272,11 @@ export class VirtualAuthenticator {
 
     const credentialID = this._createCredentialId();
 
-    this._counter = 0;
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
       rpId: options.rp.id,
       credentialID,
-      counter: this._counter,
+      counter: 0,
     });
 
     const attestationObject = new Map<string, unknown>([
@@ -289,14 +285,14 @@ export class VirtualAuthenticator {
       ['authData', authData],
     ]);
 
-    const clientData: ICollectedClientData = {
+    const clientData: CollectedClientData = {
       type: 'webauthn.create',
-      challenge: toBuffer(options.challenge).toString('base64url'),
+      challenge: options.challenge.toString('base64url'),
       origin: options.rp.id,
       crossOrigin: false,
     };
 
-    return new PublicKeyCredential({
+    return {
       id: credentialID.toString('base64url'),
       rawId: credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
@@ -305,6 +301,6 @@ export class VirtualAuthenticator {
         attestationObject: encode(attestationObject),
       },
       clientExtensionResults: {},
-    });
+    };
   }
 }

@@ -10,3 +10,7 @@ export const PublicKeyCredentialEntitySchema = z
   .meta({
     id: 'PublicKeyCredentialEntity',
   });
+
+export type PublicKeyCredentialEntity = z.infer<
+  typeof PublicKeyCredentialEntitySchema
+>;

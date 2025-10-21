@@ -1,12 +1,10 @@
-import { COSEKey } from '@repo/keys';
-import type {
-  IAuthenticatorAttestationResponse,
-  ICredentialPublicKey,
-  ICredentialSigner,
-  IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredentialRequestOptions,
-} from '@repo/types';
-import { toBuffer, interceptJsonWebKey } from '@repo/utils';
+import { COSEKey, JsonWebKey } from '@repo/keys';
+import {
+  PublicKeyCredentialRequestOptions,
+  PublicKeyCredential,
+  PublicKeyCredentialCreationOptions,
+  PublicKeyCredentialSchema,
+} from '@repo/validation';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
@@ -17,19 +15,18 @@ import {
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import { beforeAll, describe, expect, test } from 'vitest';
 
-import type { PublicKeyCredential } from '../../src/PublicKeyCredential.js';
 import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
+import { CredentialSigner } from '../../src/types/CredentialSigner.js';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
 });
 
-const credentialPublicKey: ICredentialPublicKey = {
-  getJwk: () =>
-    interceptJsonWebKey(keyPair.publicKey.export({ format: 'jwk' })),
-};
+const credentialPublicKey = new JsonWebKey(
+  keyPair.publicKey.export({ format: 'jwk' }),
+);
 
-const credentialSigner: ICredentialSigner = {
+const credentialSigner: CredentialSigner = {
   sign: (data: Buffer) => {
     const signature = createSign('sha256')
       .update(data)
@@ -41,7 +38,7 @@ const credentialSigner: ICredentialSigner = {
 
 const createPublicKeyCredentialRequestOptions = (
   credentialID: Buffer,
-): IPublicKeyCredentialRequestOptions => ({
+): PublicKeyCredentialRequestOptions => ({
   challenge: Buffer.from('b'.repeat(32)), // A different dummy challenge for get
   rpId: 'localhost',
   allowCredentials: [
@@ -55,11 +52,11 @@ const createPublicKeyCredentialRequestOptions = (
 
 describe('VirtualAuthenticator', () => {
   let authenticator: VirtualAuthenticator;
-  let publicKeyCredentials: PublicKeyCredential<IAuthenticatorAttestationResponse>;
+  let publicKeyCredentials: PublicKeyCredential;
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
 
-  const creationOptions: IPublicKeyCredentialCreationOptions = {
+  const creationOptions: PublicKeyCredentialCreationOptions = {
     rp: {
       name: 'My Simulated Service',
       id: 'localhost',
@@ -77,19 +74,19 @@ describe('VirtualAuthenticator', () => {
 
   beforeAll(async () => {
     authenticator = new VirtualAuthenticator({
-      credentialPublicKey,
+      credentialPublicKey: COSEKey.fromJwk(credentialPublicKey),
       credentialSigner,
     });
 
     publicKeyCredentials =
       await authenticator.createCredential(creationOptions);
 
-    expectedChallenge = toBuffer(creationOptions.challenge).toString(
-      'base64url',
-    );
+    expectedChallenge = creationOptions.challenge.toString('base64url');
 
     registrationVerification = await verifyRegistrationResponse({
-      response: publicKeyCredentials.toJSON() as RegistrationResponseJSON,
+      response: PublicKeyCredentialSchema.encode(
+        publicKeyCredentials,
+      ) as RegistrationResponseJSON,
       expectedChallenge: expectedChallenge,
       expectedOrigin: creationOptions.rp.id!,
       expectedRPID: creationOptions.rp.id,
@@ -120,17 +117,19 @@ describe('VirtualAuthenticator', () => {
     } = registrationVerification.registrationInfo!.credential;
 
     const requestOptions = createPublicKeyCredentialRequestOptions(
-      toBuffer(credentialID),
+      Buffer.from(credentialID),
     );
 
-    const assertionCredential =
-      await authenticator.getCredential(requestOptions);
+    const assertionCredential = await authenticator.getCredential(
+      requestOptions,
+      { counter: 0 },
+    );
 
     const authenticationVerification = await verifyAuthenticationResponse({
-      response: assertionCredential.toJSON() as AuthenticationResponseJSON,
-      expectedChallenge: toBuffer(requestOptions.challenge).toString(
-        'base64url',
-      ),
+      response: PublicKeyCredentialSchema.encode(
+        assertionCredential,
+      ) as AuthenticationResponseJSON,
+      expectedChallenge: requestOptions.challenge.toString('base64url'),
       expectedOrigin: requestOptions.rpId!,
       expectedRPID: requestOptions.rpId!,
       credential: {

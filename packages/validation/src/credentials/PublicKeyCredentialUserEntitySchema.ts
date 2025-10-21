@@ -1,4 +1,3 @@
-import type { IPublicKeyCredentialUserEntity } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -19,5 +18,11 @@ export const PublicKeyCredentialUserEntitySchema =
     }),
   }).meta({
     id: 'PublicKeyCredentialUserEntity',
-    description: `Represents the user creating the credential. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity')}`,
-  }) satisfies z.ZodType<IPublicKeyCredentialUserEntity>;
+    description: `Represents the user creating the credential. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity',
+    )}`,
+  });
+
+export type PublicKeyCredentialUserEntity = z.infer<
+  typeof PublicKeyCredentialUserEntitySchema
+>;

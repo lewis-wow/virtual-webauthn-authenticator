@@ -1,20 +1,24 @@
-import { COSEAlgorithm, EcCurve } from '@repo/enums';
+import { COSEKeyAlgorithm, KeyCurveName } from '@repo/enums';
 import { assert, isEnum } from 'typanion';
 
-export const COSEAlgorithmToEcCurveMapper = (
-  coseAlgorithm: COSEAlgorithm,
-): EcCurve => {
+export const COSEAlgorithmToKeyCurveNameMapper = (
+  coseAlgorithm: COSEKeyAlgorithm,
+): KeyCurveName => {
   assert(
     coseAlgorithm,
-    isEnum([COSEAlgorithm.ES256, COSEAlgorithm.ES384, COSEAlgorithm.ES512]),
+    isEnum([
+      COSEKeyAlgorithm.ES256,
+      COSEKeyAlgorithm.ES384,
+      COSEKeyAlgorithm.ES512,
+    ]),
   );
 
   switch (coseAlgorithm) {
-    case COSEAlgorithm.ES256:
-      return EcCurve.P256;
-    case COSEAlgorithm.ES384:
-      return EcCurve.P384;
-    case COSEAlgorithm.ES512:
-      return EcCurve.P521;
+    case COSEKeyAlgorithm.ES256:
+      return KeyCurveName.P256;
+    case COSEKeyAlgorithm.ES384:
+      return KeyCurveName.P384;
+    case COSEKeyAlgorithm.ES512:
+      return KeyCurveName.P521;
   }
 };

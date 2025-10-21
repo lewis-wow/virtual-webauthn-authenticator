@@ -7,10 +7,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "run-p generate-barrels:*",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit",
-    "generate-barrels:types": "../../scripts/generate_barrels.ts src/types"
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/enums": "workspace:*",

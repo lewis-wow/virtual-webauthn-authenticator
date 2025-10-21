@@ -1,2 +1,2 @@
-export * from './COSEAlgorithmToAsymetricSigningAlgorithmMapper';
+export * from './COSEKeyAlgorithmToKeyAlgorithmMapper';
 export * from './COSEAlgorithmToEcCurveMapper';

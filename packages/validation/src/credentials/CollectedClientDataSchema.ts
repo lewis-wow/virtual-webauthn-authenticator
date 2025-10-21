@@ -2,7 +2,6 @@ import {
   CollectedClientDataTypeSchema,
   TokenBindingStatusSchema,
 } from '@repo/enums';
-import type { ICollectedClientData } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see';
@@ -54,10 +53,16 @@ export const CollectedClientDataSchema = z
       })
       .optional()
       .meta({
-        description: `This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party. ${see('https://datatracker.ietf.org/doc/html/rfc8471#section-1')}`,
+        description: `This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party. ${see(
+          'https://datatracker.ietf.org/doc/html/rfc8471#section-1',
+        )}`,
       }),
   })
   .meta({
     id: 'CollectedClientData',
-    description: `The client data collected by the authenticator. ${see('https://www.w3.org/TR/webauthn/#dictdef-collectedclientdata')}`,
-  }) satisfies z.ZodType<ICollectedClientData>;
+    description: `The client data collected by the authenticator. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-collectedclientdata',
+    )}`,
+  });
+
+export type CollectedClientData = z.infer<typeof CollectedClientDataSchema>;

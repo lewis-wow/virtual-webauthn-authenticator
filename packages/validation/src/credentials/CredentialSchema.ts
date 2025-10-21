@@ -17,3 +17,5 @@ export const CredentialSchema = z
     id: 'CredentialSchema',
     description: `${see('https://w3c.github.io/webappsec-credential-management/#credential')}`,
   });
+
+export type Credential = z.infer<typeof CredentialSchema>;

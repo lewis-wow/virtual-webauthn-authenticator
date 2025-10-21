@@ -2,7 +2,6 @@ import {
   AuthenticatorTransportSchema,
   PublicKeyCredentialTypeSchema,
 } from '@repo/enums';
-import type { IPublicKeyCredentialDescriptor } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -27,5 +26,11 @@ export const PublicKeyCredentialDescriptorSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialDescriptor',
-    description: `Used to exclude existing credentials for a user. ${see('https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor')}`,
-  }) satisfies z.ZodType<IPublicKeyCredentialDescriptor>;
+    description: `Used to exclude existing credentials for a user. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor',
+    )}`,
+  });
+
+export type PublicKeyCredentialDescriptor = z.infer<
+  typeof PublicKeyCredentialDescriptorSchema
+>;

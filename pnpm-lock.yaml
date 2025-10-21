@@ -474,6 +474,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       typanion:
         specifier: ^3.14.0
         version: 3.14.0

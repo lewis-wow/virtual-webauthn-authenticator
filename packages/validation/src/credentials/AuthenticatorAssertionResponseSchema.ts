@@ -1,4 +1,3 @@
-import type { IAuthenticatorAssertionResponse } from '@repo/types';
 import z from 'zod';
 
 import { see } from '../meta/see.js';
@@ -20,7 +19,9 @@ export const AuthenticatorAssertionResponseSchema =
      * @see https://www.w3.org/TR/webauthn/#sctn-authenticator-data
      */
     authenticatorData: Base64URLBufferSchema.meta({
-      description: `The authenticator data for the assertion. ${see('https://www.w3.org/TR/webauthn/#sctn-authenticator-data')}`,
+      description: `The authenticator data for the assertion. ${see(
+        'https://www.w3.org/TR/webauthn/#sctn-authenticator-data',
+      )}`,
     }),
     /**
      * This attribute contains the raw signature returned from the authenticator.
@@ -28,11 +29,19 @@ export const AuthenticatorAssertionResponseSchema =
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature
      */
     signature: Base64URLBufferSchema.meta({
-      description: `The signature for the assertion. ${see('https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature')}`,
+      description: `The signature for the assertion. ${see(
+        'https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature',
+      )}`,
     }),
 
     userHandle: UserHandleSchema.nullable(),
   }).meta({
     id: 'AuthenticatorAssertionResponse',
-    description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see('https://www.w3.org/TR/webauthn/#authenticatorassertionresponse')}`,
-  }) satisfies z.ZodType<IAuthenticatorAssertionResponse>;
+    description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see(
+      'https://www.w3.org/TR/webauthn/#authenticatorassertionresponse',
+    )}`,
+  });
+
+export type AuthenticatorAssertionResponse = z.infer<
+  typeof AuthenticatorAssertionResponseSchema
+>;
