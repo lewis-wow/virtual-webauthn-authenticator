@@ -29,6 +29,9 @@ importers:
       ejs:
         specifier: ^3.1.10
         version: 3.1.10
+      eslint:
+        specifier: ^9.34.0
+        version: 9.34.0(jiti@2.6.1)
       prettier:
         specifier: ^3.6.2
         version: 3.6.2
