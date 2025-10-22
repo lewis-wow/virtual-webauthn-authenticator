@@ -1,4 +1,4 @@
-import { KeyClient } from '@azure/keyvault-keys';
+import { KeyClient, KeyVaultKey } from '@azure/keyvault-keys';
 import {
   COSEKeyAlgorithm,
   KeyCurveName,
@@ -9,33 +9,41 @@ import { JsonWebKey } from '@repo/keys';
 import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';
 
+import { CryptographyClientFactory } from '../../src/CryptographyClientFactory';
 import { KeyVault } from '../../src/KeyVault';
 import { NoopCredential } from '../helpers/NoopCredential';
 
 describe('KeyVault', () => {
-  const credential = new NoopCredential();
+  const azureCredential = new NoopCredential();
 
   const keyClient = new KeyClient(
     process.env.AZURE_KEY_VAULT_HOST!,
-    credential,
+    azureCredential,
     {
       allowInsecureConnection: true,
       disableChallengeResourceVerification: true,
     },
   );
 
-  const keyVault = new KeyVault({ keyClient });
+  const keyVault = new KeyVault({
+    keyClient,
+    cryptographyClientFactory: new CryptographyClientFactory({
+      azureCredential,
+    }),
+  });
 
-  let credentialId: string;
   let jwk: JsonWebKey;
+  let keyVaultKey: KeyVaultKey;
+  const userId = 'test';
+  const rpId = 'example.com';
 
   describe('EC', () => {
-    const createEcKeyOpts = {
+    const publicKeyCredentialCreationOptions = {
       rp: {
-        id: 'test',
+        id: rpId,
       },
       user: {
-        id: Buffer.from('test'),
+        id: Buffer.from(userId),
       },
       pubKeyCredParams: [
         {
@@ -48,13 +56,19 @@ describe('KeyVault', () => {
     beforeAll(async () => {
       ({
         jwk,
-        meta: { credentialId },
-      } = await keyVault.createEcKey(createEcKeyOpts));
+        meta: { keyVaultKey },
+      } = await keyVault.createEcKey({
+        publicKeyCredentialCreationOptions,
+        user: {
+          id: 'test',
+        },
+      }));
     });
 
     test('createEcKey', async () => {
-      expect(z.uuid().safeParse(credentialId).success).toBe(true);
-
+      expect(keyVaultKey.name).toBe(
+        `${Buffer.from(rpId).toString('base64url')}-${Buffer.from(userId).toString('base64url')}`,
+      );
       expect(jwk?.crv).toBe(KeyCurveName.P256);
       expect(jwk?.kty).toBe(KeyType.EC);
       expect(z.base64url().safeParse(jwk?.x).success).toBe(true);
@@ -62,83 +76,9 @@ describe('KeyVault', () => {
     });
 
     test('getKey', async () => {
-      const { jwk: jwkGet } = await keyVault.getKey({
-        ...createEcKeyOpts,
-        credentialId,
-      });
+      const { jwk: jwkGet } = await keyVault.getKey(keyVaultKey.name);
 
       expect(jwkGet).toStrictEqual(jwk);
-    });
-
-    test('deleteKey', async () => {
-      const { jwk: jwkDelete } = await keyVault.deleteKey({
-        ...createEcKeyOpts,
-        credentialId,
-      });
-
-      expect(jwkDelete).toMatchObject(jwk);
-
-      await expect(() =>
-        keyVault.getKey({
-          ...createEcKeyOpts,
-          credentialId,
-        }),
-      ).to.rejects.toThrow();
-    });
-  });
-
-  describe('RSA', () => {
-    const createRsaKeyOpts = {
-      rp: {
-        id: 'test',
-      },
-      user: {
-        id: Buffer.from('test'),
-      },
-      pubKeyCredParams: [
-        {
-          alg: COSEKeyAlgorithm.RS256,
-          type: PublicKeyCredentialType.PUBLIC_KEY,
-        },
-      ],
-    };
-
-    beforeAll(async () => {
-      ({
-        jwk,
-        meta: { credentialId },
-      } = await keyVault.createRsaKey(createRsaKeyOpts));
-    });
-
-    test('createRsaKey', async () => {
-      expect(z.uuid().safeParse(credentialId).success).toBe(true);
-
-      expect(jwk?.kty).toBe(KeyType.RSA);
-    });
-
-    test('getKey', async () => {
-      const { jwk: jwkGet } = await keyVault.getKey({
-        ...createRsaKeyOpts,
-        credentialId,
-      });
-
-      expect(jwkGet).toStrictEqual(jwk);
-    });
-
-    test('deleteKey', async () => {
-      const { jwk: jwkDelete } = await keyVault.deleteKey({
-        ...createRsaKeyOpts,
-        credentialId,
-      });
-
-      expect(jwkDelete).toMatchObject(jwk);
-
-      await expect(() =>
-        keyVault.getKey({
-          ...createRsaKeyOpts,
-          credentialId,
-        }),
-      ).to.rejects.toThrow();
     });
   });
 });

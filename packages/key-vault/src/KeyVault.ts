@@ -1,86 +1,82 @@
-import { KeyClient, type KeyVaultKey } from '@azure/keyvault-keys';
-import { COSEKeyAlgorithm, PublicKeyCredentialType } from '@repo/enums';
+import {
+  KeyClient,
+  type KeyVaultKey,
+  type SignResult,
+  type VerifyResult,
+} from '@azure/keyvault-keys';
+import {
+  COSEKeyAlgorithm,
+  PublicKeyCredentialType,
+  type KeyAlgorithm,
+} from '@repo/enums';
 import { JsonWebKey } from '@repo/keys';
 import {
   COSEAlgorithmToKeyCurveNameMapper,
   COSEKeyAlgorithmToKeyAlgorithmMapper,
 } from '@repo/mappers';
-import { isEcAlgorithm, isRsaAlgorithm } from '@repo/utils';
-import type {
-  PublicKeyCredentialCreationOptions,
-  PublicKeyCredentialParameters,
-} from '@repo/validation';
-import { randomUUID } from 'node:crypto';
+import type { User } from '@repo/prisma';
+import { isEcAlgorithm } from '@repo/utils';
+import type { PublicKeyCredentialCreationOptions } from '@repo/validation';
 import {
-  applyCascade,
   assert,
-  hasMinLength,
-  isArray,
-  isEnum,
-  isInstanceOf,
-  isObject,
-  isOptional,
   isString,
+  isArray,
+  isPartial,
+  cascade,
+  isEnum,
+  hasMinLength,
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
+import type { CryptographyClientFactory } from './CryptographyClientFactory';
+
 export type KeyVaultOptions = {
   keyClient: KeyClient;
-};
-
-export type CreateKeyNamePayload = {
-  keyName: string;
-  credentialId: string;
+  cryptographyClientFactory: CryptographyClientFactory;
 };
 
 export type KeyPayload = {
   jwk: JsonWebKey;
   meta: {
     keyVaultKey: KeyVaultKey;
-    credentialId: string;
+  };
+};
+
+export type SignPayload = {
+  signature: Uint8Array;
+  meta: {
+    signResult: SignResult;
+  };
+};
+
+export type VerifySignaturePayload = {
+  isValid: boolean;
+  meta: {
+    verifyResult: VerifyResult;
   };
 };
 
 export class KeyVault {
   private readonly keyClient: KeyClient;
+  private readonly cryptographyClientFactory: CryptographyClientFactory;
 
   constructor(opts: KeyVaultOptions) {
     this.keyClient = opts.keyClient;
+    this.cryptographyClientFactory = opts.cryptographyClientFactory;
   }
 
-  private createKeyName(
-    opts: PickDeep<PublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
-      credentialId?: string;
-    },
-  ): CreateKeyNamePayload {
-    const { rp, user, credentialId: credentialIdOption } = opts;
-
-    assert(rp.id, isString());
-    assert(user.id, isInstanceOf(Buffer));
-    assert(credentialIdOption, isOptional(isString()));
-
-    const base64urlRp = Buffer.from(rp.id).toString('base64url');
-    const base64urlUser = user.id.toString('base64url');
-    const credentialId = credentialIdOption ?? randomUUID();
-
-    return {
-      keyName: `${base64urlRp}-${base64urlUser}-${credentialId}`,
-      credentialId,
-    };
-  }
-
-  private pickPubKeyCredParam(
+  private _pickPubKeyCredParams(
     opts: Pick<PublicKeyCredentialCreationOptions, 'pubKeyCredParams'>,
-  ): PublicKeyCredentialParameters {
+  ) {
     const { pubKeyCredParams } = opts;
 
     assert(
       pubKeyCredParams,
-      applyCascade(
+      cascade(
         isArray(
-          isObject({
-            alg: isEnum(COSEKeyAlgorithm),
+          isPartial({
             type: isEnum(PublicKeyCredentialType),
+            alg: isEnum(COSEKeyAlgorithm),
           }),
         ),
         hasMinLength(1),
@@ -90,21 +86,93 @@ export class KeyVault {
     return pubKeyCredParams[0]!;
   }
 
-  async createEcKey(
-    opts: PickDeep<
-      PublicKeyCredentialCreationOptions,
-      'rp.id' | 'user.id' | 'pubKeyCredParams'
-    >,
-  ): Promise<KeyPayload> {
-    const { rp, user, pubKeyCredParams } = opts;
+  async sign(opts: {
+    keyVaultKey: KeyVaultKey;
+    algorithm: KeyAlgorithm;
+    data: Buffer;
+  }): Promise<SignPayload> {
+    const { keyVaultKey, algorithm, data } = opts;
 
-    const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
+    const cryptographyClient =
+      this.cryptographyClientFactory.createCryptographyClient(keyVaultKey);
+
+    const signResult = await cryptographyClient.signData(algorithm, data);
+
+    return {
+      signature: signResult.result,
+      meta: {
+        signResult,
+      },
+    };
+  }
+
+  async verifySignature(opts: {
+    keyVaultKey: KeyVaultKey;
+    algorithm: KeyAlgorithm;
+    data: Buffer;
+    signature: Uint8Array;
+  }): Promise<VerifySignaturePayload> {
+    const { keyVaultKey, algorithm, data, signature } = opts;
+
+    const cryptographyClient =
+      this.cryptographyClientFactory.createCryptographyClient(keyVaultKey);
+
+    const verifyResult = await cryptographyClient.verifyData(
+      algorithm,
+      data,
+      signature,
+    );
+
+    return {
+      isValid: verifyResult.result,
+      meta: {
+        verifyResult,
+      },
+    };
+  }
+
+  private _createKeyName(opts: {
+    publicKeyCredentialCreationOptions: PickDeep<
+      PublicKeyCredentialCreationOptions,
+      'rp.id'
+    >;
+    user: Pick<User, 'id'>;
+  }): string {
+    const { publicKeyCredentialCreationOptions, user } = opts;
+
+    assert(publicKeyCredentialCreationOptions.rp.id, isString());
+
+    const base64urlRp = Buffer.from(
+      publicKeyCredentialCreationOptions.rp.id,
+    ).toString('base64url');
+
+    const base64urlUser = Buffer.from(user.id).toString('base64url');
+
+    return `${base64urlRp}-${base64urlUser}`;
+  }
+
+  async createEcKey(opts: {
+    publicKeyCredentialCreationOptions: PickDeep<
+      PublicKeyCredentialCreationOptions,
+      'rp.id' | 'pubKeyCredParams'
+    >;
+    user: Pick<User, 'id'>;
+  }): Promise<KeyPayload> {
+    const { publicKeyCredentialCreationOptions, user } = opts;
+
+    const pubKeyCredParam = this._pickPubKeyCredParams(
+      publicKeyCredentialCreationOptions,
+    );
+
     assert(
       COSEKeyAlgorithmToKeyAlgorithmMapper(pubKeyCredParam.alg),
       isEcAlgorithm,
     );
 
-    const { keyName, credentialId } = this.createKeyName({ rp, user });
+    const keyName = this._createKeyName({
+      publicKeyCredentialCreationOptions,
+      user,
+    });
 
     const keyVaultKey = await this.keyClient.createEcKey(keyName, {
       curve: COSEAlgorithmToKeyCurveNameMapper(pubKeyCredParam.alg),
@@ -114,106 +182,90 @@ export class KeyVault {
       jwk: new JsonWebKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
-        credentialId,
       },
     };
   }
 
-  async createRsaKey(
-    opts: PickDeep<
-      PublicKeyCredentialCreationOptions,
-      'rp.id' | 'user.id' | 'pubKeyCredParams'
-    >,
-  ): Promise<KeyPayload> {
-    const { rp, user, pubKeyCredParams } = opts;
+  // async createKey(
+  //   opts: PickDeep<
+  //     PublicKeyCredentialCreationOptions,
+  //     'rp.id' | 'user.id' | 'pubKeyCredParams'
+  //   >,
+  //   user: Pick<User, 'id'>,
+  // ): Promise<KeyPayload> {
+  //   const { pubKeyCredParams } = opts;
 
-    const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
-    assert(
-      COSEKeyAlgorithmToKeyAlgorithmMapper(pubKeyCredParam.alg),
-      isRsaAlgorithm,
-    );
+  //   assert(user.id, isLiteral(opts.user.id));
 
-    const { keyName, credentialId } = this.createKeyName({ rp, user });
+  //   const pubKeyCredParam = this._pickPubKeyCredParams({
+  //     pubKeyCredParams,
+  //   });
 
-    const keyVaultKey = await this.keyClient.createRsaKey(keyName);
+  //   if (
+  //     isEcAlgorithm(COSEKeyAlgorithmToKeyAlgorithmMapper(pubKeyCredParam.alg))
+  //   ) {
+  //     return await this.createEcKey(opts, user);
+  //   }
 
-    return {
-      jwk: new JsonWebKey(keyVaultKey.key!),
-      meta: {
-        keyVaultKey,
-        credentialId,
-      },
-    };
-  }
+  //   return await this.createRsaKey(opts, user);
+  // }
 
-  async createKey(
-    opts: PickDeep<
-      PublicKeyCredentialCreationOptions,
-      'rp.id' | 'user.id' | 'pubKeyCredParams'
-    >,
-  ): Promise<KeyPayload> {
-    const { pubKeyCredParams } = opts;
-    const pubKeyCredParam = this.pickPubKeyCredParam({ pubKeyCredParams });
-
-    if (
-      isEcAlgorithm(COSEKeyAlgorithmToKeyAlgorithmMapper(pubKeyCredParam.alg))
-    ) {
-      return await this.createEcKey(opts);
-    }
-
-    return await this.createRsaKey(opts);
-  }
-
-  async getKey(
-    opts: PickDeep<PublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
-      credentialId: string;
-    },
-  ): Promise<KeyPayload> {
-    const { rp, user, credentialId } = opts;
-
-    const { keyName } = this.createKeyName({ rp, user, credentialId });
-
+  async getKey(keyName: string): Promise<KeyPayload> {
     const keyVaultKey = await this.keyClient.getKey(keyName);
 
     return {
       jwk: new JsonWebKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
-        credentialId,
       },
     };
   }
 
-  async deleteKey(
-    opts: PickDeep<PublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
-      credentialId: string;
-    },
-  ): Promise<KeyPayload> {
-    const { rp, user, credentialId } = opts;
+  // async deleteKey(
+  //   opts: {
+  //     rpId: string;
+  //   },
+  //   user: Pick<User, 'id'>,
+  // ): Promise<KeyPayload> {
+  //   const { rpId } = opts;
 
-    const { keyName } = this.createKeyName({ rp, user, credentialId });
+  //   assert(rpId, isString());
 
-    const poller = await this.keyClient.beginDeleteKey(keyName);
-    const keyVaultKey = await poller.pollUntilDone();
+  //   const keyName = this._createKeyName(
+  //     {
+  //       rp: { id: rpId },
+  //     },
+  //     user,
+  //   );
 
-    return {
-      jwk: new JsonWebKey(keyVaultKey.key!),
-      meta: {
-        keyVaultKey,
-        credentialId,
-      },
-    };
-  }
+  //   const poller = await this.keyClient.beginDeleteKey(keyName);
+  //   const keyVaultKey = await poller.pollUntilDone();
 
-  async purgeDeletedKey(
-    opts: PickDeep<PublicKeyCredentialCreationOptions, 'rp.id' | 'user.id'> & {
-      credentialId: string;
-    },
-  ): Promise<void> {
-    const { rp, user, credentialId } = opts;
+  //   return {
+  //     jwk: new JsonWebKey(keyVaultKey.key!),
+  //     meta: {
+  //       keyVaultKey,
+  //     },
+  //   };
+  // }
 
-    const { keyName } = this.createKeyName({ rp, user, credentialId });
+  // async purgeDeletedKey(
+  //   opts: {
+  //     rpId: string;
+  //   },
+  //   user: Pick<User, 'id'>,
+  // ): Promise<void> {
+  //   const { rpId } = opts;
 
-    await this.keyClient.purgeDeletedKey(keyName);
-  }
+  //   assert(rpId, isString());
+
+  //   const keyName = this._createKeyName(
+  //     {
+  //       rp: { id: rpId },
+  //     },
+  //     user,
+  //   );
+
+  //   await this.keyClient.purgeDeletedKey(keyName);
+  // }
 }

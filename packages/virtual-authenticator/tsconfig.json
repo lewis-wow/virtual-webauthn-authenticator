@@ -1,5 +1,10 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": ["src"],
+  "include": [
+    "src",
+    "../key-vault/src/types",
+    "../key-vault/src/CredentialSignerFactory.ts",
+    "../types/src/CredentialSigner.ts"
+  ],
   "exclude": ["node_modules"]
 }

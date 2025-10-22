@@ -98,25 +98,24 @@ model Permission {
 }
 
 model WebAuthnCredential {
-  id                    String   @id @default(cuid())
-  name                  String?
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                String
-  keyVaultKeyId         String   @unique
-  credentialIDbase64url String   @unique
-  publicKey             Bytes
-  counter               Int      @default(0)
-  aaguid                String
-  transports            String[]
+  id              String   @id
+  name            String?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  keyVaultKeyId   String   @unique
+  keyVaultKeyName String
+  COSEPublicKey   Bytes
+  counter         Int      @default(0)
+  aaguid          String
+  transports      String[]
 
-  // ++ DISCOVERABILITY FIELDS ADDED ++
   // The Relying Party ID (e.g., "your-website.com") this credential is scoped to.
   // This is essential for finding all credentials for a specific site.
   rpId String
 
   // The user's unique identifier stored on the authenticator.
   // This is returned during a passwordless login to identify the user.
-  userHandle Bytes
+  userHandle Bytes?
 
   hsm       Boolean  @default(false)
   createdAt DateTime @default(now())
