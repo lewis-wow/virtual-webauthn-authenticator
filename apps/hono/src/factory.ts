@@ -1,7 +1,10 @@
+import type { User } from '@repo/prisma';
 import { createFactory } from 'hono/factory';
 
 export type FactoryEnv = {
-  Variables: {};
+  Variables: {
+    user: Pick<User, 'id'> | null;
+  };
 };
 
 export const factory = createFactory<FactoryEnv>({

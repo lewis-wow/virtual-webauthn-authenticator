@@ -103,8 +103,9 @@ model WebAuthnCredential {
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId                String
   keyVaultKeyId         String   @unique
+  keyVaultKeyName       String
   credentialIDbase64url String   @unique
-  publicKey             Bytes
+  COSEpublicKey         Bytes
   counter               Int      @default(0)
   aaguid                String
   transports            String[]

@@ -4,6 +4,8 @@ import {
   UserVerificationRequirement,
 } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
+import type { CredentialSigner } from '@repo/types';
+import { hasMinBytes } from '@repo/utils';
 import { sha256 } from '@repo/utils/sha256';
 import type {
   CollectedClientData,
@@ -27,27 +29,7 @@ import {
   isString,
 } from 'typanion';
 
-import { hasMinBytes } from '../../utils/src/asserts/hasMinBytes.js';
-import type { CredentialDiscovery } from './CredentialDiscovery.js';
-import type { CredentialSigner } from './types/CredentialSigner.js';
-
-export type VirtualAuthenticatorOptions = {
-  credentialSigner: CredentialSigner;
-  credentialPublicKey: COSEKey;
-  credentialDiscovery: CredentialDiscovery;
-};
-
 export class VirtualAuthenticator {
-  private readonly credentialSigner: CredentialSigner;
-  private readonly credentialPublicKey: COSEKey;
-  private readonly credentialDiscovery: CredentialDiscovery;
-
-  constructor(opts: VirtualAuthenticatorOptions) {
-    this.credentialSigner = opts.credentialSigner;
-    this.credentialPublicKey = opts.credentialPublicKey;
-    this.credentialDiscovery = opts.credentialDiscovery;
-  }
-
   /**
    *
    * @see https://www.w3.org/TR/webauthn-2/#credential-id
@@ -69,7 +51,10 @@ export class VirtualAuthenticator {
    */
   private async _createAttestedCredentialData(opts: {
     credentialID: Buffer;
+    credentialPublicKey: COSEKey;
   }): Promise<Buffer> {
+    const { credentialID, credentialPublicKey } = opts;
+
     // The AAGUID of the authenticator.
     // Length (in bytes): 16
     // Zeroed-out AAGUID
@@ -89,7 +74,7 @@ export class VirtualAuthenticator {
     // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty"
     // and algorithm "alg" (see Section 8 of [RFC8152]).
     // Length (in bytes): {variable}
-    const credentialPublicKey = this.credentialPublicKey.toBuffer();
+    const credentialPublicKeyBuffer = credentialPublicKey.toBuffer();
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
     // Attested credential data is a variable-length byte array added to the
@@ -97,8 +82,8 @@ export class VirtualAuthenticator {
     const attestedCredentialData = Buffer.concat([
       aaguid,
       credentialIdLength,
-      opts.credentialID,
-      credentialPublicKey,
+      credentialID,
+      credentialPublicKeyBuffer,
     ]);
 
     return attestedCredentialData;
@@ -112,10 +97,13 @@ export class VirtualAuthenticator {
     rpId: string;
     counter: number;
     credentialID?: Buffer;
+    credentialPublicKey: COSEKey;
   }): Promise<Buffer> {
+    const { rpId, counter, credentialID, credentialPublicKey } = opts;
+
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
-    const rpIdHash = sha256(Buffer.from(opts.rpId));
+    const rpIdHash = sha256(Buffer.from(rpId));
 
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
@@ -124,14 +112,12 @@ export class VirtualAuthenticator {
     // Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
     // Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
     // Length (in bytes): 1
-    const flags = Buffer.from([
-      (opts.credentialID ? 0b01000000 : 0) | 0b00000101,
-    ]);
+    const flags = Buffer.from([(credentialID ? 0b01000000 : 0) | 0b00000101]);
 
     // Signature counter, 32-bit unsigned big-endian integer.
     // Length (in bytes): 4
     const signCountBuffer = Buffer.alloc(4);
-    signCountBuffer.writeUInt32BE(opts.counter, 0);
+    signCountBuffer.writeUInt32BE(counter, 0);
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authenticatorData = Buffer.concat(
@@ -139,9 +125,10 @@ export class VirtualAuthenticator {
         rpIdHash,
         flags,
         signCountBuffer,
-        opts.credentialID
+        credentialID
           ? await this._createAttestedCredentialData({
-              credentialID: opts.credentialID,
+              credentialID,
+              credentialPublicKey,
             })
           : undefined,
         // --- OPTIONAL CREDENTIALS --- (
@@ -161,6 +148,12 @@ export class VirtualAuthenticator {
    */
   public async getCredential(
     options: PublicKeyCredentialRequestOptions,
+    credentialPublicKey: COSEKey,
+    credentialSigner: CredentialSigner,
+    meta: {
+      counter: number;
+      credentialID: Buffer;
+    },
   ): Promise<PublicKeyCredential> {
     assert(options.rpId, isString());
     assert(
@@ -186,9 +179,6 @@ export class VirtualAuthenticator {
 
     const rpId = options.rpId;
 
-    const { counter, credentialIDbase64url } =
-      await this.credentialDiscovery.selectCredentialAndUpdateCounter(options);
-
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
       challenge: options.challenge.toString('base64url'),
@@ -201,21 +191,22 @@ export class VirtualAuthenticator {
 
     const authData = await this._createAuthenticatorData({
       rpId,
-      counter,
+      counter: meta.counter,
+      credentialPublicKey,
     });
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
 
-    const signature = await this.credentialSigner.sign(dataToSign);
+    const signature = await credentialSigner.sign(dataToSign);
 
     return {
-      id: credentialIDbase64url,
-      rawId: Buffer.from(credentialIDbase64url, 'base64url'),
+      id: meta.credentialID.toString('base64url'),
+      rawId: meta.credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON,
         authenticatorData: authData,
-        signature,
+        signature: Buffer.from(signature),
         userHandle: null,
       },
       clientExtensionResults: {},
@@ -228,6 +219,7 @@ export class VirtualAuthenticator {
    */
   public async createCredential(
     options: PublicKeyCredentialCreationOptions,
+    credentialPublicKey: COSEKey,
   ): Promise<PublicKeyCredential> {
     assert(options.rp.id, isString());
     assert(options.attestation, isOptional(isEnum(['none'])));
@@ -274,6 +266,7 @@ export class VirtualAuthenticator {
       rpId: options.rp.id,
       credentialID,
       counter: 0,
+      credentialPublicKey,
     });
 
     const attestationObject = new Map<string, unknown>([
