@@ -1,4 +1,4 @@
-import { KeyClient } from '@azure/keyvault-keys';
+import { KeyClient, KeyVaultKey } from '@azure/keyvault-keys';
 import {
   COSEKeyAlgorithm,
   KeyCurveName,
@@ -32,16 +32,18 @@ describe('KeyVault', () => {
     }),
   });
 
-  let credentialId: string;
   let jwk: JsonWebKey;
+  let keyVaultKey: KeyVaultKey;
+  const userId = 'test';
+  const rpId = 'example.com';
 
   describe('EC', () => {
-    const createEcKeyOpts = {
+    const publicKeyCredentialCreationOptions = {
       rp: {
-        id: 'test',
+        id: rpId,
       },
       user: {
-        id: Buffer.from('test'),
+        id: Buffer.from(userId),
       },
       pubKeyCredParams: [
         {
@@ -52,12 +54,21 @@ describe('KeyVault', () => {
     };
 
     beforeAll(async () => {
-      ({ jwk } = await keyVault.createEcKey(createEcKeyOpts));
+      ({
+        jwk,
+        meta: { keyVaultKey },
+      } = await keyVault.createEcKey({
+        publicKeyCredentialCreationOptions,
+        user: {
+          id: 'test',
+        },
+      }));
     });
 
     test('createEcKey', async () => {
-      expect(z.uuid().safeParse(credentialId).success).toBe(true);
-
+      expect(keyVaultKey.name).toBe(
+        `${Buffer.from(rpId).toString('base64url')}-${Buffer.from(userId).toString('base64url')}`,
+      );
       expect(jwk?.crv).toBe(KeyCurveName.P256);
       expect(jwk?.kty).toBe(KeyType.EC);
       expect(z.base64url().safeParse(jwk?.x).success).toBe(true);
@@ -65,10 +76,7 @@ describe('KeyVault', () => {
     });
 
     test('getKey', async () => {
-      const { jwk: jwkGet } = await keyVault.getKey({
-        ...createEcKeyOpts,
-        credentialId,
-      });
+      const { jwk: jwkGet } = await keyVault.getKey(keyVaultKey.name);
 
       expect(jwkGet).toStrictEqual(jwk);
     });
