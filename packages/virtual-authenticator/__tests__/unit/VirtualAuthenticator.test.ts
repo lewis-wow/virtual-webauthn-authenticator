@@ -58,39 +58,41 @@ describe('VirtualAuthenticator', () => {
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
 
-  const creationOptions: PublicKeyCredentialCreationOptions = {
-    rp: {
-      name: 'My Simulated Service',
-      id: 'localhost',
-    },
-    user: {
-      id: Buffer.from('user123'),
-      name: 'testuser@example.com',
-      displayName: 'Test User',
-    },
-    challenge: Buffer.from('a'.repeat(32)), // A dummy challenge
-    pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
-    timeout: 60000,
-    attestation: 'none',
-  };
+  const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
+    {
+      rp: {
+        name: 'My Simulated Service',
+        id: 'localhost',
+      },
+      user: {
+        id: Buffer.from('user123'),
+        name: 'testuser@example.com',
+        displayName: 'Test User',
+      },
+      challenge: Buffer.from('a'.repeat(32)), // A dummy challenge
+      pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+      timeout: 60000,
+      attestation: 'none',
+    };
 
   beforeAll(async () => {
     authenticator = new VirtualAuthenticator();
 
-    publicKeyCredentials = await authenticator.createCredential(
-      creationOptions,
+    publicKeyCredentials = await authenticator.createCredential({
+      publicKeyCredentialCreationOptions,
       COSEPublicKey,
-    );
+    });
 
-    expectedChallenge = creationOptions.challenge.toString('base64url');
+    expectedChallenge =
+      publicKeyCredentialCreationOptions.challenge.toString('base64url');
 
     registrationVerification = await verifyRegistrationResponse({
       response: PublicKeyCredentialSchema.encode(
         publicKeyCredentials,
       ) as RegistrationResponseJSON,
       expectedChallenge: expectedChallenge,
-      expectedOrigin: creationOptions.rp.id!,
-      expectedRPID: creationOptions.rp.id,
+      expectedOrigin: publicKeyCredentialCreationOptions.rp.id!,
+      expectedRPID: publicKeyCredentialCreationOptions.rp.id,
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
     });
