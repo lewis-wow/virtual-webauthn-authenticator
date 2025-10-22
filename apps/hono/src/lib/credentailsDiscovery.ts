@@ -1,4 +1,4 @@
-import { CredentialsDiscovery } from '@repo/credentials';
+import { CredentialsDiscovery } from '@repo/virtual-authenticator';
 
 import { credentialsStore } from './credentialsStore';
 

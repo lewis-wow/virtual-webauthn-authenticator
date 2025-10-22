@@ -1,4 +1,4 @@
-import { VirtualAuthenticator } from '@repo/credentials';
+import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 
 import { credentialsDiscovery } from './credentailsDiscovery';
 

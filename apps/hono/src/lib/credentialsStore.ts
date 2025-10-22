@@ -1,4 +1,7 @@
-import { CredentialsDiscovery, CredentialsStore } from '@repo/credentials';
+import {
+  CredentialsDiscovery,
+  CredentialsStore,
+} from '@repo/virtual-authenticator';
 
 import { prisma } from './prisma';
 
