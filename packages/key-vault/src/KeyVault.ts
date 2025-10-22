@@ -214,7 +214,7 @@ export class KeyVault {
     };
   }
 
-  private createKeyName(
+  private _createKeyName(
     opts: PickDeep<PublicKeyCredentialCreationOptions, 'rp.id'>,
     user: Pick<User, 'id'>,
   ): string {
@@ -248,7 +248,7 @@ export class KeyVault {
       isEcAlgorithm,
     );
 
-    const keyName = this.createKeyName({ rp }, user);
+    const keyName = this._createKeyName({ rp }, user);
 
     const keyVaultKey = await this.keyClient.createEcKey(keyName, {
       curve: COSEAlgorithmToKeyCurveNameMapper(pubKeyCredParam.alg),
@@ -282,7 +282,7 @@ export class KeyVault {
       isRsaAlgorithm,
     );
 
-    const keyName = this.createKeyName({ rp }, user);
+    const keyName = this._createKeyName({ rp }, user);
 
     const keyVaultKey = await this.keyClient.createRsaKey(keyName);
 
@@ -370,7 +370,7 @@ export class KeyVault {
 
     assert(rpId, isString());
 
-    const keyName = this.createKeyName(
+    const keyName = this._createKeyName(
       {
         rp: { id: rpId },
       },
@@ -398,7 +398,7 @@ export class KeyVault {
 
     assert(rpId, isString());
 
-    const keyName = this.createKeyName(
+    const keyName = this._createKeyName(
       {
         rp: { id: rpId },
       },
