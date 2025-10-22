@@ -11,7 +11,8 @@
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
-    "generate-barrels:credentials": "../../scripts/generate_barrels.ts src/credentials"
+    "generate-barrels:credentials": "../../scripts/generate_barrels.ts src/credentials",
+    "generate-barrels:api": "../../scripts/generate_barrels.ts src/api"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

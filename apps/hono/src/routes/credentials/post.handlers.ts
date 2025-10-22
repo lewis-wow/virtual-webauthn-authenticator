@@ -4,9 +4,13 @@ import { prisma } from '@/lib/prisma';
 import { virtualAuthenticator } from '@/lib/virtualAuthenticator';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
 import { COSEKey } from '@repo/keys';
+import { uuidToBuffer } from '@repo/utils';
 import {
+  PublicKeyCredentialCreationOptionsRequestBodySchema,
   PublicKeyCredentialCreationOptionsSchema,
   PublicKeyCredentialSchema,
+  type PublicKeyCredentialRpEntity,
+  type PublicKeyCredentialUserEntity,
 } from '@repo/validation';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
@@ -27,7 +31,7 @@ export const credentialsPostHandlers = factory.createHandlers(
       },
     },
   }),
-  zValidator('json', PublicKeyCredentialCreationOptionsSchema),
+  zValidator('json', PublicKeyCredentialCreationOptionsRequestBodySchema),
   protectedMiddleware,
   async (ctx) => {
     const publicKeyCredentialCreationOptions = ctx.req.valid('json');
@@ -35,17 +39,26 @@ export const credentialsPostHandlers = factory.createHandlers(
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.createKey(
+    } = await keyVault.createEcKey({
       publicKeyCredentialCreationOptions,
-      ctx.var.user,
-    );
+      user: ctx.var.user,
+    });
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
-    const publicKeyCredential = await virtualAuthenticator.createCredential(
-      publicKeyCredentialCreationOptions,
+    const user: PublicKeyCredentialUserEntity = {
+      id: uuidToBuffer(ctx.var.user.id),
+      name: ctx.var.user.name,
+      displayName: ctx.var.user.name,
+    };
+
+    const publicKeyCredential = await virtualAuthenticator.createCredential({
+      publicKeyCredentialCreationOptions: {
+        ...publicKeyCredentialCreationOptions,
+        user,
+      },
       COSEPublicKey,
-    );
+    });
 
     await prisma.webAuthnCredential.create({
       data: {

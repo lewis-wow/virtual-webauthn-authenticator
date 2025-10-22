@@ -3,7 +3,7 @@ import { createFactory } from 'hono/factory';
 
 export type FactoryEnv = {
   Variables: {
-    user: Pick<User, 'id'> | null;
+    user: Pick<User, 'id' | 'name'> | null;
   };
 };
 

@@ -43,7 +43,7 @@ export const credentialsGetHandlers = factory.createHandlers(
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.getKey(webAuthnCredential);
+    } = await keyVault.getKey(webAuthnCredential.keyVaultKeyName);
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
