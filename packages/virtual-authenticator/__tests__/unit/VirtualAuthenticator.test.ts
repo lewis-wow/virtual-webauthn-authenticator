@@ -1,5 +1,5 @@
 import { COSEKey, JsonWebKey } from '@repo/keys';
-import { WebAuthnCredential } from '@repo/prisma';
+import { CredentialSigner } from '@repo/types';
 import {
   PublicKeyCredentialRequestOptions,
   PublicKeyCredential,
@@ -15,11 +15,8 @@ import {
 } from '@simplewebauthn/server';
 import { createSign, generateKeyPairSync } from 'node:crypto';
 import { beforeAll, describe, expect, test } from 'vitest';
-import { mock } from 'vitest-mock-extended';
 
-import { CredentialDiscovery } from '../../src/CredentialDiscovery.js';
 import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
-import { CredentialSigner } from '../../src/types/CredentialSigner.js';
 
 const keyPair = generateKeyPairSync('ec', {
   namedCurve: 'P-256',
@@ -28,6 +25,8 @@ const keyPair = generateKeyPairSync('ec', {
 const credentialPublicKey = new JsonWebKey(
   keyPair.publicKey.export({ format: 'jwk' }),
 );
+
+const COSEPublicKey = COSEKey.fromJwk(credentialPublicKey);
 
 const credentialSigner: CredentialSigner = {
   sign: (data: Buffer) => {
@@ -38,8 +37,6 @@ const credentialSigner: CredentialSigner = {
     return signature;
   },
 };
-
-const credentialDiscoveryMock = mock<CredentialDiscovery>();
 
 const createPublicKeyCredentialRequestOptions = (
   credentialID: Buffer,
@@ -60,7 +57,6 @@ describe('VirtualAuthenticator', () => {
   let publicKeyCredentials: PublicKeyCredential;
   let registrationVerification: VerifiedRegistrationResponse;
   let expectedChallenge: string;
-  let credentialIDbase64url: string;
 
   const creationOptions: PublicKeyCredentialCreationOptions = {
     rp: {
@@ -79,14 +75,12 @@ describe('VirtualAuthenticator', () => {
   };
 
   beforeAll(async () => {
-    authenticator = new VirtualAuthenticator({
-      credentialPublicKey: COSEKey.fromJwk(credentialPublicKey),
-      credentialSigner,
-      credentialDiscovery: credentialDiscoveryMock,
-    });
+    authenticator = new VirtualAuthenticator();
 
-    publicKeyCredentials =
-      await authenticator.createCredential(creationOptions);
+    publicKeyCredentials = await authenticator.createCredential(
+      creationOptions,
+      COSEPublicKey,
+    );
 
     expectedChallenge = creationOptions.challenge.toString('base64url');
 
@@ -100,14 +94,6 @@ describe('VirtualAuthenticator', () => {
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
     });
-
-    ({ id: credentialIDbase64url } =
-      registrationVerification.registrationInfo!.credential);
-
-    credentialDiscoveryMock.selectCredentialAndUpdateCounter.mockResolvedValue({
-      counter: 1,
-      credentialIDbase64url,
-    } as WebAuthnCredential);
   });
 
   test('createCredential()', async () => {
@@ -135,8 +121,15 @@ describe('VirtualAuthenticator', () => {
       Buffer.from(credentialID),
     );
 
-    const assertionCredential =
-      await authenticator.getCredential(requestOptions);
+    const assertionCredential = await authenticator.getCredential(
+      requestOptions,
+      COSEPublicKey,
+      credentialSigner,
+      {
+        counter: 1,
+        credentialID: Buffer.from(credentialID, 'base64url'),
+      },
+    );
 
     const authenticationVerification = await verifyAuthenticationResponse({
       response: PublicKeyCredentialSchema.encode(

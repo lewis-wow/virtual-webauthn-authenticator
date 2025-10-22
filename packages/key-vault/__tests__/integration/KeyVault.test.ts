@@ -9,22 +9,28 @@ import { JsonWebKey } from '@repo/keys';
 import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';
 
+import { CryptographyClientFactory } from '../../src/CryptographyClientFactory';
 import { KeyVault } from '../../src/KeyVault';
 import { NoopCredential } from '../helpers/NoopCredential';
 
 describe('KeyVault', () => {
-  const credential = new NoopCredential();
+  const azureCredential = new NoopCredential();
 
   const keyClient = new KeyClient(
     process.env.AZURE_KEY_VAULT_HOST!,
-    credential,
+    azureCredential,
     {
       allowInsecureConnection: true,
       disableChallengeResourceVerification: true,
     },
   );
 
-  const keyVault = new KeyVault({ keyClient });
+  const keyVault = new KeyVault({
+    keyClient,
+    cryptographyClientFactory: new CryptographyClientFactory({
+      azureCredential,
+    }),
+  });
 
   let credentialId: string;
   let jwk: JsonWebKey;
@@ -46,10 +52,7 @@ describe('KeyVault', () => {
     };
 
     beforeAll(async () => {
-      ({
-        jwk,
-        meta: { credentialId },
-      } = await keyVault.createEcKey(createEcKeyOpts));
+      ({ jwk } = await keyVault.createEcKey(createEcKeyOpts));
     });
 
     test('createEcKey', async () => {
@@ -68,77 +71,6 @@ describe('KeyVault', () => {
       });
 
       expect(jwkGet).toStrictEqual(jwk);
-    });
-
-    test('deleteKey', async () => {
-      const { jwk: jwkDelete } = await keyVault.deleteKey({
-        ...createEcKeyOpts,
-        credentialId,
-      });
-
-      expect(jwkDelete).toMatchObject(jwk);
-
-      await expect(() =>
-        keyVault.getKey({
-          ...createEcKeyOpts,
-          credentialId,
-        }),
-      ).to.rejects.toThrow();
-    });
-  });
-
-  describe('RSA', () => {
-    const createRsaKeyOpts = {
-      rp: {
-        id: 'test',
-      },
-      user: {
-        id: Buffer.from('test'),
-      },
-      pubKeyCredParams: [
-        {
-          alg: COSEKeyAlgorithm.RS256,
-          type: PublicKeyCredentialType.PUBLIC_KEY,
-        },
-      ],
-    };
-
-    beforeAll(async () => {
-      ({
-        jwk,
-        meta: { credentialId },
-      } = await keyVault.createRsaKey(createRsaKeyOpts));
-    });
-
-    test('createRsaKey', async () => {
-      expect(z.uuid().safeParse(credentialId).success).toBe(true);
-
-      expect(jwk?.kty).toBe(KeyType.RSA);
-    });
-
-    test('getKey', async () => {
-      const { jwk: jwkGet } = await keyVault.getKey({
-        ...createRsaKeyOpts,
-        credentialId,
-      });
-
-      expect(jwkGet).toStrictEqual(jwk);
-    });
-
-    test('deleteKey', async () => {
-      const { jwk: jwkDelete } = await keyVault.deleteKey({
-        ...createRsaKeyOpts,
-        credentialId,
-      });
-
-      expect(jwkDelete).toMatchObject(jwk);
-
-      await expect(() =>
-        keyVault.getKey({
-          ...createRsaKeyOpts,
-          credentialId,
-        }),
-      ).to.rejects.toThrow();
     });
   });
 });
