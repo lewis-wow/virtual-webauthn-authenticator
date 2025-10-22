@@ -195,6 +195,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@repo/validation':
         specifier: workspace:*
         version: link:../../packages/validation

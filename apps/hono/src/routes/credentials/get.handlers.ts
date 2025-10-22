@@ -2,9 +2,11 @@ import { factory } from '@/factory';
 import { credentialSignerFactory } from '@/lib/credentialSignerFactory';
 import { keyVault } from '@/lib/keyVault';
 import { virtualAuthenticator } from '@/lib/virtualAuthenticator';
+import { webAuthnCredentialRepository } from '@/lib/webAuthnCredentialRepository';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
 import { KeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
+import { uuidToBuffer } from '@repo/utils';
 import {
   PublicKeyCredentialRequestOptionsSchema,
   PublicKeyCredentialSchema,
@@ -32,10 +34,16 @@ export const credentialsGetHandlers = factory.createHandlers(
   async (ctx) => {
     const publicKeyCredentialRequestOptions = ctx.req.valid('query');
 
+    const webAuthnCredential =
+      await webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
+        publicKeyCredentialRequestOptions,
+        ctx.var.user,
+      );
+
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.getKey(publicKeyCredentialRequestOptions, ctx.var.user);
+    } = await keyVault.getKey(webAuthnCredential);
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
@@ -48,6 +56,10 @@ export const credentialsGetHandlers = factory.createHandlers(
       publicKeyCredentialRequestOptions,
       COSEPublicKey,
       credentialSigner,
+      {
+        counter: webAuthnCredential.counter,
+        credentialID: uuidToBuffer(webAuthnCredential.id),
+      },
     );
 
     return ctx.json(PublicKeyCredentialSchema.encode(publicKeyCredential));

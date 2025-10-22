@@ -14,25 +14,15 @@ import {
   COSEAlgorithmToKeyCurveNameMapper,
   COSEKeyAlgorithmToKeyAlgorithmMapper,
 } from '@repo/mappers';
-import type {
-  Prisma,
-  PrismaClient,
-  User,
-  WebAuthnCredential,
-} from '@repo/prisma';
+import type { User, WebAuthnCredential } from '@repo/prisma';
 import { isEcAlgorithm, isRsaAlgorithm } from '@repo/utils';
-import type {
-  PublicKeyCredentialCreationOptions,
-  PublicKeyCredentialRequestOptions,
-} from '@repo/validation';
+import type { PublicKeyCredentialCreationOptions } from '@repo/validation';
 import {
   assert,
   isLiteral,
   isString,
   isArray,
-  isOptional,
   isPartial,
-  isInstanceOf,
   cascade,
   isEnum,
   hasMinLength,
@@ -43,7 +33,6 @@ import type { CryptographyClientFactory } from './CryptographyClientFactory';
 
 export type KeyVaultOptions = {
   keyClient: KeyClient;
-  prisma: PrismaClient;
   cryptographyClientFactory: CryptographyClientFactory;
 };
 
@@ -70,82 +59,11 @@ export type VerifySignaturePayload = {
 
 export class KeyVault {
   private readonly keyClient: KeyClient;
-  private readonly prisma: PrismaClient;
   private readonly cryptographyClientFactory: CryptographyClientFactory;
 
   constructor(opts: KeyVaultOptions) {
     this.keyClient = opts.keyClient;
-    this.prisma = opts.prisma;
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
-  }
-
-  private async _findFirstAndIncrementCounterAtomically(
-    where: Prisma.WebAuthnCredentialWhereInput,
-  ): Promise<WebAuthnCredential> {
-    const updatedWebAuthnCredential = await this.prisma.$transaction(
-      async (tx) => {
-        const webAuthnCredential = await tx.webAuthnCredential.findFirstOrThrow(
-          {
-            where,
-          },
-        );
-
-        return await tx.webAuthnCredential.update({
-          where: {
-            id: webAuthnCredential.id,
-          },
-          data: {
-            counter: {
-              increment: 1,
-            },
-          },
-        });
-      },
-    );
-
-    return updatedWebAuthnCredential;
-  }
-
-  private async _findFirstMatchingCredentialAndIncrementCounterAtomically(
-    opts: PickDeep<
-      PublicKeyCredentialRequestOptions,
-      `allowCredentials.${number}.id` | 'rpId'
-    >,
-    user: Pick<User, 'id'>,
-  ): Promise<WebAuthnCredential> {
-    const { rpId, allowCredentials } = opts;
-
-    assert(rpId, isString());
-    assert(
-      allowCredentials,
-      isOptional(
-        isArray(
-          isPartial({
-            id: isInstanceOf(Buffer),
-          }),
-        ),
-      ),
-    );
-
-    const where: Prisma.WebAuthnCredentialWhereInput = {
-      rpId,
-      userId: user.id,
-    };
-
-    if (allowCredentials && allowCredentials.length > 0) {
-      const allowedIDs = allowCredentials.map((publicKeyCredentialDescriptor) =>
-        publicKeyCredentialDescriptor.id.toString('base64url'),
-      );
-
-      where.credentialIDbase64url = {
-        in: allowedIDs,
-      };
-    }
-
-    const webAuthnCredential =
-      await this._findFirstAndIncrementCounterAtomically(where);
-
-    return webAuthnCredential;
   }
 
   private _pickPubKeyCredParams(
@@ -319,35 +237,8 @@ export class KeyVault {
   }
 
   async getKey(
-    opts: PickDeep<
-      PublicKeyCredentialRequestOptions,
-      `allowCredentials.${number}.id` | 'rpId'
-    >,
-    user: Pick<User, 'id'>,
+    webAuthnCredential: Pick<WebAuthnCredential, 'keyVaultKeyName'>,
   ): Promise<KeyPayload> {
-    const { rpId, allowCredentials } = opts;
-
-    assert(rpId, isString());
-    assert(
-      allowCredentials,
-      isOptional(
-        isArray(
-          isPartial({
-            id: isInstanceOf(Buffer),
-          }),
-        ),
-      ),
-    );
-
-    const webAuthnCredential =
-      await this._findFirstMatchingCredentialAndIncrementCounterAtomically(
-        {
-          rpId,
-          allowCredentials,
-        },
-        user,
-      );
-
     const keyVaultKey = await this.keyClient.getKey(
       webAuthnCredential.keyVaultKeyName,
     );

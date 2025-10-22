@@ -17,6 +17,7 @@
     "@repo/virtual-authenticator": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/validation": "workspace:*",
     "@scalar/hono-api-reference": "^0.9.22",

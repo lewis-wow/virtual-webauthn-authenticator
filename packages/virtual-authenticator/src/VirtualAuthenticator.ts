@@ -5,7 +5,7 @@ import {
 } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import type { CredentialSigner } from '@repo/types';
-import { hasMinBytes } from '@repo/utils';
+import { hasMinBytes, uuidToBuffer } from '@repo/utils';
 import { sha256 } from '@repo/utils/sha256';
 import type {
   CollectedClientData,
@@ -14,7 +14,7 @@ import type {
   PublicKeyCredential,
 } from '@repo/validation';
 import { encode } from 'cbor';
-import { randomBytes } from 'crypto';
+import { randomUUID } from 'crypto';
 import {
   applyCascade,
   assert,
@@ -30,6 +30,11 @@ import {
 } from 'typanion';
 
 export class VirtualAuthenticator {
+  // The AAGUID of the authenticator.
+  // Length (in bytes): 16
+  // Zeroed-out AAGUID
+  static readonly AAGUID = Buffer.alloc(16);
+
   /**
    *
    * @see https://www.w3.org/TR/webauthn-2/#credential-id
@@ -42,7 +47,7 @@ export class VirtualAuthenticator {
     //    This form allows the authenticator to be nearly stateless,
     //    by having the Relying Party store any necessary state.
     // Length (in bytes): L
-    return randomBytes(32);
+    return uuidToBuffer(randomUUID());
   }
 
   /**
@@ -54,11 +59,6 @@ export class VirtualAuthenticator {
     credentialPublicKey: COSEKey;
   }): Promise<Buffer> {
     const { credentialID, credentialPublicKey } = opts;
-
-    // The AAGUID of the authenticator.
-    // Length (in bytes): 16
-    // Zeroed-out AAGUID
-    const aaguid = Buffer.alloc(16);
 
     // Byte length L of Credential ID, 16-bit unsigned big-endian integer.
     // Length (in bytes): 2
@@ -80,7 +80,7 @@ export class VirtualAuthenticator {
     // Attested credential data is a variable-length byte array added to the
     // authenticator data when generating an attestation object for a given credential.
     const attestedCredentialData = Buffer.concat([
-      aaguid,
+      VirtualAuthenticator.AAGUID,
       credentialIdLength,
       credentialID,
       credentialPublicKeyBuffer,
