@@ -4,13 +4,13 @@ CREATE TABLE "webAuthnCredential" (
     "name" TEXT,
     "userId" TEXT NOT NULL,
     "keyVaultKeyId" TEXT NOT NULL,
-    "credentialIDbase64url" TEXT NOT NULL,
-    "publicKey" BYTEA NOT NULL,
+    "keyVaultKeyName" TEXT NOT NULL,
+    "COSEPublicKey" BYTEA NOT NULL,
     "counter" INTEGER NOT NULL DEFAULT 0,
     "aaguid" TEXT NOT NULL,
     "transports" TEXT[],
     "rpId" TEXT NOT NULL,
-    "userHandle" BYTEA NOT NULL,
+    "userHandle" BYTEA,
     "hsm" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -20,9 +20,6 @@ CREATE TABLE "webAuthnCredential" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "webAuthnCredential_keyVaultKeyId_key" ON "webAuthnCredential"("keyVaultKeyId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "webAuthnCredential_credentialIDbase64url_key" ON "webAuthnCredential"("credentialIDbase64url");
 
 -- CreateIndex
 CREATE INDEX "webAuthnCredential_userId_idx" ON "webAuthnCredential"("userId");

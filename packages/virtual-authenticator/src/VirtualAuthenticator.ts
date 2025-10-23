@@ -232,10 +232,7 @@ export class VirtualAuthenticator {
       publicKeyCredentialCreationOptions.challenge,
       applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
     );
-    assert(
-      publicKeyCredentialCreationOptions.user,
-      isPartial({ id: isInstanceOf(Buffer) }),
-    );
+    assert(publicKeyCredentialCreationOptions.user.id, isInstanceOf(Buffer));
     assert(
       publicKeyCredentialCreationOptions.user.id,
       applyCascade(isInstanceOf(Buffer), hasMinBytes(1)),
