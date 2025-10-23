@@ -1,8 +1,9 @@
 import type { User } from '@repo/prisma';
 import { createFactory } from 'hono/factory';
+import type { JwtVariables } from 'hono/jwt';
 
 export type FactoryEnv = {
-  Variables: {
+  Variables: JwtVariables<{ sub: string }> & {
     user: Pick<User, 'id' | 'name'> | null;
   };
 };

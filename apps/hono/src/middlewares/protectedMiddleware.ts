@@ -2,7 +2,6 @@ import { prisma } from '@/lib/prisma';
 import type { User } from '@repo/prisma';
 import { createMiddleware } from 'hono/factory';
 import { HTTPException } from 'hono/http-exception';
-import { randomUUID } from 'node:crypto';
 
 export const __mockUserMiddleware = createMiddleware<{
   Variables: { user: Pick<User, 'id'> };

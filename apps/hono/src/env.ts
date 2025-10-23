@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
     AZURE_KEY_VAULT_BASE_URL: z.url(),
+    JWT_SECRET: z.string(),
     PORT: z.coerce.number(),
   },
 
