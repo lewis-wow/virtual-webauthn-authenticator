@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import type { Root } from '@/routes';
+import { root, type Root } from '@/routes';
 import { PublicKeyCredentialType } from '@repo/enums';
 import { prisma, type User } from '@repo/prisma';
 import { bufferToUuid } from '@repo/utils';
@@ -21,7 +21,14 @@ import {
   USER_NAME,
 } from '../../helpers/consts';
 
-const testClient = hc<Root>(`http://localhost:${env.PORT}`);
+const testClient = hc<Root>(`http://localhost:${env.PORT}`, {
+  fetch: async (input: string | URL | Request, init?: RequestInit) => {
+    const request = new Request(input, init);
+    const response = await root.fetch(request);
+
+    return response;
+  },
+});
 
 describe('Credentials POST handler', () => {
   let user: User;
