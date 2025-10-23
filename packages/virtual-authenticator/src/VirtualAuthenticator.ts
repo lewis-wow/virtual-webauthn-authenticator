@@ -25,7 +25,6 @@ import {
   isNumber,
   isObject,
   isOptional,
-  isPartial,
   isString,
 } from 'typanion';
 

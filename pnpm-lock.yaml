@@ -247,6 +247,9 @@ importers:
       '@rollup/plugin-swc':
         specifier: ^0.4.0
         version: 0.4.0(@swc/core@1.13.5)(rollup@4.52.4)
+      '@simplewebauthn/server':
+        specifier: ^13.2.2
+        version: 13.2.2
       '@swc/core':
         specifier: ^1.13.5
         version: 1.13.5
@@ -3498,6 +3501,10 @@ packages:
 
   '@simplewebauthn/server@13.2.1':
     resolution: {integrity: sha512-Inmfye5opZXe3HI0GaksqBnQiM7glcNySoG6DH1GgkO1Lh9dvuV4XSV9DK02DReUVX39HpcDob9nxHELjECoQw==}
+    engines: {node: '>=20.0.0'}
+
+  '@simplewebauthn/server@13.2.2':
+    resolution: {integrity: sha512-HcWLW28yTMGXpwE9VLx9J+N2KEUaELadLrkPEEI9tpI5la70xNEVEsu/C+m3u7uoq4FulLqZQhgBCzR9IZhFpA==}
     engines: {node: '>=20.0.0'}
 
   '@simplewebauthn/types@12.0.0':
@@ -10878,6 +10885,17 @@ snapshots:
       '@peculiar/asn1-x509': 2.5.0
 
   '@simplewebauthn/server@13.2.1':
+    dependencies:
+      '@hexagon/base64': 1.1.28
+      '@levischuck/tiny-cbor': 0.2.11
+      '@peculiar/asn1-android': 2.5.0
+      '@peculiar/asn1-ecc': 2.5.0
+      '@peculiar/asn1-rsa': 2.5.0
+      '@peculiar/asn1-schema': 2.5.0
+      '@peculiar/asn1-x509': 2.5.0
+      '@peculiar/x509': 1.14.0
+
+  '@simplewebauthn/server@13.2.2':
     dependencies:
       '@hexagon/base64': 1.1.28
       '@levischuck/tiny-cbor': 0.2.11
