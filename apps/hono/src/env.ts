@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
-    KEY_VAULT_URL: z.url(),
+    AZURE_KEY_VAULT_BASE_URL: z.url(),
     PORT: z.coerce.number(),
   },
 

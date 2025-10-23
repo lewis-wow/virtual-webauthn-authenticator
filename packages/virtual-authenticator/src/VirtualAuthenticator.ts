@@ -13,7 +13,7 @@ import type {
   PublicKeyCredentialRequestOptions,
   PublicKeyCredential,
 } from '@repo/validation';
-import { encode } from 'cbor';
+import * as cbor from 'cbor';
 import { randomUUID } from 'crypto';
 import {
   applyCascade,
@@ -300,7 +300,7 @@ export class VirtualAuthenticator {
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: Buffer.from(JSON.stringify(clientData)),
-        attestationObject: encode(attestationObject),
+        attestationObject: cbor.encode(attestationObject),
       },
       clientExtensionResults: {},
     };

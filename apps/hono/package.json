@@ -5,7 +5,8 @@
     "dev": "pnpm dotenvx rollup -c --watch",
     "build": "rollup -c",
     "start": "pnpm dotenvx node dist/index.js",
-    "dotenvx": "../../scripts/dotenvx.sh"
+    "dotenvx": "../../scripts/dotenvx.sh",
+    "test:integration": "vitest run integration --config __tests__/vitest.config.ts"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",
@@ -14,12 +15,12 @@
     "@hono/standard-validator": "^0.1.5",
     "@hono/zod-validator": "^0.7.4",
     "@repo/enums": "workspace:*",
-    "@repo/virtual-authenticator": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@repo/validation": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
     "@scalar/hono-api-reference": "^0.9.22",
     "@t3-oss/env-core": "^0.13.8",
     "hono": "^4.9.10",
@@ -44,6 +45,7 @@
     "rollup-plugin-node-externals": "^8.1.1",
     "rollup-plugin-shell": "^1.0.9",
     "rollup-plugin-tsconfig-paths": "^1.5.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

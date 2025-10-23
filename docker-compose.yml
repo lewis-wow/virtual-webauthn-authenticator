@@ -1,24 +1,24 @@
 services:
-  console:
-    build:
-      context: .
-      dockerfile: ./apps/console/Dockerfile
-    ports:
-      - '3000:3000'
-    depends_on:
-      - postgres
-      - lowkey-vault
-      - assumed-identity
-  hono:
-    build:
-      context: .
-      dockerfile: ./apps/hono/Dockerfile
-    ports:
-      - '3001:3001'
-    depends_on:
-      - postgres
-      - lowkey-vault
-      - assumed-identity
+  # console:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/console/Dockerfile
+  #   ports:
+  #     - '3000:3000'
+  #   depends_on:
+  #     - postgres
+  #     - lowkey-vault
+  #     - assumed-identity
+  # hono:
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/hono/Dockerfile
+  #   ports:
+  #     - '3001:3001'
+  #   depends_on:
+  #     - postgres
+  #     - lowkey-vault
+  #     - assumed-identity
   postgres:
     image: postgres:15
     environment:
