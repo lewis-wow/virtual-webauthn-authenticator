@@ -12,6 +12,7 @@ import { uuidToBuffer } from '@repo/utils';
 import {
   PublicKeyCredentialCreationOptionsRequestBodySchema,
   PublicKeyCredentialSchema,
+  type PublicKeyCredentialCreationOptions,
   type PublicKeyCredentialUserEntity,
 } from '@repo/validation';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
@@ -37,29 +38,32 @@ export const credentialsPostHandlers = factory.createHandlers(
   jwt,
   protectedMiddleware,
   async (ctx) => {
-    const publicKeyCredentialCreationOptions = ctx.req.valid('json');
+    const publicKeyCredentialCreationOptionsJson = ctx.req.valid('json');
+
+    const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
+      id: uuidToBuffer(ctx.var.user.id),
+      name: ctx.var.user.name,
+      displayName: ctx.var.user.name,
+    };
+
+    const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
+      {
+        ...publicKeyCredentialCreationOptionsJson,
+        user: publicKeyCredentialUserEntity,
+      };
 
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.createEcKey({
+    } = await keyVault.createKey({
       publicKeyCredentialCreationOptions,
       user: ctx.var.user,
     });
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
-    const user: PublicKeyCredentialUserEntity = {
-      id: uuidToBuffer(ctx.var.user.id),
-      name: ctx.var.user.name,
-      displayName: ctx.var.user.name,
-    };
-
     const publicKeyCredential = await virtualAuthenticator.createCredential({
-      publicKeyCredentialCreationOptions: {
-        ...publicKeyCredentialCreationOptions,
-        user,
-      },
+      publicKeyCredentialCreationOptions,
       COSEPublicKey,
     });
 

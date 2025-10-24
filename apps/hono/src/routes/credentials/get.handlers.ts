@@ -10,6 +10,8 @@ import { uuidToBuffer } from '@repo/utils';
 import {
   PublicKeyCredentialRequestOptionsSchema,
   PublicKeyCredentialSchema,
+  type PublicKeyCredentialRequestOptions,
+  type PublicKeyCredentialUserEntity,
 } from '@repo/validation';
 import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
 
@@ -36,14 +38,16 @@ export const credentialsGetHandlers = factory.createHandlers(
 
     const webAuthnCredential =
       await webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
-        publicKeyCredentialRequestOptions,
-        ctx.var.user,
+        {
+          publicKeyCredentialRequestOptions,
+          user: ctx.var.user,
+        },
       );
 
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.getKey(webAuthnCredential.keyVaultKeyName);
+    } = await keyVault.getKey({ keyName: webAuthnCredential.keyVaultKeyName });
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
@@ -52,15 +56,15 @@ export const credentialsGetHandlers = factory.createHandlers(
       keyVaultKey,
     });
 
-    const publicKeyCredential = await virtualAuthenticator.getCredential(
+    const publicKeyCredential = await virtualAuthenticator.getCredential({
       publicKeyCredentialRequestOptions,
       COSEPublicKey,
       credentialSigner,
-      {
+      meta: {
         counter: webAuthnCredential.counter,
         credentialID: uuidToBuffer(webAuthnCredential.id),
       },
-    );
+    });
 
     return ctx.json(PublicKeyCredentialSchema.encode(publicKeyCredential));
   },
