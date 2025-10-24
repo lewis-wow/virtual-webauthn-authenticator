@@ -1,6 +1,6 @@
 import { env } from '@/env';
 import { factory } from '@/factory';
-import { auth } from '@/lib/auth';
+import { sessionMiddleware } from '@/middlewares/sessionMiddleware';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Scalar } from '@scalar/hono-api-reference';
 import { openAPIRouteHandler } from 'hono-openapi';
@@ -21,10 +21,8 @@ export const root = factory
   .get('/', async (ctx) => {
     return ctx.text('OK');
   })
-  .on(['POST', 'GET'], '/auth/*', (ctx) => {
-    return auth.handler(ctx.req.raw);
-  })
-  .route('/credentials', credentials);
+  .use('api/*', sessionMiddleware)
+  .route('api/credentials', credentials);
 
 root
   .get(

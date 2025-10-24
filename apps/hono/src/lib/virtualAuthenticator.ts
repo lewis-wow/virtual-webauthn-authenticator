@@ -1,3 +1,8 @@
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 
-export const virtualAuthenticator = new VirtualAuthenticator();
+import { Lazy } from './utils/lazy';
+
+export const virtualAuthenticator = new Lazy(
+  'virtualAuthenticator',
+  () => new VirtualAuthenticator(),
+);

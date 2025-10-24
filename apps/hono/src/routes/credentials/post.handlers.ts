@@ -1,7 +1,4 @@
 import { factory } from '@/factory';
-import { keyVault } from '@/lib/keyVault';
-import { prisma } from '@/lib/prisma';
-import { virtualAuthenticator } from '@/lib/virtualAuthenticator';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
 import { COSEKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
@@ -50,19 +47,20 @@ export const credentialsPostHandlers = factory.createHandlers(
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.createKey({
+    } = await ctx.var.keyVault.createKey({
       publicKeyCredentialCreationOptions,
       user: ctx.var.user,
     });
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
-    const publicKeyCredential = await virtualAuthenticator.createCredential({
-      publicKeyCredentialCreationOptions,
-      COSEPublicKey,
-    });
+    const publicKeyCredential =
+      await ctx.var.virtualAuthenticator.createCredential({
+        publicKeyCredentialCreationOptions,
+        COSEPublicKey,
+      });
 
-    await prisma.webAuthnCredential.create({
+    await ctx.var.prisma.webAuthnCredential.create({
       data: {
         id: publicKeyCredential.id,
         aaguid: VirtualAuthenticator.AAGUID.toString('base64url'),

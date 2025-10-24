@@ -1,8 +1,4 @@
 import { factory } from '@/factory';
-import { credentialSignerFactory } from '@/lib/credentialSignerFactory';
-import { keyVault } from '@/lib/keyVault';
-import { virtualAuthenticator } from '@/lib/virtualAuthenticator';
-import { webAuthnCredentialRepository } from '@/lib/webAuthnCredentialRepository';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
 import { KeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
@@ -35,7 +31,7 @@ export const credentialsGetHandlers = factory.createHandlers(
     const publicKeyCredentialRequestOptions = ctx.req.valid('query');
 
     const webAuthnCredential =
-      await webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
+      await ctx.var.webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
         {
           publicKeyCredentialRequestOptions,
           user: ctx.var.user,
@@ -45,24 +41,28 @@ export const credentialsGetHandlers = factory.createHandlers(
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.getKey({ keyName: webAuthnCredential.keyVaultKeyName });
+    } = await ctx.var.keyVault.getKey({
+      keyName: webAuthnCredential.keyVaultKeyName,
+    });
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
-    const credentialSigner = credentialSignerFactory.createCredentialSigner({
-      algorithm: KeyAlgorithm.ES256,
-      keyVaultKey,
-    });
+    const credentialSigner =
+      ctx.var.credentialSignerFactory.createCredentialSigner({
+        algorithm: KeyAlgorithm.ES256,
+        keyVaultKey,
+      });
 
-    const publicKeyCredential = await virtualAuthenticator.getCredential({
-      publicKeyCredentialRequestOptions,
-      COSEPublicKey,
-      credentialSigner,
-      meta: {
-        counter: webAuthnCredential.counter,
-        credentialID: uuidToBuffer(webAuthnCredential.id),
-      },
-    });
+    const publicKeyCredential =
+      await ctx.var.virtualAuthenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        COSEPublicKey,
+        credentialSigner,
+        meta: {
+          counter: webAuthnCredential.counter,
+          credentialID: uuidToBuffer(webAuthnCredential.id),
+        },
+      });
 
     return ctx.json(PublicKeyCredentialSchema.encode(publicKeyCredential));
   },
