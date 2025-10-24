@@ -119,27 +119,27 @@ describe('VirtualAuthenticator', () => {
       counter: credentialCounter,
     } = registrationVerification.registrationInfo!.credential;
 
-    const requestOptions = createPublicKeyCredentialRequestOptions(
-      Buffer.from(credentialID),
-    );
+    const publicKeyCredentialRequestOptions =
+      createPublicKeyCredentialRequestOptions(Buffer.from(credentialID));
 
-    const assertionCredential = await authenticator.getCredential(
-      requestOptions,
+    const assertionCredential = await authenticator.getCredential({
+      publicKeyCredentialRequestOptions,
       COSEPublicKey,
       credentialSigner,
-      {
+      meta: {
         counter: 1,
         credentialID: Buffer.from(credentialID, 'base64url'),
       },
-    );
+    });
 
     const authenticationVerification = await verifyAuthenticationResponse({
       response: PublicKeyCredentialSchema.encode(
         assertionCredential,
       ) as AuthenticationResponseJSON,
-      expectedChallenge: requestOptions.challenge.toString('base64url'),
-      expectedOrigin: requestOptions.rpId!,
-      expectedRPID: requestOptions.rpId!,
+      expectedChallenge:
+        publicKeyCredentialRequestOptions.challenge.toString('base64url'),
+      expectedOrigin: publicKeyCredentialRequestOptions.rpId!,
+      expectedRPID: publicKeyCredentialRequestOptions.rpId!,
       credential: {
         id: credentialID,
         publicKey: credentialPublicKey,

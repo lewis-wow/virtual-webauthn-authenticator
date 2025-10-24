@@ -10,10 +10,7 @@ import {
   type KeyAlgorithm,
 } from '@repo/enums';
 import { JsonWebKey } from '@repo/keys';
-import {
-  COSEAlgorithmToKeyCurveNameMapper,
-  COSEKeyAlgorithmToKeyAlgorithmMapper,
-} from '@repo/mappers';
+import { COSEKeyAlgorithmMapper } from '@repo/mappers';
 import type { User } from '@repo/prisma';
 import { bufferToUuid } from '@repo/utils';
 import type { PublicKeyCredentialCreationOptions } from '@repo/validation';
@@ -174,13 +171,18 @@ export class KeyVault {
       publicKeyCredentialCreationOptions,
     });
 
-    const keyVaultKey = await this.keyClient.createKey(
-      keyName,
-      COSEKeyAlgorithmToKeyAlgorithmMapper(pubKeyCredParam.alg),
-      {
-        curve: COSEAlgorithmToKeyCurveNameMapper(pubKeyCredParam.alg),
-      },
-    );
+    const keyVaultKey = await this.keyClient
+      .createKey(
+        keyName,
+        COSEKeyAlgorithmMapper.toKeyType(pubKeyCredParam.alg),
+        {
+          curve: COSEKeyAlgorithmMapper.toCurve(pubKeyCredParam.alg),
+        },
+      )
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
 
     return {
       jwk: new JsonWebKey(keyVaultKey.key!),

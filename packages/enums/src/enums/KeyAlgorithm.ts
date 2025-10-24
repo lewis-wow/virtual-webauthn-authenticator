@@ -10,8 +10,8 @@ export const KeyAlgorithm = {
   /** ECDSA w/ SHA-512 */
   ES512: 'ES512',
 
-  /** Edwards-curve Digital Signature Algorithm */
-  EdDSA: 'EdDSA',
+  // /** Edwards-curve Digital Signature Algorithm */
+  // EdDSA: 'EdDSA',
 
   /** RSASSA-PSS w/ SHA-256 */
   PS256: 'PS256',
