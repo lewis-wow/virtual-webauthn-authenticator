@@ -80,6 +80,9 @@ export default defineConfig({
 
     execute('scripts/generate-openapi-spec.ts'),
 
-    isWatching && run(),
+    isWatching &&
+      run({
+        execArgv: ['--enable-source-maps'],
+      }),
   ],
 });

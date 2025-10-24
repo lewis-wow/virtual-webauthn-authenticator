@@ -4,7 +4,8 @@ import { z } from 'zod';
 export const env = createEnv({
   server: {
     DATABASE_URL: z.url(),
-    KEY_VAULT_URL: z.url(),
+    AZURE_KEY_VAULT_BASE_URL: z.url(),
+    JWT_SECRET: z.string(),
     PORT: z.coerce.number(),
   },
 
@@ -28,4 +29,5 @@ export const env = createEnv({
    * explicitly specify this option as true.
    */
   emptyStringAsUndefined: true,
+  skipValidation: process.env.SKIP_ENV_VALIDATION === 'true',
 });

@@ -13,7 +13,7 @@ import type {
   PublicKeyCredentialRequestOptions,
   PublicKeyCredential,
 } from '@repo/validation';
-import { encode } from 'cbor';
+import * as cbor from 'cbor';
 import { randomUUID } from 'crypto';
 import {
   applyCascade,
@@ -25,7 +25,6 @@ import {
   isNumber,
   isObject,
   isOptional,
-  isPartial,
   isString,
 } from 'typanion';
 
@@ -232,10 +231,7 @@ export class VirtualAuthenticator {
       publicKeyCredentialCreationOptions.challenge,
       applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
     );
-    assert(
-      publicKeyCredentialCreationOptions.user,
-      isPartial({ id: isInstanceOf(Buffer) }),
-    );
+    assert(publicKeyCredentialCreationOptions.user.id, isInstanceOf(Buffer));
     assert(
       publicKeyCredentialCreationOptions.user.id,
       applyCascade(isInstanceOf(Buffer), hasMinBytes(1)),
@@ -300,7 +296,7 @@ export class VirtualAuthenticator {
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: Buffer.from(JSON.stringify(clientData)),
-        attestationObject: encode(attestationObject),
+        attestationObject: cbor.encode(attestationObject),
       },
       clientExtensionResults: {},
     };

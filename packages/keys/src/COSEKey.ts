@@ -11,7 +11,7 @@ import {
 import type { BufferLike } from '@repo/types';
 import { objectKeys } from '@repo/utils/objectKeys';
 import { swapKeysAndValues } from '@repo/utils/swapKeysAndValues';
-import { decode, encode } from 'cbor';
+import * as cbor from 'cbor';
 import { assert, isEnum, isNumber, isString } from 'typanion';
 
 import { JsonWebKey, type JsonWebKeyOptions } from './JsonWebKey';
@@ -71,7 +71,7 @@ export class COSEKey {
   }
 
   static fromBuffer(buffer: BufferLike): COSEKey {
-    return new COSEKey(decode(buffer));
+    return new COSEKey(cbor.decode(buffer));
   }
 
   toJwk(opts?: { keepAlg?: boolean }): JsonWebKey {
@@ -141,6 +141,6 @@ export class COSEKey {
   }
 
   toBuffer(): Buffer {
-    return encode(this.coseMap);
+    return cbor.encode(this.coseMap);
   }
 }
