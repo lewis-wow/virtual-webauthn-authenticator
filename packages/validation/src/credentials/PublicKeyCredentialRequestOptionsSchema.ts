@@ -43,6 +43,7 @@ export const PublicKeyCredentialRequestOptionsSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialRequestOptions',
+    ref: 'PublicKeyCredentialRequestOptions',
     description: `Options for requesting a public key credential. ${see(
       'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions',
     )}`,

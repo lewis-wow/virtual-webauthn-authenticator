@@ -18,6 +18,7 @@ export const PublicKeyCredentialParametersSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialParameters',
+    ref: 'PublicKeyCredentialParameters',
     description: `Describes the cryptographic algorithms to be supported. ${see(
       'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters',
     )}`,

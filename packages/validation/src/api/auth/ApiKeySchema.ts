@@ -28,5 +28,4 @@ export const ApikeySchema = z
   })
   .meta({
     ref: 'ApiKey',
-    id: 'ApiKey',
   });

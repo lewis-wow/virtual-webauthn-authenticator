@@ -9,6 +9,7 @@ export const AuthenticationExtensionsClientInputsSchema = z
   .record(z.string(), z.unknown())
   .meta({
     id: 'AuthenticationExtensionsClientInputs',
+    ref: 'AuthenticationExtensionsClientInputs',
     description: `The client extensions passed to the authenticator. ${see('https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientinputs')}`,
     examples: [{ credProps: true }],
   });

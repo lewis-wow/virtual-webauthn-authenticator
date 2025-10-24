@@ -60,6 +60,7 @@ export const CollectedClientDataSchema = z
   })
   .meta({
     id: 'CollectedClientData',
+    ref: 'CollectedClientData',
     description: `The client data collected by the authenticator. ${see(
       'https://www.w3.org/TR/webauthn/#dictdef-collectedclientdata',
     )}`,

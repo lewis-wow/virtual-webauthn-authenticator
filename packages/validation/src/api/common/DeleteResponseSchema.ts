@@ -5,7 +5,6 @@ export const DeleteResponseSchema = z
     success: z.literal(true),
   })
   .meta({
-    id: 'DeleteResponse',
     ref: 'DeleteResponse',
   });
 

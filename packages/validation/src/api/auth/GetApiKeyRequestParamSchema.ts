@@ -5,5 +5,5 @@ export const GetApiKeyRequestParamSchema = z
     id: z.uuid(),
   })
   .meta({
-    id: 'GetApiKeyRequestParam',
+    ref: 'GetApiKeyRequestParam',
   });

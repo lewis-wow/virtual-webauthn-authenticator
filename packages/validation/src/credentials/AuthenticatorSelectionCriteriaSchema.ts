@@ -42,6 +42,7 @@ export const AuthenticatorSelectionCriteriaSchema = z
   })
   .meta({
     id: 'AuthenticatorSelectionCriteria',
+    ref: 'AuthenticatorSelectionCriteria',
     description: `Specifies requirements for the authenticator. ${see(
       'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria',
     )}`,

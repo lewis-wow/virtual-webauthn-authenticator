@@ -17,6 +17,7 @@ export const PublicKeyCredentialRpEntitySchema =
     }),
   }).meta({
     id: 'PublicKeyCredentialRpEntity',
+    ref: 'PublicKeyCredentialRpEntity',
     description: `Represents the Relying Party. ${see(
       'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity',
     )}`,

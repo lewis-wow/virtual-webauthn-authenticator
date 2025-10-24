@@ -5,5 +5,5 @@ export const CreateApiKeyRequestBodySchema = z
     name: z.string(),
   })
   .meta({
-    id: 'CreateApiKeyRequestBody',
+    ref: 'CreateApiKeyRequestBody',
   });

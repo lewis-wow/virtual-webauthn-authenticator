@@ -26,6 +26,7 @@ export const PublicKeyCredentialDescriptorSchema = z
   })
   .meta({
     id: 'PublicKeyCredentialDescriptor',
+    ref: 'PublicKeyCredentialDescriptor',
     description: `Used to exclude existing credentials for a user. ${see(
       'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor',
     )}`,

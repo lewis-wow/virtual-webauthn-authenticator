@@ -9,6 +9,7 @@ export const PublicKeyCredentialEntitySchema = z
   })
   .meta({
     id: 'PublicKeyCredentialEntity',
+    ref: 'PublicKeyCredentialEntity',
   });
 
 export type PublicKeyCredentialEntity = z.infer<
