@@ -11,8 +11,8 @@ export const COSEKeyAlgorithm = {
   /** ECDSA w/ SHA-512 */
   [KeyAlgorithm.ES512]: -36,
 
-  /** Edwards-curve Digital Signature Algorithm */
-  [KeyAlgorithm.EdDSA]: -8,
+  // /** Edwards-curve Digital Signature Algorithm */
+  // [KeyAlgorithm.EdDSA]: -8,
 
   /** RSASSA-PSS w/ SHA-256 */
   [KeyAlgorithm.PS256]: -37,

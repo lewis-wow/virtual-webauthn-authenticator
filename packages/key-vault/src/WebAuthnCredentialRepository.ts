@@ -53,18 +53,18 @@ export class WebAuthnCredentialRepository {
     return updatedWebAuthnCredential;
   }
 
-  async findFirstMatchingCredentialAndIncrementCounterAtomically(
-    opts: PickDeep<
+  async findFirstMatchingCredentialAndIncrementCounterAtomically(opts: {
+    publicKeyCredentialRequestOptions: PickDeep<
       PublicKeyCredentialRequestOptions,
       `allowCredentials.${number}.id` | 'rpId'
-    >,
-    user: Pick<User, 'id'>,
-  ): Promise<WebAuthnCredential> {
-    const { rpId, allowCredentials } = opts;
+    >;
+    user: Pick<User, 'id'>;
+  }): Promise<WebAuthnCredential> {
+    const { publicKeyCredentialRequestOptions, user } = opts;
 
-    assert(rpId, isString());
+    assert(publicKeyCredentialRequestOptions.rpId, isString());
     assert(
-      allowCredentials,
+      publicKeyCredentialRequestOptions.allowCredentials,
       isOptional(
         isArray(
           isPartial({
@@ -75,13 +75,17 @@ export class WebAuthnCredentialRepository {
     );
 
     const where: Prisma.WebAuthnCredentialWhereInput = {
-      rpId,
+      rpId: publicKeyCredentialRequestOptions.rpId,
       userId: user.id,
     };
 
-    if (allowCredentials && allowCredentials.length > 0) {
-      const allowedIDs = allowCredentials.map((publicKeyCredentialDescriptor) =>
-        publicKeyCredentialDescriptor.id.toString('base64url'),
+    if (
+      publicKeyCredentialRequestOptions.allowCredentials &&
+      publicKeyCredentialRequestOptions.allowCredentials.length > 0
+    ) {
+      const allowedIDs = publicKeyCredentialRequestOptions.allowCredentials.map(
+        (publicKeyCredentialDescriptor) =>
+          publicKeyCredentialDescriptor.id.toString('base64url'),
       );
 
       where.id = {

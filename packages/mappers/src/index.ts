@@ -1,2 +1,1 @@
-export * from './COSEKeyAlgorithmToKeyAlgorithmMapper';
-export * from './COSEAlgorithmToEcCurveMapper';
+export * from './COSEKeyAlgorithmMapper';

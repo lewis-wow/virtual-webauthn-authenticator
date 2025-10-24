@@ -12,9 +12,11 @@ export class CryptographyClientFactory {
     this.azureCredential = opts.azureCredential;
   }
 
-  createCryptographyClient(
-    keyVaultKey: KeyVaultKey | string,
-  ): CryptographyClient {
+  createCryptographyClient(opts: {
+    keyVaultKey: KeyVaultKey | string;
+  }): CryptographyClient {
+    const { keyVaultKey } = opts;
+
     return new CryptographyClient(keyVaultKey, this.azureCredential);
   }
 }

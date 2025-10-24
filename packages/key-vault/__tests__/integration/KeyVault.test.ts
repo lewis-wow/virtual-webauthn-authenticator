@@ -6,12 +6,20 @@ import {
   PublicKeyCredentialType,
 } from '@repo/enums';
 import { JsonWebKey } from '@repo/keys';
+import { uuidToBuffer } from '@repo/utils';
+import { type PublicKeyCredentialCreationOptions } from '@repo/validation';
 import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';
 
 import { CryptographyClientFactory } from '../../src/CryptographyClientFactory';
 import { KeyVault } from '../../src/KeyVault';
 import { NoopCredential } from '../helpers/NoopCredential';
+import {
+  CHALLENGE_BASE64URL,
+  RP_ID,
+  USER_ID,
+  USER_NAME,
+} from '../helpers/consts';
 
 describe('KeyVault', () => {
   const azureCredential = new NoopCredential();
@@ -34,40 +42,43 @@ describe('KeyVault', () => {
 
   let jwk: JsonWebKey;
   let keyVaultKey: KeyVaultKey;
-  const userId = 'test';
-  const rpId = 'example.com';
 
   describe('EC', () => {
-    const publicKeyCredentialCreationOptions = {
-      rp: {
-        id: rpId,
-      },
-      user: {
-        id: Buffer.from(userId),
-      },
-      pubKeyCredParams: [
-        {
-          alg: COSEKeyAlgorithm.ES256,
-          type: PublicKeyCredentialType.PUBLIC_KEY,
+    const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
+      {
+        challenge: Buffer.from(CHALLENGE_BASE64URL, 'base64url'),
+        rp: {
+          id: RP_ID,
+          name: RP_ID,
         },
-      ],
-    };
+        user: {
+          id: uuidToBuffer(USER_ID),
+          name: USER_NAME,
+          displayName: USER_NAME,
+        },
+        pubKeyCredParams: [
+          {
+            alg: COSEKeyAlgorithm.ES256,
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+          },
+        ],
+      };
 
     beforeAll(async () => {
       ({
         jwk,
         meta: { keyVaultKey },
-      } = await keyVault.createEcKey({
+      } = await keyVault.createKey({
         publicKeyCredentialCreationOptions,
         user: {
-          id: 'test',
+          id: USER_ID,
         },
       }));
     });
 
-    test('createEcKey', async () => {
+    test('createKey', async () => {
       expect(keyVaultKey.name).toBe(
-        `${Buffer.from(rpId).toString('base64url')}-${Buffer.from(userId).toString('base64url')}`,
+        `${Buffer.from(RP_ID).toString('base64url')}-${uuidToBuffer(USER_ID).toString('base64url')}`,
       );
       expect(jwk?.crv).toBe(KeyCurveName.P256);
       expect(jwk?.kty).toBe(KeyType.EC);
@@ -76,7 +87,9 @@ describe('KeyVault', () => {
     });
 
     test('getKey', async () => {
-      const { jwk: jwkGet } = await keyVault.getKey(keyVaultKey.name);
+      const { jwk: jwkGet } = await keyVault.getKey({
+        keyName: keyVaultKey.name,
+      });
 
       expect(jwkGet).toStrictEqual(jwk);
     });

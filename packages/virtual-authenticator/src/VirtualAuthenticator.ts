@@ -145,18 +145,25 @@ export class VirtualAuthenticator {
   /**
    * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
    */
-  public async getCredential(
-    options: PublicKeyCredentialRequestOptions,
-    COSEPublicKey: COSEKey,
-    credentialSigner: CredentialSigner,
+  public async getCredential(opts: {
+    publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
+    COSEPublicKey: COSEKey;
+    credentialSigner: CredentialSigner;
     meta: {
       counter: number;
       credentialID: Buffer;
-    },
-  ): Promise<PublicKeyCredential> {
-    assert(options.rpId, isString());
+    };
+  }): Promise<PublicKeyCredential> {
+    const {
+      publicKeyCredentialRequestOptions,
+      COSEPublicKey,
+      credentialSigner,
+      meta,
+    } = opts;
+
+    assert(publicKeyCredentialRequestOptions.rpId, isString());
     assert(
-      options.allowCredentials,
+      publicKeyCredentialRequestOptions.allowCredentials,
       isOptional(
         isArray(
           isObject({
@@ -168,20 +175,19 @@ export class VirtualAuthenticator {
       ),
     );
     assert(
-      options.challenge,
+      publicKeyCredentialRequestOptions.challenge,
       applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
     );
     assert(
-      options.userVerification,
+      publicKeyCredentialRequestOptions.userVerification,
       isOptional(isEnum(Object.values(UserVerificationRequirement))),
     );
 
-    const rpId = options.rpId;
-
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
-      challenge: options.challenge.toString('base64url'),
-      origin: options.rpId,
+      challenge:
+        publicKeyCredentialRequestOptions.challenge.toString('base64url'),
+      origin: publicKeyCredentialRequestOptions.rpId,
       crossOrigin: false,
     };
 
@@ -189,7 +195,7 @@ export class VirtualAuthenticator {
     const clientDataHash = sha256(clientDataJSON);
 
     const authData = await this._createAuthenticatorData({
-      rpId,
+      rpId: publicKeyCredentialRequestOptions.rpId,
       counter: meta.counter,
       COSEPublicKey,
     });
