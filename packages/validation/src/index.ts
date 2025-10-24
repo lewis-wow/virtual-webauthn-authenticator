@@ -1,3 +1,4 @@
-export * from './transformers/Base64URLBufferSchema.js';
-export * from './credentials/index.js';
-export * from './api/index.js';
+export * from './transformers';
+export * from './credentials';
+export * from './api';
+export * from './errors';

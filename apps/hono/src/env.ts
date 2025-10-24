@@ -9,8 +9,7 @@ export const env = createEnv({
     JWT_SECRET: z.string(),
     PORT: z.coerce.number(),
 
-    GITHUB_CLIENT_ID: z.string(),
-    GITHUB_CLIENT_SECRET: z.string(),
+    API_KEY_PREFIX: z.string(),
   },
 
   /**

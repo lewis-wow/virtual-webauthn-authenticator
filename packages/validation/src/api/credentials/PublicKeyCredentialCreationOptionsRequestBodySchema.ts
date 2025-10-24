@@ -1,4 +1,4 @@
-import { PublicKeyCredentialCreationOptionsSchema } from '../credentials/PublicKeyCredentialCreationOptionsSchema';
+import { PublicKeyCredentialCreationOptionsSchema } from '../../credentials/PublicKeyCredentialCreationOptionsSchema';
 
 export const PublicKeyCredentialCreationOptionsRequestBodySchema =
   PublicKeyCredentialCreationOptionsSchema.omit({

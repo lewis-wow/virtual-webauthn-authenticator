@@ -6,6 +6,7 @@ export const IsoDatetimeToDateSchema = z
     encode: (date) => date.toISOString(),
   })
   .meta({
+    ref: 'IsoDatetime',
     description: 'ISO datetime',
     examples: ['2025-10-26T11:00:00Z'],
   });

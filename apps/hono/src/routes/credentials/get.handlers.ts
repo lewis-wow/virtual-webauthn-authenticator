@@ -11,7 +11,6 @@ import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
 
 export const credentialsGetHandlers = factory.createHandlers(
   describeRoute({
-    summary: 'Authenticate with a credential',
     description:
       'Corresponds to navigator.credentials.get(), used for generating an assertion to authenticate a user as part of the WebAuthn authentication ceremony.',
     responses: {

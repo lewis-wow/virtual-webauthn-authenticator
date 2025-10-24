@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
     "generate-barrels:credentials": "../../scripts/generate_barrels.ts src/credentials",
-    "generate-barrels:api": "../../scripts/generate_barrels.ts src/api"
+    "generate-barrels:api-auth": "../../scripts/generate_barrels.ts src/api/auth"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

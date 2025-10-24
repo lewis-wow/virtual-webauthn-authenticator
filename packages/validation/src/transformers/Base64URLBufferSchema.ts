@@ -6,6 +6,7 @@ export const Base64URLBufferSchema = z
     encode: (value) => value.toString('base64url'),
   })
   .meta({
+    ref: 'Base64URL',
     description:
       'A Base64URL-encoded string, which will be decoded into a Buffer.',
     examples: ['aGVsbG8gd29ybGQ'],

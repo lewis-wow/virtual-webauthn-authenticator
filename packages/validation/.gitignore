@@ -1,3 +1,2 @@
-src/enums.ts
 src/credentials/index.ts
-src/api/index.ts
+src/api/auth/index.ts

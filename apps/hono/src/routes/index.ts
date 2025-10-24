@@ -6,6 +6,7 @@ import { Scalar } from '@scalar/hono-api-reference';
 import { openAPIRouteHandler } from 'hono-openapi';
 import { cors } from 'hono/cors';
 
+import { auth } from './auth';
 import { credentials } from './credentials';
 
 export const root = factory
@@ -22,7 +23,8 @@ export const root = factory
     return ctx.text('OK');
   })
   .use('api/*', sessionMiddleware)
-  .route('api/credentials', credentials);
+  .route('api/credentials', credentials)
+  .route('api/auth', auth);
 
 root
   .get(
@@ -43,10 +45,7 @@ root
     Scalar({
       pageTitle: 'API Documentation',
       theme: 'saturn',
-      sources: [
-        { url: '/openapi.json', title: 'API' },
-        { url: '/auth/open-api/generate-schema', title: 'Auth' },
-      ],
+      sources: [{ url: '/openapi.json', title: 'API' }],
     }),
   );
 
