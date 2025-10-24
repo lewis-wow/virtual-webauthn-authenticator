@@ -1,3 +1,1 @@
-import { PrismaClient } from '@repo/prisma';
-
-export const prisma: PrismaClient = new PrismaClient();
+export { prisma } from '@repo/prisma';

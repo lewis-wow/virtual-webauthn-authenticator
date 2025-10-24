@@ -4,10 +4,12 @@ datasource db {
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  output        = "generated/client"
-  moduleFormat  = "esm"
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  provider               = "prisma-client"
+  output                 = "generated/client"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+  binaryTargets          = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 model User {
@@ -19,7 +21,7 @@ model User {
   sessions            Session[]
   accounts            Account[]
   permissions         Permission[]
-  apiKeys             ApiKey[]
+  apiKeys             Apikey[]
   webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
@@ -77,32 +79,31 @@ model Verification {
   @@map("verification")
 }
 
-model ApiKey {
-  id String @id @default(uuid())
+model Apikey {
+  id                  String    @id @default(uuid())
+  name                String?
+  start               String?
+  prefix              String?
+  key                 String
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refillInterval      Int?
+  refillAmount        Int?
+  lastRefillAt        DateTime?
+  enabled             Boolean?  @default(true)
+  rateLimitEnabled    Boolean?  @default(true)
+  rateLimitTimeWindow Int?
+  rateLimitMax        Int?
+  requestCount        Int?
+  remaining           Int?
+  lastRequest         DateTime?
+  expiresAt           DateTime?
+  createdAt           DateTime
+  updatedAt           DateTime
+  permissions         String?
+  metadata            String?
 
-  name        String?
-  prefix      String   @unique // A short, unique prefix for the key (e.g., 'sk_live')
-  key         String   @unique // The hashed API key
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  permissions String[] // List of granted permissions, e.g., ["products:read", "orders:write"]
-
-  // Token Bucket / Refill settings
-  refillInterval Int?
-  refillAmount   Int?
-  lastRefillAt   DateTime?
-  remaining      Int?
-
-  // General settings & metadata
-  enabled     Boolean   @default(true)
-  expiresAt   DateTime?
-  lastRequest DateTime?
-  metadata    Json?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("apiKey")
+  @@map("apikey")
 }
 
 model Jwks {

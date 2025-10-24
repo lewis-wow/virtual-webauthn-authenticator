@@ -1,13 +1,17 @@
-import { env } from '@/env';
-import { createAuth } from '@repo/better-auth/server';
+import { authServerConfig } from '@repo/better-auth';
+import { betterAuth } from 'better-auth';
+import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { merge } from 'lodash-es';
 
-export const auth = createAuth({
-  baseURL: env.BASE_URL,
-  basePath: '/auth',
-  socialProviders: {
-    github: {
-      clientId: env.GITHUB_CLIENT_ID,
-      clientSecret: env.GITHUB_CLIENT_SECRET,
+import { prisma } from './prisma';
+
+export const auth = betterAuth(
+  merge(
+    {
+      database: prismaAdapter(prisma, {
+        provider: 'postgresql',
+      }),
     },
-  },
-});
+    authServerConfig,
+  ),
+);

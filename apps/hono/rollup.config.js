@@ -1,5 +1,5 @@
 import commonjs from '@rollup/plugin-commonjs';
-import esmShim from '@rollup/plugin-esm-shim';
+// import esmShim from '@rollup/plugin-esm-shim';
 import json from '@rollup/plugin-json';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import run from '@rollup/plugin-run';
@@ -58,7 +58,7 @@ export default defineConfig({
     // Convert CommonJS modules to ES modules
     commonjs(),
 
-    esmShim(),
+    // esmShim(),
 
     // Allow importing JSON files
     json(),

@@ -5,9 +5,9 @@ export const NoContentAlert = () => {
   return (
     <Alert>
       <AlertCircle className="h-4 w-4" />
-      <AlertTitle>Není k dispozici žádný obsah</AlertTitle>
+      <AlertTitle>No content available</AlertTitle>
       <AlertDescription>
-        Momentálně nejsou žádné položky k zobrazení.
+        There are currently no items to display.
       </AlertDescription>
     </Alert>
   );

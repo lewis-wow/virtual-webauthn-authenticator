@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./server": "./src/server/index.ts",
-    "./client": "./src/client/index.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
