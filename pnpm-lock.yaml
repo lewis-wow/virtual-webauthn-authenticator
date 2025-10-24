@@ -92,6 +92,9 @@ importers:
       '@repo/better-auth':
         specifier: workspace:*
         version: link:../../packages/better-auth
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
       better-auth:
         specifier: ^1.3.27
         version: 1.3.27(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2)
@@ -141,6 +144,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.14
@@ -186,6 +192,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.7.4
         version: 0.7.4(hono@4.9.10)(zod@4.1.12)
+      '@repo/better-auth':
+        specifier: workspace:*
+        version: link:../../packages/better-auth
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
@@ -372,6 +381,9 @@ importers:
       better-auth:
         specifier: ^1.3.27
         version: 1.3.27(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2)
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
       typanion:
         specifier: ^3.14.0
         version: 3.14.0

@@ -3,10 +3,14 @@ import { z } from 'zod';
 
 export const env = createEnv({
   server: {
+    BASE_URL: z.url(),
     DATABASE_URL: z.url(),
     AZURE_KEY_VAULT_BASE_URL: z.url(),
     JWT_SECRET: z.string(),
     PORT: z.coerce.number(),
+
+    GITHUB_CLIENT_ID: z.string(),
+    GITHUB_CLIENT_SECRET: z.string(),
   },
 
   /**

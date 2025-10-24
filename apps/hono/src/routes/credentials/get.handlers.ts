@@ -10,8 +10,6 @@ import { uuidToBuffer } from '@repo/utils';
 import {
   PublicKeyCredentialRequestOptionsSchema,
   PublicKeyCredentialSchema,
-  type PublicKeyCredentialRequestOptions,
-  type PublicKeyCredentialUserEntity,
 } from '@repo/validation';
 import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
 

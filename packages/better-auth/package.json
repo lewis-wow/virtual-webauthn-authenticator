@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./server": "./src/server/index.ts",
+    "./client": "./src/client/index.ts"
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
@@ -24,6 +25,7 @@
     "@repo/enums": "workspace:*",
     "@repo/prisma": "workspace:*",
     "better-auth": "^1.3.27",
+    "jose": "^6.1.0",
     "typanion": "^3.14.0"
   }
 }

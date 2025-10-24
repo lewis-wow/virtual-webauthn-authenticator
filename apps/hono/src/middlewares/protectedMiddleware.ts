@@ -1,19 +1,6 @@
-import { prisma } from '@/lib/prisma';
 import type { User } from '@repo/prisma';
 import { createMiddleware } from 'hono/factory';
 import { HTTPException } from 'hono/http-exception';
-
-export const __mockUserMiddleware = createMiddleware<{
-  Variables: { user: Pick<User, 'id'> };
-}>(async (ctx, next) => {
-  ctx.set(
-    'user',
-    await prisma.user.findFirstOrThrow({
-      where: { email: 'john.doe@example.com' },
-    }),
-  );
-  return next();
-});
 
 export const protectedMiddleware = createMiddleware<{
   Variables: { user: Pick<User, 'id'> };

@@ -18,6 +18,7 @@
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/better-auth": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/validation": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",

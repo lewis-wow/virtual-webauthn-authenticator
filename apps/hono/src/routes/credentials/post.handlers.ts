@@ -2,11 +2,7 @@ import { factory } from '@/factory';
 import { keyVault } from '@/lib/keyVault';
 import { prisma } from '@/lib/prisma';
 import { virtualAuthenticator } from '@/lib/virtualAuthenticator';
-import { jwt } from '@/middlewares/jwt';
-import {
-  __mockUserMiddleware,
-  protectedMiddleware,
-} from '@/middlewares/protectedMiddleware';
+import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
 import { COSEKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
 import {
@@ -35,7 +31,6 @@ export const credentialsPostHandlers = factory.createHandlers(
     },
   }),
   zValidator('json', PublicKeyCredentialCreationOptionsRequestBodySchema),
-  jwt,
   protectedMiddleware,
   async (ctx) => {
     const publicKeyCredentialCreationOptionsJson = ctx.req.valid('json');

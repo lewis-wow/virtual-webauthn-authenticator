@@ -19,6 +19,7 @@ model User {
   sessions            Session[]
   accounts            Account[]
   permissions         Permission[]
+  apiKeys             ApiKey[]
   webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
@@ -74,6 +75,46 @@ model Verification {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model ApiKey {
+  id String @id @default(uuid())
+
+  name        String?
+  prefix      String   @unique // A short, unique prefix for the key (e.g., 'sk_live')
+  key         String   @unique // The hashed API key
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions String[] // List of granted permissions, e.g., ["products:read", "orders:write"]
+
+  // Token Bucket / Refill settings
+  refillInterval Int?
+  refillAmount   Int?
+  lastRefillAt   DateTime?
+  remaining      Int?
+
+  // General settings & metadata
+  enabled     Boolean   @default(true)
+  expiresAt   DateTime?
+  lastRequest DateTime?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("apiKey")
+}
+
+model Jwks {
+  id String @id @default(uuid())
+
+  publicKey  String
+  privateKey String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("jwks")
 }
 
 model Permission {
