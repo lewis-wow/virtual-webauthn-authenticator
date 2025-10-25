@@ -10,4 +10,7 @@ export const CreateApiKeyRequestBodySchema = z
     ref: 'CreateApiKeyRequestBody',
   });
 
-export const CreateApiKeyResponseSchema = ApikeySchema;
+export const CreateApiKeyResponseSchema = z.object({
+  apiKey: ApikeySchema.omit({ keyHash: true }),
+  fullKey: z.string(),
+});

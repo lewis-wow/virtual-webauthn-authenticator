@@ -10,4 +10,4 @@ export const GetApiKeyRequestParamSchema = z
     ref: 'GetApiKeyRequestParam',
   });
 
-export const GetApiKeyResponseSchema = ApikeySchema.omit({ key: true });
+export const GetApiKeyResponseSchema = ApikeySchema.omit({ keyHash: true });

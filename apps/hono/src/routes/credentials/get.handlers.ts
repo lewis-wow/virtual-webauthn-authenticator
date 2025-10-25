@@ -1,30 +1,16 @@
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
+import { sValidator } from '@hono/standard-validator';
 import { KeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
 import {
-  PublicKeyCredentialRequestOptionsSchema,
-  PublicKeyCredentialSchema,
+  GetCredentialRequestQuerySchema,
+  GetCredentialResponseSchema,
 } from '@repo/validation';
-import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
 
 export const credentialsGetHandlers = factory.createHandlers(
-  describeRoute({
-    description:
-      'Corresponds to navigator.credentials.get(), used for generating an assertion to authenticate a user as part of the WebAuthn authentication ceremony.',
-    responses: {
-      200: {
-        description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: resolver(PublicKeyCredentialSchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator('query', PublicKeyCredentialRequestOptionsSchema),
+  sValidator('query', GetCredentialRequestQuerySchema),
   protectedMiddleware,
   async (ctx) => {
     const publicKeyCredentialRequestOptions = ctx.req.valid('query');
@@ -63,6 +49,6 @@ export const credentialsGetHandlers = factory.createHandlers(
         },
       });
 
-    return ctx.json(PublicKeyCredentialSchema.encode(publicKeyCredential));
+    return ctx.json(GetCredentialResponseSchema.encode(publicKeyCredential));
   },
 );

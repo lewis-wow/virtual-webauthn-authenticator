@@ -12,4 +12,4 @@ export const UpdateApiKeyRequestBodySchema = CreateApiKeyRequestBodySchema.meta(
   },
 );
 
-export const UpdateApiKeyResponseSchema = ApikeySchema.omit({ key: true });
+export const UpdateApiKeyResponseSchema = ApikeySchema.omit({ keyHash: true });

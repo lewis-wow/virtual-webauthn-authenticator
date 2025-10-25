@@ -87,7 +87,7 @@ model Apikey {
   keyHash     String
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled     Boolean?  @default(true)
+  enabled     Boolean   @default(true)
   expiresAt   DateTime?
   permissions String?
 

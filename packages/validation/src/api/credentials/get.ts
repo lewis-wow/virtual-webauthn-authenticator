@@ -3,7 +3,7 @@ import {
   PublicKeyCredentialSchema,
 } from '../../models';
 
-export const GetCredentialRequestBodySchema =
+export const GetCredentialRequestQuerySchema =
   PublicKeyCredentialRequestOptionsSchema;
 
 export const GetCredentialResponseSchema = PublicKeyCredentialSchema;

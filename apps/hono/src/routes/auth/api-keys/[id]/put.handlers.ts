@@ -1,43 +1,26 @@
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
-import { Handler, paths } from '@repo/contract';
+import { sValidator } from '@hono/standard-validator';
 import {
-  ApikeySchema,
   UpdateApiKeyRequestBodySchema,
   UpdateApiKeyRequestParamSchema,
+  UpdateApiKeyResponseSchema,
 } from '@repo/validation';
-import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
 
 export const apiKeyPutHandlers = factory.createHandlers(
-  describeRoute({
-    responses: {
-      200: {
-        description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: resolver(ApikeySchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator('param', UpdateApiKeyRequestParamSchema),
-  zValidator('json', UpdateApiKeyRequestBodySchema),
+  sValidator('param', UpdateApiKeyRequestParamSchema),
+  sValidator('json', UpdateApiKeyRequestBodySchema),
   protectedMiddleware,
   async (ctx) => {
     const updateApiKeyRequestParam = ctx.req.valid('param');
     const updateApiKeyRequestBody = ctx.req.valid('json');
 
-    const apiKey = await ctx.var.auth.api.updateApiKey({
-      body: {
-        keyId: updateApiKeyRequestParam.id,
-        ...updateApiKeyRequestBody,
-      },
-      headers: ctx.req.raw.headers,
+    const apiKey = await ctx.var.apiKeyManager.updateApiKeyOrThrow({
+      user: ctx.var.user,
+      id: updateApiKeyRequestParam.id,
+      data: updateApiKeyRequestBody,
     });
 
-    Handler.response(paths['/auth/api-keys'].post).encode(apiKey);
-
-    return ctx.json(ApikeySchema.parse(apiKey));
+    return ctx.json(UpdateApiKeyResponseSchema.encode(apiKey));
   },
 );

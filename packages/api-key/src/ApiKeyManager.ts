@@ -98,13 +98,13 @@ export class ApiKeyManager {
     return null;
   }
 
-  public async getApiKey(opts: {
+  public async getApiKeyOrThrow(opts: {
     id: string;
     user: Pick<User, 'id'>;
-  }): Promise<Apikey | null> {
+  }): Promise<Apikey> {
     const { id, user } = opts;
 
-    return this.prisma.apikey.findFirst({
+    return this.prisma.apikey.findUniqueOrThrow({
       where: {
         id,
         userId: user.id,
@@ -128,14 +128,17 @@ export class ApiKeyManager {
   }
 
   public async expireApiKey(opts: { id: string; user: Pick<User, 'id'> }) {
-    return this.updateApiKey({ ...opts, data: { expiresAt: new Date() } });
+    return this.updateApiKeyOrThrow({
+      ...opts,
+      data: { expiresAt: new Date() },
+    });
   }
 
   public async disableApiKey(opts: { id: string; user: Pick<User, 'id'> }) {
-    return this.updateApiKey({ ...opts, data: { enabled: false } });
+    return this.updateApiKeyOrThrow({ ...opts, data: { enabled: false } });
   }
 
-  public async updateApiKey(opts: {
+  public async updateApiKeyOrThrow(opts: {
     id: string;
     user: Pick<User, 'id'>;
     data: {
@@ -143,23 +146,13 @@ export class ApiKeyManager {
       expiresAt?: Date;
       enabled?: boolean;
     };
-  }): Promise<Apikey | null> {
+  }): Promise<Apikey> {
     const { id, user, data } = opts;
-
-    const existingKey = await this.prisma.apikey.findFirst({
-      where: {
-        id: id,
-        userId: user.id,
-      },
-    });
-
-    if (!existingKey) {
-      return null;
-    }
 
     return this.prisma.apikey.update({
       where: {
         id,
+        userId: user.id,
       },
       data,
     });

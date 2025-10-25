@@ -1,33 +1,22 @@
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
-import { ApikeySchema, GetApiKeyRequestParamSchema } from '@repo/validation';
-import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
+import { sValidator } from '@hono/standard-validator';
+import {
+  GetApiKeyRequestParamSchema,
+  GetApiKeyResponseSchema,
+} from '@repo/validation';
 
 export const apiKeyGetHandlers = factory.createHandlers(
-  describeRoute({
-    responses: {
-      200: {
-        description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: resolver(ApikeySchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator('param', GetApiKeyRequestParamSchema),
+  sValidator('param', GetApiKeyRequestParamSchema),
   protectedMiddleware,
   async (ctx) => {
     const getApiKeyRequestParam = ctx.req.valid('param');
 
-    const apiKey = await ctx.var.auth.api.getApiKey({
-      query: {
-        id: getApiKeyRequestParam.id,
-      },
-      headers: ctx.req.raw.headers,
+    const apiKey = await ctx.var.apiKeyManager.getApiKeyOrThrow({
+      user: ctx.var.user,
+      id: getApiKeyRequestParam.id,
     });
 
-    return ctx.json(ApikeySchema.parse(apiKey));
+    return ctx.json(GetApiKeyResponseSchema.encode(apiKey));
   },
 );
