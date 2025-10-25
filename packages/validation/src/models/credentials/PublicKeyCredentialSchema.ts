@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { see } from '../meta/see.js';
-import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
+import { see } from '../../meta/see';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema.js';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema.js';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema.js';

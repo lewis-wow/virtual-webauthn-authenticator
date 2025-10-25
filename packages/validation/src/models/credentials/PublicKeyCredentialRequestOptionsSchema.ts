@@ -1,7 +1,7 @@
 import { UserVerificationRequirementSchema } from '@repo/enums';
 import z from 'zod';
 
-import { see } from '../meta/see.js';
+import { see } from '../../meta/see';
 import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema.js';
 import { ChallengeSchema } from './ChallengeSchema.js';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';

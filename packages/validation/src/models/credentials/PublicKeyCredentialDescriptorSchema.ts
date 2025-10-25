@@ -4,8 +4,8 @@ import {
 } from '@repo/enums';
 import z from 'zod';
 
-import { see } from '../meta/see.js';
-import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema.js';
+import { see } from '../../meta/see';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema.js';
 
 // Used to exclude existing credentials for a user
 

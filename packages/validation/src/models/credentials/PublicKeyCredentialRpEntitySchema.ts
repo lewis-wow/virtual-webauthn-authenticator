@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { see } from '../meta/see';
+import { see } from '../../meta/see';
 import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema';
 
 /**

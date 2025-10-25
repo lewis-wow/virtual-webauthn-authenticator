@@ -1,7 +1,7 @@
 import { AttestationSchema } from '@repo/enums';
 import z from 'zod';
 
-import { see } from '../meta/see.js';
+import { see } from '../../meta/see';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema.js';
 import { ChallengeSchema } from './ChallengeSchema.js';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';

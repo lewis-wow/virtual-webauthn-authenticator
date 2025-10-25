@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { see } from '../meta/see.js';
+import { see } from '../../meta/see';
 import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema.js';
 import { UserHandleSchema } from './UserHandleSchema.js';
 

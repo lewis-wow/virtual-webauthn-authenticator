@@ -1,7 +1,7 @@
 import type z from 'zod';
 
-import { see } from '../meta/see';
-import { Base64URLBufferSchema } from '../transformers/Base64URLBufferSchema';
+import { see } from '../../meta/see';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
 
 /**
  * This attribute contains the **user handle** returned from the authenticator,

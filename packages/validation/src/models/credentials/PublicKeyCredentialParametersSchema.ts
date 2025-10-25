@@ -4,7 +4,7 @@ import {
 } from '@repo/enums';
 import z from 'zod';
 
-import { see } from '../meta/see';
+import { see } from '../../meta/see';
 
 /**
  * Describes the cryptographic algorithms to be supported

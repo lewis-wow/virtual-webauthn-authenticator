@@ -1,7 +1,7 @@
 import { PublicKeyCredentialTypeSchema } from '@repo/enums';
 import z from 'zod';
 
-import { see } from '../meta/see';
+import { see } from '../../meta/see';
 
 /**
  * @see https://w3c.github.io/webappsec-credential-management/#credential

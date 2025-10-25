@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { see } from '../meta/see';
+import { see } from '../../meta/see';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs

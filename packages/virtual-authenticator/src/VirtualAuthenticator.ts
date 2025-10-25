@@ -6,7 +6,7 @@ import {
 import { COSEKey } from '@repo/keys';
 import type { CredentialSigner } from '@repo/types';
 import { hasMinBytes, uuidToBuffer } from '@repo/utils';
-import { sha256 } from '@repo/utils/sha256';
+import { sha256 } from '@repo/utils';
 import type {
   CollectedClientData,
   PublicKeyCredentialCreationOptions,
