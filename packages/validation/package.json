@@ -8,10 +8,10 @@
   },
   "scripts": {
     "build": "pnpm barrel",
+    "barrel": "../../scripts/barrel.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit",
-    "barrel": "../../scripts/barrel.ts"
+    "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
