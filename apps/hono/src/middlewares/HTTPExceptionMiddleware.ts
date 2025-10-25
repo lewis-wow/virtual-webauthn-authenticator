@@ -1,5 +1,5 @@
 import { factory } from '@/factory';
-import { HTTPException } from '@/lib/utils/HTTPException';
+import { HTTPException } from '@repo/exception';
 
 export const HTTPExceptionMiddleware = factory.createMiddleware(
   async (_ctx, next) => {

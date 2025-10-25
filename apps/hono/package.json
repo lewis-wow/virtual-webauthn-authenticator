@@ -32,7 +32,8 @@
     "lodash-es": "^4.17.21",
     "zod": "^4.1.12",
     "zod-openapi": "^5.4.3",
-    "@repo/api-key": "workspace:*"
+    "@repo/api-key": "workspace:*",
+    "@repo/exception": "workspace:*"
   },
   "devDependencies": {
     "@repo/types": "workspace:*",

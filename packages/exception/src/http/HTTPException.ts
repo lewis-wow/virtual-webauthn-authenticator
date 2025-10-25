@@ -1,16 +1,15 @@
-import type { APIErrorCode } from '@repo/enums';
-import type { ContentfulStatusCode } from 'hono/utils/http-status';
+import type { HTTPExceptionCode } from '@repo/enums';
 
 export type HTTPExceptionOptions = {
-  status: ContentfulStatusCode;
-  code: APIErrorCode;
+  status: number;
+  code: HTTPExceptionCode;
   message?: string;
   cause?: unknown;
 };
 
 export class HTTPException extends Error {
-  status!: ContentfulStatusCode;
-  code!: APIErrorCode;
+  status!: number;
+  code!: HTTPExceptionCode;
   message!: string;
   cause?: unknown;
 
