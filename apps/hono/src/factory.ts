@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import type { Hono } from 'hono';
 import { createFactory } from 'hono/factory';
 
+import { apiKeyManager } from './lib/apiKeyManager';
 import { azureCredential } from './lib/azureCredential';
 import { credentialSignerFactory } from './lib/credentialSignerFactory';
 import { cryptographyClientFactory } from './lib/cryptographyClientFactory';
@@ -30,7 +31,8 @@ const initApp = (app: Hono) => {
     .use(keyVault.middleware())
     .use(prisma.middleware())
     .use(virtualAuthenticator.middleware())
-    .use(webAuthnCredentialRepository.middleware());
+    .use(webAuthnCredentialRepository.middleware())
+    .use(apiKeyManager.middleware());
 };
 
 export const factory = createFactory<
@@ -38,19 +40,3 @@ export const factory = createFactory<
 >({
   initApp: (app) => initApp(app as any),
 });
-
-// .use(async (ctx, next) => {
-//   const session = await ctx.var.auth.api.getSession({
-//     headers: ctx.req.raw.headers,
-//   });
-
-//   if (!session) {
-//     ctx.set('user', null);
-//     ctx.set('session', null);
-//     return next();
-//   }
-
-//   ctx.set('user', session.user);
-//   ctx.set('session', session.session);
-//   return next();
-// });
