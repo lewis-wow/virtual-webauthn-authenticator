@@ -1,23 +1,8 @@
 #!/usr/bin/env tsx
-import { root } from '@/routes';
-import { generateSpecs } from 'hono-openapi';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { document } from '@repo/contract';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+import { stringify } from 'yaml';
 
-console.log('generate openapi spec');
-
-const specs = await generateSpecs(root, {
-  documentation: {
-    openapi: '3.1.0',
-    info: {
-      title: 'API',
-      version: '1.0.0',
-      description: 'API',
-    },
-  },
-});
-const dirname = join(import.meta.dirname, '..', 'static');
-
-mkdirSync(dirname, { recursive: true });
-
-writeFileSync(join(dirname, 'openapi.json'), JSON.stringify(specs, null, 2));
+const yaml = stringify(document, { aliasDuplicateObjects: false });
+writeFileSync(join(import.meta.dirname, '..', 'static/openapi.yml'), yaml);

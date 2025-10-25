@@ -25,3 +25,5 @@ lerna-debug.log*
 
 # openapi.json
 static/openapi.json
+static/openapi.yml
+static/openapi.yaml

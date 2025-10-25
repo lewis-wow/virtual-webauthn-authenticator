@@ -16,17 +16,11 @@ import {
 import { Form } from '@/components/ui/form';
 import { authClient } from '@/lib/authClient';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CreateApiKeyRequestBodySchema } from '@repo/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { z } from 'zod';
-
-const formSchema = z.object({
-  name: z.string().min(1, 'Please enter a name for the API key'),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 const ApiKeys = () => {
   const queryClient = useQueryClient();
@@ -62,8 +56,8 @@ const ApiKeys = () => {
     },
   });
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm({
+    resolver: zodResolver(CreateApiKeyRequestBodySchema),
     defaultValues: {
       name: '',
     },

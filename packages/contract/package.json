@@ -18,11 +18,12 @@
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "yaml": "^2.8.1"
   },
   "dependencies": {
-    "@repo/validation": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/validation": "workspace:*",
     "zod": "^4.1.12",
     "zod-openapi": "^5.4.3"
   }

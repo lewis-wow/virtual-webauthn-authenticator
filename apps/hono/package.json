@@ -14,9 +14,11 @@
     "@hono/node-server": "^1.19.5",
     "@hono/standard-validator": "^0.1.5",
     "@hono/zod-validator": "^0.7.4",
+    "@repo/api-key": "workspace:*",
     "@repo/better-auth": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/enums": "workspace:*",
+    "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",
@@ -31,9 +33,7 @@
     "hono-openapi": "^1.1.0",
     "lodash-es": "^4.17.21",
     "zod": "^4.1.12",
-    "zod-openapi": "^5.4.3",
-    "@repo/api-key": "workspace:*",
-    "@repo/exception": "workspace:*"
+    "zod-openapi": "^5.4.3"
   },
   "devDependencies": {
     "@repo/types": "workspace:*",
@@ -57,6 +57,7 @@
     "rollup-plugin-tsconfig-paths": "^1.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.8.3",
-    "vite-tsconfig-paths": "^5.1.4"
+    "vite-tsconfig-paths": "^5.1.4",
+    "yaml": "^2.8.1"
   }
 }
