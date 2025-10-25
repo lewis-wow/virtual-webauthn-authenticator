@@ -17,6 +17,10 @@ export const auth = betterAuth({
   plugins: [nextCookies()],
   advanced: {
     generateId: false,
+    cookies: {
+      session_token: {
+        name: 'session_token',
+      },
+    },
   },
-  trustedOrigins: ['http://localhost:3001'],
 });
