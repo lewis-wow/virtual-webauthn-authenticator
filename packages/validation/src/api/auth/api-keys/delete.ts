@@ -1,4 +1,4 @@
-import { DeleteResponseSchema } from '../../common';
+import { DeleteResponseSchema } from '../../common/DeleteResponseSchema';
 import { GetApiKeyRequestParamSchema } from './get';
 
 export const DeleteApiKeyRequestParamSchema = GetApiKeyRequestParamSchema.meta({

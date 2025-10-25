@@ -1,8 +1,8 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema.js';
-import { UserHandleSchema } from './UserHandleSchema.js';
+import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema';
+import { UserHandleSchema } from './UserHandleSchema';
 
 // Represents the user creating the credential
 

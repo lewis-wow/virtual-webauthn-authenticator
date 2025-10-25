@@ -2,12 +2,12 @@ import { AttestationSchema } from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema.js';
-import { ChallengeSchema } from './ChallengeSchema.js';
-import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';
-import { PublicKeyCredentialParametersSchema } from './PublicKeyCredentialParametersSchema.js';
-import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema.js';
-import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema.js';
+import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema';
+import { ChallengeSchema } from './ChallengeSchema';
+import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
+import { PublicKeyCredentialParametersSchema } from './PublicKeyCredentialParametersSchema';
+import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema';
+import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema';
 
 /**
  * Zod schema for WebAuthn's PublicKeyCredentialCreationOptions.

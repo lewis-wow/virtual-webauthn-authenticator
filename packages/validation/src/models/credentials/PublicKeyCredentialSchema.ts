@@ -1,11 +1,11 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema.js';
-import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema.js';
-import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema.js';
-import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema.js';
-import { CredentialSchema } from './CredentialSchema.js';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
+import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema';
+import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema';
+import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema';
+import { CredentialSchema } from './CredentialSchema';
 
 /**
  * This is the primary schema for validating the incoming credential object from

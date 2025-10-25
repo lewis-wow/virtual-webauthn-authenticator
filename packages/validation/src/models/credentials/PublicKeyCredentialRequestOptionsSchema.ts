@@ -2,9 +2,9 @@ import { UserVerificationRequirementSchema } from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema.js';
-import { ChallengeSchema } from './ChallengeSchema.js';
-import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema.js';
+import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema';
+import { ChallengeSchema } from './ChallengeSchema';
+import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
 
 /**
  * The PublicKeyCredentialRequestOptions dictionary supplies get() with the data it needs to generate an assertion.

@@ -1,4 +1,4 @@
-import { ApikeySchema } from '../../../models';
+import { ApikeySchema } from '../../../models/auth/ApiKeySchema';
 import { CreateApiKeyRequestBodySchema } from './create';
 import { GetApiKeyRequestParamSchema } from './get';
 

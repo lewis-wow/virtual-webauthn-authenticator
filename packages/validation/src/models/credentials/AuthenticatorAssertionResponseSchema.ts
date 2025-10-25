@@ -1,9 +1,9 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema.js';
-import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema.js';
-import { UserHandleSchema } from './UserHandleSchema.js';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
+import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
+import { UserHandleSchema } from './UserHandleSchema';
 
 /**
  * The AuthenticatorAssertionResponse interface represents an authenticator's response to a client’s request

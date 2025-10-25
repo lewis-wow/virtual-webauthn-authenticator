@@ -1,8 +1,8 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema.js';
-import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema.js';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
+import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#authenticatorattestationresponse

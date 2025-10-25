@@ -1,7 +1,7 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema.js';
+import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#authenticatorresponse
