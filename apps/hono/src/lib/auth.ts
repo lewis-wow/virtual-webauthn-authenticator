@@ -1,22 +1,16 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { apiKey, bearer } from 'better-auth/plugins';
+import { bearer } from 'better-auth/plugins';
 
 import { prisma } from './prisma';
 import { Lazy } from './utils/lazy';
 
-export const auth = new Lazy('auth', () =>
+export const auth = new Lazy('auth', async () =>
   betterAuth({
-    database: prismaAdapter(prisma, {
+    database: prismaAdapter(await prisma.resolve(), {
       provider: 'postgresql',
     }),
-    plugins: [
-      bearer(),
-      apiKey({
-        requireName: true,
-        defaultPrefix: 'virtual-webauthn-authenticator_',
-      }),
-    ],
+    plugins: [bearer()],
     advanced: {
       generateId: false,
     },

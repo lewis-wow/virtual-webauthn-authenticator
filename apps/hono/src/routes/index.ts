@@ -1,6 +1,7 @@
 import { factory } from '@/factory';
 import { sessionMiddleware } from '@/middlewares/sessionMiddleware';
 import { serveStatic } from '@hono/node-server/serve-static';
+import { HTTPException } from '@repo/exception';
 import { Scalar } from '@scalar/hono-api-reference';
 import { cors } from 'hono/cors';
 
@@ -9,6 +10,13 @@ import { credentials } from './credentials';
 
 export const root = factory
   .createApp()
+  .onError((error) => {
+    if (error instanceof HTTPException) {
+      return error.toResponse();
+    }
+
+    throw error;
+  })
   .use(
     cors({
       origin: ['http://localhost:3000'],
@@ -20,9 +28,9 @@ export const root = factory
   .get('/', async (ctx) => {
     return ctx.text('OK');
   })
-  .use('api/*', sessionMiddleware)
-  .route('api/credentials', credentials)
-  .route('api/auth', auth);
+  .use('*', sessionMiddleware)
+  .route('credentials', credentials)
+  .route('auth', auth);
 
 root.get(
   '/openapi',

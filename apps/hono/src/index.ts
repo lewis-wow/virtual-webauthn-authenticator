@@ -13,7 +13,6 @@ serve(
     console.log(`Server is running on http://localhost:${info.port}`);
 
     showRoutes(root, {
-      verbose: true,
       colorize: true,
     });
   },

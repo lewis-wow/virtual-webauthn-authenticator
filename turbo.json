@@ -22,7 +22,22 @@
     "@repo/validation#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": []
+      "outputs": ["src/index.ts"]
+    },
+    "@repo/enums#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["src/index.ts"]
+    },
+    "@repo/exception#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["src/index.ts"]
+    },
+    "@repo/utils#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["src/index.ts"]
     },
     "lint": {
       "dependsOn": ["^lint"]
