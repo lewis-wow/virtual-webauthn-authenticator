@@ -1,5 +1,5 @@
 {
-  "name": "@repo/utils",
+  "name": "@repo/contract",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -21,7 +21,9 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
-    "typanion": "^3.14.0"
+    "@repo/validation": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "zod": "^4.1.12",
+    "zod-openapi": "^5.4.3"
   }
 }

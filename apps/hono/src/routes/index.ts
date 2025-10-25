@@ -13,7 +13,7 @@ export const root = factory
   .createApp()
   .use(
     cors({
-      origin: [env.BASE_URL, 'http://localhost:3002'],
+      origin: ['http://localhost:3000'],
       maxAge: 600,
       credentials: true,
     }),

@@ -225,6 +225,9 @@ importers:
       '@repo/better-auth':
         specifier: workspace:*
         version: link:../../packages/better-auth
+      '@repo/contract':
+        specifier: workspace:*
+        version: link:../../packages/contract
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
@@ -263,13 +266,16 @@ importers:
         version: 4.9.10
       hono-openapi:
         specifier: ^1.1.0
-        version: 1.1.0(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod@4.1.12))(@types/json-schema@7.0.15)(hono@4.9.10)(openapi-types@12.1.3)
+        version: 1.1.0(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12))(@types/json-schema@7.0.15)(hono@4.9.10)(openapi-types@12.1.3)
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
       zod:
         specifier: ^4.1.12
         version: 4.1.12
+      zod-openapi:
+        specifier: ^5.4.3
+        version: 5.4.3(zod@4.1.12)
     devDependencies:
       '@repo/types':
         specifier: workspace:*
@@ -328,6 +334,9 @@ importers:
       rollup-plugin-tsconfig-paths:
         specifier: ^1.5.2
         version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
       typescript:
         specifier: ^5.8.3
         version: 5.9.2
@@ -429,6 +438,43 @@ importers:
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+
+  packages/contract:
+    dependencies:
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+      zod-openapi:
+        specifier: ^5.4.3
+        version: 5.4.3(zod@4.1.12)
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -11213,7 +11259,7 @@ snapshots:
       typebox: 1.0.34
       zod: 4.1.12
 
-  '@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod@4.1.12)':
+  '@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12)':
     dependencies:
       '@standard-community/standard-json': 0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12)
       '@standard-schema/spec': 1.0.0
@@ -11221,6 +11267,7 @@ snapshots:
     optionalDependencies:
       typebox: 1.0.34
       zod: 4.1.12
+      zod-openapi: 5.4.3(zod@4.1.12)
 
   '@standard-schema/spec@1.0.0': {}
 
@@ -13535,10 +13582,10 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono-openapi@1.1.0(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod@4.1.12))(@types/json-schema@7.0.15)(hono@4.9.10)(openapi-types@12.1.3):
+  hono-openapi@1.1.0(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12))(@types/json-schema@7.0.15)(hono@4.9.10)(openapi-types@12.1.3):
     dependencies:
       '@standard-community/standard-json': 0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12)
-      '@standard-community/standard-openapi': 0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod@4.1.12)
+      '@standard-community/standard-openapi': 0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12)
       '@types/json-schema': 7.0.15
       openapi-types: 12.1.3
     optionalDependencies:

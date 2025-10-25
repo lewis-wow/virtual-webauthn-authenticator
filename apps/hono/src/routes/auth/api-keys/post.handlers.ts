@@ -1,23 +1,12 @@
 import { env } from '@/env';
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
-import { ApikeySchema, CreateApiKeyRequestBodySchema } from '@repo/validation';
-import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
+import { sValidator } from '@hono/standard-validator';
+import { Handler, paths } from '@repo/contract';
+import { ApikeySchema } from '@repo/validation';
 
 export const apiKeyPostHandlers = factory.createHandlers(
-  describeRoute({
-    responses: {
-      200: {
-        description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: resolver(ApikeySchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator('json', CreateApiKeyRequestBodySchema),
+  sValidator('json', Handler.json(paths['/auth/api-keys'].post)),
   protectedMiddleware,
   async (ctx) => {
     const createApiKeyRequestBody = ctx.req.valid('json');
@@ -29,6 +18,12 @@ export const apiKeyPostHandlers = factory.createHandlers(
       },
       headers: ctx.req.raw.headers,
     });
+
+    const res = Handler.response(
+      paths['/auth/api-keys'].post,
+      200,
+      'application/json',
+    );
 
     return ctx.json(ApikeySchema.parse(apiKey));
   },

@@ -1,0 +1,23 @@
+import {
+  ApikeySchema,
+  UpdateApiKeyRequestBodySchema,
+  UpdateApiKeyRequestParamSchema,
+} from '@repo/validation';
+import type { ZodOpenApiOperationObject } from 'zod-openapi';
+
+export const PUT = {
+  requestParams: { path: UpdateApiKeyRequestParamSchema },
+  requestBody: {
+    content: { 'application/json': { schema: UpdateApiKeyRequestBodySchema } },
+  },
+  responses: {
+    200: {
+      description: 'Successful response',
+      content: {
+        'application/json': {
+          schema: ApikeySchema,
+        },
+      },
+    },
+  },
+} as const satisfies ZodOpenApiOperationObject;

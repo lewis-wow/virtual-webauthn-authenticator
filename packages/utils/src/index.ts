@@ -5,3 +5,4 @@ export * from './predicates';
 export * from './asserts';
 export * from './bufferToUuid';
 export * from './uuidToBuffer';
+export * from './addPrefixToKeys';

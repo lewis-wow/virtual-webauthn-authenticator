@@ -5,6 +5,8 @@ export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
     headers: ctx.req.raw.headers,
   });
 
+  console.log(session);
+
   if (!session) {
     ctx.set('user', null);
     ctx.set('session', null);
