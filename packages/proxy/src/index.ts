@@ -1,1 +1,7 @@
-export * from './Proxy';
+/**
+ * @file Automatically generated.
+ *
+ * @noprettier
+ */
+
+export * from "./Proxy";

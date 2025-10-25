@@ -2,10 +2,12 @@ import { factory } from '@/factory';
 
 export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
   console.log('headers', ctx.req.raw.headers);
-  const session = await ctx.var.auth.api.getSession({
+  const { response: session, headers } = await ctx.var.auth.api.getSession({
     headers: ctx.req.raw.headers,
+    returnHeaders: true,
   });
 
+  console.log('headers', headers.entries());
   console.log('session', session);
 
   if (!session) {
