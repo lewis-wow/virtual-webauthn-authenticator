@@ -1,43 +1,22 @@
 import { factory } from '@/factory';
-import { credentialSignerFactory } from '@/lib/credentialSignerFactory';
-import { keyVault } from '@/lib/keyVault';
-import { virtualAuthenticator } from '@/lib/virtualAuthenticator';
-import { webAuthnCredentialRepository } from '@/lib/webAuthnCredentialRepository';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
+import { sValidator } from '@hono/standard-validator';
 import { KeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
 import {
-  PublicKeyCredentialRequestOptionsSchema,
-  PublicKeyCredentialSchema,
-  type PublicKeyCredentialRequestOptions,
-  type PublicKeyCredentialUserEntity,
+  GetCredentialRequestQuerySchema,
+  GetCredentialResponseSchema,
 } from '@repo/validation';
-import { describeRoute, resolver, validator as zValidator } from 'hono-openapi';
 
 export const credentialsGetHandlers = factory.createHandlers(
-  describeRoute({
-    summary: 'Authenticate with a credential',
-    description:
-      'Corresponds to navigator.credentials.get(), used for generating an assertion to authenticate a user as part of the WebAuthn authentication ceremony.',
-    responses: {
-      200: {
-        description: 'Successful response',
-        content: {
-          'application/json': {
-            schema: resolver(PublicKeyCredentialSchema),
-          },
-        },
-      },
-    },
-  }),
-  zValidator('query', PublicKeyCredentialRequestOptionsSchema),
+  sValidator('query', GetCredentialRequestQuerySchema),
   protectedMiddleware,
   async (ctx) => {
     const publicKeyCredentialRequestOptions = ctx.req.valid('query');
 
     const webAuthnCredential =
-      await webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
+      await ctx.var.webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
         {
           publicKeyCredentialRequestOptions,
           user: ctx.var.user,
@@ -47,25 +26,29 @@ export const credentialsGetHandlers = factory.createHandlers(
     const {
       jwk,
       meta: { keyVaultKey },
-    } = await keyVault.getKey({ keyName: webAuthnCredential.keyVaultKeyName });
+    } = await ctx.var.keyVault.getKey({
+      keyName: webAuthnCredential.keyVaultKeyName,
+    });
 
     const COSEPublicKey = COSEKey.fromJwk(jwk);
 
-    const credentialSigner = credentialSignerFactory.createCredentialSigner({
-      algorithm: KeyAlgorithm.ES256,
-      keyVaultKey,
-    });
+    const credentialSigner =
+      ctx.var.credentialSignerFactory.createCredentialSigner({
+        algorithm: KeyAlgorithm.ES256,
+        keyVaultKey,
+      });
 
-    const publicKeyCredential = await virtualAuthenticator.getCredential({
-      publicKeyCredentialRequestOptions,
-      COSEPublicKey,
-      credentialSigner,
-      meta: {
-        counter: webAuthnCredential.counter,
-        credentialID: uuidToBuffer(webAuthnCredential.id),
-      },
-    });
+    const publicKeyCredential =
+      await ctx.var.virtualAuthenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        COSEPublicKey,
+        credentialSigner,
+        meta: {
+          counter: webAuthnCredential.counter,
+          credentialID: uuidToBuffer(webAuthnCredential.id),
+        },
+      });
 
-    return ctx.json(PublicKeyCredentialSchema.encode(publicKeyCredential));
+    return ctx.json(GetCredentialResponseSchema.encode(publicKeyCredential));
   },
 );

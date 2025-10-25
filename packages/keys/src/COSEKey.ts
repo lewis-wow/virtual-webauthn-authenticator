@@ -9,8 +9,7 @@ import {
   KeyType,
 } from '@repo/enums';
 import type { BufferLike } from '@repo/types';
-import { objectKeys } from '@repo/utils/objectKeys';
-import { swapKeysAndValues } from '@repo/utils/swapKeysAndValues';
+import { objectKeys, swapKeysAndValues } from '@repo/utils';
 import * as cbor from 'cbor';
 import { assert, isEnum, isNumber, isString } from 'typanion';
 

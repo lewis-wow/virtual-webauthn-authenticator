@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types.js';
-import { KeyCurveName } from './KeyCurveName.js';
+import type { ValueOfEnum } from '../types';
+import { KeyCurveName } from './KeyCurveName';
 
 export const COSEKeyCurve = {
   [KeyCurveName.P256]: 1,

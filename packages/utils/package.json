@@ -4,13 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./toBuffer": "./src/toBuffer.ts",
-    "./sha256": "./src/sha256.ts",
-    "./objectKeys": "./src/objectKeys.ts",
-    "./swapKeysAndValues": "./src/swapKeysAndValues.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "pnpm barrel",
+    "barrel": "../../scripts/barrel.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"

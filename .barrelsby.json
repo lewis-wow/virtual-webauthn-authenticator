@@ -1,0 +1,16 @@
+{
+  "directory": "./src",
+  "output": "./src/index.ts",
+  "recursive": true,
+  "delete": true,
+  "mode": "wild",
+  "include": [".*\\.ts$", ".*\\.tsx$"],
+  "exclude": [
+    "index\\.ts$",
+    "\\.spec\\.ts$",
+    "\\.test\\.ts$",
+    "\\.stories\\.ts$",
+    "\\.stories\\.tsx$"
+  ],
+  "noHeader": true
+}

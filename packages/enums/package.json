@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/enums/index.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "../../scripts/generate_barrels.ts src/enums",
+    "build": "pnpm barrel",
+    "barrel": "../../scripts/barrel.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },

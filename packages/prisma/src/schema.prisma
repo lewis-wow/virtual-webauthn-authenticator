@@ -4,10 +4,12 @@ datasource db {
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  output        = "generated/client"
-  moduleFormat  = "esm"
-  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+  provider               = "prisma-client"
+  output                 = "generated/client"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+  binaryTargets          = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 model User {
@@ -19,6 +21,7 @@ model User {
   sessions            Session[]
   accounts            Account[]
   permissions         Permission[]
+  apiKeys             Apikey[]
   webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
@@ -74,6 +77,36 @@ model Verification {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@map("verification")
+}
+
+model Apikey {
+  id          String    @id @default(uuid())
+  name        String
+  start       String
+  prefix      String
+  keyHash     String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled     Boolean   @default(true)
+  expiresAt   DateTime?
+  permissions String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("apikey")
+}
+
+model Jwks {
+  id String @id @default(uuid())
+
+  publicKey  String
+  privateKey String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("jwks")
 }
 
 model Permission {

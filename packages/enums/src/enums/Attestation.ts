@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types.js';
+import type { ValueOfEnum } from '../types';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-attestation-conveyance-preference

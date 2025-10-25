@@ -1,3 +1,8 @@
 import { DefaultAzureCredential } from '@azure/identity';
 
-export const azureCredential = new DefaultAzureCredential();
+import { Lazy } from './utils/lazy';
+
+export const azureCredential = new Lazy(
+  'azureCredential',
+  () => new DefaultAzureCredential(),
+);

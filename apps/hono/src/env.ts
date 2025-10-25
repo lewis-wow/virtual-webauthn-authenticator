@@ -1,12 +1,20 @@
 import { createEnv } from '@t3-oss/env-core';
 import { z } from 'zod';
 
+console.log('BASE_URL', process.env.BASE_URL);
+
 export const env = createEnv({
   server: {
-    DATABASE_URL: z.url(),
-    AZURE_KEY_VAULT_BASE_URL: z.url(),
-    JWT_SECRET: z.string(),
     PORT: z.coerce.number(),
+    BASE_URL: z.url(),
+
+    DATABASE_URL: z.url(),
+
+    AZURE_KEY_VAULT_BASE_URL: z.url(),
+
+    JWT_SECRET: z.string(),
+
+    API_KEY_PREFIX: z.string(),
   },
 
   /**

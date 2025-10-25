@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types.js';
-import { KeyType } from './KeyType.js';
+import type { ValueOfEnum } from '../types';
+import { KeyType } from './KeyType';
 
 export const COSEKeyType = {
   [KeyType.EC]: 2,
