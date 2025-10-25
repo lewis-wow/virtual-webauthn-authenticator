@@ -1,5 +1,6 @@
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
+import { Handler, paths } from '@repo/contract';
 import {
   ApikeySchema,
   UpdateApiKeyRequestBodySchema,
@@ -34,6 +35,8 @@ export const apiKeyPutHandlers = factory.createHandlers(
       },
       headers: ctx.req.raw.headers,
     });
+
+    Handler.response(paths['/auth/api-keys'].post).encode(apiKey);
 
     return ctx.json(ApikeySchema.parse(apiKey));
   },

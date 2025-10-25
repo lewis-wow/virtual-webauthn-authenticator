@@ -7,5 +7,3 @@ export const DeleteResponseSchema = z
   .meta({
     ref: 'DeleteResponse',
   });
-
-export type DeleteResponse = z.infer<typeof DeleteResponseSchema>;

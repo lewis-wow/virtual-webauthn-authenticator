@@ -94,12 +94,21 @@ export class Handler {
     operation: T,
     statusCode: SCode,
     contentType: CType,
-  ): ResponseBodySchema<T, SCode, CType> {
-    // We must use type assertions here, as TypeScript cannot
-    // prove the complex runtime path matches our conditional type.
-    const response = operation.responses[statusCode as any] as any;
+  ): ResponseBodySchema<T, SCode, CType>;
+
+  static response<T extends ZodOpenApiOperationObject>(
+    operation: T,
+  ): ResponseBodySchema<T, '200', 'application/json'>;
+
+  static response(
+    operation: ZodOpenApiOperationObject,
+    statusCode = '200',
+    contentType = 'application/json',
+  ): unknown {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = (operation.responses as any)?.[statusCode];
     const schema = response?.content?.[contentType]?.schema;
 
-    return schema as ResponseBodySchema<T, SCode, CType>;
+    return schema;
   }
 }

@@ -1,1 +1,2 @@
-export * from './PublicKeyCredentialCreationOptionsRequestBodySchema';
+export * from './create';
+export * from './get';
