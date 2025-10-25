@@ -1,6 +1,5 @@
-import type { ReactNode } from 'react';
-
 import { cn } from '@/lib/utils';
+import type { ReactNode } from 'react';
 
 export type TypographyPProps = {
   children?: ReactNode;
