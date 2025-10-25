@@ -1,4 +1,5 @@
-import { authClient } from '@/lib/authClient';
+import { fetchClient } from '@/lib/api/client';
+import { DeleteApiKeyResponseSchema } from '@repo/validation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Copy, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -9,18 +10,23 @@ import { Button } from './Button';
 export type ApiKeyProps = {
   id: string;
   name: string;
+  prefix: string;
+  start: string;
   createdAt: Date;
   onDelete?: () => void;
 };
 
-export const ApiKey = ({ id, name, createdAt, onDelete }: ApiKeyProps) => {
+export const ApiKey = ({
+  id,
+  name,
+  prefix,
+  start,
+  createdAt,
+  onDelete,
+}: ApiKeyProps) => {
   const queryClient = useQueryClient();
 
   const [isVisible, setIsVisible] = useState(false);
-
-  const maskKey = (key: string) => {
-    return key.substring(0, 7) + '•'.repeat(20);
-  };
 
   const handleCopyKey = (key: string) => {
     navigator.clipboard.writeText(key);
@@ -30,11 +36,15 @@ export const ApiKey = ({ id, name, createdAt, onDelete }: ApiKeyProps) => {
 
   const authApiKeyDeleteMutation = useMutation({
     mutationFn: async (opts: { keyId: string }) => {
-      const { data } = await authClient.apiKey.delete({
-        keyId: opts.keyId,
+      const { data } = await fetchClient.DELETE('/auth/api-keys/{id}', {
+        params: {
+          path: {
+            id: opts.keyId,
+          },
+        },
       });
 
-      return data;
+      return DeleteApiKeyResponseSchema.parse(data);
     },
     onSuccess: () => {
       toast('API key has been deleted.', {
@@ -56,7 +66,7 @@ export const ApiKey = ({ id, name, createdAt, onDelete }: ApiKeyProps) => {
         <p className="font-medium">{name}</p>
         <div className="flex items-center gap-2">
           <code className="text-sm text-muted-foreground font-mono">
-            {isVisible ? id : maskKey(id)}
+            {isVisible ? `${prefix}_${start}` : `${prefix}_`}
           </code>
           <Button
             variant="ghost"

@@ -14,9 +14,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
-import { authClient } from '@/lib/authClient';
+import { fetchClient } from '@/lib/api/client';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateApiKeyRequestBodySchema } from '@repo/validation';
+import {
+  CreateApiKeyRequestBodySchema,
+  CreateApiKeyResponseSchema,
+  ListApiKeysResponseSchema,
+} from '@repo/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -28,19 +32,21 @@ const ApiKeys = () => {
   const authApiKeyListQuery = useQuery({
     queryKey: ['auth.apiKey.list'],
     queryFn: async () => {
-      const { data } = await authClient.apiKey.list();
+      const { data } = await fetchClient.GET('/auth/api-keys');
 
-      return data;
+      return ListApiKeysResponseSchema.parse(data);
     },
   });
 
   const authApiKeyCreateMutation = useMutation({
     mutationFn: async (opts: { name: string }) => {
-      const { data } = await authClient.apiKey.create({
-        name: opts.name,
+      const { data } = await fetchClient.POST('/auth/api-keys', {
+        body: {
+          name: opts.name,
+        },
       });
 
-      return data;
+      return CreateApiKeyResponseSchema.parse(data);
     },
     onSuccess: () => {
       form.reset();
