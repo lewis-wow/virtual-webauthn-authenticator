@@ -1,12 +1,17 @@
+import type { MaybePromise } from '@repo/types';
 import { Hono } from 'hono';
+import 'hono/cookie';
 import { getCookie } from 'hono/cookie';
 import { proxy } from 'hono/proxy';
 import { handle } from 'hono/vercel';
-import { assert, isOptional, isString } from 'typanion';
+import { assert, isString } from 'typanion';
 
 export type ProxyOptions = {
   originServerBaseURL: string;
-  authorizationCookieName?: string;
+  authorization?: (opts: {
+    request: Request;
+    cookie: (name: string) => string | undefined;
+  }) => MaybePromise<string | undefined>;
   rewritePath?: (path: string | undefined) => string | undefined;
 };
 
@@ -14,21 +19,19 @@ export class Proxy {
   private readonly app = new Hono();
 
   constructor(opts: ProxyOptions) {
-    const { originServerBaseURL, authorizationCookieName, rewritePath } = opts;
+    const { originServerBaseURL, authorization, rewritePath } = opts;
 
     assert(originServerBaseURL, isString());
-    assert(authorizationCookieName, isOptional(isString()));
 
     this.app.all('*', async (ctx) => {
-      let Authorization: string | undefined = ctx.req.header('Authorization');
-
-      if (authorizationCookieName) {
-        Authorization = getCookie(ctx, authorizationCookieName);
-      }
-
       const path = this._trimSlashes(
         rewritePath ? rewritePath(ctx.req.path) : ctx.req.path,
       );
+
+      const Authorization = await authorization?.({
+        request: ctx.req.raw,
+        cookie: (key: string) => getCookie(ctx, key),
+      });
 
       const response = await proxy(`${originServerBaseURL}/${path}`, {
         headers: {

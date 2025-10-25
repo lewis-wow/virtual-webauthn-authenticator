@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { fetchClient } from '@/lib/api/client';
+import { authClient } from '@/lib/authClient';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateApiKeyRequestBodySchema,
