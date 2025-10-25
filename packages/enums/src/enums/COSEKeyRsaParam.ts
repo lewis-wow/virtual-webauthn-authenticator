@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types.js';
+import type { ValueOfEnum } from '../types';
 
 // COSE RSA Key Parameters
 export const COSEKeyRsaParam = {

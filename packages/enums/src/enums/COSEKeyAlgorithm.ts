@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types.js';
-import { KeyAlgorithm } from './KeyAlgorithm.js';
+import type { ValueOfEnum } from '../types';
+import { KeyAlgorithm } from './KeyAlgorithm';
 
 export const COSEKeyAlgorithm = {
   /** ECDSA w/ SHA-256 */

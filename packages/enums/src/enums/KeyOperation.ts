@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types.js';
+import type { ValueOfEnum } from '../types';
 
 export const KeyOperation = {
   /** Indicates that the key can be used to encrypt. */
