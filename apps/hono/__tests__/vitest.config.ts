@@ -12,5 +12,6 @@ export default defineConfig({
       ...config({ path: join(import.meta.dirname, '..', '.env.test') }).parsed,
     },
   },
+  // @ts-expect-error - No overload matches this call.
   plugins: [tsconfigPaths()],
 });

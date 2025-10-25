@@ -63,6 +63,7 @@ describe('Credentials POST handler', () => {
         },
         pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
       },
+      // @ts-expect-error - header does not exists in testClient.credentials.$post
       header: {
         Authorization: `Bearer ${token}`,
       },
