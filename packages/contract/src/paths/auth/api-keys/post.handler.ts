@@ -1,4 +1,7 @@
-import { ApikeySchema, CreateApiKeyRequestBodySchema } from '@repo/validation';
+import {
+  CreateApiKeyRequestBodySchema,
+  CreateApiKeyResponseSchema,
+} from '@repo/validation';
 import type { ZodOpenApiOperationObject } from 'zod-openapi';
 
 export const POST = {
@@ -10,7 +13,7 @@ export const POST = {
       description: 'Successful response',
       content: {
         'application/json': {
-          schema: ApikeySchema,
+          schema: CreateApiKeyResponseSchema,
         },
       },
     },

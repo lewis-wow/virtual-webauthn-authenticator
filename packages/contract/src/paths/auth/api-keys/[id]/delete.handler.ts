@@ -1,6 +1,6 @@
 import {
   DeleteApiKeyRequestParamSchema,
-  DeleteResponseSchema,
+  DeleteApiKeyResponseSchema,
 } from '@repo/validation';
 import type { ZodOpenApiOperationObject } from 'zod-openapi';
 
@@ -11,7 +11,7 @@ export const DELETE = {
       description: 'Successful response',
       content: {
         'application/json': {
-          schema: DeleteResponseSchema,
+          schema: DeleteApiKeyResponseSchema,
         },
       },
     },
