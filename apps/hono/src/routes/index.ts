@@ -25,7 +25,7 @@ export const root = factory
   .route('auth', auth);
 
 root.get('.well-known/jwks.json', async (ctx) => {
-  const jwks = await ctx.var.auth.api.getJwks();
+  const jwks = await ctx.var.jwt.getJwks();
 
   return ctx.json(jwks);
 });

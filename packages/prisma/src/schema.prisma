@@ -115,7 +115,7 @@ model Apikey {
 model Jwks {
   id String @id @default(uuid())
 
-  publicKey  String
+  publicKey  Json
   privateKey String
 
   createdAt DateTime @default(now())

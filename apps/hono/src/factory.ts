@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import type { User } from '@repo/prisma';
 import type { Hono } from 'hono';
 import { createFactory } from 'hono/factory';
 
@@ -15,8 +15,7 @@ import { webAuthnCredentialRepository } from './lib/webAuthnCredentialRepository
 
 export type FactoryEnv = {
   Variables: {
-    user: typeof auth.$InferLazyModule.$Infer.Session.user | null;
-    session: typeof auth.$InferLazyModule.$Infer.Session.session | null;
+    user: User;
   };
 };
 
@@ -24,7 +23,6 @@ export type inferEnv<T> = T extends Hono<infer iEnv> ? iEnv : never;
 
 const initApp = (app: Hono) => {
   return app
-    .use(auth.middleware())
     .use(azureCredential.middleware())
     .use(credentialSignerFactory.middleware())
     .use(cryptographyClientFactory.middleware())

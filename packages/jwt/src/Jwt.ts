@@ -1,5 +1,5 @@
 import { Encryption } from '@repo/crypto';
-import type { PrismaClient, User } from '@repo/prisma';
+import type { Prisma, PrismaClient, User } from '@repo/prisma';
 import {
   createLocalJWKSet,
   importJWK,
@@ -96,6 +96,19 @@ export class Jwt {
     return Jwt.JWT_SCHEMA.safeParse(payload).success;
   }
 
+  public async getJwks() {
+    const jwks = await this.prisma.jwks.findMany();
+
+    return {
+      keys: jwks.map((jwk) => ({
+        kid: jwk.id,
+        use: 'sig',
+        alg: Jwt.SIGNING_ALGORITHM,
+        ...(jwk.publicKey as Prisma.JsonObject),
+      })),
+    };
+  }
+
   private async _upsertJwk() {
     const jwk = await this.prisma.jwks.findUnique({
       where: {
@@ -161,11 +174,9 @@ export class Jwt {
     try {
       const jwks = await this.prisma.jwks.findMany();
 
-      console.log({ jwt, jwks });
-
       const JWKS = createLocalJWKSet({
         keys: jwks.map((jwk) => {
-          const publicKeyJwk = JSON.parse(jwk.publicKey);
+          const publicKeyJwk = jwk.publicKey as Prisma.JsonObject;
 
           publicKeyJwk.kid = jwk.id;
 
