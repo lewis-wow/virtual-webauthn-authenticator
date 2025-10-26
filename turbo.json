@@ -5,12 +5,8 @@
   "globalDependencies": ["scripts/**", ".env.*"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "@repo/hono#generate:spec"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*",
-        "../../apps/hono/static/openapi.json"
-      ],
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", "generated/**"]
     },
     "@repo/hono#generate:spec": {
@@ -28,8 +24,12 @@
       "outputs": ["src/generated/client/**"]
     },
     "@repo/console#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["^build", "@repo/hono#generate:spec"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "../../apps/hono/static/openapi.json"
+      ],
       "outputs": [".next/**"]
     },
     "@repo/types#build": {
