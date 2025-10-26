@@ -16,9 +16,18 @@ export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
   if (Jwt.isJwt(jwtOrfullApiKey)) {
     const jwtPayload = await ctx.var.jwt.verify(jwtOrfullApiKey);
 
-    console.log({ jwtPayload });
+    if (!jwtPayload) {
+      ctx.set('user', null);
+      return next();
+    }
 
-    ctx.set('user', null);
+    const user = await ctx.var.prisma.user.findUnique({
+      where: {
+        id: jwtPayload.id,
+      },
+    });
+
+    ctx.set('user', user);
     return next();
   }
 
