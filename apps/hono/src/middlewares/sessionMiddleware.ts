@@ -6,8 +6,6 @@ export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
     .get('authorization')
     ?.replace('Bearer ', '');
 
-  console.log({ jwtOrfullApiKey });
-
   if (!jwtOrfullApiKey) {
     ctx.set('user', null);
     return next();

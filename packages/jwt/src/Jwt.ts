@@ -133,7 +133,7 @@ export class Jwt {
     const newJwk = await this.prisma.jwks.create({
       data: {
         id: this.currentKid,
-        publicKey: JSON.stringify(publicJwk),
+        publicKey: publicJwk as Prisma.JsonObject,
         privateKey: encryptedPrivateKey,
       },
     });
@@ -191,7 +191,7 @@ export class Jwt {
 
       return payload;
     } catch (error) {
-      console.error(error);
+      console.error('jwt error', error);
       return null;
     }
   }

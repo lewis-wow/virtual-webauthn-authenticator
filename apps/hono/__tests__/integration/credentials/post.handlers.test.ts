@@ -80,6 +80,8 @@ describe('Credentials POST handler', () => {
 
     const json = await response.json();
 
+    console.log(response);
+
     expect(response.ok).toBe(true);
 
     const decoded = PublicKeyCredentialSchema.decode(json);

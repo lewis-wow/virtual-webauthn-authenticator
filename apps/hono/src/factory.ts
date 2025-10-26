@@ -15,7 +15,7 @@ import { webAuthnCredentialRepository } from './lib/webAuthnCredentialRepository
 
 export type FactoryEnv = {
   Variables: {
-    user: User;
+    user: User | null;
   };
 };
 
