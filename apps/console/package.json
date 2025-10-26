@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "generate:client": "openapi-typescript ../hono/static/openapi.yml -o ./src/lib/api/v1.d.ts",
-    "build": "next build --turbopack",
+    "build": "pnpm generate:client && next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },

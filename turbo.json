@@ -5,9 +5,12 @@
   "globalDependencies": ["scripts/**", ".env.*"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "dependsOn": ["^build", "@repo/hono#generate:spec"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", "apps/hono/static/openapi.json"],
       "outputs": ["dist/**", "generated/**"]
+    },
+    "@repo/hono#generate:spec": {
+      "outputs": ["static/openapi.json"]
     },
     "@repo/console#build": {
       "dependsOn": ["^build"],

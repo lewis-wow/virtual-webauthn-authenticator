@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "pnpm dotenvx rollup -c --watch",
     "build": "SKIP_ENV_VALIDATION=true rollup -c",
+    "generate:spec": "scripts/generate-spec.ts",
     "start": "pnpm dotenvx node dist/index.js",
     "dotenvx": "../../scripts/dotenvx.sh",
     "test:integration": "vitest run integration --config __tests__/vitest.config.ts"
