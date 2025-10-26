@@ -79,17 +79,32 @@ model Verification {
   @@map("verification")
 }
 
+model InternalApiKey {
+  id String @id @default(uuid())
+
+  apiKey             Apikey @relation(fields: [apikeyId], references: [id], onDelete: Cascade)
+  apikeyId           String @unique
+  encryptedKeySecret String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("internalApiKey")
+}
+
 model Apikey {
-  id          String    @id @default(uuid())
-  name        String
-  start       String
-  prefix      String
-  keyHash     String
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled     Boolean   @default(true)
-  expiresAt   DateTime?
-  permissions String?
+  id             String          @id @default(uuid())
+  name           String
+  start          String
+  prefix         String
+  keyHash        String
+  userId         String
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled        Boolean         @default(true)
+  expiresAt      DateTime?
+  permissions    String?
+  internalApiKey InternalApiKey?
+  type           ApiKeyType
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -169,4 +184,9 @@ enum PermissionAction {
   READ
   UPDATE
   DELETE
+}
+
+enum ApiKeyType {
+  INTERNAL_API_KEY
+  EXTERNAL_API_KEY
 }

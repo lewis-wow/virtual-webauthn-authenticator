@@ -1,22 +1,19 @@
 import { factory } from '@/factory';
 
 export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
-  console.log('headers', ctx.req.raw.headers);
-  const { response: session, headers } = await ctx.var.auth.api.getSession({
-    headers: ctx.req.raw.headers,
-    returnHeaders: true,
+  const fullApiKey = ctx.req.raw.headers
+    .get('authorization')
+    ?.replace('Bearer ', '');
+
+  const apiKey = await ctx.var.apiKeyManager.verifyApiKey({
+    fullApiKey: fullApiKey!,
   });
 
-  console.log('headers', headers.entries());
-  console.log('session', session);
-
-  if (!session) {
+  if (!apiKey) {
     ctx.set('user', null);
-    ctx.set('session', null);
     return next();
   }
 
-  ctx.set('user', session.user);
-  ctx.set('session', session.session);
+  ctx.set('user', apiKey.user);
   return next();
 });

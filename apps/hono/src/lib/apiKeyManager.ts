@@ -8,5 +8,6 @@ export const apiKeyManager = new Lazy(
   async () =>
     new ApiKeyManager({
       prisma: await prisma.resolve(),
+      encryptionKey: 'secret',
     }),
 );

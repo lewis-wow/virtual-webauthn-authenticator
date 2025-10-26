@@ -10,6 +10,6 @@ export const apiKeysListHandlers = factory.createHandlers(
       user: ctx.var.user,
     });
 
-    return ctx.json(ListApiKeysResponseSchema.parse(apiKeys));
+    return ctx.json(ListApiKeysResponseSchema.encode(apiKeys));
   },
 );

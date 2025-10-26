@@ -1,7 +1,1 @@
-/**
- * @file Automatically generated.
- *
- * @noprettier
- */
-
-export * from "./Proxy";
+export * from './AuthProxy';

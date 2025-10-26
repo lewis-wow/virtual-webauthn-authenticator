@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/prisma": "workspace:*",
     "bcryptjs": "^3.0.2",
     "typanion": "^3.14.0"

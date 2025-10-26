@@ -1,5 +1,5 @@
 {
-  "name": "@repo/proxy",
+  "name": "@repo/crypto",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,11 +22,6 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
-    "@repo/exception": "workspace:*",
-    "@repo/crypto": "workspace:*",
-    "@repo/prisma": "workspace:*",
-    "@repo/api-key": "workspace:*",
-    "hono": "^4.9.10",
     "typanion": "^3.14.0"
   }
 }
