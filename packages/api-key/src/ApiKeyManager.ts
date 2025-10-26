@@ -26,6 +26,24 @@ export class ApiKeyManager {
     this.encryptionKey = opts.encryptionKey;
   }
 
+  public static isApiKey(value: unknown): value is string {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    const parts = value.split('_');
+
+    if (!isTuple([isString(), isString()])(parts)) {
+      return false;
+    }
+
+    if (parts[0].length === 0 || parts[1].length === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
   private async _generateApiKey(opts: {
     user: Pick<User, 'id'>;
     prefix: string;
