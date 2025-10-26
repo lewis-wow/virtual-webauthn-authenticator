@@ -7,7 +7,21 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["dist/**", "generated/**"]
+      "outputs": ["dist/**", "generated/**", "build/**"]
+    },
+    "@repo/console#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "../../apps/hono/static/openapi.json"
+      ],
+      "outputs": [".next/**"]
+    },
+    "@repo/hono#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["static/openapi.json"]
     },
     "@repo/plasmo#build": {
       "dependsOn": ["^build"],
@@ -18,15 +32,6 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["src/generated/client/**"]
-    },
-    "@repo/console#build": {
-      "dependsOn": ["^build"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*",
-        "../../apps/hono/static/openapi.json"
-      ],
-      "outputs": [".next/**"]
     },
     "@repo/types#build": {
       "dependsOn": ["^build"],
