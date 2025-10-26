@@ -1,5 +1,7 @@
-import { Lazy } from './utils/lazy';
+import { initializePrismaClient } from '@repo/prisma';
 
-export const prisma = new Lazy('prisma', () =>
-  import('@repo/prisma').then((module) => module.prisma),
-);
+import { Lazy } from './utils/Lazy';
+
+export const prisma = new Lazy('prisma', () => {
+  return initializePrismaClient();
+});

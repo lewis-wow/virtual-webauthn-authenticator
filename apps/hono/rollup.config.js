@@ -78,7 +78,7 @@ export default defineConfig({
       sourceMaps: true,
     }),
 
-    execute('scripts/generate-openapi-spec.ts'),
+    execute('scripts/generate-spec.ts'),
 
     isWatching &&
       run({

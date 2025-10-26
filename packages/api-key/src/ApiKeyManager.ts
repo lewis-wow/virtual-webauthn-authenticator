@@ -1,40 +1,60 @@
-// services/ApiKeyService.ts
-import { PrismaClient, type Apikey, type User } from '@repo/prisma';
+import { Encryption, Hash } from '@repo/crypto';
+import {
+  ApiKeyType,
+  PrismaClient,
+  type Apikey,
+  type InternalApiKey,
+  type User,
+} from '@repo/prisma';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { assert, isString, isTuple } from 'typanion';
 
 export type ApiKeyManagerOptions = {
   prisma: PrismaClient;
+  encryptionKey: string;
 };
 
 export class ApiKeyManager {
   static readonly START_LENGHT = 5;
 
   private readonly prisma: PrismaClient;
+  private readonly encryptionKey: string;
 
   constructor(opts: ApiKeyManagerOptions) {
     this.prisma = opts.prisma;
+    this.encryptionKey = opts.encryptionKey;
   }
 
-  /**
-   * Generates a new API key.
-   * @returns {Object} An object containing the new Apikey record
-   * and the fullKey (e.g., "prod_...").
-   * The fullKey should be shown to the user ONCE.
-   */
-  public async generateApiKey(opts: {
+  public static isApiKey(value: unknown): value is string {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    const parts = value.split('_');
+
+    if (!isTuple([isString(), isString()])(parts)) {
+      return false;
+    }
+
+    if (parts[0].length === 0 || parts[1].length === 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private async _generateApiKey(opts: {
     user: Pick<User, 'id'>;
     prefix: string;
     name: string;
+    type: ApiKeyType;
     expiresAt?: Date;
     permissions?: string;
-  }): Promise<{ apiKey: Apikey; secret: string; fullKey: string }> {
-    const { user, prefix, name, expiresAt, permissions } = opts;
+  }): Promise<{ apiKey: Apikey; secret: string }> {
+    const { user, prefix, name, expiresAt, permissions, type } = opts;
 
     const secret = crypto.randomBytes(32).toString('hex');
-
-    const fullKey = `${prefix}_${secret}`;
 
     const hashedKey = await bcrypt.hash(secret, 12);
 
@@ -47,10 +67,73 @@ export class ApiKeyManager {
         keyHash: hashedKey,
         expiresAt: expiresAt,
         permissions: permissions,
+        type: type ?? ApiKeyType.EXTERNAL_API_KEY,
       },
     });
 
-    return { apiKey, secret, fullKey };
+    return { apiKey, secret };
+  }
+
+  public static getFullApiKey(opts: {
+    prefix: string;
+    secret: string;
+  }): string {
+    const { prefix, secret } = opts;
+
+    return `${prefix}_${secret}`;
+  }
+
+  public async generateExternalApiKey(opts: {
+    user: Pick<User, 'id'>;
+    prefix: string;
+    name: string;
+    expiresAt?: Date;
+    permissions?: string;
+  }) {
+    return await this._generateApiKey({
+      ...opts,
+      type: ApiKeyType.EXTERNAL_API_KEY,
+    });
+  }
+
+  public async generateInternalApiKey(opts: {
+    user: Pick<User, 'id'>;
+  }): Promise<{
+    apiKey: Apikey;
+    internalApiKey: InternalApiKey;
+    secret: string;
+  }> {
+    const { user } = opts;
+
+    const { apiKey, secret } = await this._generateApiKey({
+      user,
+      type: ApiKeyType.INTERNAL_API_KEY,
+      prefix: 'internal',
+      name: 'Internal API key',
+    });
+
+    const encryptedKeySecret = Encryption.encrypt({
+      key: Hash.sha256(Buffer.from(this.encryptionKey)),
+      plainText: secret,
+    });
+
+    const internalApiKey = await this.prisma.internalApiKey.create({
+      data: {
+        apikeyId: apiKey.id,
+        encryptedKeySecret,
+      },
+    });
+
+    return { apiKey, internalApiKey, secret };
+  }
+
+  public decryptInternalApiKeySecret(
+    internalApiKey: Pick<InternalApiKey, 'encryptedKeySecret'>,
+  ) {
+    return Encryption.decrypt({
+      key: Hash.sha256(Buffer.from(this.encryptionKey)),
+      encryptedText: internalApiKey.encryptedKeySecret,
+    });
   }
 
   /**
@@ -59,12 +142,11 @@ export class ApiKeyManager {
    * @returns The matching Apikey object (with user) if valid, null otherwise.
    */
   public async verifyApiKey(opts: {
-    fullKey: string;
-    user: Pick<User, 'id'>;
+    fullApiKey: string;
   }): Promise<(Apikey & { user: User }) | null> {
-    const { fullKey, user } = opts;
+    const { fullApiKey } = opts;
 
-    const parts = fullKey.split('_');
+    const parts = fullApiKey.split('_');
     assert(parts, isTuple([isString(), isString()]));
 
     const [prefix, providedSecret] = parts;
@@ -72,11 +154,17 @@ export class ApiKeyManager {
     const potentialKeys = await this.prisma.apikey.findMany({
       where: {
         prefix: prefix,
-        userId: user.id,
         enabled: true,
-        expiresAt: {
-          lt: new Date(),
-        },
+        OR: [
+          {
+            expiresAt: {
+              lt: new Date(),
+            },
+          },
+          {
+            expiresAt: null,
+          },
+        ],
       },
     });
 
@@ -110,6 +198,17 @@ export class ApiKeyManager {
         userId: user.id,
       },
     });
+  }
+
+  public async getApiKey(opts: {
+    id: string;
+    user: Pick<User, 'id'>;
+  }): Promise<Apikey | null> {
+    try {
+      return await this.getApiKeyOrThrow(opts);
+    } catch {
+      return null;
+    }
   }
 
   public async listApiKeys(opts: {

@@ -1,7 +1,8 @@
 import { env } from '@/env';
 import { root, type Root } from '@/routes';
 import { PublicKeyCredentialType } from '@repo/enums';
-import { prisma, type User } from '@repo/prisma';
+import { Jwt } from '@repo/jwt';
+import { type User, initializePrismaClient } from '@repo/prisma';
 import { bufferToUuid } from '@repo/utils';
 import { PublicKeyCredentialSchema } from '@repo/validation';
 import {
@@ -30,6 +31,18 @@ const testClient = hc<Root>(`http://localhost:${env.PORT}`, {
   },
 });
 
+const prisma = initializePrismaClient();
+
+const jwt = new Jwt({
+  prisma,
+  currentKid: env.JWT_CURRENT_JWK_KID,
+  encryptionKey: env.JWK_PRIVATE_KEY_ENCRYPTION_SECRET,
+  config: {
+    issuer: env.JWT_ISSUER,
+    audience: env.JWT_AUDIENCE,
+  },
+});
+
 describe('Credentials POST handler', () => {
   let user: User;
 
@@ -48,11 +61,7 @@ describe('Credentials POST handler', () => {
   });
 
   test('test', async () => {
-    const jwtPayload = {
-      sub: USER_ID,
-      exp: Math.floor(Date.now() / 1000) + 60 * 5, // Token expires in 5 minutes
-    };
-    const token = await sign(jwtPayload, env.JWT_SECRET);
+    const token = await jwt.sign(user);
 
     const response = await testClient.credentials.$post({
       json: {
@@ -70,6 +79,8 @@ describe('Credentials POST handler', () => {
     });
 
     const json = await response.json();
+
+    console.log(response);
 
     expect(response.ok).toBe(true);
 

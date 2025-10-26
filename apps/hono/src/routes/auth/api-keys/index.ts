@@ -6,6 +6,7 @@ import { apiKeyPostHandlers } from './post.handlers';
 
 export const apiKeys = factory
   .createApp()
+  .basePath('/')
   .get('/', ...apiKeysListHandlers)
   .post('/', ...apiKeyPostHandlers)
   .route('/:id', apiKey);

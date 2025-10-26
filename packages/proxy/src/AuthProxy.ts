@@ -1,42 +1,59 @@
+import { Unauthorized } from '@repo/exception';
+import { Jwt } from '@repo/jwt';
+import { type PrismaClient, type User } from '@repo/prisma';
+import type { MaybePromise } from '@repo/types';
 import { Hono } from 'hono';
+import 'hono/cookie';
 import { getCookie } from 'hono/cookie';
 import { proxy } from 'hono/proxy';
-import { handle } from 'hono/vercel';
-import { assert, isOptional, isString } from 'typanion';
+import { assert, isString } from 'typanion';
 
-export type ProxyOptions = {
+export type AuthProxyOptions = {
+  jwt: Jwt;
   originServerBaseURL: string;
-  authorizationCookieName?: string;
+  getUserInfo: (opts: {
+    request: Request;
+    cookie: (name: string) => string | undefined;
+  }) => MaybePromise<
+    (Partial<Omit<User, 'id'>> & Pick<User, 'id'>) | undefined
+  >;
   rewritePath?: (path: string | undefined) => string | undefined;
 };
 
-export class Proxy {
+export class AuthProxy {
+  private readonly jwt: Jwt;
+
   private readonly app = new Hono();
 
-  constructor(opts: ProxyOptions) {
-    const { originServerBaseURL, authorizationCookieName, rewritePath } = opts;
+  constructor(opts: AuthProxyOptions) {
+    this.jwt = opts.jwt;
+
+    const { originServerBaseURL, getUserInfo, rewritePath } = opts;
 
     assert(originServerBaseURL, isString());
-    assert(authorizationCookieName, isOptional(isString()));
 
     this.app.all('*', async (ctx) => {
-      let Authorization: string | undefined = ctx.req.header('Authorization');
-
-      if (authorizationCookieName) {
-        Authorization = getCookie(ctx, authorizationCookieName);
-      }
-
       const path = this._trimSlashes(
         rewritePath ? rewritePath(ctx.req.path) : ctx.req.path,
       );
 
+      const user = await getUserInfo({
+        request: ctx.req.raw,
+        cookie: (key: string) => getCookie(ctx, key),
+      });
+
+      if (!user) {
+        throw new Unauthorized();
+      }
+
+      const jwt = await this.jwt.sign(user);
+
+      const headers = new Headers({
+        authorization: `Bearer ${jwt}`,
+      });
+
       const response = await proxy(`${originServerBaseURL}/${path}`, {
-        headers: {
-          ...ctx.req.header(),
-          'X-Forwarded-For': '127.0.0.1',
-          'X-Forwarded-Host': ctx.req.header('host'),
-          Authorization,
-        },
+        headers,
       });
 
       return response;
@@ -59,7 +76,7 @@ export class Proxy {
     return path?.replace(/^\/|\/$/g, '');
   }
 
-  nextjs() {
-    return handle(this.app);
+  getApp() {
+    return this.app;
   }
 }

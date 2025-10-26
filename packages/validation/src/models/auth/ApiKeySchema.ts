@@ -13,6 +13,7 @@ export const ApikeySchema = z
     enabled: z.boolean(),
     expiresAt: IsoDatetimeToDateSchema.optional().nullable(),
     permissions: z.string().nullable().optional(),
+    type: z.string(),
 
     createdAt: IsoDatetimeToDateSchema,
     updatedAt: IsoDatetimeToDateSchema,

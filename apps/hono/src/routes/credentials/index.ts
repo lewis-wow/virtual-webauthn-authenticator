@@ -5,5 +5,6 @@ import { credentialsPostHandlers } from './post.handlers';
 
 export const credentials = factory
   .createApp()
+  .basePath('/')
   .get('/', ...credentialsGetHandlers)
   .post('/', ...credentialsPostHandlers);

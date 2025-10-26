@@ -1,4 +1,4 @@
-import { auth } from '@/lib/auth';
+import type { User } from '@repo/prisma';
 import type { Hono } from 'hono';
 import { createFactory } from 'hono/factory';
 
@@ -6,6 +6,7 @@ import { apiKeyManager } from './lib/apiKeyManager';
 import { azureCredential } from './lib/azureCredential';
 import { credentialSignerFactory } from './lib/credentialSignerFactory';
 import { cryptographyClientFactory } from './lib/cryptographyClientFactory';
+import { jwt } from './lib/jwt';
 import { keyClient } from './lib/keyClient';
 import { keyVault } from './lib/keyVault';
 import { prisma } from './lib/prisma';
@@ -14,8 +15,7 @@ import { webAuthnCredentialRepository } from './lib/webAuthnCredentialRepository
 
 export type FactoryEnv = {
   Variables: {
-    user: typeof auth.$InferLazyModule.$Infer.Session.user | null;
-    session: typeof auth.$InferLazyModule.$Infer.Session.session | null;
+    user: User | null;
   };
 };
 
@@ -23,7 +23,6 @@ export type inferEnv<T> = T extends Hono<infer iEnv> ? iEnv : never;
 
 const initApp = (app: Hono) => {
   return app
-    .use(auth.middleware())
     .use(azureCredential.middleware())
     .use(credentialSignerFactory.middleware())
     .use(cryptographyClientFactory.middleware())
@@ -32,7 +31,8 @@ const initApp = (app: Hono) => {
     .use(prisma.middleware())
     .use(virtualAuthenticator.middleware())
     .use(webAuthnCredentialRepository.middleware())
-    .use(apiKeyManager.middleware());
+    .use(apiKeyManager.middleware())
+    .use(jwt.middleware());
 };
 
 export const factory = createFactory<

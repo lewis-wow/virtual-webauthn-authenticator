@@ -1,20 +1,40 @@
 import { factory } from '@/factory';
+import { Jwt } from '@repo/jwt';
 
 export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
-  console.log('headers', ctx.req.raw.headers);
-  const session = await ctx.var.auth.api.getSession({
-    headers: ctx.req.raw.headers,
-  });
+  const jwtOrfullApiKey = ctx.req.raw.headers
+    .get('authorization')
+    ?.replace('Bearer ', '');
 
-  console.log('session', session);
-
-  if (!session) {
+  if (!jwtOrfullApiKey) {
     ctx.set('user', null);
-    ctx.set('session', null);
     return next();
   }
 
-  ctx.set('user', session.user);
-  ctx.set('session', session.session);
+  if (Jwt.isJwt(jwtOrfullApiKey)) {
+    const jwtPayload = await ctx.var.jwt.verify(jwtOrfullApiKey);
+
+    if (!jwtPayload) {
+      ctx.set('user', null);
+      return next();
+    }
+
+    const user = await ctx.var.prisma.user.findUnique({
+      where: {
+        id: jwtPayload.id,
+      },
+    });
+
+    ctx.set('user', user);
+    return next();
+  }
+
+  const apiKey = await ctx.var.apiKeyManager.verifyApiKey({
+    fullApiKey: jwtOrfullApiKey,
+  });
+
+  console.log({ apiKey });
+
+  ctx.set('user', apiKey?.user ?? null);
   return next();
 });

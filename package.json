@@ -37,7 +37,18 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@prisma/client"
+      "@parcel/watcher",
+      "@prisma/client",
+      "@prisma/engines",
+      "@swc/core",
+      "@tailwindcss/oxide",
+      "bcrypt",
+      "esbuild",
+      "lmdb",
+      "msgpackr-extract",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
     ]
   }
 }

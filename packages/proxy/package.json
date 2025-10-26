@@ -7,8 +7,6 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "pnpm barrel",
-    "barrel": "../../scripts/barrel.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
@@ -24,6 +22,11 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
+    "@repo/exception": "workspace:*",
+    "@repo/jwt": "workspace:*",
+    "@repo/crypto": "workspace:*",
+    "@repo/prisma": "workspace:*",
+    "@repo/api-key": "workspace:*",
     "hono": "^4.9.10",
     "typanion": "^3.14.0"
   }

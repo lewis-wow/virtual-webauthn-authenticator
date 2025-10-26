@@ -22,12 +22,6 @@ export const config = [
     },
   },
   {
-    plugins: ['no-barrel-import'],
-    rules: {
-      'no-barrel-import/rule-name': 2,
-    },
-  },
-  {
     plugins: {
       onlyWarn,
     },

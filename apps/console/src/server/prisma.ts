@@ -1,1 +1,3 @@
-export { prisma } from '@repo/prisma';
+import { initializePrismaClient } from '@repo/prisma';
+
+export const prisma = initializePrismaClient();

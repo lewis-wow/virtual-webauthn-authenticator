@@ -2,7 +2,7 @@ import { env } from '@/env';
 import { KeyClient } from '@azure/keyvault-keys';
 
 import { azureCredential } from './azureCredential';
-import { Lazy } from './utils/lazy';
+import { Lazy } from './utils/Lazy';
 
 export const keyClient = new Lazy(
   'keyClient',

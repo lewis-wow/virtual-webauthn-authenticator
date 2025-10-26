@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "pnpm dotenvx rollup -c --watch",
     "build": "SKIP_ENV_VALIDATION=true rollup -c",
+    "generate:spec": "scripts/generate-spec.ts",
     "start": "pnpm dotenvx node dist/index.js",
     "dotenvx": "../../scripts/dotenvx.sh",
     "test:integration": "vitest run integration --config __tests__/vitest.config.ts"
@@ -18,6 +19,7 @@
     "@repo/better-auth": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/enums": "workspace:*",
+    "@repo/jwt": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
@@ -31,6 +33,7 @@
     "better-auth": "^1.3.27",
     "hono": "^4.9.10",
     "hono-openapi": "^1.1.0",
+    "jose": "^6.1.0",
     "lodash-es": "^4.17.21",
     "zod": "^4.1.12",
     "zod-openapi": "^5.4.3"

@@ -2,7 +2,7 @@ import { KeyVault } from '@repo/key-vault';
 
 import { cryptographyClientFactory } from './cryptographyClientFactory';
 import { keyClient } from './keyClient';
-import { Lazy } from './utils/lazy';
+import { Lazy } from './utils/Lazy';
 
 export const keyVault = new Lazy(
   'keyVault',

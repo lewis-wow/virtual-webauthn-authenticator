@@ -1,9 +1,10 @@
 import { factory } from '@/factory';
 import { sessionMiddleware } from '@/middlewares/sessionMiddleware';
+import { openapiMetadata } from '@/openapi-metadata';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { HTTPException } from '@repo/exception';
 import { Scalar } from '@scalar/hono-api-reference';
-import { cors } from 'hono/cors';
+import { openAPIRouteHandler } from 'hono-openapi';
 
 import { auth } from './auth';
 import { credentials } from './credentials';
@@ -17,13 +18,6 @@ export const root = factory
 
     throw error;
   })
-  .use(
-    cors({
-      origin: ['http://localhost:3000'],
-      maxAge: 600,
-      credentials: true,
-    }),
-  )
   .use('/static/*', serveStatic({ root: './' }))
   .get('/', async (ctx) => {
     return ctx.text('OK');
@@ -31,6 +25,14 @@ export const root = factory
   .use('*', sessionMiddleware)
   .route('credentials', credentials)
   .route('auth', auth);
+
+root.get('.well-known/jwks.json', async (ctx) => {
+  const jwks = await ctx.var.jwt.getJwks();
+
+  return ctx.json(jwks);
+});
+
+root.get('/openapi.json', openAPIRouteHandler(root, openapiMetadata as object));
 
 root.get(
   '/openapi',
