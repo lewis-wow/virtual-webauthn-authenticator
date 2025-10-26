@@ -7,8 +7,10 @@ import pkg from '../package.json';
 
 const env = config({
   path: join(import.meta.dirname, '..', '.env.test'),
-  override: true,
+  overload: true,
 }).parsed;
+
+console.log(env);
 
 export default defineConfig({
   test: {
