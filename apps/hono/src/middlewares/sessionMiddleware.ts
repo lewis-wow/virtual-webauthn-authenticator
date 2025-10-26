@@ -1,19 +1,33 @@
 import { factory } from '@/factory';
+import { Jwt } from '@repo/jwt';
 
 export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
-  const fullApiKey = ctx.req.raw.headers
+  const jwtOrfullApiKey = ctx.req.raw.headers
     .get('authorization')
     ?.replace('Bearer ', '');
 
-  const apiKey = await ctx.var.apiKeyManager.verifyApiKey({
-    fullApiKey: fullApiKey!,
-  });
+  console.log({ jwtOrfullApiKey });
 
-  if (!apiKey) {
+  if (!jwtOrfullApiKey) {
     ctx.set('user', null);
     return next();
   }
 
-  ctx.set('user', apiKey.user);
+  if (Jwt.isJwt(jwtOrfullApiKey)) {
+    const jwtPayload = await ctx.var.jwt.verify(jwtOrfullApiKey);
+
+    console.log({ jwtPayload });
+
+    ctx.set('user', null);
+    return next();
+  }
+
+  const apiKey = await ctx.var.apiKeyManager.verifyApiKey({
+    fullApiKey: jwtOrfullApiKey,
+  });
+
+  console.log({ apiKey });
+
+  ctx.set('user', apiKey?.user ?? null);
   return next();
 });

@@ -18,6 +18,7 @@
     "@repo/better-auth": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/enums": "workspace:*",
+    "@repo/jwt": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",

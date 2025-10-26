@@ -1,6 +1,8 @@
 import * as crypto from 'node:crypto';
 import { assert, isString, isTuple } from 'typanion';
 
+import { Hash } from './Hash';
+
 export class Encryption {
   static readonly ENCRYPTION_ALGORITHM = 'aes-256-gcm';
   static readonly IV_LENGTH = 16; // For AES, this is always 16
@@ -10,20 +12,20 @@ export class Encryption {
    * @param text The plaintext to encrypt.
    * @returns {string} The encrypted string, formatted as "iv:authTag:encryptedData"
    */
-  static encrypt(opts: { key: crypto.BinaryLike; text: string }): string {
-    const { key, text } = opts;
+  static encrypt(opts: { key: crypto.BinaryLike; plainText: string }): string {
+    const { key, plainText } = opts;
 
     const iv = crypto.randomBytes(Encryption.IV_LENGTH);
 
     // Create the AES-256-GCM cipher.
     const cipher = crypto.createCipheriv(
       Encryption.ENCRYPTION_ALGORITHM,
-      key,
+      Hash.sha256(key),
       iv,
     );
 
     const encryptedBuffer = Buffer.concat([
-      cipher.update(text, 'utf8'),
+      cipher.update(plainText, 'utf8'),
       cipher.final(),
     ]);
 
@@ -52,7 +54,7 @@ export class Encryption {
 
     const decipher = crypto.createDecipheriv(
       Encryption.ENCRYPTION_ALGORITHM,
-      key,
+      Hash.sha256(key),
       iv,
     );
 

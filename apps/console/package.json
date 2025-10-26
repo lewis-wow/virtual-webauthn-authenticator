@@ -30,6 +30,7 @@
     "@repo/prisma": "workspace:*",
     "@repo/proxy": "workspace:*",
     "@repo/validation": "workspace:*",
+    "@repo/jwt": "workspace:*",
     "@tanstack/react-query": "^5.90.5",
     "better-auth": "^1.3.27",
     "class-variance-authority": "^0.7.1",

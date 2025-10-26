@@ -1,22 +1,23 @@
 import { auth } from '@/server/auth';
-import { prisma } from '@/server/prisma';
-import { ApiKeyManager } from '@repo/api-key';
+import { jwt } from '@/server/jwt';
 import { AuthProxy } from '@repo/proxy';
 import { handle } from 'hono/vercel';
+import { headers } from 'next/headers';
 
 const proxy = new AuthProxy({
-  apiKeyManager: new ApiKeyManager({
-    prisma,
-    encryptionKey: 'secret',
-  }),
-  prisma,
+  jwt,
   originServerBaseURL: 'http://localhost:3001',
-  authorization: async ({ request }) => {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+  getUserInfo: async () => {
+    const session = await auth.api
+      .getSession({
+        headers: await headers(),
+      })
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
 
-    return session?.user.id;
+    return session?.user;
   },
   rewritePath: (path) => path?.replace('api/', ''),
 });

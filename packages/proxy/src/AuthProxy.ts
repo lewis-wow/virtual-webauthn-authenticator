@@ -1,10 +1,6 @@
-import { ApiKeyManager } from '@repo/api-key';
 import { Unauthorized } from '@repo/exception';
-import {
-  type Apikey,
-  type InternalApiKey,
-  type PrismaClient,
-} from '@repo/prisma';
+import { Jwt } from '@repo/jwt';
+import { type PrismaClient, type User } from '@repo/prisma';
 import type { MaybePromise } from '@repo/types';
 import { Hono } from 'hono';
 import 'hono/cookie';
@@ -13,27 +9,26 @@ import { proxy } from 'hono/proxy';
 import { assert, isString } from 'typanion';
 
 export type AuthProxyOptions = {
-  apiKeyManager: ApiKeyManager;
-  prisma: PrismaClient;
+  jwt: Jwt;
   originServerBaseURL: string;
-  authorization?: (opts: {
+  getUserInfo: (opts: {
     request: Request;
     cookie: (name: string) => string | undefined;
-  }) => MaybePromise<string | undefined>;
+  }) => MaybePromise<
+    (Partial<Omit<User, 'id'>> & Pick<User, 'id'>) | undefined
+  >;
   rewritePath?: (path: string | undefined) => string | undefined;
 };
 
 export class AuthProxy {
-  private readonly apiKeyManager: ApiKeyManager;
-  private readonly prisma: PrismaClient;
+  private readonly jwt: Jwt;
 
   private readonly app = new Hono();
 
   constructor(opts: AuthProxyOptions) {
-    this.apiKeyManager = opts.apiKeyManager;
-    this.prisma = opts.prisma;
+    this.jwt = opts.jwt;
 
-    const { originServerBaseURL, authorization, rewritePath } = opts;
+    const { originServerBaseURL, getUserInfo, rewritePath } = opts;
 
     assert(originServerBaseURL, isString());
 
@@ -42,27 +37,19 @@ export class AuthProxy {
         rewritePath ? rewritePath(ctx.req.path) : ctx.req.path,
       );
 
-      const userId = await authorization?.({
+      const user = await getUserInfo({
         request: ctx.req.raw,
         cookie: (key: string) => getCookie(ctx, key),
       });
 
-      if (!userId) {
-        throw new Unauthorized('User is not authorized.');
+      if (!user) {
+        throw new Unauthorized();
       }
 
-      const { internalApiKey, apiKey } =
-        await this._lazyInitializeInternalApiKey(userId);
-      const internalApiKeySecret =
-        this.apiKeyManager.decryptInternalApiKeySecret(internalApiKey);
-
-      const fullApiKey = ApiKeyManager.getFullApiKey({
-        prefix: apiKey.prefix,
-        secret: internalApiKeySecret,
-      });
+      const jwt = await this.jwt.sign(user);
 
       const headers = new Headers({
-        authorization: `Bearer ${fullApiKey}`,
+        authorization: `Bearer ${jwt}`,
       });
 
       const response = await proxy(`${originServerBaseURL}/${path}`, {
@@ -87,35 +74,6 @@ export class AuthProxy {
     //
     // The 'g' (global) flag ensures it replaces both if they exist.
     return path?.replace(/^\/|\/$/g, '');
-  }
-
-  private async _lazyInitializeInternalApiKey(
-    userId: string,
-  ): Promise<{ internalApiKey: InternalApiKey; apiKey: Apikey }> {
-    const internalApiKeyResult = await this.prisma.internalApiKey.findFirst({
-      where: {
-        apiKey: {
-          userId: userId,
-        },
-      },
-      include: {
-        apiKey: true,
-      },
-    });
-
-    if (internalApiKeyResult) {
-      const { apiKey, ...internalApiKey } = internalApiKeyResult;
-      return { apiKey, internalApiKey };
-    }
-
-    const { internalApiKey, apiKey } =
-      await this.apiKeyManager.generateInternalApiKey({
-        user: {
-          id: userId,
-        },
-      });
-
-    return { internalApiKey, apiKey };
   }
 
   getApp() {

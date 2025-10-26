@@ -96,7 +96,7 @@ export class ApiKeyManager {
 
     const encryptedKeySecret = Encryption.encrypt({
       key: Hash.sha256(Buffer.from(this.encryptionKey)),
-      text: secret,
+      plainText: secret,
     });
 
     const internalApiKey = await this.prisma.internalApiKey.create({
