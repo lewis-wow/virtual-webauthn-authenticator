@@ -9,11 +9,11 @@ export const jwt = new Lazy(
   async () =>
     new Jwt({
       prisma: await prisma.resolve(),
-      currentKid: '5858dff7-ad5f-432e-a41d-851ceda96ac6',
-      encryptionKey: 'secret',
+      currentKid: env.JWT_CURRENT_JWK_KID,
+      encryptionKey: env.JWK_PRIVATE_KEY_ENCRYPTION_SECRET,
       config: {
-        issuer: 'http://localhost:3000',
-        audience: env.BASE_URL,
+        issuer: env.JWT_ISSUER,
+        audience: env.JWT_AUDIENCE,
       },
     }),
 );
