@@ -1,8 +1,10 @@
 import { factory } from '@/factory';
 import { sessionMiddleware } from '@/middlewares/sessionMiddleware';
+import { openapiMetadata } from '@/openapi-metadata';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { HTTPException } from '@repo/exception';
 import { Scalar } from '@scalar/hono-api-reference';
+import { openAPIRouteHandler } from 'hono-openapi';
 
 import { auth } from './auth';
 import { credentials } from './credentials';
@@ -29,6 +31,8 @@ root.get('.well-known/jwks.json', async (ctx) => {
 
   return ctx.json(jwks);
 });
+
+root.get('/openapi.json', openAPIRouteHandler(root, openapiMetadata as object));
 
 root.get(
   '/openapi',

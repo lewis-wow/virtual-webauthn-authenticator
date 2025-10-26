@@ -1,15 +1,27 @@
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
-import { sValidator } from '@hono/standard-validator';
 import {
   UpdateApiKeyRequestBodySchema,
   UpdateApiKeyRequestParamSchema,
   UpdateApiKeyResponseSchema,
 } from '@repo/validation';
+import { validator, resolver, describeRoute } from 'hono-openapi';
 
 export const apiKeyPutHandlers = factory.createHandlers(
-  sValidator('param', UpdateApiKeyRequestParamSchema),
-  sValidator('json', UpdateApiKeyRequestBodySchema),
+  describeRoute({
+    responses: {
+      200: {
+        description: 'Successful response',
+        content: {
+          'application/json': {
+            schema: resolver(UpdateApiKeyResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  validator('param', UpdateApiKeyRequestParamSchema),
+  validator('json', UpdateApiKeyRequestBodySchema),
   protectedMiddleware,
   async (ctx) => {
     const updateApiKeyRequestParam = ctx.req.valid('param');

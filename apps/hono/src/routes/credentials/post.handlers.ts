@@ -1,6 +1,5 @@
 import { factory } from '@/factory';
 import { protectedMiddleware } from '@/middlewares/protectedMiddleware';
-import { sValidator } from '@hono/standard-validator';
 import { COSEKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
 import {
@@ -10,9 +9,25 @@ import {
   type PublicKeyCredentialUserEntity,
 } from '@repo/validation';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
+import { resolver, validator, describeRoute } from 'hono-openapi';
 
 export const credentialsPostHandlers = factory.createHandlers(
-  sValidator('json', CreateCredentialRequestBodySchema),
+  describeRoute({
+    summary: 'Register a new credential',
+    description:
+      'Corresponds to navigator.credentials.create(), used for creating a new public key credential as part of the WebAuthn registration ceremony.',
+    responses: {
+      200: {
+        description: 'Successful response',
+        content: {
+          'application/json': {
+            schema: resolver(CreateCredentialResponseSchema),
+          },
+        },
+      },
+    },
+  }),
+  validator('json', CreateCredentialRequestBodySchema),
   protectedMiddleware,
   async (ctx) => {
     const publicKeyCredentialCreationOptionsJson = ctx.req.valid('json');
