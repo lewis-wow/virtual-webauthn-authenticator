@@ -2,7 +2,7 @@ import { env } from '@/env';
 import { Jwt } from '@repo/jwt';
 
 import { prisma } from './prisma';
-import { Lazy } from './utils/lazy';
+import { Lazy } from './utils/Lazy';
 
 export const jwt = new Lazy(
   'jwt',
