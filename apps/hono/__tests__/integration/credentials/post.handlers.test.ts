@@ -2,7 +2,7 @@ import { env } from '@/env';
 import { root, type Root } from '@/routes';
 import { PublicKeyCredentialType } from '@repo/enums';
 import { Jwt } from '@repo/jwt';
-import { prisma, type User } from '@repo/prisma';
+import { type User, initializePrismaClient } from '@repo/prisma';
 import { bufferToUuid } from '@repo/utils';
 import { PublicKeyCredentialSchema } from '@repo/validation';
 import {
@@ -30,6 +30,8 @@ const testClient = hc<Root>(`http://localhost:${env.PORT}`, {
     return response;
   },
 });
+
+const prisma = initializePrismaClient();
 
 const jwt = new Jwt({
   prisma,

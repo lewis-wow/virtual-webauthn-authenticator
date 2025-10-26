@@ -5,12 +5,15 @@ import { defineConfig } from 'vitest/config';
 
 import pkg from '../package.json';
 
+const env = config({
+  path: join(import.meta.dirname, '..', '.env.test'),
+  override: true,
+}).parsed;
+
 export default defineConfig({
   test: {
     name: pkg.name,
-    env: {
-      ...config({ path: join(import.meta.dirname, '..', '.env.test') }).parsed,
-    },
+    env,
   },
   // @ts-expect-error - No overload matches this call.
   plugins: [tsconfigPaths()],
