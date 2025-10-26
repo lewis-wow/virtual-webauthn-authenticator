@@ -10,7 +10,7 @@
       "outputs": ["dist/**", "generated/**"]
     },
     "@repo/hono#generate:spec": {
-      "outputs": ["static/openapi.json"]
+      "outputs": ["apps/hono/static/openapi.json"]
     },
     "@repo/console#build": {
       "dependsOn": ["^build"],
