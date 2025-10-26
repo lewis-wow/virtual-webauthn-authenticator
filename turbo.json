@@ -6,7 +6,11 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build", "@repo/hono#generate:spec"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*", "apps/hono/static/openapi.json"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "../../apps/hono/static/openapi.json"
+      ],
       "outputs": ["dist/**", "generated/**"]
     },
     "@repo/hono#generate:spec": {
@@ -20,7 +24,7 @@
     "@repo/prisma#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["src/generated/prisma/**"]
+      "outputs": ["src/generated/client/**"]
     },
     "@repo/console#build": {
       "dependsOn": ["^build"],
