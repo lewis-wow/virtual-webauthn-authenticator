@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import { root, type Root } from '@/routes';
+import { root, type Root } from '@/routes/api';
 import { PublicKeyCredentialType } from '@repo/enums';
 import { Jwt } from '@repo/jwt';
 import { type User, initializePrismaClient } from '@repo/prisma';

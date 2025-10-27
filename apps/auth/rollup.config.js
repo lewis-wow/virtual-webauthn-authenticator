@@ -6,7 +6,6 @@ import run from '@rollup/plugin-run';
 import swc from '@rollup/plugin-swc';
 import { defineConfig } from 'rollup';
 import del from 'rollup-plugin-delete';
-import execute from 'rollup-plugin-execute';
 import externals from 'rollup-plugin-node-externals';
 import tsconfigPaths from 'rollup-plugin-tsconfig-paths';
 
@@ -77,8 +76,6 @@ export default defineConfig({
       },
       sourceMaps: true,
     }),
-
-    execute('scripts/generate-spec.ts'),
 
     isWatching &&
       run({
