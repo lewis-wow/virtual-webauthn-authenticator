@@ -1,5 +1,5 @@
 import { factory } from '@/factory';
-import { sessionMiddleware } from '@/middlewares/sessionMiddleware';
+import { jwtMiddleware } from '@/middlewares/jwtMiddleware';
 import { openapiMetadata } from '@/openapi-metadata';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { HTTPException } from '@repo/exception';
@@ -36,13 +36,14 @@ export const root = factory
         },
       },
     }),
+    jwtMiddleware,
     async (ctx) => {
       return ctx.json({
         ok: true,
+        user: ctx.var.user,
       });
     },
   )
-  .use('*', sessionMiddleware)
   .route('credentials', credentials)
   .route('auth', auth);
 

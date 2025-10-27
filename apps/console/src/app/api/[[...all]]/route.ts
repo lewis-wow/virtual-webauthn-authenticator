@@ -1,14 +1,21 @@
-import { authClient } from '@/lib/authClient';
 import { Proxy } from '@repo/proxy';
+import { createAuthClient } from 'better-auth/client';
+import { jwtClient } from 'better-auth/client/plugins';
 import { handle } from 'hono/vercel';
+
+export const authClient = createAuthClient({
+  plugins: [jwtClient()],
+});
 
 const proxy = new Proxy({
   proxyName: 'API-Proxy',
   targetBaseURL: 'http://localhost:3001',
-  authorization: async () => {
-    const { data } = await authClient.token();
-
-    console.log('authorization', { data });
+  authorization: async ({ req }) => {
+    const { data } = await authClient.token({
+      fetchOptions: {
+        headers: req.headers,
+      },
+    });
 
     if (!data) {
       return undefined;
