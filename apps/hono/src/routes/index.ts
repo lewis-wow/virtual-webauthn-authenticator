@@ -5,14 +5,15 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { HTTPException } from '@repo/exception';
 import { Scalar } from '@scalar/hono-api-reference';
 import { openAPIRouteHandler } from 'hono-openapi';
-import { cors } from 'hono/cors';
+import { resolver, describeRoute } from 'hono-openapi';
+import z from 'zod';
 
 import { auth } from './auth';
 import { credentials } from './credentials';
 
 export const root = factory
   .createApp()
-
+  .basePath('/api')
   .onError((error) => {
     if (error instanceof HTTPException) {
       return error.toResponse();
@@ -20,16 +21,27 @@ export const root = factory
 
     throw error;
   })
-  .use(
-    cors({
-      credentials: true,
-      origin: ['http://localhost:3000'],
-    }),
-  )
   .use('/static/*', serveStatic({ root: './' }))
-  .get('/', async (ctx) => {
-    return ctx.text('OK');
-  })
+  .get(
+    '/',
+    describeRoute({
+      responses: {
+        200: {
+          description: 'Successful response',
+          content: {
+            'application/json': {
+              schema: resolver(z.object({ ok: z.literal(true) })),
+            },
+          },
+        },
+      },
+    }),
+    async (ctx) => {
+      return ctx.json({
+        ok: true,
+      });
+    },
+  )
   .use('*', sessionMiddleware)
   .route('credentials', credentials)
   .route('auth', auth);

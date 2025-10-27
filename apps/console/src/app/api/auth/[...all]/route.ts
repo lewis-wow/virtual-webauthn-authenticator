@@ -1,8 +1,9 @@
-import { AuthProxy } from '@repo/proxy';
+import { Proxy } from '@repo/proxy';
 import { handle } from 'hono/vercel';
 
-const proxy = new AuthProxy({
-  authURL: 'http://localhost:3002',
+const proxy = new Proxy({
+  proxyName: 'Auth-Proxy',
+  targetBaseURL: 'http://localhost:3002',
 });
 
 export const GET = handle(proxy.getApp());

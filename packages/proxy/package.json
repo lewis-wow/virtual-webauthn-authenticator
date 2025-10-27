@@ -21,13 +21,15 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/api-key": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/jwt": "workspace:*",
-    "@repo/crypto": "workspace:*",
+    "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
-    "@repo/api-key": "workspace:*",
     "hono": "^4.9.10",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "winston": "^3.18.3"
   }
 }
