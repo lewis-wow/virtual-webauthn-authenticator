@@ -6,6 +6,4 @@
 
 ## Architecture
 
-<div style="background-color:white; display:inline-block;">
-  <img src="./.architecture/export/architecture.svg" alt="My SVG Image">
-</div>
+![Architecture](.architecture/export/architecture.svg)
