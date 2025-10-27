@@ -6,4 +6,4 @@
 
 ## Architecture
 
-![Architecture](.architecture/export/architecture.svg)
+<img src="./.architecture/export/architecture.svg" alt="Architecture" style="background-color: white;">
