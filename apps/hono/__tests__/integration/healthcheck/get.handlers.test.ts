@@ -9,44 +9,33 @@ const MOCK_USER_PAYLOAD = {
   name: USER_NAME,
 };
 
-const mockContext = {
-  var: {
-    jwt: {
-      validateToken: vi.fn().mockResolvedValue(MOCK_USER_PAYLOAD),
-    },
-    logger: {
-      debug: vi.fn(),
-      error: vi.fn(),
-    },
-  },
-};
+vi.mock(import('@/middlewares/jwtMiddleware'), () => {
+  const jwtMiddleware = vi.fn((ctx, next) => {
+    ctx.set('user', MOCK_USER_PAYLOAD);
+    return next();
+  });
+
+  return { jwtMiddleware };
+});
 
 describe('Healthcheck GET handler', () => {
   test('test', async () => {
-    const response = await root.request(
-      '/api/healthcheck',
-      {
-        headers: {
-          Authorization: 'Bearer fake-valid-token',
-        },
+    const response = await root.request('/api/healthcheck', {
+      headers: {
+        Authorization: 'Bearer fake-valid-token',
       },
-      {
-        f: 1,
-      },
-      {
-        ...mockContext,
-        waitUntil: vi.fn(),
-        passThroughOnException: vi.fn(),
-        props: {},
-      },
-    );
+    });
 
     const json = await response.json();
 
     expect(json).toMatchInlineSnapshot(`
       {
         "healthy": true,
-        "user": null,
+        "user": {
+          "email": "john.doe@example.com",
+          "id": "4bdeaf3a-4b6b-4bc0-a9c9-84a3bc996dc4",
+          "name": "John Doe",
+        },
       }
     `);
   });
