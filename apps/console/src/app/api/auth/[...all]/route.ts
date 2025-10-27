@@ -1,4 +1,10 @@
-import { auth } from '@/server/auth';
-import { toNextJsHandler } from 'better-auth/next-js';
+import { AuthProxy } from '@repo/proxy';
+import { handle } from 'hono/vercel';
 
-export const { POST, GET } = toNextJsHandler(auth);
+const proxy = new AuthProxy({
+  authURL: 'http://localhost:3002',
+  baseURL: 'http://localhost:3000',
+});
+
+export const GET = handle(proxy.getApp());
+export const POST = handle(proxy.getApp());

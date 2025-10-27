@@ -1,60 +1,40 @@
-import { Unauthorized } from '@repo/exception';
-import { Jwt } from '@repo/jwt';
-import { type PrismaClient, type User } from '@repo/prisma';
-import type { MaybePromise } from '@repo/types';
 import { Hono } from 'hono';
 import 'hono/cookie';
-import { getCookie } from 'hono/cookie';
 import { proxy } from 'hono/proxy';
 import { assert, isString } from 'typanion';
 
 export type AuthProxyOptions = {
-  jwt: Jwt;
-  originServerBaseURL: string;
-  getUserInfo: (opts: {
-    request: Request;
-    cookie: (name: string) => string | undefined;
-  }) => MaybePromise<
-    (Partial<Omit<User, 'id'>> & Pick<User, 'id'>) | undefined
-  >;
+  authURL: string;
   rewritePath?: (path: string | undefined) => string | undefined;
 };
 
 export class AuthProxy {
-  private readonly jwt: Jwt;
-
   private readonly app = new Hono();
 
   constructor(opts: AuthProxyOptions) {
-    this.jwt = opts.jwt;
+    const { authURL, rewritePath } = opts;
 
-    const { originServerBaseURL, getUserInfo, rewritePath } = opts;
-
-    assert(originServerBaseURL, isString());
+    assert(authURL, isString());
 
     this.app.all('*', async (ctx) => {
-      const path = this._trimSlashes(
-        rewritePath ? rewritePath(ctx.req.path) : ctx.req.path,
+      const requestURL = new URL(ctx.req.url);
+      const requestSearchParams = requestURL.searchParams;
+
+      const targetPathname = this._trimSlashes(
+        rewritePath ? rewritePath(requestURL.pathname) : requestURL.pathname,
       );
 
-      const user = await getUserInfo({
-        request: ctx.req.raw,
-        cookie: (key: string) => getCookie(ctx, key),
+      const targetURL = new URL(
+        `${authURL}/${targetPathname}${requestSearchParams.toString()}`,
+      );
+
+      const response = await proxy(targetURL, {
+        ...ctx.req,
+        duplex: 'half',
+        redirect: 'follow',
       });
 
-      if (!user) {
-        throw new Unauthorized();
-      }
-
-      const jwt = await this.jwt.sign(user);
-
-      const headers = new Headers({
-        authorization: `Bearer ${jwt}`,
-      });
-
-      const response = await proxy(`${originServerBaseURL}/${path}`, {
-        headers,
-      });
+      console.log('response', response);
 
       return response;
     });

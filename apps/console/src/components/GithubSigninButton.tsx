@@ -8,7 +8,7 @@ export const GithubSigninButton = () => {
   const handleGithubSignIn = async () => {
     const data = await authClient.signIn.social({
       provider: 'github',
-      callbackURL: '/',
+      callbackURL: 'http://localhost:3000/',
     });
 
     console.log(data);
