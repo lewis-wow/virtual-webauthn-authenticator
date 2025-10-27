@@ -3,7 +3,6 @@ import { handle } from 'hono/vercel';
 
 const proxy = new AuthProxy({
   authURL: 'http://localhost:3002',
-  baseURL: 'http://localhost:3000',
 });
 
 export const GET = handle(proxy.getApp());

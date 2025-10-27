@@ -33,11 +33,7 @@ const ApiKeys = () => {
   const authApiKeyListQuery = useQuery({
     queryKey: ['auth.apiKey.list'],
     queryFn: async () => {
-      const response = await fetch('/api/auth/api-keys', {
-        method: 'GET',
-      });
-
-      const data = await response.json();
+      const { data } = await fetchClient.GET('/auth/api-keys');
 
       return ListApiKeysResponseSchema.parse(data);
     },

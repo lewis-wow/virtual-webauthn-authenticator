@@ -5,12 +5,14 @@ import { serveStatic } from '@hono/node-server/serve-static';
 import { HTTPException } from '@repo/exception';
 import { Scalar } from '@scalar/hono-api-reference';
 import { openAPIRouteHandler } from 'hono-openapi';
+import { cors } from 'hono/cors';
 
 import { auth } from './auth';
 import { credentials } from './credentials';
 
 export const root = factory
   .createApp()
+
   .onError((error) => {
     if (error instanceof HTTPException) {
       return error.toResponse();
@@ -18,6 +20,12 @@ export const root = factory
 
     throw error;
   })
+  .use(
+    cors({
+      credentials: true,
+      origin: ['http://localhost:3000'],
+    }),
+  )
   .use('/static/*', serveStatic({ root: './' }))
   .get('/', async (ctx) => {
     return ctx.text('OK');

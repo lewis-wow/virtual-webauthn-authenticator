@@ -1,10 +1,17 @@
 import { factory } from '@/factory';
+import { validateToken } from '@/validateToken';
 import { Jwt } from '@repo/jwt';
 
 export const sessionMiddleware = factory.createMiddleware(async (ctx, next) => {
   const jwtOrfullApiKey = ctx.req.raw.headers
     .get('authorization')
     ?.replace('Bearer ', '');
+
+  const validated = await validateToken(jwtOrfullApiKey!);
+  ctx.set('user', validated as any);
+
+  console.log('validated', validated);
+  return next();
 
   if (!jwtOrfullApiKey) {
     ctx.set('user', null);

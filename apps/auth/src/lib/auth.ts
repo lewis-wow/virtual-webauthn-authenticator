@@ -15,7 +15,14 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     },
   },
-  plugins: [jwt(), bearer()],
+  plugins: [
+    jwt({
+      jwt: {
+        audience: 'http://localhost:3001',
+      },
+    }),
+    bearer(),
+  ],
   trustedOrigins: ['http://localhost:3000', 'http://localhost:3001'],
   advanced: {
     generateId: false,
