@@ -1,11 +1,10 @@
-import { defaultLog } from '@repo/logger';
+import { Logger } from '@repo/logger';
 import type { MaybePromise } from '@repo/types';
 import { Hono } from 'hono';
 import 'hono/cookie';
 import { getCookie } from 'hono/cookie';
 import { proxy } from 'hono/proxy';
 import { assert, isOptional, isString } from 'typanion';
-import { Logger } from 'winston';
 
 export type ProxyOptions = {
   targetBaseURL: string;
@@ -40,7 +39,7 @@ export class Proxy {
     assert(targetBaseURL, isString());
     assert(proxyName, isOptional(isString()));
 
-    this.logger = defaultLog.child({ prefix: `${proxyName ?? 'Proxy'}` });
+    this.logger = new Logger({ prefix: `${proxyName ?? 'Proxy'}` });
 
     this.logger.debug('PROXY_INITIALIZED');
 

@@ -21,6 +21,7 @@
     "@repo/enums": "workspace:*",
     "@repo/jwt": "workspace:*",
     "@repo/exception": "workspace:*",
+    "@repo/logger": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",

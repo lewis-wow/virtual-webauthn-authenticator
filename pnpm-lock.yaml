@@ -364,6 +364,9 @@ importers:
       '@repo/keys':
         specifier: workspace:*
         version: link:../../packages/keys
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
