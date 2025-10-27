@@ -3,19 +3,29 @@ import { z } from 'zod';
 
 export const env = createEnv({
   server: {
+    // App
     PORT: z.coerce.number(),
     BASE_URL: z.url(),
 
+    HONO_BASE_URL: z.url(),
+    NEXTJS_BASE_URL: z.url(),
+
+    // Database
     DATABASE_URL: z.url(),
 
-    AZURE_KEY_VAULT_BASE_URL: z.url(),
+    // Better auth
+    TRUSTED_ORIGINS: z
+      .string()
+      .transform((arg) => arg.split(';'))
+      .pipe(z.array(z.url())),
 
-    JWK_PRIVATE_KEY_ENCRYPTION_SECRET: z.string(),
-    JWT_CURRENT_JWK_KID: z.string(),
+    // JWT
     JWT_ISSUER: z.string(),
     JWT_AUDIENCE: z.string(),
 
-    API_KEY_PREFIX: z.string(),
+    // OAuth
+    GITHUB_CLIENT_ID: z.string(),
+    GITHUB_CLIENT_SECRET: z.string(),
   },
 
   /**

@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt, bearer } from 'better-auth/plugins';
@@ -18,12 +19,12 @@ export const auth = betterAuth({
   plugins: [
     jwt({
       jwt: {
-        audience: 'http://localhost:3001',
+        audience: env.JWT_AUDIENCE,
       },
     }),
     bearer(),
   ],
-  trustedOrigins: ['http://localhost:3000', 'http://localhost:3001'],
+  trustedOrigins: env.TRUSTED_ORIGINS,
   advanced: {
     generateId: false,
     cookies: {
