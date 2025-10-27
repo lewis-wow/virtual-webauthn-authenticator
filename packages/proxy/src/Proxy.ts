@@ -42,6 +42,8 @@ export class Proxy {
 
     this.logger = defaultLog.child({ prefix: `${proxyName ?? 'Proxy'}` });
 
+    this.logger.debug('PROXY_INITIALIZED');
+
     this.app.all('*', async (ctx) => {
       const requestURL = new URL(ctx.req.url);
       const requestSearchParams = requestURL.searchParams;

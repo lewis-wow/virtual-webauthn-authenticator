@@ -8,6 +8,8 @@ const proxy = new Proxy({
   authorization: async () => {
     const { data } = await authClient.token();
 
+    console.log('authorization', { data });
+
     if (!data) {
       return undefined;
     }
