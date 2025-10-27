@@ -2,11 +2,9 @@ import type { User } from '@repo/prisma';
 import type { Hono } from 'hono';
 import { createFactory } from 'hono/factory';
 
-import { apiKeyManager } from './lib/apiKeyManager';
 import { azureCredential } from './lib/azureCredential';
 import { credentialSignerFactory } from './lib/credentialSignerFactory';
 import { cryptographyClientFactory } from './lib/cryptographyClientFactory';
-import { jwt } from './lib/jwt';
 import { keyClient } from './lib/keyClient';
 import { keyVault } from './lib/keyVault';
 import { prisma } from './lib/prisma';
@@ -30,9 +28,7 @@ const initApp = (app: Hono) => {
     .use(keyVault.middleware())
     .use(prisma.middleware())
     .use(virtualAuthenticator.middleware())
-    .use(webAuthnCredentialRepository.middleware())
-    .use(apiKeyManager.middleware())
-    .use(jwt.middleware());
+    .use(webAuthnCredentialRepository.middleware());
 };
 
 export const factory = createFactory<
