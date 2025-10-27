@@ -5,6 +5,7 @@ import { createFactory } from 'hono/factory';
 import { azureCredential } from './lib/azureCredential';
 import { credentialSignerFactory } from './lib/credentialSignerFactory';
 import { cryptographyClientFactory } from './lib/cryptographyClientFactory';
+import { jwt } from './lib/jwt';
 import { keyClient } from './lib/keyClient';
 import { keyVault } from './lib/keyVault';
 import { logger } from './lib/logger';
@@ -30,7 +31,8 @@ const initApp = (app: Hono) => {
     .use(prisma.middleware())
     .use(virtualAuthenticator.middleware())
     .use(webAuthnCredentialRepository.middleware())
-    .use(logger.middleware());
+    .use(logger.middleware())
+    .use(jwt.middleware());
 };
 
 export const factory = createFactory<
