@@ -75,11 +75,12 @@ export class Proxy {
 
       this.logger.debug('PROXY_TARGET_URL', targetURL);
 
-      const proxyResponse = await proxy(targetURL, {
-        ...ctx.req,
-        headers: targetHeaders,
-        duplex: 'half',
-      });
+      const proxyInit = {
+        ...({ ...ctx.req, headers: targetHeaders } satisfies RequestInit),
+        duplex: 'half' as const,
+      };
+
+      const proxyResponse = await proxy(targetURL, proxyInit);
 
       this.logger.debug('PROXY_RESPONSE', proxyResponse);
 

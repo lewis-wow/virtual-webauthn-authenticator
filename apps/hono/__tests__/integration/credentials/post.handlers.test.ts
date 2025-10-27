@@ -1,7 +1,6 @@
 import { env } from '@/env';
-import { root, type Root } from '@/routes/api';
+import { root } from '@/routes';
 import { PublicKeyCredentialType } from '@repo/enums';
-import { Jwt } from '@repo/jwt';
 import { type User, initializePrismaClient } from '@repo/prisma';
 import { bufferToUuid } from '@repo/utils';
 import { PublicKeyCredentialSchema } from '@repo/validation';
@@ -22,7 +21,7 @@ import {
   USER_NAME,
 } from '../../helpers/consts';
 
-const testClient = hc<Root>(`http://localhost:${env.PORT}`, {
+const testClient = hc<typeof root>(`http://localhost:${env.PORT}`, {
   fetch: async (input: string | URL | Request, init?: RequestInit) => {
     const request = new Request(input, init);
     const response = await root.fetch(request);
@@ -33,20 +32,13 @@ const testClient = hc<Root>(`http://localhost:${env.PORT}`, {
 
 const prisma = initializePrismaClient();
 
-const jwt = new Jwt({
-  prisma,
-  currentKid: env.JWT_CURRENT_JWK_KID,
-  encryptionKey: env.JWK_PRIVATE_KEY_ENCRYPTION_SECRET,
-  config: {
-    issuer: env.JWT_ISSUER,
-    audience: env.JWT_AUDIENCE,
-  },
-});
-
 describe('Credentials POST handler', () => {
   let user: User;
+  let token: string;
 
   beforeAll(async () => {
+    token = 'DUMMY_TOKEN';
+
     user = await prisma.user.upsert({
       where: {
         id: USER_ID,
@@ -61,9 +53,7 @@ describe('Credentials POST handler', () => {
   });
 
   test('test', async () => {
-    const token = await jwt.sign(user);
-
-    const response = await testClient.credentials.$post({
+    const response = await testClient.api.credentials.$post({
       json: {
         challenge: CHALLENGE_BASE64URL,
         rp: {
