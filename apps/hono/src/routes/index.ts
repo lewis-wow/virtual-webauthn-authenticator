@@ -8,7 +8,6 @@ import { openAPIRouteHandler } from 'hono-openapi';
 import { resolver, describeRoute } from 'hono-openapi';
 import z from 'zod';
 
-import { auth } from './auth';
 import { credentials } from './credentials';
 
 export const root = factory
@@ -44,8 +43,7 @@ export const root = factory
       });
     },
   )
-  .route('credentials', credentials)
-  .route('auth', auth);
+  .route('credentials', credentials);
 
 root.get('.well-known/jwks.json', async (ctx) => {
   const jwks = await ctx.var.jwt.getJwks();
