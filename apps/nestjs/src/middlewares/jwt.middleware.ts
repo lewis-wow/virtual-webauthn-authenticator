@@ -1,15 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Jwt, JwtPayload } from '@repo/auth';
+import { Jwt } from '@repo/auth';
 import { Logger } from '@repo/logger';
 import { Request, Response, NextFunction } from 'express';
-
-declare global {
-  namespace Express {
-    export interface Request {
-      user?: JwtPayload | null;
-    }
-  }
-}
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
@@ -18,8 +10,10 @@ export class JwtMiddleware implements NestMiddleware {
     private readonly logger: Logger,
   ) {}
 
-  async use(req: Request, res: Response, next: NextFunction) {
+  async use(req: Request, _res: Response, next: NextFunction) {
     const authorizationHeader = req.headers['authorization'];
+
+    console.log('this', this);
 
     this.logger.debug(
       `Authorization header: ${authorizationHeader}`,

@@ -1,7 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
@@ -17,9 +15,8 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
 
 @Module({
   imports: [],
-  controllers: [AppController, HealthcheckController],
+  controllers: [HealthcheckController],
   providers: [
-    AppService,
     PrismaService,
     AzureCredentialProvider,
     CryptographyClientFactoryProvider,
