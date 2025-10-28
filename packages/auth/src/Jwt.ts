@@ -1,7 +1,15 @@
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import {
+  createRemoteJWKSet,
+  jwtVerify,
+  type JWTPayload as JoseJWTPayload,
+} from 'jose';
 
 export type JwtOptions = {
   authServerBaseURL: string;
+};
+
+export type JwtPayload = JoseJWTPayload & {
+  id: string;
 };
 
 export class Jwt {
@@ -11,7 +19,7 @@ export class Jwt {
     this.authServerBaseURL = opts.authServerBaseURL;
   }
 
-  async validateToken(token: string) {
+  async validateToken(token: string): Promise<JwtPayload> {
     try {
       const JWKS = createRemoteJWKSet(
         new URL(`${this.authServerBaseURL}/api/auth/jwks`),
@@ -22,7 +30,7 @@ export class Jwt {
         audience: this.authServerBaseURL,
       });
 
-      return payload;
+      return payload as JwtPayload;
     } catch (error) {
       console.error('Token validation failed:', error);
       throw error;

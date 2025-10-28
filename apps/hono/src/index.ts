@@ -2,8 +2,8 @@ import { serve } from '@hono/node-server';
 import { HTTPException } from '@repo/exception';
 import { showRoutes } from 'hono/dev';
 
-import { env } from './env.js';
-import { factory } from './factory.js';
+import { env } from './env';
+import { factory } from './factory';
 import { root } from './routes';
 
 const app = factory

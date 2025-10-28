@@ -1,1 +1,1 @@
-export * from './VirtualAuthenticator.js';
+export * from './VirtualAuthenticator';

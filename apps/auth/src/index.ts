@@ -1,8 +1,8 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 
-import { env } from './env.js';
-import { auth } from './lib/auth.js';
+import { env } from './env';
+import { auth } from './lib/auth';
 
 const app = new Hono();
 
