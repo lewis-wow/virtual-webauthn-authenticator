@@ -1,6 +1,7 @@
-import { Injectable, NestMiddleware, Logger } from '@nestjs/common';
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Jwt, JwtPayload } from '@repo/auth';
+import { Logger } from '@repo/logger';
 import { Request, Response, NextFunction } from 'express';
-import { Jwt, JwtPayload } from '@repo/auth'
 
 declare global {
   namespace Express {
@@ -29,9 +30,7 @@ export class JwtMiddleware implements NestMiddleware {
 
     if (jwt) {
       try {
-        const jwtPayload = await this.jwt.validateToken(
-          jwt,
-        );
+        const jwtPayload = await this.jwt.validateToken(jwt);
 
         this.logger.debug(
           `JWT Payload: ${JSON.stringify(jwtPayload)}`,
@@ -40,7 +39,11 @@ export class JwtMiddleware implements NestMiddleware {
 
         req.user = jwtPayload;
       } catch (error) {
-        this.logger.error('Invalid JWT', (error as Error).message, JwtMiddleware.name);
+        this.logger.error(
+          'Invalid JWT',
+          (error as Error).message,
+          JwtMiddleware.name,
+        );
         req.user = null;
       }
     } else {
