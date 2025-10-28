@@ -1,1 +1,1 @@
-export * from './AuthProxy';
+export * from './Proxy';

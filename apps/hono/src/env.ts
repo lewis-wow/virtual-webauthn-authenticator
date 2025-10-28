@@ -3,19 +3,16 @@ import { z } from 'zod';
 
 export const env = createEnv({
   server: {
+    // App
     PORT: z.coerce.number(),
     BASE_URL: z.url(),
 
+    AUTH_SERVER_BASE_URL: z.url(),
+    // Database
     DATABASE_URL: z.url(),
 
+    // Key vault
     AZURE_KEY_VAULT_BASE_URL: z.url(),
-
-    JWK_PRIVATE_KEY_ENCRYPTION_SECRET: z.string(),
-    JWT_CURRENT_JWK_KID: z.string(),
-    JWT_ISSUER: z.string(),
-    JWT_AUDIENCE: z.string(),
-
-    API_KEY_PREFIX: z.string(),
   },
 
   /**

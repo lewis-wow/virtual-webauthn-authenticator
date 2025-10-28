@@ -1,5 +1,5 @@
-import { fetchClient } from '@/lib/api/client';
-import { DeleteApiKeyResponseSchema } from '@repo/validation';
+// import { fetchClient } from '@/lib/api/client';
+// import { DeleteApiKeyResponseSchema } from '@repo/validation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Copy, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -35,16 +35,15 @@ export const ApiKey = ({
   };
 
   const authApiKeyDeleteMutation = useMutation({
-    mutationFn: async (opts: { keyId: string }) => {
-      const { data } = await fetchClient.DELETE('/auth/api-keys/{id}', {
-        params: {
-          path: {
-            id: opts.keyId,
-          },
-        },
-      });
-
-      return DeleteApiKeyResponseSchema.parse(data);
+    mutationFn: async (/* opts: { keyId: string } */) => {
+      // const { data } = await fetchClient.DELETE('/auth/api-keys/{id}', {
+      //   params: {
+      //     path: {
+      //       id: opts.keyId,
+      //     },
+      //   },
+      // });
+      // return DeleteApiKeyResponseSchema.parse(data);
     },
     onSuccess: () => {
       toast('API key has been deleted.', {
@@ -91,7 +90,7 @@ export const ApiKey = ({
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => authApiKeyDeleteMutation.mutate({ keyId: id })}
+          onClick={() => authApiKeyDeleteMutation.mutate(/* { keyId: id } */)}
         >
           <Trash2 className="h-4 w-4" />
         </Button>

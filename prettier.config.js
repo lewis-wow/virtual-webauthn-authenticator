@@ -8,6 +8,7 @@ const config = {
   trailingComma: 'all',
   importOrderSeparation: true,
   importOrder: ['^@core/(.*)$', '___', '__', '<THIRD_PARTY_MODULES>', '^[./]'],
+  importOrderParserPlugins: ['typescript', 'decorators-legacy'],
   plugins: ['@trivago/prettier-plugin-sort-imports'],
 };
 

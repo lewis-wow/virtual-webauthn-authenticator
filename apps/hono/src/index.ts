@@ -1,18 +1,31 @@
 import { serve } from '@hono/node-server';
+import { HTTPException } from '@repo/exception';
 import { showRoutes } from 'hono/dev';
 
-import { env } from './env.js';
-import { root } from './routes/index.js';
+import { env } from './env';
+import { factory } from './factory';
+import { root } from './routes';
+
+const app = factory
+  .createApp()
+  .onError((error) => {
+    if (error instanceof HTTPException) {
+      return error.toResponse();
+    }
+
+    throw error;
+  })
+  .route('/', root);
 
 serve(
   {
-    fetch: root.fetch,
+    fetch: app.fetch,
     port: env.PORT,
   },
   (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
+    console.log(`API Server is running on http://localhost:${info.port}`);
 
-    showRoutes(root, {
+    showRoutes(app, {
       colorize: true,
     });
   },

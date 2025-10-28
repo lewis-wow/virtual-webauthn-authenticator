@@ -1,2 +1,2 @@
-export * from './COSEKey.js';
-export * from './JsonWebKey.js';
+export * from './COSEKey';
+export * from './JsonWebKey';

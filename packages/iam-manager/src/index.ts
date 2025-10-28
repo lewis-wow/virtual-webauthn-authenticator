@@ -1,1 +1,1 @@
-export * from './IamManager.js';
+export * from './IamManager';

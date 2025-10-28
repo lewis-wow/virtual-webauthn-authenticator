@@ -14,13 +14,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
-import { fetchClient } from '@/lib/api/client';
-import { authClient } from '@/lib/authClient';
+// import { fetchClient } from '@/lib/api/client';
+// import { authClient } from '@/lib/authClient';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CreateApiKeyRequestBodySchema,
-  CreateApiKeyResponseSchema,
-  ListApiKeysResponseSchema,
+  // CreateApiKeyResponseSchema,
+  // ListApiKeysResponseSchema,
 } from '@repo/validation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
@@ -33,25 +33,23 @@ const ApiKeys = () => {
   const authApiKeyListQuery = useQuery({
     queryKey: ['auth.apiKey.list'],
     queryFn: async () => {
-      const response = await fetch('/api/auth/api-keys', {
-        method: 'GET',
-      });
+      // const { data } = await fetchClient.GET('/api/auth/api-keys');
+      // return ListApiKeysResponseSchema.parse(data);
 
-      const data = await response.json();
-
-      return ListApiKeysResponseSchema.parse(data);
+      return [{}];
     },
   });
 
   const authApiKeyCreateMutation = useMutation({
-    mutationFn: async (opts: { name: string }) => {
-      const { data } = await fetchClient.POST('/auth/api-keys', {
-        body: {
-          name: opts.name,
-        },
-      });
+    mutationFn: async (/* opts: { name: string } */) => {
+      // const { data } = await fetchClient.POST('/api/auth/api-keys', {
+      //   body: {
+      //     name: opts.name,
+      //   },
+      // });
+      // return CreateApiKeyResponseSchema.parse(data);
 
-      return CreateApiKeyResponseSchema.parse(data);
+      return {};
     },
     onSuccess: () => {
       form.reset();
@@ -89,8 +87,8 @@ const ApiKeys = () => {
         <CardContent>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((values) => {
-                authApiKeyCreateMutation.mutate(values);
+              onSubmit={form.handleSubmit((/* values */) => {
+                authApiKeyCreateMutation.mutate(/* values */);
               })}
               className="flex items-start gap-4"
             >
@@ -123,9 +121,13 @@ const ApiKeys = () => {
             isEmpty={authApiKeyListQuery.data?.length === 0}
           >
             <Stack direction="column" gap="1rem">
-              {authApiKeyListQuery.data?.map((apiKey) => (
-                <ApiKey {...apiKey} name={apiKey.name!} key={apiKey.id} />
-              ))}
+              {/* {authApiKeyListQuery.data?.map((apiKey) => (
+                <ApiKey
+                  {...(apiKey as any)}
+                  name={(apiKey as any).name!}
+                  key={(apiKey as any).id}
+                />
+              ))} */}
             </Stack>
           </ContentContainer>
         </CardContent>
