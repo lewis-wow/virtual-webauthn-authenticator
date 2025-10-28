@@ -6,4 +6,4 @@
 
 ## Architecture
 
-![Architecture](.architecture/export/architecture.svg)
+![Architecture image](.architecture/export/architecture.svg)
