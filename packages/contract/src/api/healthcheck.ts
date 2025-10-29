@@ -7,7 +7,7 @@ const c = initContract();
 export const healthcheckRouter = c.router({
   get: {
     method: 'GET',
-    path: '/api/healthcheck/get',
+    path: '/healthcheck',
     responses: {
       200: z.object({
         healthy: z.literal(true),
