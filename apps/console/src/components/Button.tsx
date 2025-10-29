@@ -8,7 +8,7 @@ import { type ComponentProps } from 'react';
 import { match } from 'ts-pattern';
 
 import { cn } from '../lib/utils';
-import { Loading } from './Loading';
+import { Loading } from './Guard/Loading';
 
 export type ButtonProps = {
   isLoading?: boolean;
