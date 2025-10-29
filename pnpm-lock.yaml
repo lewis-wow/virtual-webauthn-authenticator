@@ -760,9 +760,6 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@openapi-contrib/json-schema-to-openapi-schema':
-        specifier: ^4.2.0
-        version: 4.2.0(@types/json-schema@7.0.15)(openapi-types@12.1.3)
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1371,12 +1368,6 @@ packages:
   '@angular-devkit/schematics@19.2.17':
     resolution: {integrity: sha512-ADfbaBsrG8mBF6Mfs+crKA/2ykB8AJI50Cv9tKmZfwcUcyAdmTr+vVvhsBCfvUAEokigSsgqgpYxfkJVxhJYeg==}
     engines: {node: ^18.19.1 || ^20.11.1 || >=22.0.0, npm: ^6.11.0 || ^7.5.6 || >=8.0.0, yarn: '>= 1.13.0'}
-
-  '@apidevtools/json-schema-ref-parser@14.2.1':
-    resolution: {integrity: sha512-HmdFw9CDYqM6B25pqGBpNeLCKvGPlIx1EbLrVL0zPvj50CJQUHyBNBw45Muk0kEIkogo1VZvOKHajdMuAzSxRg==}
-    engines: {node: '>= 20'}
-    peerDependencies:
-      '@types/json-schema': ^7.0.15
 
   '@azure-rest/core-client@2.5.1':
     resolution: {integrity: sha512-EHaOXW0RYDKS5CFffnixdyRPak5ytiCtU7uXDcP/uiY+A6jFRwNGzzJBiznkCzvi5EYpY+YWinieqHb0oY916A==}
@@ -2816,13 +2807,6 @@ packages:
     resolution: {integrity: sha512-GXD3wy50qYbxCJ652bDrDzgMr3NFEkIS374+IgFQKkCvk9yiYcLvX2XDYr7UyQxf4wK0e+yqDYRubZ0DtOxnmQ==}
     engines: {node: ^14.18.0 || >=16.10.0, npm: '>=5.10.0'}
     hasBin: true
-
-  '@openapi-contrib/json-schema-to-openapi-schema@4.2.0':
-    resolution: {integrity: sha512-wlCbwEerAHqlJLv3Hl0y8zszCOTT8vnEBg55T+x3Bt/EkApsf5BukwcBUAjgJDh093yXyzsm5Cja+PgPOmLPTA==}
-    engines: {node: '>=18'}
-    hasBin: true
-    peerDependencies:
-      openapi-types: '*'
 
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
@@ -5656,10 +5640,6 @@ packages:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
 
-  cliui@9.0.1:
-    resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
-    engines: {node: '>=20'}
-
   clone@1.0.4:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
@@ -6093,9 +6073,6 @@ packages:
 
   electron-to-chromium@1.5.241:
     resolution: {integrity: sha512-ILMvKX/ZV5WIJzzdtuHg8xquk2y0BOGlFOxBVwTpbiXqWIH0hamG45ddU4R3PQ0gYu+xgo0vdHXHli9sHIGb4w==}
-
-  emoji-regex@10.6.0:
-    resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -6572,10 +6549,6 @@ packages:
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
-
-  get-east-asian-width@1.4.0:
-    resolution: {integrity: sha512-QZjmEOC+IT1uk6Rx0sX22V6uHWVwbdbxf1faPqJ1QhLdGgsRGCZoyaQBm/piRdJy/D2um6hM1UP7ZEeQ4EkP+Q==}
-    engines: {node: '>=18'}
 
   get-intrinsic@1.3.0:
     resolution: {integrity: sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==}
@@ -7175,10 +7148,6 @@ packages:
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
-
-  json-schema-walker@3.1.0:
-    resolution: {integrity: sha512-Hg5KRkyouEjek4jKFiFuvSedtPhuf0AYQK+Ko4hcz9ljePCOjdj6dUDmHoJiIHBeZ/wrsi+hMtC5E2dvGpQgnQ==}
-    engines: {node: '>=17'}
 
   json-stable-stringify-without-jsonify@1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
@@ -8785,10 +8754,6 @@ packages:
     resolution: {integrity: sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==}
     engines: {node: '>=12'}
 
-  string-width@7.2.0:
-    resolution: {integrity: sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==}
-    engines: {node: '>=18'}
-
   string.prototype.includes@2.0.1:
     resolution: {integrity: sha512-o7+c9bW6zpAdJHTtujeePODAhkuicdAryFsfVKwA+wGw89wJ4GTY484WTucM9hLtDEOpOvI+aHnzqnC5lHp4Rg==}
     engines: {node: '>= 0.4'}
@@ -9599,10 +9564,6 @@ packages:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
     engines: {node: '>=12'}
 
-  wrap-ansi@9.0.2:
-    resolution: {integrity: sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww==}
-    engines: {node: '>=18'}
-
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
 
@@ -9650,17 +9611,9 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
-  yargs-parser@22.0.0:
-    resolution: {integrity: sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
-
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
-
-  yargs@18.0.0:
-    resolution: {integrity: sha512-4UEqdc2RYGHZc7Doyqkrqiln3p9X2DZVxaGbwhn2pi7MrRagKaOcIKe8L3OxYcbhXLgLFUS3zAYuQjKBQgmuNg==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
   yn@3.1.1:
     resolution: {integrity: sha512-Ux4ygGWsu2c7isFWe8Yu1YluJmqVhxqK2cLXNQA5AcC3QfbGNpM7fu0Y8b/z16pXLnFxZYvWhd3fhBY9DLmC6Q==}
@@ -9754,11 +9707,6 @@ snapshots:
       rxjs: 7.8.1
     transitivePeerDependencies:
       - chokidar
-
-  '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
-    dependencies:
-      '@types/json-schema': 7.0.15
-      js-yaml: 4.1.0
 
   '@azure-rest/core-client@2.5.1':
     dependencies:
@@ -11122,15 +11070,6 @@ snapshots:
   '@nuxt/opencollective@0.4.1':
     dependencies:
       consola: 3.4.2
-
-  '@openapi-contrib/json-schema-to-openapi-schema@4.2.0(@types/json-schema@7.0.15)(openapi-types@12.1.3)':
-    dependencies:
-      '@apidevtools/json-schema-ref-parser': 14.2.1(@types/json-schema@7.0.15)
-      json-schema-walker: 3.1.0(@types/json-schema@7.0.15)
-      openapi-types: 12.1.3
-      yargs: 18.0.0
-    transitivePeerDependencies:
-      - '@types/json-schema'
 
   '@paralleldrive/cuid2@2.3.1':
     dependencies:
@@ -14483,12 +14422,6 @@ snapshots:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
-  cliui@9.0.1:
-    dependencies:
-      string-width: 7.2.0
-      strip-ansi: 7.1.2
-      wrap-ansi: 9.0.2
-
   clone@1.0.4: {}
 
   clone@2.1.2: {}
@@ -14893,8 +14826,6 @@ snapshots:
   electron-to-chromium@1.5.227: {}
 
   electron-to-chromium@1.5.241: {}
-
-  emoji-regex@10.6.0: {}
 
   emoji-regex@8.0.0: {}
 
@@ -15656,8 +15587,6 @@ snapshots:
 
   get-caller-file@2.0.5: {}
 
-  get-east-asian-width@1.4.0: {}
-
   get-intrinsic@1.3.0:
     dependencies:
       call-bind-apply-helpers: 1.0.2
@@ -16262,12 +16191,6 @@ snapshots:
   json-schema-traverse@0.4.1: {}
 
   json-schema-traverse@1.0.0: {}
-
-  json-schema-walker@3.1.0(@types/json-schema@7.0.15):
-    dependencies:
-      '@apidevtools/json-schema-ref-parser': 14.2.1(@types/json-schema@7.0.15)
-    transitivePeerDependencies:
-      - '@types/json-schema'
 
   json-stable-stringify-without-jsonify@1.0.1: {}
 
@@ -17995,12 +17918,6 @@ snapshots:
       emoji-regex: 9.2.2
       strip-ansi: 7.1.2
 
-  string-width@7.2.0:
-    dependencies:
-      emoji-regex: 10.6.0
-      get-east-asian-width: 1.4.0
-      strip-ansi: 7.1.2
-
   string.prototype.includes@2.0.1:
     dependencies:
       call-bind: 1.0.8
@@ -19029,12 +18946,6 @@ snapshots:
       string-width: 5.1.2
       strip-ansi: 7.1.2
 
-  wrap-ansi@9.0.2:
-    dependencies:
-      ansi-styles: 6.2.3
-      string-width: 7.2.0
-      strip-ansi: 7.1.2
-
   wrappy@1.0.2: {}
 
   wsl-utils@0.1.0:
@@ -19063,8 +18974,6 @@ snapshots:
 
   yargs-parser@21.1.1: {}
 
-  yargs-parser@22.0.0: {}
-
   yargs@17.7.2:
     dependencies:
       cliui: 8.0.1
@@ -19074,15 +18983,6 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
-
-  yargs@18.0.0:
-    dependencies:
-      cliui: 9.0.1
-      escalade: 3.2.0
-      get-caller-file: 2.0.5
-      string-width: 7.2.0
-      y18n: 5.0.8
-      yargs-parser: 22.0.0
 
   yn@3.1.1:
     optional: true

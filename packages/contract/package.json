@@ -13,7 +13,6 @@
     "generate:spec": "scripts/generate-spec.ts"
   },
   "devDependencies": {
-    "@openapi-contrib/json-schema-to-openapi-schema": "^4.2.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
