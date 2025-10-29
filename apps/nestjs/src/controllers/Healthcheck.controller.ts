@@ -1,19 +1,23 @@
-import { Controller, Get, Req } from '@nestjs/common';
-import { JwtPayload } from '@repo/auth';
+import { Controller, Req } from '@nestjs/common';
+import { contract } from '@repo/contract';
+import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 import type { Request } from 'express';
 
 @Controller()
 export class HealthcheckController {
   constructor() {}
 
-  @Get('/api/healthcheck')
-  async healthcheck(@Req() req: Request): Promise<{
-    ok: true;
-    user: JwtPayload | null;
-  }> {
-    return {
-      ok: true,
-      user: req.user ?? null,
-    };
+  @TsRestHandler(contract.api.healthcheck.get)
+  async healthcheck(@Req() req: Request) {
+    return tsRestHandler(contract.api.healthcheck.get, async () => {
+      return {
+        status: 200,
+        body: contract.api.healthcheck.get.responses[200].encode({
+          healthy: true,
+          codec: new Date(),
+          jwtPayload: req.user ?? null,
+        }),
+      };
+    });
   }
 }

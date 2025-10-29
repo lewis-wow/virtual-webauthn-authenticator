@@ -1,15 +1,8 @@
-import {
-  createRemoteJWKSet,
-  jwtVerify,
-  type JWTPayload as JoseJWTPayload,
-} from 'jose';
+import type { JwtPayload } from '@repo/validation';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 export type JwtOptions = {
   authServerBaseURL: string;
-};
-
-export type JwtPayload = JoseJWTPayload & {
-  id: string;
 };
 
 export class Jwt {

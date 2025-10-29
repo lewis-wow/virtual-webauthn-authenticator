@@ -1,5 +1,5 @@
 {
-  "name": "@repo/auth",
+  "name": "@repo/auth-server",
   "type": "module",
   "scripts": {
     "dev": "pnpm dotenvx rollup -c --watch",

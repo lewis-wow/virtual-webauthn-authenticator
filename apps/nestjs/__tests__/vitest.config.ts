@@ -17,6 +17,5 @@ export default defineConfig({
     name: pkg.name,
     env,
   },
-  // @ts-expect-error - No overload matches this call.
   plugins: [tsconfigPaths()],
 });

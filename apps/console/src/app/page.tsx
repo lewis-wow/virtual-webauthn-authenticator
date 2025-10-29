@@ -1,18 +1,34 @@
 'use client';
 
 import { GithubSigninButton } from '@/components/GithubSigninButton';
-import { $api } from '@/lib/api/client';
+import { Guard } from '@/components/Guard/Guard';
+import { Page } from '@/components/Page';
 import { authClient } from '@/lib/authClient';
+import { tsr } from '@/lib/tsr';
 
 const Index = () => {
   const { data: session } = authClient.useSession();
 
-  const indexQuery = $api.useQuery('get', '/api/healthcheck');
+  const healthcheckQuery = tsr.api.healthcheck.get.useQuery({
+    queryKey: ['tsr.api.healthcheck.get'],
+  });
 
   console.log('session', session);
-  console.log('indexQuery', indexQuery.data);
 
-  return <GithubSigninButton />;
+  return (
+    <Page>
+      <Guard
+        contractEndpoint={healthcheckQuery.contractEndpoint}
+        isEmpty={healthcheckQuery.data?.body === undefined}
+        isLoading={healthcheckQuery.isLoading}
+        error={healthcheckQuery.error}
+      >
+        {JSON.stringify(healthcheckQuery.data)}
+      </Guard>
+
+      <GithubSigninButton />
+    </Page>
+  );
 };
 
 export default Index;

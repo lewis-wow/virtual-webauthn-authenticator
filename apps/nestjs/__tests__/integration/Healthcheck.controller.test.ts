@@ -1,12 +1,11 @@
 import { INestApplication, Injectable, NestMiddleware } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtPayload } from '@repo/auth';
+import type { JwtPayload } from '@repo/validation';
 import type { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
-import { describe, test, expect, vi, afterAll, beforeAll } from 'vitest';
+import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
-import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { USER_ID } from '../helpers/consts';
 
 const mockJwtPayload = {

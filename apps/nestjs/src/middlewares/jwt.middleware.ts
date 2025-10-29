@@ -13,8 +13,6 @@ export class JwtMiddleware implements NestMiddleware {
   async use(req: Request, _res: Response, next: NextFunction) {
     const authorizationHeader = req.headers['authorization'];
 
-    console.log('this', this);
-
     this.logger.debug(
       `Authorization header: ${authorizationHeader}`,
       JwtMiddleware.name,

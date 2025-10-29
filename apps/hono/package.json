@@ -1,14 +1,7 @@
 {
   "name": "@repo/hono",
   "type": "module",
-  "scripts": {
-    "dev": "pnpm dotenvx rollup -c --watch",
-    "build": "SKIP_ENV_VALIDATION=true rollup -c",
-    "generate:spec": "scripts/generate-spec.ts",
-    "start": "pnpm dotenvx node dist/index.js",
-    "dotenvx": "../../scripts/dotenvx.sh",
-    "test:integration": "vitest run integration --config __tests__/vitest.config.ts"
-  },
+  "scripts": {},
   "dependencies": {
     "@azure/identity": "^4.13.0",
     "@azure/keyvault-keys": "^4.10.0",
