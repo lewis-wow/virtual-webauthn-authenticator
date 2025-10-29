@@ -704,6 +704,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       hono:
         specifier: ^4.9.10
         version: 4.9.10

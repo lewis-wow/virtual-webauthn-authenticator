@@ -25,6 +25,7 @@ const Index = () => {
       >
         {JSON.stringify(healthcheckQuery.data)}
       </Guard>
+
       <GithubSigninButton />
     </Page>
   );

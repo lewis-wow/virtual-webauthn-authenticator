@@ -24,6 +24,7 @@
     "@repo/crypto": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
+    "@repo/validation": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
     "hono": "^4.9.10",
