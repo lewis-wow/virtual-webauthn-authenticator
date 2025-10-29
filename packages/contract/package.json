@@ -9,20 +9,24 @@
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "generate:spec": "scripts/generate-spec.ts"
   },
   "devDependencies": {
+    "@openapi-contrib/json-schema-to-openapi-schema": "^4.2.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "yaml": "^2.8.1"
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@ts-rest/core": "^3.53.0-rc.1",
+    "@repo/validation": "workspace:*",
+    "@ts-rest/core": "3.53.0-rc.1",
+    "@ts-rest/open-api": "3.53.0-rc.1",
     "zod": "^4.1.12"
   }
 }
