@@ -31,7 +31,7 @@
     "typescript": "5.9.2",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.19.0",
+  "packageManager": "pnpm@10.20.0",
   "engines": {
     "node": ">=18"
   },
