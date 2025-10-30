@@ -22,6 +22,7 @@ export const env = createEnv({
     // JWT
     JWT_ISSUER: z.string(),
     JWT_AUDIENCE: z.string(),
+    ENCRYPTION_KEY: z.string(),
 
     // OAuth
     GITHUB_CLIENT_ID: z.string(),

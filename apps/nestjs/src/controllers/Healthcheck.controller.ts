@@ -5,8 +5,6 @@ import type { Request } from 'express';
 
 @Controller()
 export class HealthcheckController {
-  constructor() {}
-
   @TsRestHandler(contract.api.healthcheck.get)
   async healthcheck(@Req() req: Request) {
     return tsRestHandler(contract.api.healthcheck.get, async () => {

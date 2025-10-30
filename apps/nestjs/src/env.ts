@@ -9,8 +9,12 @@ export const env = createEnv({
     ENVIRONMENT: z.enum(['production', 'development', 'test']),
 
     AUTH_SERVER_BASE_URL: z.url(),
+
     // Database
     DATABASE_URL: z.url(),
+
+    // Crypto
+    ENCRYPTION_KEY: z.string(),
 
     // Key vault
     AZURE_KEY_VAULT_BASE_URL: z.url(),

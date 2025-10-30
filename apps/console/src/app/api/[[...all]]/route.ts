@@ -11,7 +11,27 @@ const proxy = new Proxy({
   proxyName: 'API-Proxy',
   targetBaseURL: 'http://localhost:3001',
   authorization: async ({ req }) => {
-    const { data } = await authClient.token({
+    const xAuthTypeHeader = req.headers.get('X-Auth-Type');
+    const authType = xAuthTypeHeader === 'api-key' ? 'API_KEY' : 'JWT';
+
+    if (authType === 'API_KEY') {
+      const response = await fetch(
+        `http://localhost:3002/api/auth/api-key/token`,
+        {
+          headers: req.headers,
+        },
+      );
+
+      if (!response.ok) {
+        return undefined;
+      }
+
+      const { token } = await response.json();
+
+      return `Bearer ${token}`;
+    }
+
+    const { data, error } = await authClient.token({
       fetchOptions: {
         headers: req.headers,
       },

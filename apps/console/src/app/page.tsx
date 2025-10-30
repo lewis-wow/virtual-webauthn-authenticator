@@ -18,7 +18,6 @@ const Index = () => {
   return (
     <Page>
       <Guard
-        contractEndpoint={healthcheckQuery.contractEndpoint}
         isEmpty={healthcheckQuery.data?.body === undefined}
         isLoading={healthcheckQuery.isLoading}
         error={healthcheckQuery.error}
