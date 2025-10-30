@@ -31,7 +31,7 @@ export class Jwt {
   private readonly config: JwtConfig;
 
   static readonly ALG = 'EdDSA';
-  static readonly CRV = 'ed25519';
+  static readonly CRV = 'Ed25519';
 
   constructor(opts: JwtOptions) {
     this.prisma = opts.prisma;
@@ -87,6 +87,24 @@ export class Jwt {
     return key[0];
   }
 
+  async getKeys() {
+    const keySets = await this.prisma.jwks.findMany();
+
+    if (keySets.length === 0) {
+      const key = await this._createKey();
+      keySets.push(key);
+    }
+
+    return {
+      keys: keySets.map((key) => ({
+        ...JSON.parse(key.publicKey),
+        kid: key.id,
+        alg: Jwt.ALG,
+        crv: Jwt.CRV,
+      })),
+    };
+  }
+
   async sign(payload: JWTPayload) {
     let latestKey = await this.getLatestKey();
 
@@ -121,12 +139,12 @@ export class Jwt {
   async validateToken(token: string): Promise<JwtPayload> {
     try {
       const JWKS = createRemoteJWKSet(
-        new URL(`${this.authServerBaseURL}/api/auth/jwks`),
+        new URL(`${this.authServerBaseURL}/.well-known/jwks.json`),
       );
 
       const { payload } = await jwtVerify(token, JWKS, {
-        issuer: this.authServerBaseURL,
-        audience: this.authServerBaseURL,
+        issuer: this.config.iss,
+        audience: this.config.aud,
       });
 
       return payload as JwtPayload;

@@ -21,13 +21,15 @@ export const auth = betterAuth({
   plugins: [
     jwtPlugin({
       jwks: {
-        remoteUrl: '/api/auth/jwks',
+        remoteUrl: `${env.BASE_URL}/.well-known/jwks.json`,
         keyPairConfig: {
           alg: Jwt.ALG,
         },
       },
       jwt: {
-        sign: (payload) => jwt.sign({ ...payload, tokenType: 'USER' }),
+        sign: async (payload) => {
+          return await jwt.sign({ ...payload, tokenType: 'USER' });
+        },
       },
     }),
     bearer(),

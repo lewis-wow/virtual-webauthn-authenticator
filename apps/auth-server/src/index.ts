@@ -13,6 +13,10 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   return auth.handler(c.req.raw);
 });
 
+app.get('/.well-known/jwks.json', async (c) => {
+  return c.json(await jwt.getKeys());
+});
+
 app.get('/api/auth/api-key/token', async (c) => {
   const bearerToken = c.req.header('Authorization');
   const apiKey = bearerToken?.replace('Bearer ', '');
