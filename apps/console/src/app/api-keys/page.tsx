@@ -2,7 +2,7 @@
 
 import { ApiKey } from '@/components/ApiKey';
 import { Button } from '@/components/Button';
-import { ContentContainer } from '@/components/ContentContainer';
+import { Guard } from '@/components/Guard/Guard';
 import { Page } from '@/components/Page';
 import { Stack } from '@/components/Stack';
 import { TextField } from '@/components/TextField';
@@ -14,9 +14,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
+import { authClient } from '@/lib/authClient';
+import { apiClient, tsr } from '@/lib/tsr';
 // import { fetchClient } from '@/lib/api/client';
 // import { authClient } from '@/lib/authClient';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AuthType } from '@repo/enums';
 import {
   CreateApiKeyRequestBodySchema,
   // CreateApiKeyResponseSchema,
@@ -31,25 +34,21 @@ const ApiKeys = () => {
   const queryClient = useQueryClient();
 
   const authApiKeyListQuery = useQuery({
-    queryKey: ['auth.apiKey.list'],
+    queryKey: ['auth', 'apiKey', 'list'],
     queryFn: async () => {
-      // const { data } = await fetchClient.GET('/api/auth/api-keys');
-      // return ListApiKeysResponseSchema.parse(data);
+      const { data } = await authClient.apiKey.list();
 
-      return [{}];
+      return data;
     },
   });
 
   const authApiKeyCreateMutation = useMutation({
-    mutationFn: async (/* opts: { name: string } */) => {
-      // const { data } = await fetchClient.POST('/api/auth/api-keys', {
-      //   body: {
-      //     name: opts.name,
-      //   },
-      // });
-      // return CreateApiKeyResponseSchema.parse(data);
+    mutationFn: async (opts: { name: string }) => {
+      const { data } = await authClient.apiKey.create({
+        name: opts.name,
+      });
 
-      return {};
+      return data;
     },
     onSuccess: () => {
       form.reset();
@@ -61,8 +60,23 @@ const ApiKeys = () => {
         },
       });
 
-      queryClient.invalidateQueries({ queryKey: ['auth.apiKey.list'] });
+      queryClient.invalidateQueries({ queryKey: ['auth', 'apiKey', 'list'] });
     },
+  });
+
+  const healthcheckQueryApiKey = useQuery({
+    queryFn: async () => {
+      const response = await apiClient.api.healthcheck.get({
+        extraHeaders: {
+          Authorization: `Bearer ${authApiKeyCreateMutation.data?.key}`,
+          'X-Auth-Type': AuthType.API_KEY,
+        },
+      });
+
+      return response.body;
+    },
+    queryKey: ['api', 'healthcheck'],
+    enabled: false,
   });
 
   const form = useForm({
@@ -87,8 +101,8 @@ const ApiKeys = () => {
         <CardContent>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit((/* values */) => {
-                authApiKeyCreateMutation.mutate(/* values */);
+              onSubmit={form.handleSubmit((values) => {
+                authApiKeyCreateMutation.mutate(values);
               })}
               className="flex items-start gap-4"
             >
@@ -115,21 +129,36 @@ const ApiKeys = () => {
           <CardTitle>Your API Keys</CardTitle>
         </CardHeader>
         <CardContent>
-          <ContentContainer
+          <Guard
             isLoading={authApiKeyListQuery.isLoading}
             error={authApiKeyListQuery.error}
             isEmpty={authApiKeyListQuery.data?.length === 0}
           >
             <Stack direction="column" gap="1rem">
-              {/* {authApiKeyListQuery.data?.map((apiKey) => (
+              {authApiKeyCreateMutation.data && (
                 <ApiKey
-                  {...(apiKey as any)}
-                  name={(apiKey as any).name!}
-                  key={(apiKey as any).id}
+                  {...authApiKeyCreateMutation.data}
+                  secret={authApiKeyCreateMutation.data.key}
+                  key={authApiKeyCreateMutation.data.id}
                 />
-              ))} */}
+              )}
+              <Button
+                onClick={async () => {
+                  const res = await healthcheckQueryApiKey.refetch();
+                  console.log({ res });
+                }}
+              >
+                Test Api Key
+              </Button>
+              {authApiKeyListQuery.data
+                ?.filter(
+                  (apiKey) => apiKey.id !== authApiKeyCreateMutation.data?.id,
+                )
+                .map((apiKey) => (
+                  <ApiKey {...apiKey} key={apiKey.id} />
+                ))}
             </Stack>
-          </ContentContainer>
+          </Guard>
         </CardContent>
       </Card>
     </Page>

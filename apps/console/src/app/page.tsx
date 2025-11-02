@@ -9,7 +9,7 @@ import { tsr } from '@/lib/tsr';
 const Index = () => {
   const { data: session } = authClient.useSession();
 
-  const healthcheckQuery = tsr.api.healthcheck.get.useQuery({
+  const healthcheckQuerySession = tsr.api.healthcheck.get.useQuery({
     queryKey: ['tsr.api.healthcheck.get'],
   });
 
@@ -18,12 +18,11 @@ const Index = () => {
   return (
     <Page>
       <Guard
-        contractEndpoint={healthcheckQuery.contractEndpoint}
-        isEmpty={healthcheckQuery.data?.body === undefined}
-        isLoading={healthcheckQuery.isLoading}
-        error={healthcheckQuery.error}
+        isEmpty={healthcheckQuerySession.data?.body === undefined}
+        isLoading={healthcheckQuerySession.isLoading}
+        error={healthcheckQuerySession.error}
       >
-        {JSON.stringify(healthcheckQuery.data)}
+        {JSON.stringify(healthcheckQuerySession.data)}
       </Guard>
 
       <GithubSigninButton />

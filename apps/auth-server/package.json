@@ -5,9 +5,13 @@
     "dev": "pnpm dotenvx rollup -c --watch",
     "build": "SKIP_ENV_VALIDATION=true rollup -c",
     "start": "pnpm dotenvx node dist/index.js",
-    "dotenvx": "../../scripts/dotenvx.sh"
+    "dotenvx": "../../scripts/dotenvx.sh",
+    "auth:generate": "pnpm dotenvx npx @better-auth/cli generate"
   },
   "dependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/enums": "workspace:*",
+    "@repo/exception": "workspace:*",
     "@hono/node-server": "^1.19.5",
     "@repo/prisma": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
