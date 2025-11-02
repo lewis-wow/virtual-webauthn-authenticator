@@ -1,3 +1,4 @@
+import { AuthType } from '@repo/enums';
 import { Proxy } from '@repo/proxy';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
@@ -12,10 +13,8 @@ const proxy = new Proxy({
   targetBaseURL: 'http://localhost:3001',
   authorization: async ({ req }) => {
     const xAuthTypeHeader = req.headers.get('X-Auth-Type');
-    console.log({ xAuthTypeHeader });
-    const authType = xAuthTypeHeader === 'api-key' ? 'API_KEY' : 'JWT';
 
-    if (authType === 'API_KEY') {
+    if (xAuthTypeHeader === AuthType.API_KEY) {
       const response = await fetch(
         `http://localhost:3002/api/auth/api-key/token`,
         {
@@ -33,7 +32,7 @@ const proxy = new Proxy({
       return `Bearer ${token}`;
     }
 
-    const { data, error } = await authClient.token({
+    const { data } = await authClient.token({
       fetchOptions: {
         headers: req.headers,
       },
