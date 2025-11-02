@@ -8,7 +8,7 @@
     "dev": "pnpm dotenvx nest start --watch",
     "start": "pnpm dotenvx node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test:integration": "vitest run integration --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run integration --config __tests__/vitest.config.mts",
     "dotenvx": "../../scripts/dotenvx.sh"
   },
   "dependencies": {

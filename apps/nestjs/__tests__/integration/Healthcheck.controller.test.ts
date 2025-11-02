@@ -6,10 +6,11 @@ import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
-import { USER_ID } from '../helpers/consts';
+import { USER_ID, USER_NAME } from '../helpers/consts';
 
 const mockJwtPayload = {
   id: USER_ID,
+  name: USER_NAME,
 } satisfies JwtPayload;
 
 @Injectable()
@@ -55,8 +56,9 @@ describe('HealthcheckController', () => {
 
     expect(response.body).toMatchInlineSnapshot(`
       {
-        "ok": true,
-        "user": null,
+        "codec": "2025-11-02T18:22:39.921Z",
+        "healthy": true,
+        "jwtPayload": null,
       }
     `);
   });
@@ -72,9 +74,11 @@ describe('HealthcheckController', () => {
 
     expect(response.body).toMatchInlineSnapshot(`
       {
-        "ok": true,
-        "user": {
+        "codec": "2025-11-02T18:22:39.927Z",
+        "healthy": true,
+        "jwtPayload": {
           "id": "4bdeaf3a-4b6b-4bc0-a9c9-84a3bc996dc4",
+          "name": "John Doe",
         },
       }
     `);

@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
@@ -10,12 +11,12 @@ import { KeyClientProvider } from './services/KeyClient.provider';
 import { KeyVaultProvider } from './services/KeyVault.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
-import { VirtualAuthenticatorProvdier } from './services/VirtualAuthenticator.provider';
+import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredentialRepository.provider';
 
 @Module({
   imports: [],
-  controllers: [HealthcheckController],
+  controllers: [HealthcheckController, CredentialsController],
   providers: [
     PrismaService,
     AzureCredentialProvider,
@@ -25,7 +26,19 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     KeyClientProvider,
     KeyVaultProvider,
     LoggerProvider,
-    VirtualAuthenticatorProvdier,
+    VirtualAuthenticatorProvider,
+    WebAuthnCredentialRepositoryProvider,
+  ],
+  exports: [
+    PrismaService,
+    AzureCredentialProvider,
+    CryptographyClientFactoryProvider,
+    EnvProvider,
+    JwtProvider,
+    KeyClientProvider,
+    KeyVaultProvider,
+    LoggerProvider,
+    VirtualAuthenticatorProvider,
     WebAuthnCredentialRepositoryProvider,
   ],
 })
