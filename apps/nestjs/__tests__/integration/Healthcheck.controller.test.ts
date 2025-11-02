@@ -12,9 +12,6 @@ const mockJwtPayload = {
   id: USER_ID,
 } satisfies JwtPayload;
 
-// This mock is no longer needed since we aren't testing the real middleware
-// const mockValidateToken = vi.fn().mockResolvedValue(mockJwtPayload);
-
 @Injectable()
 class MockJwtMiddleware implements NestMiddleware {
   async use(req: Request, _res: Response, next: NextFunction) {
@@ -56,7 +53,6 @@ describe('HealthcheckController', () => {
       .expect('Content-Type', /json/)
       .expect(200);
 
-    // This snapshot is correct
     expect(response.body).toMatchInlineSnapshot(`
       {
         "ok": true,
@@ -74,11 +70,6 @@ describe('HealthcheckController', () => {
       .expect('Content-Type', /json/)
       .expect(200);
 
-    // 1. REMOVE this line. It's incorrect for this strategy.
-    // expect(mockValidateToken).toHaveBeenCalledWith(mockJwtToken);
-
-    // 2. This is the snapshot that your code *should* produce.
-    // Run `vitest -u` to update your snapshot file.
     expect(response.body).toMatchInlineSnapshot(`
       {
         "ok": true,
