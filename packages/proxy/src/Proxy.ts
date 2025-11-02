@@ -66,7 +66,7 @@ export class Proxy {
       });
 
       if (Authorization) {
-        targetHeaders.append('authorization', Authorization);
+        targetHeaders.set('authorization', Authorization);
       }
 
       const targetURL = new URL(

@@ -12,12 +12,14 @@ const proxy = new Proxy({
   targetBaseURL: 'http://localhost:3001',
   authorization: async ({ req }) => {
     const xAuthTypeHeader = req.headers.get('X-Auth-Type');
+    console.log({ xAuthTypeHeader });
     const authType = xAuthTypeHeader === 'api-key' ? 'API_KEY' : 'JWT';
 
     if (authType === 'API_KEY') {
       const response = await fetch(
         `http://localhost:3002/api/auth/api-key/token`,
         {
+          method: 'GET',
           headers: req.headers,
         },
       );

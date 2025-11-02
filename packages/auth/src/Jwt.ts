@@ -125,6 +125,7 @@ export class Jwt {
       .setProtectedHeader({
         alg: Jwt.ALG,
         kid: latestKey.id,
+        typ: 'JWT',
       })
       .setIssuedAt()
       .setExpirationTime('15m')

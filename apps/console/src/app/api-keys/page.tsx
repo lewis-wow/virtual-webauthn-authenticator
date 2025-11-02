@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { authClient } from '@/lib/authClient';
+import { apiClient, tsr } from '@/lib/tsr';
 // import { fetchClient } from '@/lib/api/client';
 // import { authClient } from '@/lib/authClient';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -61,6 +62,23 @@ const ApiKeys = () => {
       queryClient.invalidateQueries({ queryKey: ['auth', 'apiKey', 'list'] });
     },
   });
+
+  const healthcheckQueryApiKey = useQuery({
+    queryFn: async () => {
+      const response = await apiClient.api.healthcheck.get({
+        extraHeaders: {
+          Authorization: `Bearer ${authApiKeyCreateMutation.data?.key}`,
+          'X-Auth-Type': 'api-key',
+        },
+      });
+
+      return response.body;
+    },
+    queryKey: ['api', 'healthcheck'],
+    enabled: false,
+  });
+
+  console.log(healthcheckQueryApiKey);
 
   const form = useForm({
     resolver: zodResolver(CreateApiKeyRequestBodySchema),
@@ -125,6 +143,14 @@ const ApiKeys = () => {
                   key={authApiKeyCreateMutation.data.id}
                 />
               )}
+              <Button
+                onClick={async () => {
+                  const res = await healthcheckQueryApiKey.refetch();
+                  console.log({ res });
+                }}
+              >
+                Test Api Key
+              </Button>
               {authApiKeyListQuery.data
                 ?.filter(
                   (apiKey) => apiKey.id !== authApiKeyCreateMutation.data?.id,

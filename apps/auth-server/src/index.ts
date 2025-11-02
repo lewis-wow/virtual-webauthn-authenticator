@@ -9,14 +9,6 @@ import { jwt } from './lib/jwt';
 
 const app = new Hono();
 
-app.on(['POST', 'GET'], '/api/auth/*', (c) => {
-  return auth.handler(c.req.raw);
-});
-
-app.get('/.well-known/jwks.json', async (c) => {
-  return c.json(await jwt.getKeys());
-});
-
 app.get('/api/auth/api-key/token', async (c) => {
   const bearerToken = c.req.header('Authorization');
   const apiKey = bearerToken?.replace('Bearer ', '');
@@ -49,6 +41,14 @@ app.get('/api/auth/api-key/token', async (c) => {
       tokenType: 'API_KEY',
     }),
   });
+});
+
+app.on(['POST', 'GET'], '/api/auth/*', (c) => {
+  return auth.handler(c.req.raw);
+});
+
+app.get('/.well-known/jwks.json', async (c) => {
+  return c.json(await jwt.getKeys());
 });
 
 serve(
