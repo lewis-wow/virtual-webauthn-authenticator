@@ -174,7 +174,7 @@ export class VirtualAuthenticator {
     );
     assert(
       publicKeyCredentialRequestOptions.challenge,
-      applyCascade(isInstanceOf(Buffer), hasBytes(16)),
+      applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
     );
     assert(
       publicKeyCredentialRequestOptions.userVerification,

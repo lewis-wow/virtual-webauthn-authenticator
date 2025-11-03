@@ -1,5 +1,6 @@
 import { COSEKey, JsonWebKey } from '@repo/keys';
 import { CredentialSigner } from '@repo/types';
+import { uuidToBuffer } from '@repo/utils';
 import {
   PublicKeyCredentialRequestOptions,
   PublicKeyCredential,
@@ -13,7 +14,7 @@ import {
   type RegistrationResponseJSON,
   type VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
-import { createSign, generateKeyPairSync } from 'node:crypto';
+import { createSign, generateKeyPairSync, randomUUID } from 'node:crypto';
 import { beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
@@ -81,6 +82,9 @@ describe('VirtualAuthenticator', () => {
     publicKeyCredentials = await authenticator.createCredential({
       publicKeyCredentialCreationOptions,
       COSEPublicKey,
+      meta: {
+        credentialID: uuidToBuffer(randomUUID()),
+      },
     });
 
     expectedChallenge =
