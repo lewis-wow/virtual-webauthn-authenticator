@@ -1,5 +1,13 @@
-import { COSEKey, JsonWebKey } from '@repo/keys';
-import { CredentialSigner } from '@repo/types';
+import { COSEKey } from '@repo/keys';
+import {
+  CHALLENGE_BASE64URL,
+  CHALLENGE_RAW,
+  RP_ID,
+  RP_NAME,
+  USER_DISPLAY_NAME,
+  USER_ID_RAW,
+  USER_NAME,
+} from '@repo/test-helpers';
 import { uuidToBuffer } from '@repo/utils';
 import {
   PublicKeyCredentialRequestOptions,
@@ -14,36 +22,18 @@ import {
   type RegistrationResponseJSON,
   type VerifiedRegistrationResponse,
 } from '@simplewebauthn/server';
-import { createSign, generateKeyPairSync, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../src/VirtualAuthenticator.js';
-
-const keyPair = generateKeyPairSync('ec', {
-  namedCurve: 'P-256',
-});
-
-const credentialPublicKey = new JsonWebKey(
-  keyPair.publicKey.export({ format: 'jwk' }),
-);
-
-const COSEPublicKey = COSEKey.fromJwk(credentialPublicKey);
-
-const credentialSigner: CredentialSigner = {
-  sign: (data: Buffer) => {
-    const signature = createSign('sha256')
-      .update(data)
-      .sign(keyPair.privateKey);
-
-    return signature;
-  },
-};
+import { credentialSigner } from '../helpers/credentialSigner.js';
+import { COSEPublicKey, keyPair } from '../helpers/key.js';
 
 const createPublicKeyCredentialRequestOptions = (
   credentialID: Buffer,
 ): PublicKeyCredentialRequestOptions => ({
-  challenge: Buffer.from('b'.repeat(32)), // A different dummy challenge for get
-  rpId: 'localhost',
+  challenge: CHALLENGE_RAW,
+  rpId: RP_ID,
   allowCredentials: [
     {
       id: credentialID,
@@ -62,15 +52,15 @@ describe('VirtualAuthenticator', () => {
   const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
     {
       rp: {
-        name: 'My Simulated Service',
-        id: 'localhost',
+        name: RP_NAME,
+        id: RP_ID,
       },
       user: {
-        id: Buffer.from('user123'),
-        name: 'testuser@example.com',
-        displayName: 'Test User',
+        id: USER_ID_RAW,
+        name: USER_NAME,
+        displayName: USER_DISPLAY_NAME,
       },
-      challenge: Buffer.from('a'.repeat(32)), // A dummy challenge
+      challenge: CHALLENGE_RAW,
       pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
       timeout: 60000,
       attestation: 'none',
@@ -140,10 +130,9 @@ describe('VirtualAuthenticator', () => {
       response: PublicKeyCredentialSchema.encode(
         assertionCredential,
       ) as AuthenticationResponseJSON,
-      expectedChallenge:
-        publicKeyCredentialRequestOptions.challenge.toString('base64url'),
-      expectedOrigin: publicKeyCredentialRequestOptions.rpId!,
-      expectedRPID: publicKeyCredentialRequestOptions.rpId!,
+      expectedChallenge: CHALLENGE_BASE64URL,
+      expectedOrigin: RP_ID,
+      expectedRPID: RP_ID,
       credential: {
         id: credentialID,
         publicKey: credentialPublicKey,
