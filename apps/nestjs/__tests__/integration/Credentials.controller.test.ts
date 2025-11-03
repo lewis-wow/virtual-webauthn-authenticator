@@ -15,6 +15,7 @@ import { AppModule } from '../../src/app.module';
 import { AuthenticatedGuard } from '../../src/guards/Authenticated.guard';
 import { PrismaService } from '../../src/services/Prisma.service';
 import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
+import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
 import { CHALLENGE_BASE64URL, RP_ID } from '../helpers/consts';
 import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
@@ -32,6 +33,11 @@ describe('CredentialsController', () => {
       .compile();
 
     app = appRef.createNestApplication();
+
+    const appModule = app.get(AppModule);
+    appModule.configure = (consumer) => {
+      consumer.apply(MockJwtMiddleware).forRoutes('/api');
+    };
 
     const prisma = app.get(PrismaService);
     await upsertTestingUser({ prisma });
@@ -174,19 +180,21 @@ describe('CredentialsController', () => {
     // This prevents replay attacks. The server must store this new value.
     expect(authenticationVerification.authenticationInfo.newCounter).toBe(1);
 
-    expect(response.body).toMatchInlineSnapshot({
-      clientExtensionResults: {},
-      id: expect.any(String),
-      rawId: expect.any(String),
-      response: {
-        authenticatorData: expect.any(String),
-        clientDataJSON:
-          'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
-        signature: expect.any(String),
-        userHandle: null,
+    expect(response.body).toMatchInlineSnapshot(
+      {
+        clientExtensionResults: {},
+        id: expect.any(String),
+        rawId: expect.any(String),
+        response: {
+          authenticatorData: expect.any(String),
+          clientDataJSON:
+            'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
+          signature: expect.any(String),
+          userHandle: null,
+        },
+        type: 'public-key',
       },
-      type: 'public-key',
-    }, `
+      `
       {
         "clientExtensionResults": {},
         "id": Any<String>,
@@ -199,6 +207,7 @@ describe('CredentialsController', () => {
         },
         "type": "public-key",
       }
-    `);
+    `,
+    );
   });
 });
