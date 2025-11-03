@@ -12,4 +12,5 @@ export const WebAuthnCredentialRepositoryProvider: Provider = {
 
     return webAuthnCredentialRepository;
   },
+  inject: [PrismaService],
 };

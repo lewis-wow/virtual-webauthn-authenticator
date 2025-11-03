@@ -1,60 +1,46 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import request from 'supertest';
+import { COSEKey } from '@repo/keys';
+import {
+  AuthenticationResponseJSON,
+  VerifiedRegistrationResponse,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+  type RegistrationResponseJSON,
+} from '@simplewebauthn/server';
+import request, { type Response } from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
-import { CredentialsController } from '../../src/controllers/Credentials.controller';
-import { HTTPExceptionFilter } from '../../src/filters/HTTPException.filter';
+import { AppModule } from '../../src/app.module';
 import { AuthenticatedGuard } from '../../src/guards/Authenticated.guard';
-import { AzureCredentialProvider } from '../../src/services/AzureCredential.provider';
-import { CryptographyClientFactoryProvider } from '../../src/services/CryptographyClientFactory.provider';
-import { EnvProvider } from '../../src/services/Env.provider';
-import { JwtProvider } from '../../src/services/Jwt.provider';
-import { KeyClientProvider } from '../../src/services/KeyClient.provider';
-import { KeyVaultProvider } from '../../src/services/KeyVault.provider';
-import { LoggerProvider } from '../../src/services/Logger.provider';
 import { PrismaService } from '../../src/services/Prisma.service';
-import { VirtualAuthenticatorProvider } from '../../src/services/VirtualAuthenticator.provider';
-import { WebAuthnCredentialRepositoryProvider } from '../../src/services/WebAuthnCredentialRepository.provider';
 import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
 import { CHALLENGE_BASE64URL, RP_ID } from '../helpers/consts';
+import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
 describe('CredentialsController', () => {
   let app: INestApplication;
+  let createCredentialResponse: Response;
+  let registrationVerification: VerifiedRegistrationResponse;
 
   beforeAll(async () => {
     const appRef = await Test.createTestingModule({
-      controllers: [CredentialsController],
-      providers: [
-        PrismaService,
-        AzureCredentialProvider,
-        CryptographyClientFactoryProvider,
-        EnvProvider,
-        JwtProvider,
-        KeyClientProvider,
-        KeyVaultProvider,
-        LoggerProvider,
-        VirtualAuthenticatorProvider,
-        WebAuthnCredentialRepositoryProvider,
-      ],
+      imports: [AppModule],
     })
       .overrideGuard(AuthenticatedGuard)
       .useClass(MockAuthenticatedGuard)
       .compile();
+
     app = appRef.createNestApplication();
-    app.useGlobalFilters(new HTTPExceptionFilter());
+
+    const prisma = app.get(PrismaService);
+    await upsertTestingUser({ prisma });
 
     await app.init();
-  });
 
-  afterAll(async () => {
-    await app.close();
-  });
-
-  test('POST /api/credentials as guest', async () => {
-    const response = await request(app.getHttpServer())
+    createCredentialResponse = await request(app.getHttpServer())
       .post('/api/credentials')
-      .set('Authorization', `Bearer TOKEN`)
+      .set('Authorization', `Bearer MOCK_TOKEN`)
       .send({
         challenge: CHALLENGE_BASE64URL,
         rp: {
@@ -66,29 +52,152 @@ describe('CredentialsController', () => {
       .expect('Content-Type', /json/)
       .expect(200);
 
-    expect(response.body).toMatchInlineSnapshot(`
+    registrationVerification = await verifyRegistrationResponse({
+      response: createCredentialResponse.body as RegistrationResponseJSON,
+      expectedChallenge: CHALLENGE_BASE64URL,
+      expectedOrigin: RP_ID,
+      expectedRPID: RP_ID,
+      requireUserVerification: true, // Authenticator does perform UV
+      requireUserPresence: false, // Authenticator does NOT perform UP
+    });
+  });
+
+  afterAll(async () => {
+    const prisma = app.get(PrismaService);
+    await prisma.user.deleteMany();
+    await prisma.webAuthnCredential.deleteMany();
+    await prisma.jwks.deleteMany();
+
+    await app.close();
+  });
+
+  test('POST /api/credentials as user', async () => {
+    expect(registrationVerification.registrationInfo?.credential.counter).toBe(
+      0,
+    );
+
+    expect(
+      COSEKey.fromBuffer(
+        registrationVerification.registrationInfo!.credential.publicKey,
+      ).toJwk(),
+    ).toMatchObject({
+      alg: undefined,
+      crv: 'P-256',
+      d: undefined,
+      dp: undefined,
+      dq: undefined,
+      e: undefined,
+      k: undefined,
+      keyOps: undefined,
+      kid: undefined,
+      kty: 'EC',
+      n: undefined,
+      p: undefined,
+      q: undefined,
+      qi: undefined,
+      t: undefined,
+      x: expect.any(String),
+      y: expect.any(String),
+    });
+
+    expect(registrationVerification.verified).toBe(true);
+
+    expect(createCredentialResponse.body).toMatchInlineSnapshot(
       {
-        "attestation": "none",
-        "authenticatorSelection": {
-          "residentKey": "preferred",
-          "userVerification": "preferred",
+        clientExtensionResults: {},
+        id: expect.any(String),
+        rawId: expect.any(String),
+        response: {
+          attestationObject: expect.any(String),
+          clientDataJSON:
+            'eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
         },
-        "challenge": "PDIzPz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz8_Pz...",
-        "pubKeyCredParams": [
+        type: 'public-key',
+      },
+      `
+      {
+        "clientExtensionResults": {},
+        "id": Any<String>,
+        "rawId": Any<String>,
+        "response": {
+          "attestationObject": Any<String>,
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ",
+        },
+        "type": "public-key",
+      }
+    `,
+    );
+  });
+
+  test('GET /api/credentials as user', async () => {
+    const {
+      id: credentialID,
+      publicKey: credentialPublicKey,
+      counter: credentialCounter,
+    } = registrationVerification.registrationInfo!.credential;
+
+    const response = await request(app.getHttpServer())
+      .get('/api/credentials')
+      .set('Authorization', `Bearer MOCK_TOKEN`)
+      .query({
+        challenge: CHALLENGE_BASE64URL,
+        rpId: RP_ID,
+        allowCredentials: [
           {
-            "alg": -7,
-            "type": "public-key",
+            id: Buffer.from(createCredentialResponse.body.rawId, 'base64url'),
+            type: 'public-key',
           },
         ],
-        "rp": {
-          "id": "localhost",
-          "name": "localhost",
+        userVerification: 'required',
+      })
+      .send()
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    const authenticationVerification = await verifyAuthenticationResponse({
+      response: response.body as AuthenticationResponseJSON,
+      expectedChallenge: CHALLENGE_BASE64URL,
+      expectedOrigin: RP_ID,
+      expectedRPID: RP_ID,
+      credential: {
+        id: credentialID,
+        publicKey: credentialPublicKey,
+        counter: credentialCounter,
+      },
+      requireUserVerification: true,
+    });
+
+    // The most important check: confirm that the authentication was successful.
+    expect(authenticationVerification.verified).toBe(true);
+
+    // A critical security check: ensure the signature counter has incremented.
+    // This prevents replay attacks. The server must store this new value.
+    expect(authenticationVerification.authenticationInfo.newCounter).toBe(1);
+
+    expect(response.body).toMatchInlineSnapshot({
+      clientExtensionResults: {},
+      id: expect.any(String),
+      rawId: expect.any(String),
+      response: {
+        authenticatorData: expect.any(String),
+        clientDataJSON:
+          'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
+        signature: expect.any(String),
+        userHandle: null,
+      },
+      type: 'public-key',
+    }, `
+      {
+        "clientExtensionResults": {},
+        "id": Any<String>,
+        "rawId": Any<String>,
+        "response": {
+          "authenticatorData": Any<String>,
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ",
+          "signature": Any<String>,
+          "userHandle": null,
         },
-        "user": {
-          "displayName": "John Doe",
-          "id": "S96vP0trS8CpyaSjyJltxD",
-          "name": "John Doe",
-        },
+        "type": "public-key",
       }
     `);
   });

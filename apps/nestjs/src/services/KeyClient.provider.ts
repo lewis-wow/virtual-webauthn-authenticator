@@ -7,14 +7,16 @@ import { Env, ENV_PROVIDER_TOKEN } from './Env.provider';
 export const KeyClientProvider: Provider = {
   provide: KeyClient,
   useFactory: (env: Env, azureCredential: AzureCredential) => {
-    const options: KeyClientOptions = {
-      disableChallengeResourceVerification: env.ENVIRONMENT === 'development',
+    const keyClientOptions: KeyClientOptions = {
+      disableChallengeResourceVerification: ['development', 'test'].includes(
+        env.ENVIRONMENT,
+      ),
     };
 
     return new KeyClient(
       env.AZURE_KEY_VAULT_BASE_URL,
       azureCredential,
-      options,
+      keyClientOptions,
     );
   },
   inject: [ENV_PROVIDER_TOKEN, AzureCredential],

@@ -14,24 +14,25 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4",
-    "zod": "^4.1.12",
-    "@repo/prisma": "workspace:*"
+    "zod": "^4.1.12"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",
     "@azure/keyvault-keys": "^4.10.0",
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/virtual-authenticator": "workspace:*",
     "@repo/mappers": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/validation": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
+    "ecdsa-sig-formatter": "^1.0.11",
     "typanion": "^3.14.0"
   }
 }

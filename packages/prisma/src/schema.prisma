@@ -141,7 +141,7 @@ model Permission {
 }
 
 model WebAuthnCredential {
-  id              String   @id
+  id              String   @id @default(uuid())
   name            String?
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String

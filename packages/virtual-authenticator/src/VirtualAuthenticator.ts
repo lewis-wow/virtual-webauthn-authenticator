@@ -5,7 +5,7 @@ import {
 } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import type { CredentialSigner } from '@repo/types';
-import { hasMinBytes, uuidToBuffer } from '@repo/utils';
+import { bytesNotEmpty, hasBytes, hasMinBytes } from '@repo/utils';
 import { sha256 } from '@repo/utils';
 import type {
   CollectedClientData,
@@ -14,7 +14,6 @@ import type {
   PublicKeyCredential,
 } from '@repo/validation';
 import * as cbor from 'cbor';
-import { randomUUID } from 'crypto';
 import {
   applyCascade,
   assert,
@@ -33,21 +32,6 @@ export class VirtualAuthenticator {
   // Length (in bytes): 16
   // Zeroed-out AAGUID
   static readonly AAGUID = Buffer.alloc(16);
-
-  /**
-   *
-   * @see https://www.w3.org/TR/webauthn-2/#credential-id
-   */
-  private _createCredentialId(): Buffer {
-    // https://www.w3.org/TR/webauthn-2/#credential-id
-    // 1. At least 16 bytes that include at least 100 bits of entropy, or
-    // 2. The public key credential source, without its Credential ID or mutable items,
-    //    encrypted so only its managing authenticator can decrypt it.
-    //    This form allows the authenticator to be nearly stateless,
-    //    by having the Relying Party store any necessary state.
-    // Length (in bytes): L
-    return uuidToBuffer(randomUUID());
-  }
 
   /**
    *
@@ -151,6 +135,17 @@ export class VirtualAuthenticator {
     credentialSigner: CredentialSigner;
     meta: {
       counter: number;
+      /**
+       * 1. At least 16 bytes that include at least 100 bits of entropy, or
+       * 2. The public key credential source, without its Credential ID or mutable items,
+       * encrypted so only its managing authenticator can decrypt it.
+       * This form allows the authenticator to be nearly stateless,
+       * by having the Relying Party store any necessary state.
+       *
+       * Length (in bytes): L
+       *
+       * @see https://www.w3.org/TR/webauthn-2/#credential-id
+       */
       credentialID: Buffer;
     };
   }): Promise<PublicKeyCredential> {
@@ -160,6 +155,9 @@ export class VirtualAuthenticator {
       credentialSigner,
       meta,
     } = opts;
+
+    assert(meta.counter, isNumber());
+    assert(meta.credentialID, applyCascade(isInstanceOf(Buffer), hasBytes(16)));
 
     assert(publicKeyCredentialRequestOptions.rpId, isString());
     assert(
@@ -176,7 +174,7 @@ export class VirtualAuthenticator {
     );
     assert(
       publicKeyCredentialRequestOptions.challenge,
-      applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
+      applyCascade(isInstanceOf(Buffer), hasBytes(16)),
     );
     assert(
       publicKeyCredentialRequestOptions.userVerification,
@@ -225,8 +223,24 @@ export class VirtualAuthenticator {
   public async createCredential(opts: {
     publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
     COSEPublicKey: COSEKey;
+    meta: {
+      /**
+       * 1. At least 16 bytes that include at least 100 bits of entropy, or
+       * 2. The public key credential source, without its Credential ID or mutable items,
+       * encrypted so only its managing authenticator can decrypt it.
+       * This form allows the authenticator to be nearly stateless,
+       * by having the Relying Party store any necessary state.
+       *
+       * Length (in bytes): L
+       *
+       * @see https://www.w3.org/TR/webauthn-2/#credential-id
+       */
+      credentialID: Buffer;
+    };
   }): Promise<PublicKeyCredential> {
-    const { publicKeyCredentialCreationOptions, COSEPublicKey } = opts;
+    const { publicKeyCredentialCreationOptions, COSEPublicKey, meta } = opts;
+
+    assert(meta.credentialID, applyCascade(isInstanceOf(Buffer), hasBytes(16)));
 
     assert(publicKeyCredentialCreationOptions.rp.id, isString());
     assert(
@@ -240,7 +254,7 @@ export class VirtualAuthenticator {
     assert(publicKeyCredentialCreationOptions.user.id, isInstanceOf(Buffer));
     assert(
       publicKeyCredentialCreationOptions.user.id,
-      applyCascade(isInstanceOf(Buffer), hasMinBytes(1)),
+      applyCascade(isInstanceOf(Buffer), bytesNotEmpty()),
     );
     assert(
       publicKeyCredentialCreationOptions.pubKeyCredParams,
@@ -272,12 +286,10 @@ export class VirtualAuthenticator {
     // https://www.w3.org/TR/webauthn-2/#attestation-statement
     const attStmt = new Map<string, never>([]);
 
-    const credentialID = this._createCredentialId();
-
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
       rpId: publicKeyCredentialCreationOptions.rp.id,
-      credentialID,
+      credentialID: meta.credentialID,
       counter: 0,
       COSEPublicKey,
     });
@@ -297,8 +309,8 @@ export class VirtualAuthenticator {
     };
 
     return {
-      id: credentialID.toString('base64url'),
-      rawId: credentialID,
+      id: meta.credentialID.toString('base64url'),
+      rawId: meta.credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: Buffer.from(JSON.stringify(clientData)),

@@ -4,6 +4,7 @@ import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
+import { CredentialSignerFactoryProvider } from './services/CredentialSignerFactoryProvider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
 import { JwtProvider } from './services/Jwt.provider';
@@ -28,6 +29,7 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     LoggerProvider,
     VirtualAuthenticatorProvider,
     WebAuthnCredentialRepositoryProvider,
+    CredentialSignerFactoryProvider,
   ],
   exports: [
     PrismaService,
@@ -40,6 +42,7 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     LoggerProvider,
     VirtualAuthenticatorProvider,
     WebAuthnCredentialRepositoryProvider,
+    CredentialSignerFactoryProvider,
   ],
 })
 export class AppModule implements NestModule {

@@ -11,4 +11,5 @@ export const RP_ID = 'example.com';
 export const MOCK_JWT_PAYLOAD = {
   id: USER_ID,
   name: USER_NAME,
+  email: USER_EMAIL,
 } satisfies JwtPayload;

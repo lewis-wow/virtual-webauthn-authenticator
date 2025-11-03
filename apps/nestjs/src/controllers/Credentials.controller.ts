@@ -1,6 +1,11 @@
-import { Controller, Req, UseGuards } from '@nestjs/common';
+import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { contract } from '@repo/contract';
-import { KeyVault } from '@repo/key-vault';
+import { KeyAlgorithm } from '@repo/enums';
+import {
+  CredentialSignerFactory,
+  KeyVault,
+  WebAuthnCredentialRepository,
+} from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
 import {
@@ -12,15 +17,19 @@ import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { User } from '../decorators/User.decorator';
+import { HTTPExceptionFilter } from '../filters/HTTPException.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
+@UseFilters(new HTTPExceptionFilter())
 export class CredentialsController {
   constructor(
     private readonly keyVault: KeyVault,
     private readonly prisma: PrismaService,
     private readonly virtualAuthenticator: VirtualAuthenticator,
+    private readonly webAuthnCredentialRepository: WebAuthnCredentialRepository,
+    private readonly credentialSignerFactory: CredentialSignerFactory,
   ) {}
 
   @TsRestHandler(contract.api.credentials.create)
@@ -49,15 +58,8 @@ export class CredentialsController {
 
       const COSEPublicKey = COSEKey.fromJwk(jwk);
 
-      const publicKeyCredential =
-        await this.virtualAuthenticator.createCredential({
-          publicKeyCredentialCreationOptions,
-          COSEPublicKey,
-        });
-
-      await this.prisma.webAuthnCredential.create({
+      const webAuthnCredential = await this.prisma.webAuthnCredential.create({
         data: {
-          id: publicKeyCredential.id,
           aaguid: VirtualAuthenticator.AAGUID.toString('base64url'),
           COSEPublicKey: COSEPublicKey.toBuffer(),
           keyVaultKeyId: keyVaultKey.id!,
@@ -68,9 +70,66 @@ export class CredentialsController {
         },
       });
 
+      const publicKeyCredential =
+        await this.virtualAuthenticator.createCredential({
+          publicKeyCredentialCreationOptions,
+          COSEPublicKey,
+          meta: {
+            credentialID: uuidToBuffer(webAuthnCredential.id),
+          },
+        });
+
       return {
         status: 200,
         body: contract.api.credentials.create.responses[200].encode(
+          publicKeyCredential,
+        ),
+      };
+    });
+  }
+
+  @TsRestHandler(contract.api.credentials.get)
+  @UseGuards(AuthenticatedGuard)
+  async getCredential(@User() jwtPayload: JwtPayload) {
+    return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
+      const webAuthnCredential =
+        await this.webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
+          {
+            publicKeyCredentialRequestOptions: query,
+            user: jwtPayload,
+          },
+        );
+
+      const {
+        jwk,
+        meta: { keyVaultKey },
+      } = await this.keyVault.getKey({
+        keyName: webAuthnCredential.keyVaultKeyName,
+      });
+
+      const COSEPublicKey = COSEKey.fromJwk(jwk);
+
+      const credentialSigner =
+        this.credentialSignerFactory.createCredentialSigner({
+          algorithm: KeyAlgorithm.ES256,
+          keyVaultKey,
+        });
+
+      const publicKeyCredential = await this.virtualAuthenticator.getCredential(
+        {
+          publicKeyCredentialRequestOptions: query,
+          COSEPublicKey,
+          credentialSigner,
+          meta: {
+            counter: webAuthnCredential.counter,
+            credentialID: uuidToBuffer(webAuthnCredential.id),
+          },
+        },
+      );
+
+      return {
+        status: 200,
+        body: contract.api.credentials.get.responses[200].encode(
           publicKeyCredential,
         ),
       };

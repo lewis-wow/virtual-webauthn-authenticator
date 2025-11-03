@@ -1,6 +1,8 @@
 import {
   CreateCredentialRequestBodySchema,
   CreateCredentialResponseSchema,
+  GetCredentialRequestQuerySchema,
+  GetCredentialResponseSchema,
 } from '@repo/validation';
 import { initContract } from '@ts-rest/core';
 
@@ -13,6 +15,14 @@ export const credentialsRouter = c.router({
     body: CreateCredentialRequestBodySchema,
     responses: {
       200: CreateCredentialResponseSchema,
+    },
+  },
+  get: {
+    method: 'GET',
+    path: '/credentials',
+    query: GetCredentialRequestQuerySchema,
+    responses: {
+      200: GetCredentialResponseSchema,
     },
   },
 });
