@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
@@ -18,7 +19,8 @@
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "@vitest/coverage-v8": "3.2.4"
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
