@@ -32,7 +32,8 @@ jobs:
 
       - name: Run database migrations
         env:
-          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
+          ENVIRONMENT: test
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/prisma?schema=public'
         # Use the --filter flag to run the command in the correct package.
         run: pnpm --filter @repo/prisma db:migrate
 
@@ -56,7 +57,7 @@ jobs:
       - name: Run integration tests
         env:
           ENVIRONMENT: test
-          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/prisma?schema=public'
         run: pnpm test:integration
 
       - name: Log in to GitHub Container Registry
@@ -79,13 +80,13 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ github.repository }}/console:latest
 
-      - name: Build and push hono image
+      - name: Build and push nestjs image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./apps/hono/Dockerfile
+          file: ./apps/nestjs/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ github.repository }}/hono:latest
+          tags: ghcr.io/${{ github.repository }}/nestjs:latest
 
       - name: Stop services
         # This step runs even if previous steps fail, ensuring

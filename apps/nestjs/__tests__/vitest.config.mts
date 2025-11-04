@@ -1,6 +1,6 @@
 import { config } from '@dotenvx/dotenvx';
 import { join } from 'node:path';
-import tsconfigPaths from 'vite-tsconfig-paths';
+import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
 
 import pkg from '../package.json';
@@ -10,12 +10,10 @@ const env = config({
   overload: true,
 }).parsed;
 
-console.log(env);
-
 export default defineConfig({
   test: {
     name: pkg.name,
     env,
   },
-  plugins: [tsconfigPaths()],
+  plugins: [swc.vite()],
 });

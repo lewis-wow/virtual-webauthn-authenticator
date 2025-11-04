@@ -1,8 +1,8 @@
 import { KeyAlgorithm, KeyCurveName, KeyType, KeyOperation } from '@repo/enums';
+import { CannotParseJsonWebKey } from '@repo/exception';
 import { assert, isArray, isEnum, isOptional } from 'typanion';
 
 export type JsonWebKeyOptions = {
-  alg?: string;
   /**
    * Key identifier.
    */
@@ -77,15 +77,13 @@ export type JsonWebKeyOptions = {
  */
 export class JsonWebKey {
   constructor(opts: JsonWebKeyOptions) {
-    assert(opts.kty, isOptional(isEnum(KeyType)));
-    assert(opts.keyOps, isOptional(isArray(isEnum(KeyOperation))));
-    assert(opts.crv, isOptional(isEnum(KeyCurveName)));
-    assert(opts.alg, isOptional(isEnum(KeyAlgorithm)));
+    if (!JsonWebKey.canParse(opts)) {
+      throw new CannotParseJsonWebKey();
+    }
 
     if (opts.kty) this.kty = opts.kty;
     if (opts.keyOps) this.keyOps = opts.keyOps;
     if (opts.crv) this.crv = opts.crv;
-    if (opts.alg) this.alg = opts.alg;
 
     if (opts.n) this.n = this._toBase64url(opts.n);
     if (opts.e) this.e = this._toBase64url(opts.e);
@@ -107,8 +105,6 @@ export class JsonWebKey {
 
     return Buffer.from(optValue).toString('base64url');
   }
-
-  alg?: KeyAlgorithm;
 
   /**
    * Key identifier.
@@ -180,11 +176,6 @@ export class JsonWebKey {
   y?: string;
 
   inferAlg(): KeyAlgorithm | undefined {
-    // If 'alg' is explicitly provided, it has the highest priority.
-    if (this.alg) {
-      return this.alg;
-    }
-
     // Infer algorithm based on key type ('kty').
     switch (this.kty) {
       // Elliptic Curve Keys w/ x- and y-coordinate pair
@@ -213,6 +204,24 @@ export class JsonWebKey {
 
       default:
         return undefined;
+    }
+  }
+
+  static canParse(
+    looseJsonWebKey: JsonWebKeyOptions,
+  ): looseJsonWebKey is JsonWebKeyOptions & {
+    kty?: KeyType;
+    keyOps?: KeyOperation[];
+    crv?: KeyCurveName;
+  } {
+    try {
+      assert(looseJsonWebKey.kty, isOptional(isEnum(KeyType)));
+      assert(looseJsonWebKey.keyOps, isOptional(isArray(isEnum(KeyOperation))));
+      assert(looseJsonWebKey.crv, isOptional(isEnum(KeyCurveName)));
+
+      return true;
+    } catch {
+      return false;
     }
   }
 }

@@ -6,6 +6,7 @@ import {
 } from '@azure/keyvault-keys';
 import {
   COSEKeyAlgorithm,
+  KeyOperation,
   PublicKeyCredentialType,
   type KeyAlgorithm,
 } from '@repo/enums';
@@ -14,6 +15,7 @@ import { COSEKeyAlgorithmMapper } from '@repo/mappers';
 import type { User } from '@repo/prisma';
 import { bufferToUuid } from '@repo/utils';
 import type { PublicKeyCredentialCreationOptions } from '@repo/validation';
+import ecdsa from 'ecdsa-sig-formatter';
 import {
   assert,
   isString,
@@ -97,34 +99,9 @@ export class KeyVault {
     const signResult = await cryptographyClient.signData(algorithm, data);
 
     return {
-      signature: signResult.result,
+      signature: ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
       meta: {
         signResult,
-      },
-    };
-  }
-
-  async verifySignature(opts: {
-    keyVaultKey: KeyVaultKey;
-    algorithm: KeyAlgorithm;
-    data: Buffer;
-    signature: Uint8Array;
-  }): Promise<VerifySignaturePayload> {
-    const { keyVaultKey, algorithm, data, signature } = opts;
-
-    const cryptographyClient =
-      this.cryptographyClientFactory.createCryptographyClient({ keyVaultKey });
-
-    const verifyResult = await cryptographyClient.verifyData(
-      algorithm,
-      data,
-      signature,
-    );
-
-    return {
-      isValid: verifyResult.result,
-      meta: {
-        verifyResult,
       },
     };
   }
@@ -176,6 +153,7 @@ export class KeyVault {
         keyName,
         COSEKeyAlgorithmMapper.toKeyType(pubKeyCredParam.alg),
         {
+          keyOps: [KeyOperation.SIGN, KeyOperation.VERIFY],
           curve: COSEKeyAlgorithmMapper.toCurve(pubKeyCredParam.alg),
         },
       )

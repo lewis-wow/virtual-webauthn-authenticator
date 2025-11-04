@@ -1,32 +1,48 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
+import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
+import { CredentialSignerFactoryProvider } from './services/CredentialSignerFactoryProvider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
-import { JwtProvider } from './services/Jwt.provider';
+import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
 import { KeyVaultProvider } from './services/KeyVault.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
-import { VirtualAuthenticatorProvdier } from './services/VirtualAuthenticator.provider';
+import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredentialRepository.provider';
 
 @Module({
   imports: [],
-  controllers: [HealthcheckController],
+  controllers: [HealthcheckController, CredentialsController],
   providers: [
     PrismaService,
     AzureCredentialProvider,
     CryptographyClientFactoryProvider,
     EnvProvider,
-    JwtProvider,
+    JwtAudienceProvider,
     KeyClientProvider,
     KeyVaultProvider,
     LoggerProvider,
-    VirtualAuthenticatorProvdier,
+    VirtualAuthenticatorProvider,
     WebAuthnCredentialRepositoryProvider,
+    CredentialSignerFactoryProvider,
+  ],
+  exports: [
+    PrismaService,
+    AzureCredentialProvider,
+    CryptographyClientFactoryProvider,
+    EnvProvider,
+    JwtAudienceProvider,
+    KeyClientProvider,
+    KeyVaultProvider,
+    LoggerProvider,
+    VirtualAuthenticatorProvider,
+    WebAuthnCredentialRepositoryProvider,
+    CredentialSignerFactoryProvider,
   ],
 })
 export class AppModule implements NestModule {

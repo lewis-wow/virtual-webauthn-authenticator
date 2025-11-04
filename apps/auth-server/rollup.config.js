@@ -24,10 +24,10 @@ export default defineConfig({
   },
 
   onwarn(warning, warn) {
-    // Suppress circular dependency warnings from Kysely
+    // Suppress circular dependency warnings originating from node_modules
     if (
       warning.code === 'CIRCULAR_DEPENDENCY' &&
-      warning.message.includes('kysely')
+      warning.message.includes('node_modules')
     ) {
       return;
     }

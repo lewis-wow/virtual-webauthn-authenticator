@@ -2,7 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
-import { tsr } from './lib/tsr'
+
+import { tsr } from './lib/tsr';
 
 const queryClient = new QueryClient();
 

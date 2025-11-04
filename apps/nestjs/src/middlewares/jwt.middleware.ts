@@ -1,12 +1,12 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { Jwt } from '@repo/auth';
+import { JwtAudience } from '@repo/auth';
 import { Logger } from '@repo/logger';
 import { Request, Response, NextFunction } from 'express';
 
 @Injectable()
 export class JwtMiddleware implements NestMiddleware {
   constructor(
-    private readonly jwt: Jwt,
+    private readonly jwtAudience: JwtAudience,
     private readonly logger: Logger,
   ) {}
 
@@ -22,7 +22,7 @@ export class JwtMiddleware implements NestMiddleware {
 
     if (jwt) {
       try {
-        const jwtPayload = await this.jwt.validateToken(jwt);
+        const jwtPayload = await this.jwtAudience.validateToken(jwt);
 
         this.logger.debug(
           `JWT Payload: ${JSON.stringify(jwtPayload)}`,

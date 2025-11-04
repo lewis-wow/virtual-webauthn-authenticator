@@ -28,6 +28,7 @@ FROM base AS builder
 COPY --from=pruner /app/out/full .
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 COPY --from=pruner /app/scripts ./scripts
+COPY --from=pruner /app/.barrelsby.json ./.barrelsby.json
 
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod=false
 

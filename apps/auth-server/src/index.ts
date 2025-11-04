@@ -5,7 +5,7 @@ import { Hono } from 'hono';
 
 import { env } from './env';
 import { auth } from './lib/auth';
-import { jwt } from './lib/jwt';
+import { jwtIssuer } from './lib/jwtIssuer';
 
 const app = new Hono();
 
@@ -34,7 +34,7 @@ app.get('/api/auth/api-key/token', async (c) => {
   }
 
   return c.json({
-    token: await jwt.sign({
+    token: await jwtIssuer.sign({
       sub: data.key!.id,
       id: data.key!.id,
       permissions: data.key?.permissions,
@@ -48,7 +48,7 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
 });
 
 app.get('/.well-known/jwks.json', async (c) => {
-  return c.json(await jwt.getKeys());
+  return c.json(await jwtIssuer.getKeys());
 });
 
 serve(

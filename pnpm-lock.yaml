@@ -258,15 +258,6 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      openapi-fetch:
-        specifier: ^0.15.0
-        version: 0.15.0
-      openapi-react-query:
-        specifier: ^0.5.1
-        version: 0.5.1(@tanstack/react-query@5.90.5(react@19.1.0))(openapi-fetch@0.15.0)
-      pg:
-        specifier: ^8.16.3
-        version: 8.16.3
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -334,154 +325,6 @@ importers:
       typescript:
         specifier: ^5
         version: 5.9.2
-
-  apps/hono:
-    dependencies:
-      '@azure/identity':
-        specifier: ^4.13.0
-        version: 4.13.0
-      '@azure/keyvault-keys':
-        specifier: ^4.10.0
-        version: 4.10.0
-      '@hono/node-server':
-        specifier: ^1.19.5
-        version: 1.19.5(hono@4.9.10)
-      '@hono/standard-validator':
-        specifier: ^0.1.5
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)
-      '@hono/zod-validator':
-        specifier: ^0.7.4
-        version: 0.7.4(hono@4.9.10)(zod@4.1.12)
-      '@repo/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
-      '@repo/enums':
-        specifier: workspace:*
-        version: link:../../packages/enums
-      '@repo/exception':
-        specifier: workspace:*
-        version: link:../../packages/exception
-      '@repo/key-vault':
-        specifier: workspace:*
-        version: link:../../packages/key-vault
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../../packages/keys
-      '@repo/logger':
-        specifier: workspace:*
-        version: link:../../packages/logger
-      '@repo/prisma':
-        specifier: workspace:*
-        version: link:../../packages/prisma
-      '@repo/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
-      '@repo/virtual-authenticator':
-        specifier: workspace:*
-        version: link:../../packages/virtual-authenticator
-      '@scalar/hono-api-reference':
-        specifier: ^0.9.22
-        version: 0.9.22(hono@4.9.10)
-      '@t3-oss/env-core':
-        specifier: ^0.13.8
-        version: 0.13.8(typescript@5.9.2)(zod@4.1.12)
-      '@ts-rest/core':
-        specifier: ^3.52.1
-        version: 3.52.1(@types/node@20.19.17)(zod@4.1.12)
-      better-auth:
-        specifier: ^1.3.27
-        version: 1.3.27(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2)
-      hono:
-        specifier: ^4.9.10
-        version: 4.9.10
-      hono-openapi:
-        specifier: ^1.1.0
-        version: 1.1.0(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12))(@types/json-schema@7.0.15)(hono@4.9.10)(openapi-types@12.1.3)
-      jose:
-        specifier: ^6.1.0
-        version: 6.1.0
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.12
-      zod-openapi:
-        specifier: ^5.4.3
-        version: 5.4.3(zod@4.1.12)
-    devDependencies:
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../../packages/types
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      '@rollup/plugin-commonjs':
-        specifier: ^28.0.6
-        version: 28.0.6(rollup@4.52.4)
-      '@rollup/plugin-esm-shim':
-        specifier: ^0.1.8
-        version: 0.1.8(rollup@4.52.4)
-      '@rollup/plugin-json':
-        specifier: ^6.1.0
-        version: 6.1.0(rollup@4.52.4)
-      '@rollup/plugin-node-resolve':
-        specifier: ^16.0.2
-        version: 16.0.2(rollup@4.52.4)
-      '@rollup/plugin-run':
-        specifier: ^3.1.0
-        version: 3.1.0(rollup@4.52.4)
-      '@rollup/plugin-swc':
-        specifier: ^0.4.0
-        version: 0.4.0(@swc/core@1.13.5)(rollup@4.52.4)
-      '@simplewebauthn/server':
-        specifier: ^13.2.2
-        version: 13.2.2
-      '@swc/core':
-        specifier: ^1.13.5
-        version: 1.13.5
-      '@types/lodash-es':
-        specifier: ^4.17.12
-        version: 4.17.12
-      '@types/node':
-        specifier: ^20.11.17
-        version: 20.19.17
-      rollup:
-        specifier: ^4.52.4
-        version: 4.52.4
-      rollup-plugin-copy:
-        specifier: ^3.5.0
-        version: 3.5.0
-      rollup-plugin-delete:
-        specifier: ^3.0.1
-        version: 3.0.1(rollup@4.52.4)
-      rollup-plugin-execute:
-        specifier: ^1.1.1
-        version: 1.1.1
-      rollup-plugin-node-externals:
-        specifier: ^8.1.1
-        version: 8.1.1(rollup@4.52.4)
-      rollup-plugin-shell:
-        specifier: ^1.0.9
-        version: 1.0.9
-      rollup-plugin-tsconfig-paths:
-        specifier: ^1.5.2
-        version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
-      type-fest:
-        specifier: ^5.0.1
-        version: 5.0.1
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.2
-      vite-tsconfig-paths:
-        specifier: ^5.1.4
-        version: 5.1.4(typescript@5.9.2)(vite@5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
-      yaml:
-        specifier: ^2.8.1
-        version: 2.8.1
 
   apps/nestjs:
     dependencies:
@@ -552,12 +395,6 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@eslint/eslintrc':
-        specifier: ^3.2.0
-        version: 3.3.1
-      '@eslint/js':
-        specifier: ^9.18.0
-        version: 9.34.0
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.10(@swc/core@1.13.5)(@types/node@22.15.3)
@@ -567,9 +404,21 @@ importers:
       '@nestjs/testing':
         specifier: ^11.0.1
         version: 11.1.8(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.8)(@nestjs/platform-express@11.1.8)
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@simplewebauthn/server':
+        specifier: ^13.2.2
+        version: 13.2.2
+      '@swc/core':
+        specifier: ^1.13.5
+        version: 1.13.5
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.5
@@ -582,9 +431,6 @@ importers:
       '@types/webpack-node-externals':
         specifier: ^3.0.4
         version: 3.0.4(@swc/core@1.13.5)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.34.0(jiti@2.6.1)
       globals:
         specifier: ^16.0.0
         version: 16.3.0
@@ -606,9 +452,9 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.2
-      typescript-eslint:
-        specifier: ^8.20.0
-        version: 8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2)
+      unplugin-swc:
+        specifier: ^1.5.8
+        version: 1.5.8(@swc/core@1.13.5)(rollup@4.52.4)
       vite-tsconfig-paths:
         specifier: ^5.1.4
         version: 5.1.4(typescript@5.9.2)(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
@@ -812,6 +658,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -889,6 +738,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
@@ -962,6 +814,9 @@ importers:
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
+      ecdsa-sig-formatter:
+        specifier: ^1.0.11
+        version: 1.0.11
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -999,6 +854,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      '@repo/exception':
+        specifier: workspace:*
+        version: link:../exception
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1024,6 +882,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1173,6 +1034,40 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
+  packages/test-helpers:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../prisma
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+
   packages/types:
     devDependencies:
       '@azure/keyvault-keys':
@@ -1220,6 +1115,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1278,6 +1176,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      '@repo/exception':
+        specifier: workspace:*
+        version: link:../exception
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
@@ -1309,6 +1210,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@repo/test-helpers':
+        specifier: workspace:*
+        version: link:../test-helpers
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -1321,6 +1225,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1519,6 +1426,10 @@ packages:
   '@babel/types@7.28.4':
     resolution: {integrity: sha512-bkFqkLhh3pMBUQQkpVgWDWq/lqzc2678eUyDlTBhRqhCHFguYYGM0Efga7tYk4TogG/3x0EEl66/OQ+WGbWB/Q==}
     engines: {node: '>=6.9.0'}
+
+  '@bcoe/v8-coverage@1.0.2':
+    resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
+    engines: {node: '>=18'}
 
   '@better-auth/core@1.3.27':
     resolution: {integrity: sha512-3Sfdax6MQyronY+znx7bOsfQHI6m1SThvJWb0RDscFEAhfqLy95k1sl+/PgGyg0cwc2cUXoEiAOSqYdFYrg3vA==}
@@ -2060,18 +1971,6 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
-
-  '@hono/standard-validator@0.1.5':
-    resolution: {integrity: sha512-EIyZPPwkyLn6XKwFj5NBEWHXhXbgmnVh2ceIFo5GO7gKI9WmzTjPDKnppQB0KrqKeAkq3kpoW4SIbu5X1dgx3w==}
-    peerDependencies:
-      '@standard-schema/spec': 1.0.0
-      hono: '>=3.9.0'
-
-  '@hono/zod-validator@0.7.4':
-    resolution: {integrity: sha512-biKGn3BRJVaftZlIPMyK+HCe/UHAjJ6sH0UyXe3+v0OcgVr9xfImDROTJFLtn9e3XEEAHGZIM9U6evu85abm8Q==}
-    peerDependencies:
-      hono: '>=3.9.0'
-      zod: ^3.25.0 || ^4.0.0
 
   '@hookform/resolvers@5.2.2':
     resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
@@ -4169,24 +4068,6 @@ packages:
   '@rushstack/eslint-patch@1.13.0':
     resolution: {integrity: sha512-2ih5qGw5SZJ+2fLZxP6Lr6Na2NTIgPRL/7Kmyuw0uIyBQnuhQ8fi8fzUTd38eIQmqp+GYLC00cI6WgtqHxBwmw==}
 
-  '@scalar/core@0.3.20':
-    resolution: {integrity: sha512-bIlrePx41pSvjDcaJPa9YVVhbSm0N9SKQm2Fzl489S0bUVToyXIQtMFVR4i+BmXGjOcATm/66ELW4vdXRjHoRA==}
-    engines: {node: '>=20'}
-
-  '@scalar/hono-api-reference@0.9.22':
-    resolution: {integrity: sha512-utIz4F6YZj3QU/9HK4P1wIcHY8ceMbL7w+VahFbnmZbE3Gy+haaaHfhZOs2nAfdx1cKOhkm11/inZTtw8+I2bw==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      hono: ^4.0.0
-
-  '@scalar/openapi-types@0.5.0':
-    resolution: {integrity: sha512-HJBcLa+/mPP+3TCcQngj/iW5UqynRosOQdEETXjmdy6Ngw8wBjwIcT6C86J5jufJ6sI8++HYnt+e7pAvp5FO6A==}
-    engines: {node: '>=20'}
-
-  '@scalar/types@0.3.2':
-    resolution: {integrity: sha512-+X10CCvG57nAqYbTGteiSzRFQcMYm7DLfCRMeEfiWQ9Bq2ladat17XsMSvkvwcfpOSlsoepWf3P5dErERUSOQQ==}
-    engines: {node: '>=20'}
-
   '@sec-ant/readable-stream@0.4.1':
     resolution: {integrity: sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg==}
 
@@ -4219,67 +4100,6 @@ packages:
 
   '@so-ric/colorspace@1.1.6':
     resolution: {integrity: sha512-/KiKkpHNOBgkFJwu9sh48LkHSMYGyuTcSFK/qMBdnOAlrRJzRSXAOFB5qwzaVQuDl8wAvHVMkaASQDReTahxuw==}
-
-  '@standard-community/standard-json@0.3.5':
-    resolution: {integrity: sha512-4+ZPorwDRt47i+O7RjyuaxHRK/37QY/LmgxlGrRrSTLYoFatEOzvqIc85GTlM18SFZ5E91C+v0o/M37wZPpUHA==}
-    peerDependencies:
-      '@standard-schema/spec': ^1.0.0
-      '@types/json-schema': ^7.0.15
-      '@valibot/to-json-schema': ^1.3.0
-      arktype: ^2.1.20
-      effect: ^3.16.8
-      quansync: ^0.2.11
-      sury: ^10.0.0
-      typebox: ^1.0.17
-      valibot: ^1.1.0
-      zod: ^3.25.0 || ^4.0.0
-      zod-to-json-schema: ^3.24.5
-    peerDependenciesMeta:
-      '@valibot/to-json-schema':
-        optional: true
-      arktype:
-        optional: true
-      effect:
-        optional: true
-      sury:
-        optional: true
-      typebox:
-        optional: true
-      valibot:
-        optional: true
-      zod:
-        optional: true
-      zod-to-json-schema:
-        optional: true
-
-  '@standard-community/standard-openapi@0.2.8':
-    resolution: {integrity: sha512-80ap74p5oy/SU4al5HkPwO5+NbN2wH/FBr6kwaE5ROq7AvcDFaxzUfTazewroNaCotbvdGcvzXb9oEoOIyfC/Q==}
-    peerDependencies:
-      '@standard-community/standard-json': ^0.3.5
-      '@standard-schema/spec': ^1.0.0
-      arktype: ^2.1.20
-      effect: ^3.17.14
-      openapi-types: ^12.1.3
-      sury: ^10.0.0
-      typebox: ^1.0.0
-      valibot: ^1.1.0
-      zod: ^3.25.0 || ^4.0.0
-      zod-openapi: ^4
-    peerDependenciesMeta:
-      arktype:
-        optional: true
-      effect:
-        optional: true
-      sury:
-        optional: true
-      typebox:
-        optional: true
-      valibot:
-        optional: true
-      zod:
-        optional: true
-      zod-openapi:
-        optional: true
 
   '@standard-schema/spec@1.0.0':
     resolution: {integrity: sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==}
@@ -4651,17 +4471,6 @@ packages:
   '@trysound/sax@0.2.0':
     resolution: {integrity: sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==}
     engines: {node: '>=10.13.0'}
-
-  '@ts-rest/core@3.52.1':
-    resolution: {integrity: sha512-tAjz7Kxq/grJodcTA1Anop4AVRDlD40fkksEV5Mmal88VoZeRKAG8oMHsDwdwPZz+B/zgnz0q2sF+cm5M7Bc7g==}
-    peerDependencies:
-      '@types/node': ^18.18.7 || >=20.8.4
-      zod: ^3.22.3
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      zod:
-        optional: true
 
   '@ts-rest/core@3.53.0-rc.1':
     resolution: {integrity: sha512-hDMXqKHSys6w+kXFW1Q6EvN8QgRvtXKXJ2TpYByKI4TquaPjiTOv99aLD26X4LNRzdna8Ci1PVyzr0jYZv0oNQ==}
@@ -5054,6 +4863,15 @@ packages:
     peerDependencies:
       vitest: 3.2.4
 
+  '@vitest/coverage-v8@3.2.4':
+    resolution: {integrity: sha512-EyF9SXU6kS5Ku/U82E259WSnvg6c8KTjppUncuNdm5QHpe17mwREHnjDzozC8x9MZ0xfBUFSaLkRv4TMA75ALQ==}
+    peerDependencies:
+      '@vitest/browser': 3.2.4
+      vitest: 3.2.4
+    peerDependenciesMeta:
+      '@vitest/browser':
+        optional: true
+
   '@vitest/expect@3.2.4':
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
 
@@ -5349,6 +5167,9 @@ packages:
 
   ast-types-flow@0.0.8:
     resolution: {integrity: sha512-OH/2E5Fg20h2aPrbe+QL8JZQFko0YZaF+j4mnQ7BGhfavO7OpSLa8a0y9sBwomHdSbkhTS8TQNayBfnW5DwbvQ==}
+
+  ast-v8-to-istanbul@0.3.8:
+    resolution: {integrity: sha512-szgSZqUxI5T8mLKvS7WTjF9is+MVbOeLADU73IseOcrqhxr/VAvy6wfoVE39KnKzA7JRhjF5eUagNlHwvZPlKQ==}
 
   async-function@1.0.0:
     resolution: {integrity: sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==}
@@ -6705,21 +6526,6 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  hono-openapi@1.1.0:
-    resolution: {integrity: sha512-eA5hN8D2O30EkPPUxWFilcZcThAe81TShbH38Y183ZZp8WkgMh4BrPEDeZ/EFN2tyDi3cmTgKTa3+oStyJX0UA==}
-    peerDependencies:
-      '@hono/standard-validator': ^0.1.2
-      '@standard-community/standard-json': ^0.3.5
-      '@standard-community/standard-openapi': ^0.2.8
-      '@types/json-schema': ^7.0.15
-      hono: ^4.8.3
-      openapi-types: ^12.1.3
-    peerDependenciesMeta:
-      '@hono/standard-validator':
-        optional: true
-      hono:
-        optional: true
-
   hono@4.9.10:
     resolution: {integrity: sha512-AlI15ijFyKTXR7eHo7QK7OR4RoKIedZvBuRjO8iy4zrxvlY5oFCdiRG/V/lFJHCNXJ0k72ATgnyzx8Yqa5arug==}
     engines: {node: '>=16.9.0'}
@@ -7647,11 +7453,6 @@ packages:
     engines: {node: ^18 || >=20}
     hasBin: true
 
-  nanoid@5.1.5:
-    resolution: {integrity: sha512-Ir/+ZpE9fDsNH0hQ3C68uyThDXzYcim2EqcZ8zn8Chtt1iylPT9xXJB0kPCnqzgcEGikO9RxSrh63MsmVCU7Fw==}
-    engines: {node: ^18 || >=20}
-    hasBin: true
-
   nanostores@1.0.1:
     resolution: {integrity: sha512-kNZ9xnoJYKg/AfxjrVL4SS0fKX++4awQReGqWnwTRHxeHGZ1FJFVgTqr/eMrNQdp0Tz7M7tG/TDaX8QfHDwVCw==}
     engines: {node: ^20.0.0 || >=22.0.0}
@@ -7850,21 +7651,6 @@ packages:
   open@10.2.0:
     resolution: {integrity: sha512-YgBpdJHPyQ2UE5x+hlSXcnejzAvD0b22U2OuAP+8OnlJT+PjWPxtgmGqKKc+RgTM63U9gN0YzrYc71R2WT/hTA==}
     engines: {node: '>=18'}
-
-  openapi-fetch@0.15.0:
-    resolution: {integrity: sha512-OjQUdi61WO4HYhr9+byCPMj0+bgste/LtSBEcV6FzDdONTs7x0fWn8/ndoYwzqCsKWIxEZwo4FN/TG1c1rI8IQ==}
-
-  openapi-react-query@0.5.1:
-    resolution: {integrity: sha512-BzUDxICV9v8584pBiGM9jgCqSBBp/mP91SJ68Pu7PqeppqfWxazi3vVaMup5Acjxv3cN9GbV6xuVHfbGsJfexw==}
-    peerDependencies:
-      '@tanstack/react-query': ^5.80.0
-      openapi-fetch: ^0.15.0
-
-  openapi-types@12.1.3:
-    resolution: {integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==}
-
-  openapi-typescript-helpers@0.0.15:
-    resolution: {integrity: sha512-opyTPaunsklCBpTK8JGef6mfPhLSnyy5a0IN9vKtx3+4aExf+KxEqYwIy3hqkedXIB97u357uLMJsOnm3GVjsw==}
 
   openapi-typescript@7.10.1:
     resolution: {integrity: sha512-rBcU8bjKGGZQT4K2ekSTY2Q5veOQbVG/lTKZ49DeCyT9z62hM2Vj/LLHjDHC9W7LJG8YMHcdXpRZDqC1ojB/lw==}
@@ -8226,9 +8012,6 @@ packages:
   qs@6.14.0:
     resolution: {integrity: sha512-YWWTjgABSKcvs/nWBi9PycY/JiPJqOD4JA6o9Sej2AtvSGarXxKC3OQSk4pAarbdQlKAh5D4FCQkJNkW+GAn3w==}
     engines: {node: '>=0.6'}
-
-  quansync@0.2.11:
-    resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -9169,10 +8952,6 @@ packages:
     resolution: {integrity: sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA==}
     engines: {node: '>=16'}
 
-  type-fest@5.0.0:
-    resolution: {integrity: sha512-GeJop7+u7BYlQ6yQCAY1nBQiRSHR+6OdCEtd8Bwp9a3NK3+fWAVjOaPKJDteB9f6cIJ0wt4IfnScjLG450EpXA==}
-    engines: {node: '>=20'}
-
   type-fest@5.0.1:
     resolution: {integrity: sha512-9MpwAI52m8H6ssA542UxSLnSiSD2dsC3/L85g6hVubLSXd82wdI80eZwTWhdOfN67NlA+D+oipAs1MlcTcu3KA==}
     engines: {node: '>=20'}
@@ -9299,6 +9078,15 @@ packages:
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
+
+  unplugin-swc@1.5.8:
+    resolution: {integrity: sha512-6qVAQsCn/AMFiw7XGXkNC/q/Or4OpL0zRPertzLT1BoigjOQp0ktPxDWY4lc51FGwVbzW4V1BURaal1rpbJwSg==}
+    peerDependencies:
+      '@swc/core': ^1.2.108
+
+  unplugin@2.3.10:
+    resolution: {integrity: sha512-6NCPkv1ClwH+/BGE9QeoTIl09nuiAt0gS28nn1PvYXsGKRwM2TCbFA2QiilmehPDTXIe684k4rZI1yl3A1PCUw==}
+    engines: {node: '>=18.12.0'}
 
   unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}
@@ -9477,6 +9265,9 @@ packages:
     resolution: {integrity: sha512-yd1RBzSGanHkitROoPFd6qsrxt+oFhg/129YzheDGqeustzX0vTZJZsSsQjVQC4yzBQ56K55XU8gaNCtIzOnTg==}
     engines: {node: '>=10.13.0'}
 
+  webpack-virtual-modules@0.6.2:
+    resolution: {integrity: sha512-66/V2i5hQanC51vBQKPH4aI8NMAcBW59FVBs+rC7eGHupMyfn34q7rZIE+ETlJ+XTevqfUhVVBgSUNSW2flEUQ==}
+
   webpack@5.100.2:
     resolution: {integrity: sha512-QaNKAvGCDRh3wW1dsDjeMdDXwZm2vqq3zn6Pvq4rHOEOGSaUMgOOjG2Y9ZbIGzpfkJk9ZYTHpDqgDfeBDcnLaw==}
     engines: {node: '>=10.13.0'}
@@ -9630,9 +9421,6 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       zod: ^3.25.74 || ^4.0.0
-
-  zod@4.1.11:
-    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
   zod@4.1.12:
     resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
@@ -9952,6 +9740,8 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
+
+  '@bcoe/v8-coverage@1.0.2': {}
 
   '@better-auth/core@1.3.27':
     dependencies:
@@ -10296,16 +10086,6 @@ snapshots:
   '@hono/node-server@1.19.5(hono@4.9.10)':
     dependencies:
       hono: 4.9.10
-
-  '@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)':
-    dependencies:
-      '@standard-schema/spec': 1.0.0
-      hono: 4.9.10
-
-  '@hono/zod-validator@0.7.4(hono@4.9.10)(zod@4.1.12)':
-    dependencies:
-      hono: 4.9.10
-      zod: 4.1.12
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.65.0(react@19.1.0))':
     dependencies:
@@ -12870,26 +12650,6 @@ snapshots:
 
   '@rushstack/eslint-patch@1.13.0': {}
 
-  '@scalar/core@0.3.20':
-    dependencies:
-      '@scalar/types': 0.3.2
-
-  '@scalar/hono-api-reference@0.9.22(hono@4.9.10)':
-    dependencies:
-      '@scalar/core': 0.3.20
-      hono: 4.9.10
-
-  '@scalar/openapi-types@0.5.0':
-    dependencies:
-      zod: 4.1.11
-
-  '@scalar/types@0.3.2':
-    dependencies:
-      '@scalar/openapi-types': 0.5.0
-      nanoid: 5.1.5
-      type-fest: 5.0.0
-      zod: 4.1.11
-
   '@sec-ant/readable-stream@0.4.1': {}
 
   '@simplewebauthn/browser@13.2.2': {}
@@ -12927,25 +12687,6 @@ snapshots:
     dependencies:
       color: 5.0.2
       text-hex: 1.0.0
-
-  '@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12)':
-    dependencies:
-      '@standard-schema/spec': 1.0.0
-      '@types/json-schema': 7.0.15
-      quansync: 0.2.11
-    optionalDependencies:
-      typebox: 1.0.34
-      zod: 4.1.12
-
-  '@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12)':
-    dependencies:
-      '@standard-community/standard-json': 0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12)
-      '@standard-schema/spec': 1.0.0
-      openapi-types: 12.1.3
-    optionalDependencies:
-      typebox: 1.0.34
-      zod: 4.1.12
-      zod-openapi: 5.4.3(zod@4.1.12)
 
   '@standard-schema/spec@1.0.0': {}
 
@@ -13243,11 +12984,6 @@ snapshots:
       - supports-color
 
   '@trysound/sax@0.2.0': {}
-
-  '@ts-rest/core@3.52.1(@types/node@20.19.17)(zod@4.1.12)':
-    optionalDependencies:
-      '@types/node': 20.19.17
-      zod: 4.1.12
 
   '@ts-rest/core@3.53.0-rc.1(@types/node@22.15.3)':
     optionalDependencies:
@@ -13684,6 +13420,25 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.4)':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@bcoe/v8-coverage': 1.0.2
+      ast-v8-to-istanbul: 0.3.8
+      debug: 4.4.1(supports-color@10.2.2)
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.2.0
+      magic-string: 0.30.19
+      magicast: 0.3.5
+      std-env: 3.9.0
+      test-exclude: 7.0.1
+      tinyrainbow: 2.0.0
+      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+    transitivePeerDependencies:
+      - supports-color
+
   '@vitest/expect@3.2.4':
     dependencies:
       '@types/chai': 5.2.2
@@ -14070,6 +13825,12 @@ snapshots:
   assertion-error@2.0.1: {}
 
   ast-types-flow@0.0.8: {}
+
+  ast-v8-to-istanbul@0.3.8:
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.31
+      estree-walker: 3.0.3
+      js-tokens: 9.0.1
 
   async-function@1.0.0: {}
 
@@ -15773,16 +15534,6 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono-openapi@1.1.0(@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10))(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-community/standard-openapi@0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12))(@types/json-schema@7.0.15)(hono@4.9.10)(openapi-types@12.1.3):
-    dependencies:
-      '@standard-community/standard-json': 0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12)
-      '@standard-community/standard-openapi': 0.2.8(@standard-community/standard-json@0.3.5(@standard-schema/spec@1.0.0)(@types/json-schema@7.0.15)(quansync@0.2.11)(typebox@1.0.34)(zod@4.1.12))(@standard-schema/spec@1.0.0)(openapi-types@12.1.3)(typebox@1.0.34)(zod-openapi@5.4.3(zod@4.1.12))(zod@4.1.12)
-      '@types/json-schema': 7.0.15
-      openapi-types: 12.1.3
-    optionalDependencies:
-      '@hono/standard-validator': 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)
-      hono: 4.9.10
-
   hono@4.9.10: {}
 
   hosted-git-info@2.8.9: {}
@@ -16644,8 +16395,6 @@ snapshots:
 
   nanoid@5.0.3: {}
 
-  nanoid@5.1.5: {}
-
   nanostores@1.0.1: {}
 
   napi-postinstall@0.3.4: {}
@@ -16839,20 +16588,6 @@ snapshots:
       define-lazy-prop: 3.0.0
       is-inside-container: 1.0.0
       wsl-utils: 0.1.0
-
-  openapi-fetch@0.15.0:
-    dependencies:
-      openapi-typescript-helpers: 0.0.15
-
-  openapi-react-query@0.5.1(@tanstack/react-query@5.90.5(react@19.1.0))(openapi-fetch@0.15.0):
-    dependencies:
-      '@tanstack/react-query': 5.90.5(react@19.1.0)
-      openapi-fetch: 0.15.0
-      openapi-typescript-helpers: 0.0.15
-
-  openapi-types@12.1.3: {}
-
-  openapi-typescript-helpers@0.0.15: {}
 
   openapi-typescript@7.10.1(typescript@5.9.2):
     dependencies:
@@ -17270,8 +17005,6 @@ snapshots:
   qs@6.14.0:
     dependencies:
       side-channel: 1.1.0
-
-  quansync@0.2.11: {}
 
   queue-microtask@1.2.3: {}
 
@@ -18348,10 +18081,6 @@ snapshots:
 
   type-fest@4.41.0: {}
 
-  type-fest@5.0.0:
-    dependencies:
-      tagged-tag: 1.0.0
-
   type-fest@5.0.1:
     dependencies:
       tagged-tag: 1.0.0
@@ -18470,6 +18199,22 @@ snapshots:
   universalify@2.0.1: {}
 
   unpipe@1.0.0: {}
+
+  unplugin-swc@1.5.8(@swc/core@1.13.5)(rollup@4.52.4):
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@4.52.4)
+      '@swc/core': 1.13.5
+      load-tsconfig: 0.2.5
+      unplugin: 2.3.10
+    transitivePeerDependencies:
+      - rollup
+
+  unplugin@2.3.10:
+    dependencies:
+      '@jridgewell/remapping': 2.3.5
+      acorn: 8.15.0
+      picomatch: 4.0.3
+      webpack-virtual-modules: 0.6.2
 
   unrs-resolver@1.11.1:
     dependencies:
@@ -18765,6 +18510,8 @@ snapshots:
 
   webpack-sources@3.3.3: {}
 
+  webpack-virtual-modules@0.6.2: {}
+
   webpack@5.100.2(@swc/core@1.13.5):
     dependencies:
       '@types/eslint-scope': 3.7.7
@@ -18984,7 +18731,5 @@ snapshots:
   zod-openapi@5.4.3(zod@4.1.12):
     dependencies:
       zod: 4.1.12
-
-  zod@4.1.11: {}
 
   zod@4.1.12: {}
