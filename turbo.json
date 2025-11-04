@@ -10,18 +10,9 @@
       "outputs": ["dist/**", "generated/**", "build/**"]
     },
     "@repo/console#build": {
-      "dependsOn": ["^build", "@repo/hono#build"],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*",
-        "../../apps/hono/static/openapi.json"
-      ],
-      "outputs": [".next/**"]
-    },
-    "@repo/hono#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["static/openapi.json"]
+      "outputs": [".next/**"]
     },
     "@repo/plasmo#build": {
       "dependsOn": ["^build"],
