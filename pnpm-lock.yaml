@@ -395,12 +395,6 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@eslint/eslintrc':
-        specifier: ^3.2.0
-        version: 3.3.1
-      '@eslint/js':
-        specifier: ^9.18.0
-        version: 9.34.0
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.10(@swc/core@1.13.5)(@types/node@22.15.3)
@@ -437,9 +431,6 @@ importers:
       '@types/webpack-node-externals':
         specifier: ^3.0.4
         version: 3.0.4(@swc/core@1.13.5)
-      eslint:
-        specifier: ^9.18.0
-        version: 9.34.0(jiti@2.6.1)
       globals:
         specifier: ^16.0.0
         version: 16.3.0
@@ -461,9 +452,6 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.2
-      typescript-eslint:
-        specifier: ^8.20.0
-        version: 8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2)
       unplugin-swc:
         specifier: ^1.5.8
         version: 1.5.8(@swc/core@1.13.5)(rollup@4.52.4)
