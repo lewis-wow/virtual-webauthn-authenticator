@@ -6,5 +6,8 @@ export default defineConfig({
   test: {
     exclude: [...configDefaults.exclude, 'dist/**/*'],
     name: pkg.name,
+    coverage: {
+      provider: 'v8',
+    },
   },
 });

@@ -6,12 +6,12 @@ import {
 } from '@repo/enums';
 import { CredentialNotFound } from '@repo/exception';
 import { COSEKey } from '@repo/keys';
-import type {
+import {
   Prisma,
-  PrismaClient,
-  User,
-  WebAuthnCredential,
-  WebAuthnCredentialKeyVaultKeyMeta,
+  type PrismaClient,
+  type User,
+  type WebAuthnCredential,
+  type WebAuthnCredentialKeyVaultKeyMeta,
 } from '@repo/prisma';
 import type { CredentialSigner, MaybePromise } from '@repo/types';
 import {
@@ -161,16 +161,11 @@ export class VirtualAuthenticator {
   > {
     const updatedWebAuthnCredential = await this.prisma.$transaction(
       async (tx) => {
-        const webAuthnCredential = await tx.webAuthnCredential.findFirst({
-          where,
-        });
-
-        if (webAuthnCredential === null) {
-          throw new CredentialNotFound({
-            rpId: where.rpId?.toString() ?? 'Unknown',
-            userId: where.userId?.toString() ?? 'Unknown',
-          });
-        }
+        const webAuthnCredential = await tx.webAuthnCredential.findFirstOrThrow(
+          {
+            where,
+          },
+        );
 
         return await tx.webAuthnCredential.update({
           where: {
@@ -245,13 +240,31 @@ export class VirtualAuthenticator {
       webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMeta | null;
     }
   > {
+    const { publicKeyCredentialRequestOptions, user } = opts;
+
     const where =
-      VirtualAuthenticator.createFindFirstMatchingCredentialWhereInput(opts);
+      VirtualAuthenticator.createFindFirstMatchingCredentialWhereInput({
+        publicKeyCredentialRequestOptions,
+        user,
+      });
 
-    const webAuthnCredential =
-      await this._findFirstAndIncrementCounterAtomically(where);
+    try {
+      const webAuthnCredential =
+        await this._findFirstAndIncrementCounterAtomically(where);
 
-    return webAuthnCredential;
+      return webAuthnCredential;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new CredentialNotFound({
+            publicKeyCredentialRequestOptions,
+            userId: user.id,
+          });
+        }
+      }
+
+      throw error;
+    }
   }
 
   /**

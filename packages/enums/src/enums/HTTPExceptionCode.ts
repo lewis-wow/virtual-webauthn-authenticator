@@ -9,6 +9,9 @@ export const HTTPExceptionCode = {
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
 
   CREDENTIAL_NOT_FOUND: 'CREDENTIAL_NOT_FOUND',
+
+  CANNOT_PARSE_JSON_WEB_KEY: 'CANNOT_PARSE_JSON_WEB_KEY',
+  UNSUPPORTED_KTY: 'UNSUPPORTED_KTY',
 } as const;
 
 export type HTTPExceptionCode = ValueOfEnum<typeof HTTPExceptionCode>;

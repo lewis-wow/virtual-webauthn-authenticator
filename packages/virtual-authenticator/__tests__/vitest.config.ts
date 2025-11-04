@@ -13,5 +13,8 @@ export default defineConfig({
   test: {
     name: pkg.name,
     env,
+    coverage: {
+      provider: 'v8',
+    },
   },
 });

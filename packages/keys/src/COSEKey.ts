@@ -11,7 +11,7 @@ import {
 import type { BufferLike } from '@repo/types';
 import { objectKeys, swapKeysAndValues } from '@repo/utils';
 import * as cbor from 'cbor';
-import { assert, isEnum, isNumber, isString } from 'typanion';
+import { assert, isEnum, isInstanceOf, isNumber, isString } from 'typanion';
 
 import { JsonWebKey, type JsonWebKeyOptions } from './JsonWebKey';
 
@@ -73,11 +73,8 @@ export class COSEKey {
     return new COSEKey(cbor.decode(buffer));
   }
 
-  toJwk(opts?: { keepAlg?: boolean }): JsonWebKey {
-    const keepAlgOption = opts?.keepAlg ?? false;
-
+  toJwk(): JsonWebKey {
     const COSE_TO_JWK_KTY = swapKeysAndValues(COSEKeyType);
-    const COSE_TO_JWK_ALG = swapKeysAndValues(COSEKeyAlgorithm);
     const COSE_TO_JWK_CRV = swapKeysAndValues(COSEKeyCurve);
 
     const jwk: JsonWebKeyOptions = {};
@@ -89,13 +86,6 @@ export class COSEKey {
           assert(value, isEnum(COSEKeyType));
 
           jwk.kty = COSE_TO_JWK_KTY[value];
-          break;
-        case COSEKeyParam.alg: // alg
-          assert(value, isEnum(COSEKeyAlgorithm));
-
-          if (keepAlgOption) {
-            jwk.alg = COSE_TO_JWK_ALG[value];
-          }
           break;
 
         // Key-specific parameters
@@ -141,5 +131,44 @@ export class COSEKey {
 
   toBuffer(): Buffer {
     return cbor.encode(this.coseMap);
+  }
+
+  /**
+   * Performs validation on the coseMap to ensure it represents a valid COSEKey.
+   */
+  public static validate(
+    coseMap: Map<number, string | number | Uint8Array>,
+  ): void {
+    const kty = coseMap.get(COSEKeyParam.kty);
+    assert(kty, isEnum(COSEKeyType));
+
+    const alg = coseMap.get(COSEKeyParam.alg);
+    assert(alg, isEnum(COSEKeyAlgorithm));
+
+    switch (kty) {
+      case COSEKeyType.EC: {
+        const crv = coseMap.get(COSEKeyCurveParam.crv);
+        assert(crv, isEnum(COSEKeyCurve));
+
+        const x = coseMap.get(COSEKeyCurveParam.x);
+        assert(x, isInstanceOf(Uint8Array));
+
+        const y = coseMap.get(COSEKeyCurveParam.y);
+        assert(y, isInstanceOf(Uint8Array));
+        break;
+      }
+      case COSEKeyType.RSA: {
+        const n = coseMap.get(COSEKeyRsaParam.n);
+        assert(n, isInstanceOf(Uint8Array));
+
+        const e = coseMap.get(COSEKeyRsaParam.e);
+        assert(e, isInstanceOf(Uint8Array));
+        break;
+      }
+      default:
+        // This should be unreachable due to the first `assert(kty, ...)`
+        // NOTE: This should not be a `HTTPException`, as this should be completely unreachable.
+        throw new Error(`Unsupported kty: ${kty}`);
+    }
   }
 }
