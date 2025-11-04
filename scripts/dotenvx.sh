@@ -14,7 +14,7 @@ DEFAULT_ENV="development"
 # 1. Determine the environment.
 #    Use the value of the $ENVIRONMENT variable. If it's empty or not set, fall back to the default.
 if [ -z "$ENVIRONMENT" ]; then
-  echo "⚠️  Warning: ENVIRONMENT variable not set. Defaulting to '$DEFAULT_ENV'."
+  echo "⚠️ Warning: ENVIRONMENT variable not set. Defaulting to '$DEFAULT_ENV'."
   CURRENT_ENV="$DEFAULT_ENV"
 else
   CURRENT_ENV="$ENVIRONMENT"
@@ -25,7 +25,7 @@ ENV_FILE=".env.${CURRENT_ENV}"
 
 # 4. Check if the required .env file exists before attempting to use it.
 if [ ! -f "$ENV_FILE" ]; then
-  echo "❌ Error: Environment file '$ENV_FILE' not found for ENVIRONMENT='$CURRENT_ENV'."
+  echo "⚠️ Warning: Environment file '$ENV_FILE' not found for ENVIRONMENT='$CURRENT_ENV'."
   # exit 1
 fi
 
