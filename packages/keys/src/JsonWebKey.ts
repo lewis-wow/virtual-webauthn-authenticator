@@ -76,24 +76,6 @@ export type JsonWebKeyOptions = {
  * @see http://tools.ietf.org/html/draft-ietf-jose-json-web-key-18
  */
 export class JsonWebKey {
-  static canParse(
-    looseJsonWebKey: JsonWebKeyOptions,
-  ): looseJsonWebKey is JsonWebKeyOptions & {
-    kty?: KeyType;
-    keyOps?: KeyOperation[];
-    crv?: KeyCurveName;
-  } {
-    try {
-      assert(looseJsonWebKey.kty, isOptional(isEnum(KeyType)));
-      assert(looseJsonWebKey.keyOps, isOptional(isArray(isEnum(KeyOperation))));
-      assert(looseJsonWebKey.crv, isOptional(isEnum(KeyCurveName)));
-
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
   constructor(opts: JsonWebKeyOptions) {
     if (!JsonWebKey.canParse(opts)) {
       throw new CannotParseJsonWebKey();
@@ -222,6 +204,24 @@ export class JsonWebKey {
 
       default:
         return undefined;
+    }
+  }
+
+  static canParse(
+    looseJsonWebKey: JsonWebKeyOptions,
+  ): looseJsonWebKey is JsonWebKeyOptions & {
+    kty?: KeyType;
+    keyOps?: KeyOperation[];
+    crv?: KeyCurveName;
+  } {
+    try {
+      assert(looseJsonWebKey.kty, isOptional(isEnum(KeyType)));
+      assert(looseJsonWebKey.keyOps, isOptional(isArray(isEnum(KeyOperation))));
+      assert(looseJsonWebKey.crv, isOptional(isEnum(KeyCurveName)));
+
+      return true;
+    } catch {
+      return false;
     }
   }
 }

@@ -93,7 +93,7 @@ describe('COSEKey', () => {
       const deserializedCoseKey = COSEKey.fromBuffer(buffer);
 
       // 4. Verify the internal map is identical
-      expect(deserializedCoseKey.coseMap).toEqual(originalCoseKey.coseMap);
+      expect(deserializedCoseKey.map).toEqual(originalCoseKey.map);
 
       // 5. Verify the deserialized key can be converted back to the original JWK
       const outputJwk = deserializedCoseKey.toJwk();
