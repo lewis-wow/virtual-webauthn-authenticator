@@ -1,5 +1,6 @@
-import { bufferToUuid } from '../../src/bufferToUuid';
 import { describe, it, expect } from 'vitest';
+
+import { bufferToUuid } from '../../src/bufferToUuid';
 
 describe('bufferToUuid', () => {
   it('should convert a buffer to a UUID', () => {

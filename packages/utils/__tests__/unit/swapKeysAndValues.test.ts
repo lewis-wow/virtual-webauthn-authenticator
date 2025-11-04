@@ -1,5 +1,6 @@
-import { swapKeysAndValues } from '../../src/swapKeysAndValues';
 import { describe, it, expect } from 'vitest';
+
+import { swapKeysAndValues } from '../../src/swapKeysAndValues';
 
 describe('swapKeysAndValues', () => {
   it('should swap keys and values', () => {

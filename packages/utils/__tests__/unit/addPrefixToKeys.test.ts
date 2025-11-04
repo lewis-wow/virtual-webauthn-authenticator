@@ -1,5 +1,6 @@
-import { addPrefixToKeys } from '../../src/addPrefixToKeys';
 import { describe, it, expect } from 'vitest';
+
+import { addPrefixToKeys } from '../../src/addPrefixToKeys';
 
 describe('addPrefixToKeys', () => {
   it('should add a prefix to each key in the object', () => {
