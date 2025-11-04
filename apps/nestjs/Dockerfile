@@ -18,7 +18,7 @@ RUN corepack enable pnpm
 FROM base AS pruner
 RUN pnpm install --global turbo
 COPY . .
-RUN turbo prune @repo/console --docker
+RUN turbo prune @repo/nestjs --docker
 
 # =========================================================================== #
 # STAGE 3: Build the application using the pruned workspace
@@ -55,18 +55,16 @@ COPY --from=pruner /app/out/full/packages ./packages
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
 # 3. Copy only the necessary BUILT assets from the builder stage
-COPY --from=builder /app/apps/console/public ./apps/console/public
-COPY --from=builder /app/apps/console/.next/static ./apps/console/.next/static
-COPY --from=builder /app/apps/console/.next/standalone .
-COPY --from=builder /app/apps/console/.env.production ./apps/console/.env.production
+COPY --from=builder /app/apps/nestjs/dist .
+COPY --from=builder /app/apps/nestjs/.env.production ./apps/nestjs/.env.production
 
 # 4. Create a non-root user and set permissions
 RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 console
-RUN chown -R console:nodejs /app
-USER console
+    && adduser --system --uid 1001 nestjs
+RUN chown -R nestjs:nodejs /app
+USER nestjs
 
 EXPOSE 3000
 
 # 5. Run the server from its new, explicit path
-CMD ["dotenvx", "run", "-f", "apps/console/.env.production", "--", "node", "apps/console/server.js"]
+CMD ["dotenvx", "run", "-f", "apps/nestjs/.env.production", "--", "node", "apps/nestjs/main.js"]
