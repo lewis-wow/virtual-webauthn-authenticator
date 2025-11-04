@@ -24,10 +24,10 @@ fi
 ENV_FILE=".env.${CURRENT_ENV}"
 
 # 4. Check if the required .env file exists before attempting to use it.
-# if [ ! -f "$ENV_FILE" ]; then
-#   echo "❌ Error: Environment file '$ENV_FILE' not found for ENVIRONMENT='$CURRENT_ENV'."
-#   exit 1
-# fi
+if [ ! -f "$ENV_FILE" ]; then
+  echo "❌ Error: Environment file '$ENV_FILE' not found for ENVIRONMENT='$CURRENT_ENV'."
+  # exit 1
+fi
 
 # 5. Execute the dotenvx command.
 #    -f "$ENV_FILE": Specifies which environment file to load.
