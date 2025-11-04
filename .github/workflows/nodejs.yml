@@ -80,13 +80,13 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ghcr.io/${{ github.repository }}/console:latest
 
-      - name: Build and push hono image
+      - name: Build and push nestjs image
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./apps/hono/Dockerfile
+          file: ./apps/nestjs/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/${{ github.repository }}/hono:latest
+          tags: ghcr.io/${{ github.repository }}/nestjs:latest
 
       - name: Stop services
         # This step runs even if previous steps fail, ensuring
