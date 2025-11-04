@@ -1,11 +1,10 @@
 import { env } from '@/env';
-import { Jwt } from '@repo/auth';
+import { JwtIssuer } from '@repo/auth';
 
 import { prisma } from './prisma';
 
-export const jwt = new Jwt({
+export const jwtIssuer = new JwtIssuer({
   prisma,
-  authServerBaseURL: '/',
   encryptionKey: env.ENCRYPTION_KEY,
   config: {
     iss: env.JWT_ISSUER,

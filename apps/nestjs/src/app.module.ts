@@ -7,7 +7,7 @@ import { AzureCredentialProvider } from './services/AzureCredential.provider';
 import { CredentialSignerFactoryProvider } from './services/CredentialSignerFactoryProvider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
-import { JwtProvider } from './services/Jwt.provider';
+import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
 import { KeyVaultProvider } from './services/KeyVault.provider';
 import { LoggerProvider } from './services/Logger.provider';
@@ -23,7 +23,7 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     AzureCredentialProvider,
     CryptographyClientFactoryProvider,
     EnvProvider,
-    JwtProvider,
+    JwtAudienceProvider,
     KeyClientProvider,
     KeyVaultProvider,
     LoggerProvider,
@@ -36,7 +36,7 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     AzureCredentialProvider,
     CryptographyClientFactoryProvider,
     EnvProvider,
-    JwtProvider,
+    JwtAudienceProvider,
     KeyClientProvider,
     KeyVaultProvider,
     LoggerProvider,

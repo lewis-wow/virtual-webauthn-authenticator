@@ -1,41 +1,41 @@
 import { Encryption } from '@repo/crypto';
+import { Logger } from '@repo/logger';
 import type { Jwks, PrismaClient } from '@repo/prisma';
-import type { JwtPayload } from '@repo/validation';
 import {
-  createRemoteJWKSet,
   exportJWK,
   generateKeyPair,
   importJWK,
-  jwtVerify,
   SignJWT,
   type JWK,
   type JWTPayload,
 } from 'jose';
 
-export type JwtConfig = {
+import { JWT_ALG, JWT_CRV } from './consts';
+
+const LOG_PREFIX = 'JWT_ISSUER';
+
+const log = new Logger({
+  prefix: LOG_PREFIX,
+});
+
+export type JwtIssuerConfig = {
   aud: string;
   iss: string;
 };
 
-export type JwtOptions = {
+export type JwtIssuerOptions = {
   prisma: PrismaClient;
-  authServerBaseURL: string;
   encryptionKey: string;
-  config: JwtConfig;
+  config: JwtIssuerConfig;
 };
 
-export class Jwt {
+export class JwtIssuer {
   private readonly prisma: PrismaClient;
-  private readonly authServerBaseURL: string;
   private readonly encryptionKey: string;
-  private readonly config: JwtConfig;
+  private readonly config: JwtIssuerConfig;
 
-  static readonly ALG = 'EdDSA';
-  static readonly CRV = 'Ed25519';
-
-  constructor(opts: JwtOptions) {
+  constructor(opts: JwtIssuerOptions) {
     this.prisma = opts.prisma;
-    this.authServerBaseURL = opts.authServerBaseURL;
     this.encryptionKey = opts.encryptionKey;
     this.config = opts.config;
   }
@@ -44,8 +44,8 @@ export class Jwt {
     publicWebKey: JWK;
     privateWebKey: JWK;
   }> {
-    const { publicKey, privateKey } = await generateKeyPair(Jwt.ALG, {
-      crv: Jwt.CRV,
+    const { publicKey, privateKey } = await generateKeyPair(JWT_ALG, {
+      crv: JWT_CRV,
       extractable: true,
     });
 
@@ -71,6 +71,10 @@ export class Jwt {
         publicKey: JSON.stringify(publicWebKey),
         privateKey: encryptedPrivateKey,
       },
+    });
+
+    log.info('New JWK was created.', {
+      kid: newJwk.id,
     });
 
     return newJwk;
@@ -99,8 +103,8 @@ export class Jwt {
       keys: keySets.map((key) => ({
         ...JSON.parse(key.publicKey),
         kid: key.id,
-        alg: Jwt.ALG,
-        crv: Jwt.CRV,
+        alg: JWT_ALG,
+        crv: JWT_CRV,
       })),
     };
   }
@@ -119,11 +123,11 @@ export class Jwt {
       }),
     );
 
-    const privateKey = await importJWK(privateWebKey, Jwt.ALG);
+    const privateKey = await importJWK(privateWebKey, JWT_ALG);
 
     const jwt = new SignJWT(payload)
       .setProtectedHeader({
-        alg: Jwt.ALG,
+        alg: JWT_ALG,
         kid: latestKey.id,
         typ: 'JWT',
       })
@@ -135,23 +139,5 @@ export class Jwt {
     if (payload.sub) jwt.setSubject(payload.sub);
 
     return await jwt.sign(privateKey);
-  }
-
-  async validateToken(token: string): Promise<JwtPayload> {
-    try {
-      const JWKS = createRemoteJWKSet(
-        new URL(`${this.authServerBaseURL}/.well-known/jwks.json`),
-      );
-
-      const { payload } = await jwtVerify(token, JWKS, {
-        issuer: this.config.iss,
-        audience: this.config.aud,
-      });
-
-      return payload as JwtPayload;
-    } catch (error) {
-      console.error('Token validation failed:', error);
-      throw error;
-    }
   }
 }
