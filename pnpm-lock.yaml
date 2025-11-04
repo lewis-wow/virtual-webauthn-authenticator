@@ -1130,6 +1130,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
