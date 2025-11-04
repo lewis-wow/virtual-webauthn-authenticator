@@ -32,6 +32,7 @@ jobs:
 
       - name: Run database migrations
         env:
+          ENVIRONMENT: test
           DATABASE_URL: 'postgresql://postgres:postgres@postgres:5432/postgres?schema=public'
         # Use the --filter flag to run the command in the correct package.
         run: pnpm --filter @repo/prisma db:migrate
