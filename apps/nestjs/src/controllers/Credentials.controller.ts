@@ -7,6 +7,7 @@ import {
   WebAuthnCredentialRepository,
 } from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
+import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { uuidToBuffer } from '@repo/utils';
 import {
   type JwtPayload,
@@ -56,26 +57,22 @@ export class CredentialsController {
         user: jwtPayload,
       });
 
-      const COSEPublicKey = COSEKey.fromJwk(jwk);
+      const webAuthnCredentialKeyVaultKeyMeta =
+        await this.prisma.webAuthnCredentialKeyVaultKeyMeta.create({
+          data: {
+            keyVaultKeyId: keyVaultKey.id,
+            keyVaultKeyName: keyVaultKey.name,
+          },
+        });
 
-      const webAuthnCredential = await this.prisma.webAuthnCredential.create({
-        data: {
-          aaguid: VirtualAuthenticator.AAGUID.toString('base64url'),
-          COSEPublicKey: COSEPublicKey.toBuffer(),
-          keyVaultKeyId: keyVaultKey.id!,
-          keyVaultKeyName: keyVaultKey.name,
-          rpId: publicKeyCredentialCreationOptions.rp.id,
-          userId: jwtPayload.id,
-          userHandle: null,
-        },
-      });
+      const COSEPublicKey = COSEKey.fromJwk(jwk);
 
       const publicKeyCredential =
         await this.virtualAuthenticator.createCredential({
           publicKeyCredentialCreationOptions,
           COSEPublicKey,
           meta: {
-            credentialID: uuidToBuffer(webAuthnCredential.id),
+            webAuthnCredentialKeyVaultKeyMeta,
           },
         });
 
@@ -92,37 +89,35 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async getCredential(@User() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
-      const webAuthnCredential =
-        await this.webAuthnCredentialRepository.findFirstMatchingCredentialAndIncrementCounterAtomically(
-          {
-            publicKeyCredentialRequestOptions: query,
-            user: jwtPayload,
-          },
-        );
-
-      const {
-        jwk,
-        meta: { keyVaultKey },
-      } = await this.keyVault.getKey({
-        keyName: webAuthnCredential.keyVaultKeyName,
-      });
-
-      const COSEPublicKey = COSEKey.fromJwk(jwk);
-
-      const credentialSigner =
-        this.credentialSignerFactory.createCredentialSigner({
-          algorithm: KeyAlgorithm.ES256,
-          keyVaultKey,
-        });
-
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
           publicKeyCredentialRequestOptions: query,
-          COSEPublicKey,
-          credentialSigner,
+          credentialSignerFactory: async (webAuthnCredential) => {
+            if (
+              webAuthnCredential.webAuthnCredentialKeyMetaType !==
+              WebAuthnCredentialKeyMetaType.KEY_VAULT
+            ) {
+              throw new Error('Unexpected WebAuthnCredentialKeyMetaType.');
+            }
+
+            const {
+              meta: { keyVaultKey },
+            } = await this.keyVault.getKey({
+              keyName:
+                webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
+                  .keyVaultKeyName,
+            });
+
+            const credentialSigner =
+              this.credentialSignerFactory.createCredentialSigner({
+                algorithm: KeyAlgorithm.ES256,
+                keyVaultKey,
+              });
+
+            return credentialSigner;
+          },
           meta: {
-            counter: webAuthnCredential.counter,
-            credentialID: uuidToBuffer(webAuthnCredential.id),
+            user: jwtPayload,
           },
         },
       );

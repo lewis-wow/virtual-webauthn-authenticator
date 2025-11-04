@@ -9,12 +9,14 @@ export const USER_ID_RAW = uuidToBuffer(USER_ID);
 export const USER_EMAIL = 'john.doe@example.com';
 export const USER_NAME = 'John Doe';
 export const USER_DISPLAY_NAME = USER_NAME;
-
-export const RP_ID = 'example.com';
-export const RP_NAME = 'example.com';
-
 export const MOCK_JWT_PAYLOAD = {
   id: USER_ID,
   name: USER_NAME,
   email: USER_EMAIL,
 } satisfies JwtPayload;
+
+export const RP_ID = 'example.com';
+export const RP_NAME = 'example.com';
+
+export const KEY_VAULT_KEY_NAME = 'KEY_VAULT_KEY_NAME';
+export const KEY_VAULT_KEY_ID = 'KEY_VAULT_KEY_ID';

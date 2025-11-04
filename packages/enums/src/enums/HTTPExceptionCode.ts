@@ -6,6 +6,9 @@ export const HTTPExceptionCode = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   FORBIDDEN: 'FORBIDDEN',
   BAD_REQUEST: 'BAD_REQUEST',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+
+  CREDENTIAL_NOT_FOUND: 'CREDENTIAL_NOT_FOUND',
 } as const;
 
 export type HTTPExceptionCode = ValueOfEnum<typeof HTTPExceptionCode>;

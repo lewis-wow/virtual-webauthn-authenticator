@@ -21,6 +21,7 @@
   "dependencies": {
     "@repo/enums": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "@repo/validation": "workspace:*"
   }
 }

@@ -141,16 +141,16 @@ model Permission {
 }
 
 model WebAuthnCredential {
-  id              String   @id @default(uuid())
-  name            String?
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId          String
-  keyVaultKeyId   String   @unique
-  keyVaultKeyName String
-  COSEPublicKey   Bytes
-  counter         Int      @default(0)
-  aaguid          String
-  transports      String[]
+  id                                  String                             @id @default(uuid())
+  name                                String?
+  user                                User                               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                              String
+  COSEPublicKey                       Bytes
+  webAuthnCredentialKeyMetaType       WebAuthnCredentialKeyMetaType      @default(KEY_VAULT)
+  webAuthnCredentialKeyVaultKeyMeta   WebAuthnCredentialKeyVaultKeyMeta? @relation(fields: [webAuthnCredentialKeyVaultKeyMetaId], references: [id])
+  webAuthnCredentialKeyVaultKeyMetaId String?                            @unique
+  counter                             Int                                @default(0)
+  transports                          String[]
 
   // The Relying Party ID (e.g., "your-website.com") this credential is scoped to.
   // This is essential for finding all credentials for a specific site.
@@ -160,13 +160,22 @@ model WebAuthnCredential {
   // This is returned during a passwordless login to identify the user.
   userHandle Bytes?
 
-  hsm       Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
   @@index([userId])
   @@index([rpId]) // Add an index to rpId for fast lookups
   @@map("webAuthnCredential")
+}
+
+model WebAuthnCredentialKeyVaultKeyMeta {
+  id                 String              @id @default(uuid())
+  keyVaultKeyId      String?             @unique
+  keyVaultKeyName    String
+  hsm                Boolean             @default(false)
+  webAuthnCredential WebAuthnCredential?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("webAuthnCredentialKeyVaultKeyMeta")
 }
 
 enum ResourceType {
@@ -184,4 +193,8 @@ enum PermissionAction {
 enum ApiKeyType {
   INTERNAL_API_KEY
   EXTERNAL_API_KEY
+}
+
+enum WebAuthnCredentialKeyMetaType {
+  KEY_VAULT
 }

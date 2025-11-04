@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run integration --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
@@ -27,6 +27,7 @@
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/exception": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/validation": "workspace:*",
