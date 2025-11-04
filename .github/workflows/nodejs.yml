@@ -33,7 +33,7 @@ jobs:
       - name: Run database migrations
         env:
           ENVIRONMENT: test
-          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/prisma?schema=public'
         # Use the --filter flag to run the command in the correct package.
         run: pnpm --filter @repo/prisma db:migrate
 
@@ -57,7 +57,7 @@ jobs:
       - name: Run integration tests
         env:
           ENVIRONMENT: test
-          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/postgres?schema=public'
+          DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/prisma?schema=public'
         run: pnpm test:integration
 
       - name: Log in to GitHub Container Registry
