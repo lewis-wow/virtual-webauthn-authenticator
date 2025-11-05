@@ -1,6 +1,7 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { contract } from '@repo/contract';
 import { KeyVault } from '@repo/key-vault';
+import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredential, type JwtPayload } from '@repo/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
@@ -17,6 +18,7 @@ export class WebAuthnCredentialsController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly keyVault: KeyVault,
+    private readonly logger: Logger,
   ) {}
 
   @TsRestHandler(contract.api.webAuthnCredentials.list)
@@ -86,6 +88,11 @@ export class WebAuthnCredentialsController {
           include: {
             webAuthnCredentialKeyVaultKeyMeta: true,
           },
+        });
+
+        this.logger.debug('Removing WebAuthnCredential.', {
+          webAuthnCredential,
+          userId: jwtPayload.id,
         });
 
         if (

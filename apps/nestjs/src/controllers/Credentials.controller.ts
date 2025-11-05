@@ -3,6 +3,7 @@ import { contract } from '@repo/contract';
 import { KeyAlgorithm } from '@repo/enums';
 import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
+import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { uuidToBuffer } from '@repo/utils';
 import {
@@ -25,6 +26,7 @@ export class CredentialsController {
     private readonly keyVault: KeyVault,
     private readonly virtualAuthenticator: VirtualAuthenticator,
     private readonly credentialSignerFactory: CredentialSignerFactory,
+    private readonly logger: Logger,
   ) {}
 
   @TsRestHandler(contract.api.credentials.create)
@@ -52,6 +54,10 @@ export class CredentialsController {
       });
 
       const COSEPublicKey = COSEKey.fromJwk(jwk);
+
+      this.logger.debug('Creating credential', {
+        userId: jwtPayload.id,
+      });
 
       const publicKeyCredential =
         await this.virtualAuthenticator.createCredential({
@@ -81,6 +87,10 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async getCredential(@User() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
+      this.logger.debug('Getting credential', {
+        userId: jwtPayload.id,
+      });
+
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
           publicKeyCredentialRequestOptions: query,

@@ -43,7 +43,6 @@ export class JwtMiddleware implements NestMiddleware {
       req.user = null;
     }
 
-    // Equivalent to return next()
     next();
   }
 }
