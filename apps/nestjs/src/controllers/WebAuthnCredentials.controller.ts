@@ -1,16 +1,17 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { contract } from '@repo/contract';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
-import { type JwtPayload } from '@repo/validation';
+import { WebAuthnCredential, type JwtPayload } from '@repo/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { User } from '../decorators/User.decorator';
 import { HTTPExceptionFilter } from '../filters/HTTPException.filter';
+import { PrismaExceptionsFilter } from '../filters/PrismaExceptions.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
-@UseFilters(new HTTPExceptionFilter())
+@UseFilters(new HTTPExceptionFilter(), new PrismaExceptionsFilter())
 export class WebAuthnCredentialsController {
   constructor(private readonly prisma: PrismaService) {}
 
@@ -24,9 +25,6 @@ export class WebAuthnCredentialsController {
             userId: jwtPayload.id,
             webAuthnCredentialKeyMetaType:
               WebAuthnCredentialKeyMetaType.KEY_VAULT,
-            webAuthnCredentialKeyVaultKeyMeta: {
-              isNot: null,
-            },
           },
           include: {
             webAuthnCredentialKeyVaultKeyMeta: true,
@@ -37,13 +35,7 @@ export class WebAuthnCredentialsController {
       return {
         status: 200,
         body: contract.api.webAuthnCredentials.list.responses[200].encode(
-          webAuthnCredentials.map((webAuthnCredential) => ({
-            ...webAuthnCredential,
-            COSEPublicKey:
-              webAuthnCredential.COSEPublicKey as Uint8Array<ArrayBuffer>,
-            webAuthnCredentialKeyVaultKeyMeta:
-              webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!,
-          })),
+          webAuthnCredentials as WebAuthnCredential[],
         ),
       };
     });
@@ -68,13 +60,9 @@ export class WebAuthnCredentialsController {
 
         return {
           status: 200,
-          body: contract.api.webAuthnCredentials.get.responses[200].encode({
-            ...webAuthnCredential,
-            COSEPublicKey:
-              webAuthnCredential.COSEPublicKey as Uint8Array<ArrayBuffer>,
-            webAuthnCredentialKeyVaultKeyMeta:
-              webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!,
-          }),
+          body: contract.api.webAuthnCredentials.get.responses[200].encode(
+            webAuthnCredential as WebAuthnCredential,
+          ),
         };
       },
     );

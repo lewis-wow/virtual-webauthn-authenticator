@@ -2,11 +2,12 @@ import {
   WebAuthnCredentialKeyMetaType,
   type PrismaClient,
   Prisma,
-  type WebAuthnCredentialKeyVaultKeyMeta,
 } from '@repo/prisma';
 
 import {
   COSEPublicKey,
+  KEY_VAULT_KEY_ID,
+  KEY_VAULT_KEY_NAME,
   RP_ID,
   USER_ID,
   WEBAUTHN_CREDENTIAL_ID,
@@ -18,44 +19,6 @@ export const upsertTestingWebAuthnCredential = async (opts: {
 }) => {
   const { prisma } = opts;
 
-  // Declare the variable outside the try block
-  let webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMeta;
-
-  // --- Fix for the first upsert ---
-  try {
-    webAuthnCredentialKeyVaultKeyMeta =
-      await prisma.webAuthnCredentialKeyVaultKeyMeta.upsert({
-        where: {
-          id: WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
-        },
-        update: {},
-        create: {
-          id: WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
-          keyVaultKeyName: '',
-        },
-      });
-  } catch (e) {
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === 'P2002'
-    ) {
-      // Race condition: another process created this. Fetch it.
-      console.warn(
-        `Prisma upsert race condition handled for webAuthnCredentialKeyVaultKeyMeta: ${WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID}`,
-      );
-      webAuthnCredentialKeyVaultKeyMeta =
-        await prisma.webAuthnCredentialKeyVaultKeyMeta.findUniqueOrThrow({
-          where: {
-            id: WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
-          },
-        });
-    } else {
-      // Re-throw any other error
-      throw e;
-    }
-  }
-
-  // --- Fix for the second upsert ---
   try {
     return await prisma.webAuthnCredential.upsert({
       where: {
@@ -68,9 +31,17 @@ export const upsertTestingWebAuthnCredential = async (opts: {
         rpId: RP_ID,
         COSEPublicKey: COSEPublicKey.toBuffer(),
         webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-        // This ID is now safely populated from the code block above
-        webAuthnCredentialKeyVaultKeyMetaId:
-          webAuthnCredentialKeyVaultKeyMeta.id,
+        webAuthnCredentialKeyVaultKeyMeta: {
+          create: {
+            id: WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
+            keyVaultKeyName: KEY_VAULT_KEY_NAME,
+            keyVaultKeyId: KEY_VAULT_KEY_ID,
+            createdAt: new Date(0),
+            updatedAt: new Date(0),
+          },
+        },
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
       },
       include: {
         webAuthnCredentialKeyVaultKeyMeta: true,

@@ -10,7 +10,13 @@ export const upsertTestingUser = async (opts: { prisma: PrismaClient }) => {
     const user = await prisma.user.upsert({
       where: { id: USER_ID },
       update: {},
-      create: { id: USER_ID, name: USER_NAME, email: USER_EMAIL },
+      create: {
+        id: USER_ID,
+        name: USER_NAME,
+        email: USER_EMAIL,
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
+      },
     });
     return user;
   } catch (e) {

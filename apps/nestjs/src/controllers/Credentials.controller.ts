@@ -15,15 +15,14 @@ import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { User } from '../decorators/User.decorator';
 import { HTTPExceptionFilter } from '../filters/HTTPException.filter';
+import { PrismaExceptionsFilter } from '../filters/PrismaExceptions.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
-import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
-@UseFilters(new HTTPExceptionFilter())
+@UseFilters(new HTTPExceptionFilter(), new PrismaExceptionsFilter())
 export class CredentialsController {
   constructor(
     private readonly keyVault: KeyVault,
-    private readonly prisma: PrismaService,
     private readonly virtualAuthenticator: VirtualAuthenticator,
     private readonly credentialSignerFactory: CredentialSignerFactory,
   ) {}
@@ -52,14 +51,6 @@ export class CredentialsController {
         user: jwtPayload,
       });
 
-      const webAuthnCredentialKeyVaultKeyMeta =
-        await this.prisma.webAuthnCredentialKeyVaultKeyMeta.create({
-          data: {
-            keyVaultKeyId: keyVaultKey.id,
-            keyVaultKeyName: keyVaultKey.name,
-          },
-        });
-
       const COSEPublicKey = COSEKey.fromJwk(jwk);
 
       const publicKeyCredential =
@@ -67,7 +58,13 @@ export class CredentialsController {
           publicKeyCredentialCreationOptions,
           COSEPublicKey,
           meta: {
-            webAuthnCredentialKeyVaultKeyMeta,
+            webAuthnCredentialKeyMetaType:
+              WebAuthnCredentialKeyMetaType.KEY_VAULT,
+            webAuthnCredentialKeyVaultKeyMeta: {
+              keyVaultKeyId: keyVaultKey.id,
+              keyVaultKeyName: keyVaultKey.name,
+              hsm: false,
+            },
           },
         });
 

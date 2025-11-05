@@ -118,12 +118,12 @@ export class KeyVault {
 
     const base64urlRp = Buffer.from(
       publicKeyCredentialCreationOptions.rp.id,
-    ).toString('base64url');
+    ).toString('hex');
 
     const base64urlUser =
-      publicKeyCredentialCreationOptions.user.id.toString('base64url');
+      publicKeyCredentialCreationOptions.user.id.toString('hex');
 
-    return `${base64urlRp}-${base64urlUser}`;
+    return `rp-${base64urlRp}-user-${base64urlUser}`;
   }
 
   async createKey(opts: {
@@ -153,7 +153,7 @@ export class KeyVault {
         keyName,
         COSEKeyAlgorithmMapper.toKeyType(pubKeyCredParam.alg),
         {
-          keyOps: [KeyOperation.SIGN, KeyOperation.VERIFY],
+          keyOps: [KeyOperation.SIGN],
           curve: COSEKeyAlgorithmMapper.toCurve(pubKeyCredParam.alg),
         },
       )

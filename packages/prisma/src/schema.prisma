@@ -141,16 +141,16 @@ model Permission {
 }
 
 model WebAuthnCredential {
-  id                                  String                             @id @default(uuid())
-  name                                String?
-  user                                User                               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                              String
-  COSEPublicKey                       Bytes
-  webAuthnCredentialKeyMetaType       WebAuthnCredentialKeyMetaType      @default(KEY_VAULT)
-  webAuthnCredentialKeyVaultKeyMeta   WebAuthnCredentialKeyVaultKeyMeta? @relation(fields: [webAuthnCredentialKeyVaultKeyMetaId], references: [id])
-  webAuthnCredentialKeyVaultKeyMetaId String?                            @unique
-  counter                             Int                                @default(0)
-  transports                          String[]
+  id            String   @id @default(uuid())
+  name          String?
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  COSEPublicKey Bytes
+  counter       Int      @default(0)
+  transports    String[]
+
+  webAuthnCredentialKeyMetaType     WebAuthnCredentialKeyMetaType      @default(KEY_VAULT)
+  webAuthnCredentialKeyVaultKeyMeta WebAuthnCredentialKeyVaultKeyMeta?
 
   // The Relying Party ID (e.g., "your-website.com") this credential is scoped to.
   // This is essential for finding all credentials for a specific site.
@@ -160,17 +160,22 @@ model WebAuthnCredential {
   // This is returned during a passwordless login to identify the user.
   userHandle Bytes?
 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([userId])
   @@index([rpId]) // Add an index to rpId for fast lookups
   @@map("webAuthnCredential")
 }
 
 model WebAuthnCredentialKeyVaultKeyMeta {
-  id                 String              @id @default(uuid())
-  keyVaultKeyId      String?             @unique
-  keyVaultKeyName    String
-  hsm                Boolean             @default(false)
-  webAuthnCredential WebAuthnCredential?
+  id              String  @id @default(uuid())
+  keyVaultKeyId   String? @unique
+  keyVaultKeyName String
+  hsm             Boolean @default(false)
+
+  webAuthnCredential   WebAuthnCredential @relation(fields: [webAuthnCredentialId], references: [id], onDelete: Cascade)
+  webAuthnCredentialId String             @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -20,6 +20,7 @@
     "@repo/auth": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/enums": "workspace:*",
+    "@repo/mappers": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
