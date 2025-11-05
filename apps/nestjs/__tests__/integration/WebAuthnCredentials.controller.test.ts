@@ -17,7 +17,6 @@ import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
 
 describe('WebAuthnCredentialsController', () => {
   let app: INestApplication;
-  let item: any;
 
   beforeAll(async () => {
     const appRef = await Test.createTestingModule({
@@ -37,7 +36,7 @@ describe('WebAuthnCredentialsController', () => {
 
     const prisma = app.get(PrismaService);
     await upsertTestingUser({ prisma });
-    item = await upsertTestingWebAuthnCredential({ prisma });
+    await upsertTestingWebAuthnCredential({ prisma });
 
     await app.init();
   });
