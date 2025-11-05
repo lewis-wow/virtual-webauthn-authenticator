@@ -10,6 +10,7 @@ import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
 import { AuthenticatedGuard } from '../../src/guards/Authenticated.guard';
+import { RequestIdMiddleware } from '../../src/middlewares/requestId.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
 import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
 import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
@@ -31,6 +32,7 @@ describe('WebAuthnCredentialsController', () => {
     const appModule = app.get(AppModule);
     appModule.configure = (consumer) => {
       consumer.apply(MockJwtMiddleware).forRoutes('/api');
+      consumer.apply(RequestIdMiddleware).forRoutes('/');
     };
 
     const prisma = app.get(PrismaService);
