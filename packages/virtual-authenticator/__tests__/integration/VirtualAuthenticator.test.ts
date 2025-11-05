@@ -1,3 +1,4 @@
+import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import {
   CHALLENGE_BASE64URL,
@@ -74,16 +75,6 @@ describe('VirtualAuthenticator', () => {
     // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
 
-    // Create the metadata record for the "key vault" key. This simulates
-    // the key used to encrypt or manage the new credential's private key.
-    const webAuthnCredentialKeyVaultKeyMeta =
-      await prisma.webAuthnCredentialKeyVaultKeyMeta.create({
-        data: {
-          keyVaultKeyName: KEY_VAULT_KEY_NAME,
-          keyVaultKeyId: KEY_VAULT_KEY_ID,
-        },
-      });
-
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
     // specified options, public key, and key vault metadata.
@@ -91,7 +82,12 @@ describe('VirtualAuthenticator', () => {
       publicKeyCredentialCreationOptions,
       COSEPublicKey,
       meta: {
-        webAuthnCredentialKeyVaultKeyMeta,
+        webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
+        webAuthnCredentialKeyVaultKeyMeta: {
+          keyVaultKeyId: KEY_VAULT_KEY_ID,
+          keyVaultKeyName: KEY_VAULT_KEY_NAME,
+          hsm: false,
+        },
       },
     });
 

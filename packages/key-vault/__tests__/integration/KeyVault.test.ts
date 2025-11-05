@@ -78,7 +78,7 @@ describe('KeyVault', () => {
 
     test('createKey', async () => {
       expect(keyVaultKey.name).toBe(
-        `${Buffer.from(RP_ID).toString('base64url')}-${uuidToBuffer(USER_ID).toString('base64url')}`,
+        `rp-${Buffer.from(RP_ID).toString('hex')}-user-${uuidToBuffer(USER_ID).toString('hex')}`,
       );
       expect(jwk?.crv).toBe(KeyCurveName.P256);
       expect(jwk?.kty).toBe(KeyType.EC);

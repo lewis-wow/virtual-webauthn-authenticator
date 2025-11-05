@@ -1,7 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { MOCK_JWT_PAYLOAD } from '@repo/test-helpers';
 import { Observable } from 'rxjs';
-
-import { MOCK_JWT_PAYLOAD } from './consts';
 
 @Injectable()
 export class MockAuthenticatedGuard implements CanActivate {

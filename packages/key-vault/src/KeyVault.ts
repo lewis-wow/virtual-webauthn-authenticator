@@ -118,12 +118,12 @@ export class KeyVault {
 
     const base64urlRp = Buffer.from(
       publicKeyCredentialCreationOptions.rp.id,
-    ).toString('base64url');
+    ).toString('hex');
 
     const base64urlUser =
-      publicKeyCredentialCreationOptions.user.id.toString('base64url');
+      publicKeyCredentialCreationOptions.user.id.toString('hex');
 
-    return `${base64urlRp}-${base64urlUser}`;
+    return `rp-${base64urlRp}-user-${base64urlUser}`;
   }
 
   async createKey(opts: {
@@ -153,7 +153,7 @@ export class KeyVault {
         keyName,
         COSEKeyAlgorithmMapper.toKeyType(pubKeyCredParam.alg),
         {
-          keyOps: [KeyOperation.SIGN, KeyOperation.VERIFY],
+          keyOps: [KeyOperation.SIGN],
           curve: COSEKeyAlgorithmMapper.toCurve(pubKeyCredParam.alg),
         },
       )
@@ -185,7 +185,13 @@ export class KeyVault {
   async deleteKey(opts: { keyName: string }): Promise<void> {
     const { keyName } = opts;
 
-    const poller = await this.keyClient.beginDeleteKey(keyName);
+    const poller = await this.keyClient
+      .beginDeleteKey(keyName)
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
+
     void poller.pollUntilDone();
   }
 

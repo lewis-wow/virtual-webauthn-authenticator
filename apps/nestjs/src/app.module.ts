@@ -2,7 +2,9 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
+import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
+import { RequestIdMiddleware } from './middlewares/requestId.middleware';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
 import { CredentialSignerFactoryProvider } from './services/CredentialSignerFactoryProvider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
@@ -17,7 +19,11 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
 
 @Module({
   imports: [],
-  controllers: [HealthcheckController, CredentialsController],
+  controllers: [
+    HealthcheckController,
+    CredentialsController,
+    WebAuthnCredentialsController,
+  ],
   providers: [
     PrismaService,
     AzureCredentialProvider,
@@ -48,5 +54,6 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtMiddleware).forRoutes('/api');
+    consumer.apply(RequestIdMiddleware).forRoutes('/');
   }
 }

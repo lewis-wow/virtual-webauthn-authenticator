@@ -14,6 +14,7 @@ export default defineConfig({
   test: {
     name: pkg.name,
     env,
+    fileParallelism: false,
   },
   plugins: [swc.vite()],
 });

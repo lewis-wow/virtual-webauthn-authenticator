@@ -8,6 +8,7 @@ import { CredentialNotFound } from '@repo/exception';
 import { COSEKey } from '@repo/keys';
 import {
   Prisma,
+  WebAuthnCredentialKeyMetaType,
   type PrismaClient,
   type User,
   type WebAuthnCredential,
@@ -275,10 +276,12 @@ export class VirtualAuthenticator {
     publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
     COSEPublicKey: COSEKey;
     meta: {
-      webAuthnCredentialKeyVaultKeyMeta: Pick<
-        WebAuthnCredentialKeyVaultKeyMeta,
-        'id'
-      >;
+      webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType;
+      webAuthnCredentialKeyVaultKeyMeta: {
+        keyVaultKeyId: string | null | undefined;
+        keyVaultKeyName: string;
+        hsm: boolean | undefined;
+      };
     };
   }): Promise<PublicKeyCredential> {
     const { publicKeyCredentialCreationOptions, COSEPublicKey, meta } = opts;
@@ -312,8 +315,12 @@ export class VirtualAuthenticator {
 
     const newCredential = await this.prisma.webAuthnCredential.create({
       data: {
-        webAuthnCredentialKeyVaultKeyMetaId:
-          meta.webAuthnCredentialKeyVaultKeyMeta.id,
+        webAuthnCredentialKeyMetaType: meta.webAuthnCredentialKeyMetaType,
+        webAuthnCredentialKeyVaultKeyMeta: {
+          create: {
+            ...meta.webAuthnCredentialKeyVaultKeyMeta,
+          },
+        },
         COSEPublicKey: COSEPublicKey.toBuffer(),
         counter: 0,
         rpId: publicKeyCredentialCreationOptions.rp.id,

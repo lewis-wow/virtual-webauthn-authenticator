@@ -22,6 +22,7 @@
     "@repo/enums": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/keys": "workspace:*",
     "@repo/validation": "workspace:*"
   }
 }

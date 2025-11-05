@@ -1,12 +1,9 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { contract } from '@repo/contract';
 import { KeyAlgorithm } from '@repo/enums';
-import {
-  CredentialSignerFactory,
-  KeyVault,
-  WebAuthnCredentialRepository,
-} from '@repo/key-vault';
+import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
+import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { uuidToBuffer } from '@repo/utils';
 import {
@@ -19,18 +16,17 @@ import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { User } from '../decorators/User.decorator';
 import { HTTPExceptionFilter } from '../filters/HTTPException.filter';
+import { PrismaExceptionsFilter } from '../filters/PrismaExceptions.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
-import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
-@UseFilters(new HTTPExceptionFilter())
+@UseFilters(new HTTPExceptionFilter(), new PrismaExceptionsFilter())
 export class CredentialsController {
   constructor(
     private readonly keyVault: KeyVault,
-    private readonly prisma: PrismaService,
     private readonly virtualAuthenticator: VirtualAuthenticator,
-    private readonly webAuthnCredentialRepository: WebAuthnCredentialRepository,
     private readonly credentialSignerFactory: CredentialSignerFactory,
+    private readonly logger: Logger,
   ) {}
 
   @TsRestHandler(contract.api.credentials.create)
@@ -57,22 +53,24 @@ export class CredentialsController {
         user: jwtPayload,
       });
 
-      const webAuthnCredentialKeyVaultKeyMeta =
-        await this.prisma.webAuthnCredentialKeyVaultKeyMeta.create({
-          data: {
-            keyVaultKeyId: keyVaultKey.id,
-            keyVaultKeyName: keyVaultKey.name,
-          },
-        });
-
       const COSEPublicKey = COSEKey.fromJwk(jwk);
+
+      this.logger.debug('Creating credential', {
+        userId: jwtPayload.id,
+      });
 
       const publicKeyCredential =
         await this.virtualAuthenticator.createCredential({
           publicKeyCredentialCreationOptions,
           COSEPublicKey,
           meta: {
-            webAuthnCredentialKeyVaultKeyMeta,
+            webAuthnCredentialKeyMetaType:
+              WebAuthnCredentialKeyMetaType.KEY_VAULT,
+            webAuthnCredentialKeyVaultKeyMeta: {
+              keyVaultKeyId: keyVaultKey.id,
+              keyVaultKeyName: keyVaultKey.name,
+              hsm: false,
+            },
           },
         });
 
@@ -89,6 +87,10 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async getCredential(@User() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
+      this.logger.debug('Getting credential', {
+        userId: jwtPayload.id,
+      });
+
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
           publicKeyCredentialRequestOptions: query,
