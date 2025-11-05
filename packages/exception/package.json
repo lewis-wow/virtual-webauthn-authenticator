@@ -15,8 +15,8 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/validation": "workspace:*",
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",

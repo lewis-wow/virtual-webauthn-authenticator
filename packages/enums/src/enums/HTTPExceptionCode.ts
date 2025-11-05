@@ -1,12 +1,10 @@
 import z from 'zod';
 
 import type { ValueOfEnum } from '../types';
+import { HTTPStatusCode } from './HTTPStatusCode';
 
 export const HTTPExceptionCode = {
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  FORBIDDEN: 'FORBIDDEN',
-  BAD_REQUEST: 'BAD_REQUEST',
-  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  ...HTTPStatusCode,
 
   CREDENTIAL_NOT_FOUND: 'CREDENTIAL_NOT_FOUND',
 
