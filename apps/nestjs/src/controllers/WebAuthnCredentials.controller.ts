@@ -1,5 +1,6 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { contract } from '@repo/contract';
+import { KeyVault } from '@repo/key-vault';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredential, type JwtPayload } from '@repo/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
@@ -13,7 +14,10 @@ import { PrismaService } from '../services/Prisma.service';
 @Controller()
 @UseFilters(new HTTPExceptionFilter(), new PrismaExceptionsFilter())
 export class WebAuthnCredentialsController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly keyVault: KeyVault,
+  ) {}
 
   @TsRestHandler(contract.api.webAuthnCredentials.list)
   @UseGuards(AuthenticatedGuard)
@@ -74,12 +78,26 @@ export class WebAuthnCredentialsController {
     return tsRestHandler(
       contract.api.webAuthnCredentials.delete,
       async ({ params }) => {
-        await this.prisma.webAuthnCredential.delete({
+        const webAuthnCredential = await this.prisma.webAuthnCredential.delete({
           where: {
             id: params.id,
             userId: jwtPayload.id,
           },
+          include: {
+            webAuthnCredentialKeyVaultKeyMeta: true,
+          },
         });
+
+        if (
+          webAuthnCredential.webAuthnCredentialKeyMetaType ===
+          WebAuthnCredentialKeyMetaType.KEY_VAULT
+        ) {
+          await this.keyVault.deleteKey({
+            keyName:
+              webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
+                .keyVaultKeyName,
+          });
+        }
 
         return {
           status: 200,
