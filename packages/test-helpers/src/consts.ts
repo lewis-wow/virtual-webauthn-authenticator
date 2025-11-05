@@ -24,7 +24,7 @@ export const RP_NAME = 'example.com';
 
 export const KEY_VAULT_KEY_NAME =
   Buffer.from('KEY_VAULT_KEY_NAME').toString('hex');
-export const KEY_VAULT_KEY_ID = 'KEY_VAULT_KEY_ID';
+export const KEY_VAULT_KEY_ID = Buffer.from('KEY_VAULT_KEY_ID').toString('hex');
 
 export const WEBAUTHN_CREDENTIAL_ID = '0cc9f49f-2967-404e-b45c-3dc7110681c5';
 export const WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID =
