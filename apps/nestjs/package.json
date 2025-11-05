@@ -42,6 +42,7 @@
     "@repo/typescript-config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
+    "@repo/test-helpers": "workspace:*",
     "@simplewebauthn/server": "^13.2.2",
     "@swc/core": "^1.13.5",
     "@types/express": "^5.0.0",

@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { COSEKey } from '@repo/keys';
+import { upsertTestingUser } from '@repo/test-helpers';
 import {
   AuthenticationResponseJSON,
   VerifiedRegistrationResponse,
@@ -17,7 +18,6 @@ import { PrismaService } from '../../src/services/Prisma.service';
 import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
 import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
 import { CHALLENGE_BASE64URL, RP_ID } from '../helpers/consts';
-import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
 describe('CredentialsController', () => {
   let app: INestApplication;
@@ -77,7 +77,7 @@ describe('CredentialsController', () => {
     await app.close();
   });
 
-  test('POST /api/credentials as user', async () => {
+  test('POST /api/credentials as authenticated user', async () => {
     expect(registrationVerification.registrationInfo?.credential.counter).toBe(
       0,
     );
@@ -135,7 +135,7 @@ describe('CredentialsController', () => {
     );
   });
 
-  test('GET /api/credentials as user', async () => {
+  test('GET /api/credentials as authenticated user', async () => {
     const {
       id: credentialID,
       publicKey: credentialPublicKey,

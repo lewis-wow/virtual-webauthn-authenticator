@@ -3,6 +3,7 @@ import { initContract } from '@ts-rest/core';
 
 import { credentialsRouter } from './credentials';
 import { healthcheckRouter } from './healthcheck';
+import { webAuthnCredentialsRouter } from './webAuthnCredentials';
 
 const c = initContract();
 
@@ -10,6 +11,7 @@ export const apiRouter = c.router(
   {
     healthcheck: healthcheckRouter,
     credentials: credentialsRouter,
+    webAuthnCredentials: webAuthnCredentialsRouter,
   },
   {
     pathPrefix: '/api',

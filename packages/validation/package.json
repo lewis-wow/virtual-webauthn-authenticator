@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "typebox": "^1.0.34",
     "zod": "^4.1.12"
   }

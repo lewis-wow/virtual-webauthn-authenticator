@@ -407,6 +407,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@repo/test-helpers':
+        specifier: workspace:*
+        version: link:../../packages/test-helpers
       '@repo/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -1039,6 +1042,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
@@ -1133,6 +1139,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../prisma
       typebox:
         specifier: ^1.0.34
         version: 1.0.34

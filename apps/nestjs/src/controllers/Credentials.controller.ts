@@ -1,11 +1,7 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { contract } from '@repo/contract';
 import { KeyAlgorithm } from '@repo/enums';
-import {
-  CredentialSignerFactory,
-  KeyVault,
-  WebAuthnCredentialRepository,
-} from '@repo/key-vault';
+import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { uuidToBuffer } from '@repo/utils';
@@ -29,7 +25,6 @@ export class CredentialsController {
     private readonly keyVault: KeyVault,
     private readonly prisma: PrismaService,
     private readonly virtualAuthenticator: VirtualAuthenticator,
-    private readonly webAuthnCredentialRepository: WebAuthnCredentialRepository,
     private readonly credentialSignerFactory: CredentialSignerFactory,
   ) {}
 
