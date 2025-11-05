@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { KeyVault } from '@repo/key-vault';
 import {
   upsertTestingUser,
   upsertTestingWebAuthnCredential,
@@ -14,6 +15,7 @@ import { RequestIdMiddleware } from '../../src/middlewares/requestId.middleware'
 import { PrismaService } from '../../src/services/Prisma.service';
 import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
 import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
+import { MockKeyVault } from '../helpers/MockKeyVault';
 
 describe('WebAuthnCredentialsController', () => {
   let app: INestApplication;
@@ -24,6 +26,8 @@ describe('WebAuthnCredentialsController', () => {
     })
       .overrideGuard(AuthenticatedGuard)
       .useClass(MockAuthenticatedGuard)
+      .overrideProvider(KeyVault)
+      .useClass(MockKeyVault)
       .compile();
 
     app = appRef.createNestApplication();
