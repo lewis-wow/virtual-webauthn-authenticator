@@ -22,7 +22,8 @@ export const MOCK_JWT_PAYLOAD = {
 export const RP_ID = 'example.com';
 export const RP_NAME = 'example.com';
 
-export const KEY_VAULT_KEY_NAME = 'KEY_VAULT_KEY_NAME';
+export const KEY_VAULT_KEY_NAME =
+  Buffer.from('KEY_VAULT_KEY_NAME').toString('hex');
 export const KEY_VAULT_KEY_ID = 'KEY_VAULT_KEY_ID';
 
 export const WEBAUTHN_CREDENTIAL_ID = '0cc9f49f-2967-404e-b45c-3dc7110681c5';

@@ -185,7 +185,13 @@ export class KeyVault {
   async deleteKey(opts: { keyName: string }): Promise<void> {
     const { keyName } = opts;
 
-    const poller = await this.keyClient.beginDeleteKey(keyName);
+    const poller = await this.keyClient
+      .beginDeleteKey(keyName)
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
+
     void poller.pollUntilDone();
   }
 

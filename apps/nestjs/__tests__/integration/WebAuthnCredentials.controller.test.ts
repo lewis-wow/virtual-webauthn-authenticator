@@ -73,7 +73,7 @@ describe('WebAuthnCredentialsController', () => {
             "hsm": false,
             "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
             "keyVaultKeyId": "KEY_VAULT_KEY_ID",
-            "keyVaultKeyName": "KEY_VAULT_KEY_NAME",
+            "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
             "updatedAt": "1970-01-01T00:00:00.000Z",
           },
         },
@@ -104,7 +104,7 @@ describe('WebAuthnCredentialsController', () => {
           "hsm": false,
           "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
           "keyVaultKeyId": "KEY_VAULT_KEY_ID",
-          "keyVaultKeyName": "KEY_VAULT_KEY_NAME",
+          "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
           "updatedAt": "1970-01-01T00:00:00.000Z",
         },
       }
