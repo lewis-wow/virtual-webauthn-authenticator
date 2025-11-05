@@ -1,4 +1,4 @@
-import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
+import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
 import z from 'zod';
 
 import { WebAuthnCredentialBaseSchema } from './WebAuthnCredentialBaseSchema';

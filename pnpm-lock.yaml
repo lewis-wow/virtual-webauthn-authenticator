@@ -1148,9 +1148,6 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
-      '@repo/prisma':
-        specifier: workspace:*
-        version: link:../prisma
       typebox:
         specifier: ^1.0.34
         version: 1.0.34
