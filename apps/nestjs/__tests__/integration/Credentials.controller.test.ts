@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { JwtAudience, JwtIssuer } from '@repo/auth';
 import { COSEKey } from '@repo/keys';
 import {
   CHALLENGE_BASE64URL,
+  MOCK_JWT_PAYLOAD,
   RP_ID,
   upsertTestingUser,
 } from '@repo/test-helpers';
@@ -17,41 +19,53 @@ import request, { type Response } from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
-import { AuthenticatedGuard } from '../../src/guards/Authenticated.guard';
-import { RequestIdMiddleware } from '../../src/middlewares/requestId.middleware';
+import { env } from '../../src/env';
+import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
-import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
-import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
+import { MockJwtAudience } from '../helpers/MockJwtAudience';
+import { prisma } from '../helpers/prisma';
 
 describe('CredentialsController', () => {
   let app: INestApplication;
   let createCredentialResponse: Response;
   let registrationVerification: VerifiedRegistrationResponse;
+  let token: string;
 
   beforeAll(async () => {
+    const jwtIssuer = new JwtIssuer({
+      prisma,
+      encryptionKey: env.ENCRYPTION_KEY,
+      config: {
+        aud: 'http://localhost:3002',
+        iss: 'http://localhost:3002',
+      },
+    });
+
+    token = await jwtIssuer.sign(MOCK_JWT_PAYLOAD);
+
     const appRef = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideGuard(AuthenticatedGuard)
-      .useClass(MockAuthenticatedGuard)
+      .overrideProvider(JwtAudience)
+      .useValue(new MockJwtAudience(await jwtIssuer.getKeys()))
+      .overrideProvider(PrismaService)
+      .useValue(prisma)
       .compile();
 
     app = appRef.createNestApplication();
 
     const appModule = app.get(AppModule);
     appModule.configure = (consumer) => {
-      consumer.apply(MockJwtMiddleware).forRoutes('/api');
-      consumer.apply(RequestIdMiddleware).forRoutes('/');
+      consumer.apply(JwtMiddleware).forRoutes('/api');
     };
 
-    const prisma = app.get(PrismaService);
     await upsertTestingUser({ prisma });
 
     await app.init();
 
     createCredentialResponse = await request(app.getHttpServer())
       .post('/api/credentials')
-      .set('Authorization', `Bearer MOCK_TOKEN`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         challenge: CHALLENGE_BASE64URL,
         rp: {
@@ -74,7 +88,6 @@ describe('CredentialsController', () => {
   });
 
   afterAll(async () => {
-    const prisma = app.get(PrismaService);
     await prisma.user.deleteMany();
     await prisma.webAuthnCredential.deleteMany();
     await prisma.jwks.deleteMany();
@@ -148,7 +161,7 @@ describe('CredentialsController', () => {
 
     const response = await request(app.getHttpServer())
       .get('/api/credentials')
-      .set('Authorization', `Bearer MOCK_TOKEN`)
+      .set('Authorization', `Bearer ${token}`)
       .query({
         challenge: CHALLENGE_BASE64URL,
         rpId: RP_ID,

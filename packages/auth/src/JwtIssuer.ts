@@ -6,6 +6,7 @@ import {
   generateKeyPair,
   importJWK,
   SignJWT,
+  type JSONWebKeySet,
   type JWK,
   type JWTPayload,
 } from 'jose';
@@ -91,7 +92,7 @@ export class JwtIssuer {
     return key[0];
   }
 
-  async getKeys() {
+  async getKeys(): Promise<JSONWebKeySet> {
     const keySets = await this.prisma.jwks.findMany();
 
     if (keySets.length === 0) {

@@ -37,3 +37,5 @@ export const JsonWebPublicKey = new JsonWebKey({
   y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
 });
 export const COSEPublicKey = COSEKey.fromJwk(JsonWebPublicKey);
+
+export const WRONG_UUID = '00000000-0000-0000-0000-000000000000';

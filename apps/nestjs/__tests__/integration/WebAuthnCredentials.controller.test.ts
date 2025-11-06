@@ -1,31 +1,48 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { JwtAudience, JwtIssuer } from '@repo/auth';
 import { KeyVault } from '@repo/key-vault';
 import {
+  MOCK_JWT_PAYLOAD,
   upsertTestingUser,
   upsertTestingWebAuthnCredential,
   WEBAUTHN_CREDENTIAL_ID,
+  WRONG_UUID,
 } from '@repo/test-helpers';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
-import { AuthenticatedGuard } from '../../src/guards/Authenticated.guard';
-import { RequestIdMiddleware } from '../../src/middlewares/requestId.middleware';
+import { env } from '../../src/env';
+import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
-import { MockAuthenticatedGuard } from '../helpers/MockAuthenticatedGuard';
-import { MockJwtMiddleware } from '../helpers/MockJwtMiddleware';
+import { MockJwtAudience } from '../helpers/MockJwtAudience';
 import { MockKeyVault } from '../helpers/MockKeyVault';
+import { prisma } from '../helpers/prisma';
 
 describe('WebAuthnCredentialsController', () => {
   let app: INestApplication;
+  let token: string;
 
   beforeAll(async () => {
+    const jwtIssuer = new JwtIssuer({
+      prisma,
+      encryptionKey: env.ENCRYPTION_KEY,
+      config: {
+        aud: 'http://localhost:3002',
+        iss: 'http://localhost:3002',
+      },
+    });
+
+    token = await jwtIssuer.sign(MOCK_JWT_PAYLOAD);
+
     const appRef = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideGuard(AuthenticatedGuard)
-      .useClass(MockAuthenticatedGuard)
+      .overrideProvider(JwtAudience)
+      .useValue(new MockJwtAudience(await jwtIssuer.getKeys()))
+      .overrideProvider(PrismaService)
+      .useValue(prisma)
       .overrideProvider(KeyVault)
       .useClass(MockKeyVault)
       .compile();
@@ -34,11 +51,9 @@ describe('WebAuthnCredentialsController', () => {
 
     const appModule = app.get(AppModule);
     appModule.configure = (consumer) => {
-      consumer.apply(MockJwtMiddleware).forRoutes('/api');
-      consumer.apply(RequestIdMiddleware).forRoutes('/');
+      consumer.apply(JwtMiddleware).forRoutes('/api');
     };
 
-    const prisma = app.get(PrismaService);
     await upsertTestingUser({ prisma });
     await upsertTestingWebAuthnCredential({ prisma });
 
@@ -46,7 +61,6 @@ describe('WebAuthnCredentialsController', () => {
   });
 
   afterAll(async () => {
-    const prisma = app.get(PrismaService);
     await prisma.user.deleteMany();
     await prisma.webAuthnCredential.deleteMany();
     await prisma.jwks.deleteMany();
@@ -54,15 +68,16 @@ describe('WebAuthnCredentialsController', () => {
     await app.close();
   });
 
-  test('GET /api/webauthn-credentials as authenticated user', async () => {
-    const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
-      .get('/api/webauthn-credentials')
-      .set('Authorization', `Bearer MOCK_TOKEN`)
-      .send()
-      .expect('Content-Type', /json/)
-      .expect(200);
+  describe('GET /api/webauthn-credentials', () => {
+    test('As authenticated user', async () => {
+      const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
+        .get('/api/webauthn-credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(200);
 
-    expect(listWebAuthnCredentialsResponse.body).toMatchInlineSnapshot(`
+      expect(listWebAuthnCredentialsResponse.body).toMatchInlineSnapshot(`
       [
         {
           "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8+Tf52KT82i3pT68spV2unkjceXY=",
@@ -84,17 +99,27 @@ describe('WebAuthnCredentialsController', () => {
         },
       ]
     `);
+    });
+
+    test('As guest', async () => {
+      await request(app.getHttpServer())
+        .get('/api/webauthn-credentials')
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(401);
+    });
   });
 
-  test('GET /api/webauthn-credentials/:id as authenticated user', async () => {
-    const getWebAuthnCredentialResponse = await request(app.getHttpServer())
-      .get(`/api/webauthn-credentials/${WEBAUTHN_CREDENTIAL_ID}`)
-      .set('Authorization', `Bearer MOCK_TOKEN`)
-      .send()
-      .expect('Content-Type', /json/)
-      .expect(200);
+  describe('GET /api/webauthn-credentials/:id', () => {
+    test('As authenticated user', async () => {
+      const getWebAuthnCredentialResponse = await request(app.getHttpServer())
+        .get(`/api/webauthn-credentials/${WEBAUTHN_CREDENTIAL_ID}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(200);
 
-    expect(getWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
+      expect(getWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
       {
         "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8+Tf52KT82i3pT68spV2unkjceXY=",
         "counter": 0,
@@ -114,20 +139,75 @@ describe('WebAuthnCredentialsController', () => {
         },
       }
     `);
+    });
+
+    test('As guest', async () => {
+      await request(app.getHttpServer())
+        .get(`/api/webauthn-credentials/${WEBAUTHN_CREDENTIAL_ID}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(401);
+    });
+
+    test('With wrong ID as authenticated user', async () => {
+      await request(app.getHttpServer())
+        .get(`/api/webauthn-credentials/${WRONG_UUID}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(404);
+    });
+
+    test('With wrong ID as guest', async () => {
+      await request(app.getHttpServer())
+        .get(`/api/webauthn-credentials/${WRONG_UUID}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(401);
+    });
   });
 
-  test('DELETE /api/webauthn-credentials/:id as authenticated user', async () => {
-    const deleteWebAuthnCredentialResponse = await request(app.getHttpServer())
-      .delete(`/api/webauthn-credentials/${WEBAUTHN_CREDENTIAL_ID}`)
-      .set('Authorization', `Bearer MOCK_TOKEN`)
-      .send()
-      .expect('Content-Type', /json/)
-      .expect(200);
+  describe('DELETE /api/webauthn-credentials/:id', () => {
+    test('As authenticated user', async () => {
+      const deleteWebAuthnCredentialResponse = await request(
+        app.getHttpServer(),
+      )
+        .delete(`/api/webauthn-credentials/${WEBAUTHN_CREDENTIAL_ID}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(200);
 
-    expect(deleteWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
+      expect(deleteWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
       {
         "success": true,
       }
     `);
+    });
+
+    test('As guest', async () => {
+      await request(app.getHttpServer())
+        .delete(`/api/webauthn-credentials/${WEBAUTHN_CREDENTIAL_ID}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(401);
+    });
+
+    test('With wrong ID as authenticated user', async () => {
+      await request(app.getHttpServer())
+        .delete(`/api/webauthn-credentials/${WRONG_UUID}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(404);
+    });
+
+    test('With wrong ID as guest', async () => {
+      await request(app.getHttpServer())
+        .delete(`/api/webauthn-credentials/${WRONG_UUID}`)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(401);
+    });
   });
 });

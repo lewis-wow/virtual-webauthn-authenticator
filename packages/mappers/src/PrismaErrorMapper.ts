@@ -1,6 +1,6 @@
 import { HTTPExceptionCode } from '@repo/enums';
 import { HTTPException } from '@repo/exception';
-import { Prisma } from '@repo/prisma';
+import { Prisma, type AnyPrismaError } from '@repo/prisma';
 
 export class PrismaErrorMapper {
   /**
@@ -8,7 +8,7 @@ export class PrismaErrorMapper {
    * @param error The error to map.
    * @returns An instance of HTTPException.
    */
-  static toHTTPException(error: unknown): HTTPException | null {
+  static toHTTPException(error: AnyPrismaError): HTTPException | null {
     // 2. Handle known Prisma request errors (P-codes)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {

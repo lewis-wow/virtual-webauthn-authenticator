@@ -42,6 +42,7 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     VirtualAuthenticatorProvider,
     WebAuthnCredentialRepositoryProvider,
     CredentialSignerFactoryProvider,
+    JwtMiddleware,
   ],
   exports: [
     PrismaService,
@@ -55,6 +56,7 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     VirtualAuthenticatorProvider,
     WebAuthnCredentialRepositoryProvider,
     CredentialSignerFactoryProvider,
+    JwtMiddleware,
   ],
 })
 export class AppModule implements NestModule {

@@ -15,12 +15,11 @@ import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { User } from '../decorators/User.decorator';
-import { HTTPExceptionFilter } from '../filters/HTTPException.filter';
-import { PrismaExceptionsFilter } from '../filters/PrismaExceptions.filter';
+import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 
 @Controller()
-@UseFilters(new HTTPExceptionFilter(), new PrismaExceptionsFilter())
+@UseFilters(new ExceptionFilter())
 export class CredentialsController {
   constructor(
     private readonly keyVault: KeyVault,
