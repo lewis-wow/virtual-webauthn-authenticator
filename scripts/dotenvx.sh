@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # A wrapper script for dotenvx to select the .env file based on the ENVIRONMENT variable.
 # Example Usage:

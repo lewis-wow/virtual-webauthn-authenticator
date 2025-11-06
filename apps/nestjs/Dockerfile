@@ -43,6 +43,7 @@ RUN pnpm add -g @dotenvx/dotenvx
 WORKDIR /app
 
 ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/packages/prisma/src/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node"
+ENV ENVIRONMENT="production"
 
 # 1. Copy dependency-related files from the pruner stage
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
@@ -55,7 +56,7 @@ COPY --from=pruner /app/out/full/packages ./packages
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
 # 3. Copy only the necessary BUILT assets from the builder stage
-COPY --from=builder /app/apps/nestjs/dist .
+COPY --from=builder /app/apps/nestjs/dist ./apps/nestjs
 COPY --from=builder /app/apps/nestjs/.env.production ./apps/nestjs/.env.production
 
 # 4. Create a non-root user and set permissions
@@ -67,4 +68,4 @@ USER nestjs
 EXPOSE 3000
 
 # 5. Run the server from its new, explicit path
-CMD ["dotenvx", "run", "-f", "apps/nestjs/.env.production", "--", "node", "apps/nestjs/main.js"]
+CMD ["dotenvx", "run", "-f", "apps/nestjs/.env.production", "--", "node", "apps/nestjs/dist/main.js"]

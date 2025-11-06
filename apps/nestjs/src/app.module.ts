@@ -1,4 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'node:path';
 
 import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
@@ -18,7 +20,11 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
 import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredentialRepository.provider';
 
 @Module({
-  imports: [],
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'static'),
+    }),
+  ],
   controllers: [
     HealthcheckController,
     CredentialsController,
