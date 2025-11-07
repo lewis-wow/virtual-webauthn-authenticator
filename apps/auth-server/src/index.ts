@@ -33,7 +33,7 @@ app.get('/api/auth/api-key/token', async (c) => {
     },
   });
 
-  if (!data.valid || data.error) {
+  if (!data.valid || data.error || !data.key) {
     throw new HTTPException({
       status: 401,
       code: HTTPExceptionCode.UNAUTHORIZED,
@@ -42,9 +42,8 @@ app.get('/api/auth/api-key/token', async (c) => {
 
   return c.json({
     token: await jwtIssuer.sign({
-      sub: data.key!.id,
-      id: data.key!.id,
-      permissions: data.key?.permissions,
+      sub: data.key.id,
+      apiKey: data.key,
       tokenType: 'API_KEY',
     }),
   });

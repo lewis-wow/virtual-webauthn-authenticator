@@ -1,5 +1,5 @@
 import { Logger } from '@repo/logger';
-import type { JwtPayload } from '@repo/validation';
+import { JwtPayloadSchema, type JwtPayload } from '@repo/validation';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 const LOG_PREFIX = 'JWT_AUDIENCE';
@@ -38,7 +38,7 @@ export class JwtAudience {
         audience: this.config.aud,
       });
 
-      return payload as JwtPayload;
+      return JwtPayloadSchema.parse(payload);
     } catch (error) {
       log.error('Token validation failed.', error);
       throw error;

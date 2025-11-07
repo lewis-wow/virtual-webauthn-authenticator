@@ -1,6 +1,7 @@
 import { Encryption } from '@repo/crypto';
 import { Logger } from '@repo/logger';
 import type { Jwks, PrismaClient } from '@repo/prisma';
+import { JwtPayloadSchema, type JwtPayload } from '@repo/validation';
 import {
   exportJWK,
   generateKeyPair,
@@ -8,7 +9,6 @@ import {
   SignJWT,
   type JSONWebKeySet,
   type JWK,
-  type JWTPayload,
 } from 'jose';
 
 import { JWT_ALG, JWT_CRV } from './consts';
@@ -110,7 +110,7 @@ export class JwtIssuer {
     };
   }
 
-  async sign(payload: JWTPayload) {
+  async sign(payload: JwtPayload) {
     let latestKey = await this.getLatestKey();
 
     if (!latestKey) {
@@ -126,7 +126,7 @@ export class JwtIssuer {
 
     const privateKey = await importJWK(privateWebKey, JWT_ALG);
 
-    const jwt = new SignJWT(payload)
+    const jwt = new SignJWT(JwtPayloadSchema.encode(payload))
       .setProtectedHeader({
         alg: JWT_ALG,
         kid: latestKey.id,
