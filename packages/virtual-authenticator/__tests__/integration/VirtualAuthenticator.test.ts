@@ -80,13 +80,21 @@ describe('VirtualAuthenticator', () => {
     // specified options, public key, and key vault metadata.
     const publicKeyCredential = await authenticator.createCredential({
       publicKeyCredentialCreationOptions,
-      COSEPublicKey,
+      generateKeyPair: async () => ({
+        COSEPublicKey: COSEPublicKey.toBuffer(),
+        meta: {
+          webAuthnCredentialKeyMetaType:
+            WebAuthnCredentialKeyMetaType.KEY_VAULT,
+          webAuthnCredentialKeyVaultKeyMeta: {
+            keyVaultKeyId: KEY_VAULT_KEY_ID,
+            keyVaultKeyName: KEY_VAULT_KEY_NAME,
+            hsm: false,
+          },
+        },
+      }),
       meta: {
-        webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-        webAuthnCredentialKeyVaultKeyMeta: {
-          keyVaultKeyId: KEY_VAULT_KEY_ID,
-          keyVaultKeyName: KEY_VAULT_KEY_NAME,
-          hsm: false,
+        user: {
+          id: USER_ID,
         },
       },
     });
@@ -187,7 +195,7 @@ describe('VirtualAuthenticator', () => {
 
       const publicKeyCredential = await authenticator.getCredential({
         publicKeyCredentialRequestOptions: requestOptions,
-        credentialSignerFactory: () => credentialSigner,
+        signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           user: {
             id: USER_ID,
@@ -289,7 +297,7 @@ describe('VirtualAuthenticator', () => {
             ...publicKeyCredentialRequestOptions,
             rpId: 'WRONG_RP_ID',
           },
-          credentialSignerFactory: () => credentialSigner,
+          signatureFactory: ({ data }) => credentialSigner.sign(data),
           meta: {
             user: {
               id: USER_ID,
@@ -311,7 +319,7 @@ describe('VirtualAuthenticator', () => {
       await expect(() =>
         authenticator.getCredential({
           publicKeyCredentialRequestOptions,
-          credentialSignerFactory: () => credentialSigner,
+          signatureFactory: ({ data }) => credentialSigner.sign(data),
           meta: {
             user: {
               id: 'WRONG_USER_ID',
@@ -338,7 +346,7 @@ describe('VirtualAuthenticator', () => {
               { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
             ],
           },
-          credentialSignerFactory: () => credentialSigner,
+          signatureFactory: ({ data }) => credentialSigner.sign(data),
           meta: {
             user: {
               id: 'WRONG_USER_ID',

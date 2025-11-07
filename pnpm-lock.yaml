@@ -452,6 +452,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 3.2.4
         version: 3.2.4(vitest@3.2.4)
+      cbor:
+        specifier: ^10.0.11
+        version: 10.0.11
       globals:
         specifier: ^16.0.0
         version: 16.3.0
@@ -1227,9 +1230,6 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
@@ -1258,6 +1258,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       '@repo/test-helpers':
         specifier: workspace:*
         version: link:../test-helpers

@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
+import { COSEKeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import {
   CHALLENGE_BASE64URL,
@@ -9,6 +11,7 @@ import {
   upsertTestingUser,
   WRONG_UUID,
 } from '@repo/test-helpers';
+import { bufferToUuid } from '@repo/utils';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -20,6 +23,7 @@ import {
 import { randomBytes } from 'node:crypto';
 import qs from 'qs';
 import request, { type Response } from 'supertest';
+import { App } from 'supertest/types';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
@@ -38,7 +42,7 @@ const REGISTRATION_PAYLOAD = {
     id: RP_ID,
     name: RP_ID,
   },
-  pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+  pubKeyCredParams: [{ alg: COSEKeyAlgorithm.ES256, type: 'public-key' }],
 };
 
 /**
@@ -49,103 +53,175 @@ const BASE_AUTH_QUERY = {
   rpId: RP_ID,
 };
 
-describe('CredentialsController', () => {
-  let app: INestApplication;
-  let createCredentialResponse: Response;
-  let registrationVerification: VerifiedRegistrationResponse;
-  let token: string;
+/**
+ * Helper to perform and verify a successful registration (POST /api/credentials)
+ */
+const performAndVerifyRegistration = async (opts: {
+  app: App;
+  token: string;
+  payload: Record<string, unknown>;
+}): Promise<{
+  response: Response;
+  verification: VerifiedRegistrationResponse;
+  webAuthnCredentialId: string;
+}> => {
+  const { app, token, payload } = opts;
 
-  /**
-   * Helper to perform and verify a successful authentication (GET /api/credentials)
-   */
-  const performAndVerifyAuthRequest = async (
-    queryOptions: Record<string, unknown>,
-    expectedCounter: number,
-  ): Promise<{
-    response: Response;
-    verification: VerifiedAuthenticationResponse;
-  }> => {
-    const {
+  const response = await request(app)
+    .post('/api/credentials')
+    .set('Authorization', `Bearer ${token}`)
+    .send(payload)
+    .expect('Content-Type', /json/)
+    .expect(200);
+
+  const verification = await verifyRegistrationResponse({
+    response: response.body as RegistrationResponseJSON,
+    expectedChallenge: CHALLENGE_BASE64URL,
+    expectedOrigin: RP_ID,
+    expectedRPID: RP_ID,
+    requireUserVerification: true, // Authenticator does perform UV
+    requireUserPresence: false, // Authenticator does NOT perform UP
+  });
+
+  expect(verification.verified).toBe(true);
+  expect(verification.registrationInfo?.credential.counter).toBe(0);
+
+  expect(
+    COSEKey.fromBuffer(
+      verification.registrationInfo!.credential.publicKey,
+    ).toJwk(),
+  ).toMatchObject({
+    crv: 'P-256',
+    d: undefined,
+    dp: undefined,
+    dq: undefined,
+    e: undefined,
+    k: undefined,
+    keyOps: undefined,
+    kid: undefined,
+    kty: 'EC',
+    n: undefined,
+    p: undefined,
+    q: undefined,
+    qi: undefined,
+    t: undefined,
+    x: expect.any(String),
+    y: expect.any(String),
+  });
+
+  expect(response.body).toStrictEqual({
+    clientExtensionResults: {},
+    id: expect.any(String),
+    rawId: expect.any(String),
+    response: {
+      attestationObject: expect.any(String),
+      clientDataJSON:
+        'eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
+    },
+    type: 'public-key',
+  });
+
+  return {
+    response,
+    verification,
+    webAuthnCredentialId: bufferToUuid(
+      Buffer.from(response.body.id, 'base64url'),
+    ),
+  };
+};
+
+/**
+ * Helper to perform and verify a successful authentication (GET /api/credentials)
+ */
+const performAndVerifyAuthRequest = async (opts: {
+  app: App;
+  queryOptions?: Record<string, unknown>;
+  registrationVerification: VerifiedRegistrationResponse;
+  token: string;
+  expectedNewCounter: number;
+}): Promise<{
+  response: Response;
+  verification: VerifiedAuthenticationResponse;
+}> => {
+  const {
+    app,
+    queryOptions,
+    registrationVerification,
+    token,
+    expectedNewCounter,
+  } = opts;
+
+  const { id: credentialID, publicKey: credentialPublicKey } =
+    registrationVerification.registrationInfo!.credential;
+
+  const query = qs.stringify({
+    ...BASE_AUTH_QUERY,
+    ...queryOptions,
+  });
+
+  const response = await request(app)
+    .get(`/api/credentials`)
+    .query(query)
+    .set('Authorization', `Bearer ${token}`)
+    .send()
+    .expect('Content-Type', /json/)
+    .expect(200);
+
+  const verification = await verifyAuthenticationResponse({
+    response: response.body as AuthenticationResponseJSON,
+    expectedChallenge: CHALLENGE_BASE64URL,
+    expectedOrigin: RP_ID,
+    expectedRPID: RP_ID,
+
+    credential: {
       id: credentialID,
       publicKey: credentialPublicKey,
-      counter: credentialCounter,
-    } = registrationVerification.registrationInfo!.credential;
+      // The counter is stateful from the previous test verification
+      counter: expectedNewCounter - 1,
+    },
+    requireUserVerification: true,
+  });
 
-    const query = qs.stringify({
-      ...BASE_AUTH_QUERY,
-      ...queryOptions,
-    });
+  // The most important check: confirm that the authentication was successful.
+  expect(verification.verified).toBe(true);
 
-    const response = await request(app.getHttpServer())
-      .get(`/api/credentials?${query}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send()
-      .expect('Content-Type', /json/)
-      .expect(200);
+  // A critical security check: ensure the signature counter has incremented.
+  expect(verification.authenticationInfo.newCounter).toBe(expectedNewCounter);
 
-    const verification = await verifyAuthenticationResponse({
-      response: response.body as AuthenticationResponseJSON,
-      expectedChallenge: CHALLENGE_BASE64URL,
-      expectedOrigin: RP_ID,
-      expectedRPID: RP_ID,
-      credential: {
-        id: credentialID,
-        publicKey: credentialPublicKey,
-        // The counter is stateful from the previous test verification
-        counter: expectedCounter - 1,
-      },
-      requireUserVerification: true,
-    });
+  expect(response.body).toStrictEqual({
+    clientExtensionResults: {},
+    id: expect.any(String),
+    rawId: expect.any(String),
+    response: {
+      authenticatorData: expect.any(String),
+      clientDataJSON:
+        'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
+      signature: expect.any(String),
+      userHandle: null,
+    },
+    type: 'public-key',
+  });
 
-    // The most important check: confirm that the authentication was successful.
-    expect(verification.verified).toBe(true);
+  return { response, verification };
+};
 
-    // A critical security check: ensure the signature counter has incremented.
-    expect(verification.authenticationInfo.newCounter).toBe(expectedCounter);
+const jwtIssuer = new JwtIssuer({
+  prisma,
+  encryptionKey: env.ENCRYPTION_KEY,
+  config: {
+    aud: 'http://localhost:3002',
+    iss: 'http://localhost:3002',
+  },
+});
 
-    expect(response.body).toMatchInlineSnapshot(
-      {
-        clientExtensionResults: {},
-        id: expect.any(String),
-        rawId: expect.any(String),
-        response: {
-          authenticatorData: expect.any(String),
-          clientDataJSON:
-            'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
-          signature: expect.any(String),
-          userHandle: null,
-        },
-        type: 'public-key',
-      },
-      `
-      {
-        "clientExtensionResults": {},
-        "id": Any<String>,
-        "rawId": Any<String>,
-        "response": {
-          "authenticatorData": Any<String>,
-          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ",
-          "signature": Any<String>,
-          "userHandle": null,
-        },
-        "type": "public-key",
-      }
-    `,
-    );
+describe('CredentialsController', () => {
+  let app: INestApplication;
+  let token: string;
 
-    return { response, verification };
-  };
+  let registrationVerification: VerifiedRegistrationResponse;
+  let base64CredentialID: string;
 
   beforeAll(async () => {
-    const jwtIssuer = new JwtIssuer({
-      prisma,
-      encryptionKey: env.ENCRYPTION_KEY,
-      config: {
-        aud: 'http://localhost:3002',
-        iss: 'http://localhost:3002',
-      },
-    });
-
     token = await jwtIssuer.sign(MOCK_JWT_PAYLOAD);
 
     const appRef = await Test.createTestingModule({
@@ -168,28 +244,15 @@ describe('CredentialsController', () => {
 
     await app.init();
 
-    createCredentialResponse = await request(app.getHttpServer())
-      .post('/api/credentials')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        challenge: CHALLENGE_BASE64URL,
-        rp: {
-          id: RP_ID,
-          name: RP_ID,
-        },
-        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-      })
-      .expect('Content-Type', /json/)
-      .expect(200);
-
-    registrationVerification = await verifyRegistrationResponse({
-      response: createCredentialResponse.body as RegistrationResponseJSON,
-      expectedChallenge: CHALLENGE_BASE64URL,
-      expectedOrigin: RP_ID,
-      expectedRPID: RP_ID,
-      requireUserVerification: true, // Authenticator does perform UV
-      requireUserPresence: false, // Authenticator does NOT perform UP
+    const { response, verification } = await performAndVerifyRegistration({
+      app: app.getHttpServer(),
+      token,
+      payload: REGISTRATION_PAYLOAD,
     });
+
+    // Save the results for use in other tests
+    registrationVerification = verification;
+    base64CredentialID = response.body.id;
   });
 
   afterAll(async () => {
@@ -201,110 +264,163 @@ describe('CredentialsController', () => {
   });
 
   describe('POST /api/credentials', () => {
-    test('As authenticated user', async () => {
-      expect(
-        registrationVerification.registrationInfo?.credential.counter,
-      ).toBe(0);
-
-      expect(
-        COSEKey.fromBuffer(
-          registrationVerification.registrationInfo!.credential.publicKey,
-        ).toJwk(),
-      ).toMatchObject({
-        crv: 'P-256',
-        d: undefined,
-        dp: undefined,
-        dq: undefined,
-        e: undefined,
-        k: undefined,
-        keyOps: undefined,
-        kid: undefined,
-        kty: 'EC',
-        n: undefined,
-        p: undefined,
-        q: undefined,
-        qi: undefined,
-        t: undefined,
-        x: expect.any(String),
-        y: expect.any(String),
+    test('With multiple supported `pubKeyCredParams`', async () => {
+      const { webAuthnCredentialId } = await performAndVerifyRegistration({
+        app: app.getHttpServer(),
+        token,
+        payload: {
+          ...REGISTRATION_PAYLOAD,
+          pubKeyCredParams: [
+            ...REGISTRATION_PAYLOAD.pubKeyCredParams,
+            { alg: COSEKeyAlgorithm.ES512, type: 'public-key' },
+          ],
+        },
       });
 
-      expect(registrationVerification.verified).toBe(true);
+      await prisma.webAuthnCredential.delete({
+        where: {
+          id: webAuthnCredentialId,
+        },
+      });
+    });
 
-      expect(createCredentialResponse.body).toMatchInlineSnapshot(
-        {
-          clientExtensionResults: {},
-          id: expect.any(String),
-          rawId: expect.any(String),
-          response: {
-            attestationObject: expect.any(String),
-            clientDataJSON:
-              'eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
-          },
-          type: 'public-key',
+    test('With multiple unsupported and one supported `pubKeyCredParams`', async () => {
+      const { webAuthnCredentialId } = await performAndVerifyRegistration({
+        app: app.getHttpServer(),
+        token,
+        payload: {
+          ...REGISTRATION_PAYLOAD,
+          pubKeyCredParams: [
+            { alg: -8, type: 'public-key' },
+            ...REGISTRATION_PAYLOAD.pubKeyCredParams,
+          ],
         },
-        `
-      {
-        "clientExtensionResults": {},
-        "id": Any<String>,
-        "rawId": Any<String>,
-        "response": {
-          "attestationObject": Any<String>,
-          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ",
+      });
+
+      await prisma.webAuthnCredential.delete({
+        where: {
+          id: webAuthnCredentialId,
         },
-        "type": "public-key",
-      }
-    `,
-      );
+      });
+    });
+
+    test('With multiple unsupported `pubKeyCredParams`', async () => {
+      await request(app.getHttpServer())
+        .post('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ...REGISTRATION_PAYLOAD,
+          pubKeyCredParams: [
+            { alg: -8, type: 'public-key' },
+            { alg: -9, type: 'public-key' },
+          ],
+        })
+        .expect('Content-Type', /json/)
+        .expect(400);
     });
 
     test('As guest', async () => {
       await request(app.getHttpServer())
         .post('/api/credentials')
-        .send(
-          qs.stringify({
-            challenge: CHALLENGE_BASE64URL,
-            rp: {
-              id: RP_ID,
-              name: RP_ID,
-            },
-            pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-          }),
-        )
+        .send(REGISTRATION_PAYLOAD)
         .expect('Content-Type', /json/)
         .expect(401);
+    });
+
+    test('With short `challenge`', async () => {
+      await request(app.getHttpServer())
+        .post('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ...REGISTRATION_PAYLOAD,
+          challenge: randomBytes(10).toString('base64url'),
+        })
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    test('With wrong `pubKeyCredParams.type`', async () => {
+      await request(app.getHttpServer())
+        .post('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ...REGISTRATION_PAYLOAD,
+          pubKeyCredParams: [
+            { ...REGISTRATION_PAYLOAD.pubKeyCredParams[0], type: 'wrong-type' },
+          ],
+        })
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    test('With wrong symetric `pubKeyCredParams.alg`', async () => {
+      await request(app.getHttpServer())
+        .post('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ...REGISTRATION_PAYLOAD,
+          pubKeyCredParams: [
+            // 1 = AES-GCM mode w/ 128-bit key, 128-bit tag
+            { ...REGISTRATION_PAYLOAD.pubKeyCredParams[0], alg: 1 },
+          ],
+        })
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    test('With unsupported asymetric `pubKeyCredParams.alg`', async () => {
+      await request(app.getHttpServer())
+        .post('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ...REGISTRATION_PAYLOAD,
+          pubKeyCredParams: [
+            // -47 = ES256K	ECDSA using secp256k1 curve and SHA-256
+            { ...REGISTRATION_PAYLOAD.pubKeyCredParams[0], alg: -47 },
+          ],
+        })
+        .expect('Content-Type', /json/)
+        .expect(400);
     });
   });
 
   describe('GET /api/credentials', () => {
     test('As authenticated user', async () => {
-      await performAndVerifyAuthRequest(
-        {
+      await performAndVerifyAuthRequest({
+        app: app.getHttpServer(),
+        token,
+        queryOptions: {
           allowCredentials: [
             {
-              id: createCredentialResponse.body.rawId,
+              id: base64CredentialID,
               type: 'public-key',
             },
           ],
         },
-        1, // Expected counter
-      );
+        registrationVerification,
+        expectedNewCounter: 1,
+      });
     });
 
     test('With empty `allowCredentials` as authenticated user', async () => {
-      await performAndVerifyAuthRequest(
-        {
+      await performAndVerifyAuthRequest({
+        app: app.getHttpServer(),
+        token,
+        queryOptions: {
           allowCredentials: [],
         },
-        2, // Expected counter
-      );
+        registrationVerification,
+        expectedNewCounter: 2,
+      });
     });
 
     test('With undefined `allowCredentials` as authenticated user', async () => {
-      await performAndVerifyAuthRequest(
-        {},
-        3, // Expected counter
-      );
+      await performAndVerifyAuthRequest({
+        app: app.getHttpServer(),
+        token,
+        registrationVerification,
+        expectedNewCounter: 3,
+      });
     });
 
     test('As guest', async () => {
@@ -312,7 +428,7 @@ describe('CredentialsController', () => {
         ...BASE_AUTH_QUERY,
         allowCredentials: [
           {
-            id: createCredentialResponse.body.id,
+            id: base64CredentialID,
             type: 'public-key',
           },
         ],
@@ -331,7 +447,7 @@ describe('CredentialsController', () => {
         ...BASE_AUTH_QUERY,
         allowCredentials: [
           {
-            id: createCredentialResponse.body.id,
+            id: base64CredentialID,
             type: 'public-key',
           },
         ],
@@ -372,7 +488,7 @@ describe('CredentialsController', () => {
         rpId: 'WRONG_RP_ID',
         allowCredentials: [
           {
-            id: createCredentialResponse.body.id,
+            id: base64CredentialID,
             type: 'public-key',
           },
         ],
@@ -393,7 +509,7 @@ describe('CredentialsController', () => {
         challenge: randomBytes(10).toString('base64url'),
         allowCredentials: [
           {
-            id: createCredentialResponse.body.id,
+            id: base64CredentialID,
             type: 'public-key',
           },
         ],
@@ -414,7 +530,7 @@ describe('CredentialsController', () => {
         rpId: undefined,
         allowCredentials: [
           {
-            id: createCredentialResponse.body.id,
+            id: base64CredentialID,
             type: 'public-key',
           },
         ],

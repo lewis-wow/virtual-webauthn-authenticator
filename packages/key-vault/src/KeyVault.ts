@@ -4,29 +4,11 @@ import {
   type SignResult,
   type VerifyResult,
 } from '@azure/keyvault-keys';
-import {
-  COSEKeyAlgorithm,
-  KeyOperation,
-  PublicKeyCredentialType,
-  type KeyAlgorithm,
-} from '@repo/enums';
+import { KeyOperation, type KeyAlgorithm } from '@repo/enums';
 import { JsonWebKey } from '@repo/keys';
 import { COSEKeyAlgorithmMapper } from '@repo/mappers';
-import type { User } from '@repo/prisma';
-import { bufferToUuid } from '@repo/utils';
-import type { PublicKeyCredentialCreationOptions } from '@repo/validation';
+import type { PubKeyCredParamStrict } from '@repo/validation';
 import ecdsa from 'ecdsa-sig-formatter';
-import {
-  assert,
-  isString,
-  isArray,
-  isPartial,
-  cascade,
-  isEnum,
-  hasMinLength,
-  isLiteral,
-} from 'typanion';
-import type { PickDeep } from 'type-fest';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
 
@@ -65,31 +47,10 @@ export class KeyVault {
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
   }
 
-  private _pickPubKeyCredParams(
-    opts: Pick<PublicKeyCredentialCreationOptions, 'pubKeyCredParams'>,
-  ) {
-    const { pubKeyCredParams } = opts;
-
-    assert(
-      pubKeyCredParams,
-      cascade(
-        isArray(
-          isPartial({
-            type: isEnum(PublicKeyCredentialType),
-            alg: isEnum(COSEKeyAlgorithm),
-          }),
-        ),
-        hasMinLength(1),
-      ),
-    );
-
-    return pubKeyCredParams[0]!;
-  }
-
   async sign(opts: {
     keyVaultKey: KeyVaultKey;
     algorithm: KeyAlgorithm;
-    data: Buffer;
+    data: Uint8Array;
   }): Promise<SignPayload> {
     const { keyVaultKey, algorithm, data } = opts;
 
@@ -106,55 +67,19 @@ export class KeyVault {
     };
   }
 
-  private _createKeyName(opts: {
-    publicKeyCredentialCreationOptions: PickDeep<
-      PublicKeyCredentialCreationOptions,
-      'rp.id' | 'user.id'
-    >;
-  }): string {
-    const { publicKeyCredentialCreationOptions } = opts;
-
-    assert(publicKeyCredentialCreationOptions.rp.id, isString());
-
-    const base64urlRp = Buffer.from(
-      publicKeyCredentialCreationOptions.rp.id,
-    ).toString('hex');
-
-    const base64urlUser =
-      publicKeyCredentialCreationOptions.user.id.toString('hex');
-
-    return `rp-${base64urlRp}-user-${base64urlUser}`;
-  }
-
   async createKey(opts: {
-    publicKeyCredentialCreationOptions: PickDeep<
-      PublicKeyCredentialCreationOptions,
-      'rp.id' | 'user.id' | 'pubKeyCredParams'
-    >;
-    user: Pick<User, 'id'>;
+    keyName: string;
+    supportedPubKeyCredParam: PubKeyCredParamStrict;
   }): Promise<KeyPayload> {
-    const { publicKeyCredentialCreationOptions, user } = opts;
-
-    assert(
-      bufferToUuid(publicKeyCredentialCreationOptions.user.id),
-      isLiteral(user.id),
-    );
-
-    const pubKeyCredParam = this._pickPubKeyCredParams({
-      pubKeyCredParams: publicKeyCredentialCreationOptions.pubKeyCredParams,
-    });
-
-    const keyName = this._createKeyName({
-      publicKeyCredentialCreationOptions,
-    });
+    const { keyName, supportedPubKeyCredParam } = opts;
 
     const keyVaultKey = await this.keyClient
       .createKey(
         keyName,
-        COSEKeyAlgorithmMapper.toKeyType(pubKeyCredParam.alg),
+        COSEKeyAlgorithmMapper.toKeyType(supportedPubKeyCredParam.alg),
         {
           keyOps: [KeyOperation.SIGN],
-          curve: COSEKeyAlgorithmMapper.toCurve(pubKeyCredParam.alg),
+          curve: COSEKeyAlgorithmMapper.toCurve(supportedPubKeyCredParam.alg),
         },
       )
       .catch((error) => {

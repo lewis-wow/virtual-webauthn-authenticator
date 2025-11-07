@@ -44,16 +44,6 @@ export class CredentialsController {
           user: publicKeyCredentialUserEntity,
         };
 
-      const {
-        jwk,
-        meta: { keyVaultKey },
-      } = await this.keyVault.createKey({
-        publicKeyCredentialCreationOptions,
-        user: jwtPayload,
-      });
-
-      const COSEPublicKey = COSEKey.fromJwk(jwk);
-
       this.logger.debug('Creating credential', {
         userId: jwtPayload.id,
       });
@@ -61,15 +51,35 @@ export class CredentialsController {
       const publicKeyCredential =
         await this.virtualAuthenticator.createCredential({
           publicKeyCredentialCreationOptions,
-          COSEPublicKey,
+          generateKeyPair: async (webAuthnCredentialUuid) => {
+            const {
+              jwk,
+              meta: { keyVaultKey },
+            } = await this.keyVault.createKey({
+              keyName: webAuthnCredentialUuid,
+              supportedPubKeyCredParam:
+                VirtualAuthenticator.findFirstSupportedPubKeyCredParams(
+                  publicKeyCredentialCreationOptions.pubKeyCredParams,
+                ),
+            });
+
+            const COSEPublicKey = COSEKey.fromJwk(jwk);
+
+            return {
+              COSEPublicKey: COSEPublicKey.toBuffer(),
+              meta: {
+                webAuthnCredentialKeyMetaType:
+                  WebAuthnCredentialKeyMetaType.KEY_VAULT,
+                webAuthnCredentialKeyVaultKeyMeta: {
+                  keyVaultKeyId: keyVaultKey.id,
+                  keyVaultKeyName: keyVaultKey.name,
+                  hsm: false,
+                },
+              },
+            };
+          },
           meta: {
-            webAuthnCredentialKeyMetaType:
-              WebAuthnCredentialKeyMetaType.KEY_VAULT,
-            webAuthnCredentialKeyVaultKeyMeta: {
-              keyVaultKeyId: keyVaultKey.id,
-              keyVaultKeyName: keyVaultKey.name,
-              hsm: false,
-            },
+            user: jwtPayload,
           },
         });
 
@@ -93,7 +103,7 @@ export class CredentialsController {
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
           publicKeyCredentialRequestOptions: query,
-          credentialSignerFactory: async (webAuthnCredential) => {
+          signatureFactory: async ({ data, webAuthnCredential, meta }) => {
             if (
               webAuthnCredential.webAuthnCredentialKeyMetaType !==
               WebAuthnCredentialKeyMetaType.KEY_VAULT
@@ -104,9 +114,7 @@ export class CredentialsController {
             const {
               meta: { keyVaultKey },
             } = await this.keyVault.getKey({
-              keyName:
-                webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
-                  .keyVaultKeyName,
+              keyName: meta.webAuthnCredentialKeyVaultKeyMeta!.keyVaultKeyName,
             });
 
             const credentialSigner =
@@ -115,7 +123,7 @@ export class CredentialsController {
                 keyVaultKey,
               });
 
-            return credentialSigner;
+            return await credentialSigner.sign(data);
           },
           meta: {
             user: jwtPayload,
