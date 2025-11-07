@@ -4,8 +4,8 @@ import z from 'zod';
 import { see } from '../../meta/see';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema';
 import { ChallengeSchema } from './ChallengeSchema';
+import { PubKeyCredParamLooseSchema } from './PubKeyCredParamSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
-import { PublicKeyCredentialParametersSchema } from './PublicKeyCredentialParametersSchema';
 import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema';
 import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema';
 
@@ -20,7 +20,7 @@ export const PublicKeyCredentialCreationOptionsSchema = z
     rp: PublicKeyCredentialRpEntitySchema,
     user: PublicKeyCredentialUserEntitySchema,
     challenge: ChallengeSchema,
-    pubKeyCredParams: z.array(PublicKeyCredentialParametersSchema).min(1),
+    pubKeyCredParams: z.array(PubKeyCredParamLooseSchema).min(1),
     timeout: z.number().optional(),
     excludeCredentials: z.array(PublicKeyCredentialDescriptorSchema).optional(),
     authenticatorSelection: AuthenticatorSelectionCriteriaSchema.optional(),

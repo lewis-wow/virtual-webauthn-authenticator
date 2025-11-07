@@ -1,7 +1,6 @@
 import type { KeyVaultKey } from '@azure/keyvault-keys';
 import type { KeyAlgorithm } from '@repo/enums';
 
-import type { CredentialSigner } from '../../types/src/CredentialSigner';
 import type { KeyVault } from './KeyVault';
 
 export type CredentialSignerFactoryOptions = {
@@ -18,11 +17,11 @@ export class CredentialSignerFactory {
   createCredentialSigner(opts: {
     algorithm: KeyAlgorithm;
     keyVaultKey: KeyVaultKey;
-  }): CredentialSigner {
+  }) {
     const { algorithm, keyVaultKey } = opts;
 
     return {
-      sign: async (data) => {
+      sign: async (data: Uint8Array) => {
         const { signature } = await this.keyVault.sign({
           keyVaultKey,
           algorithm,

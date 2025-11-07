@@ -1,7 +1,10 @@
 import { KeyCurveName, KeyType } from '@repo/enums';
 import { COSEKey, JsonWebKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
-import type { JwtPayload } from '@repo/validation';
+import type {
+  JwtPayload,
+  PublicKeyCredentialCreationOptions,
+} from '@repo/validation';
 
 // https://www.uuidgenerator.net/version4
 
@@ -37,3 +40,21 @@ export const JsonWebPublicKey = new JsonWebKey({
   y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
 });
 export const COSEPublicKey = COSEKey.fromJwk(JsonWebPublicKey);
+
+export const WRONG_UUID = '00000000-0000-0000-0000-000000000000';
+
+export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
+  rp: {
+    name: RP_NAME,
+    id: RP_ID,
+  },
+  user: {
+    id: USER_ID_RAW,
+    name: USER_NAME,
+    displayName: USER_DISPLAY_NAME,
+  },
+  challenge: CHALLENGE_RAW,
+  pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+  timeout: 60000,
+  attestation: 'none',
+} as const satisfies PublicKeyCredentialCreationOptions;

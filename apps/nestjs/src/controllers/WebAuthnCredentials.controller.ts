@@ -7,13 +7,12 @@ import { WebAuthnCredential, type JwtPayload } from '@repo/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { User } from '../decorators/User.decorator';
-import { HTTPExceptionFilter } from '../filters/HTTPException.filter';
-import { PrismaExceptionsFilter } from '../filters/PrismaExceptions.filter';
+import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
-@UseFilters(new HTTPExceptionFilter(), new PrismaExceptionsFilter())
+@UseFilters(new ExceptionFilter())
 export class WebAuthnCredentialsController {
   constructor(
     private readonly prisma: PrismaService,

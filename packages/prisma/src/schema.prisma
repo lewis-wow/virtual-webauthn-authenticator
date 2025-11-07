@@ -149,7 +149,7 @@ model WebAuthnCredential {
   counter       Int      @default(0)
   transports    String[]
 
-  webAuthnCredentialKeyMetaType     WebAuthnCredentialKeyMetaType      @default(KEY_VAULT)
+  webAuthnCredentialKeyMetaType     WebAuthnCredentialKeyMetaType
   webAuthnCredentialKeyVaultKeyMeta WebAuthnCredentialKeyVaultKeyMeta?
 
   // The Relying Party ID (e.g., "your-website.com") this credential is scoped to.

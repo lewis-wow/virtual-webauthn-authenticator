@@ -1,11 +1,18 @@
 import { serve } from '@hono/node-server';
 import { HTTPExceptionCode } from '@repo/enums';
 import { HTTPException } from '@repo/exception';
+import { Logger } from '@repo/logger';
 import { Hono } from 'hono';
 
 import { env } from './env';
 import { auth } from './lib/auth';
 import { jwtIssuer } from './lib/jwtIssuer';
+
+const LOG_PREFIX = 'AUTH-SERVER';
+
+const log = new Logger({
+  prefix: LOG_PREFIX,
+});
 
 const app = new Hono();
 
@@ -57,6 +64,6 @@ serve(
     port: env.PORT,
   },
   (info) => {
-    console.log(`Auth server is running on http://localhost:${info.port}`);
+    log.info(`Auth server is running on http://localhost:${info.port}`);
   },
 );

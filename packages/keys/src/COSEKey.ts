@@ -136,7 +136,7 @@ export class COSEKey {
     return new JsonWebKey(jwk);
   }
 
-  toBuffer(): Buffer {
+  toBuffer(): Uint8Array {
     return cbor.encode(this.map);
   }
 

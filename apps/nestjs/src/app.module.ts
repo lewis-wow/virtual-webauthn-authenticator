@@ -17,7 +17,6 @@ import { KeyVaultProvider } from './services/KeyVault.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
-import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredentialRepository.provider';
 
 @Module({
   imports: [
@@ -40,8 +39,8 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     KeyVaultProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
-    WebAuthnCredentialRepositoryProvider,
     CredentialSignerFactoryProvider,
+    JwtMiddleware,
   ],
   exports: [
     PrismaService,
@@ -53,8 +52,8 @@ import { WebAuthnCredentialRepositoryProvider } from './services/WebAuthnCredent
     KeyVaultProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
-    WebAuthnCredentialRepositoryProvider,
     CredentialSignerFactoryProvider,
+    JwtMiddleware,
   ],
 })
 export class AppModule implements NestModule {
