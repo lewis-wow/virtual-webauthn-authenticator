@@ -8,10 +8,16 @@ import {
   InternalServerError,
   RequestValidationFailed,
 } from '@repo/exception';
+import { Logger } from '@repo/logger';
 import { PrismaErrorMapper } from '@repo/mappers';
 import { isAnyPrismaError } from '@repo/prisma';
 import { TsRestRequestValidationError } from '@ts-rest/nest';
 import type { Response as ExpressResponse } from 'express';
+
+const LOG_PREFIX = 'ExceptionFilter';
+const log = new Logger({
+  prefix: LOG_PREFIX,
+});
 
 @Catch()
 export class ExceptionFilter implements NestjsExceptionFilter {
@@ -30,6 +36,10 @@ export class ExceptionFilter implements NestjsExceptionFilter {
     } else if (exception instanceof TsRestRequestValidationError) {
       webResponse = new RequestValidationFailed(exception).toResponse();
     } else {
+      if (exception instanceof Error) {
+        log.exception(exception);
+      }
+
       webResponse = new InternalServerError().toResponse();
     }
 

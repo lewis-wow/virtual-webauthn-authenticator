@@ -17,6 +17,7 @@ import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
+import { randomBytes } from 'node:crypto';
 import qs from 'qs';
 import request, { type Response } from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
@@ -46,7 +47,6 @@ const REGISTRATION_PAYLOAD = {
 const BASE_AUTH_QUERY = {
   challenge: CHALLENGE_BASE64URL,
   rpId: RP_ID,
-  userVerification: 'required',
 };
 
 describe('CredentialsController', () => {
@@ -326,7 +326,27 @@ describe('CredentialsController', () => {
         .expect(401);
     });
 
-    test('Allow credentials that does not exists', async () => {
+    test('With wrong token', async () => {
+      const query = qs.stringify({
+        ...BASE_AUTH_QUERY,
+        allowCredentials: [
+          {
+            id: createCredentialResponse.body.id,
+            type: 'public-key',
+          },
+        ],
+      });
+
+      await request(app.getHttpServer())
+        .get('/api/credentials')
+        .set('Authorization', `Bearer WRONG_TOKEN`)
+        .query(query)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(401);
+    });
+
+    test('`allowCredentials` that does not exists', async () => {
       const query = qs.stringify({
         ...BASE_AUTH_QUERY,
         allowCredentials: [
@@ -346,7 +366,7 @@ describe('CredentialsController', () => {
         .expect(404);
     });
 
-    test('rpId that does not exists', async () => {
+    test('`rpId` that does not exists', async () => {
       const query = qs.stringify({
         ...BASE_AUTH_QUERY,
         rpId: 'WRONG_RP_ID',
@@ -365,6 +385,48 @@ describe('CredentialsController', () => {
         .send()
         .expect('Content-Type', /json/)
         .expect(404);
+    });
+
+    test('Short `challenge`', async () => {
+      const query = qs.stringify({
+        ...BASE_AUTH_QUERY,
+        challenge: randomBytes(10).toString('base64url'),
+        allowCredentials: [
+          {
+            id: createCredentialResponse.body.id,
+            type: 'public-key',
+          },
+        ],
+      });
+
+      await request(app.getHttpServer())
+        .get('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .query(query)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    test('With undefined `rpId`', async () => {
+      const query = qs.stringify({
+        ...BASE_AUTH_QUERY,
+        rpId: undefined,
+        allowCredentials: [
+          {
+            id: createCredentialResponse.body.id,
+            type: 'public-key',
+          },
+        ],
+      });
+
+      await request(app.getHttpServer())
+        .get('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .query(query)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(400);
     });
   });
 });

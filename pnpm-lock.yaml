@@ -449,6 +449,9 @@ importers:
       '@types/webpack-node-externals':
         specifier: ^3.0.4
         version: 3.0.4(@swc/core@1.13.5)
+      '@vitest/coverage-v8':
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       globals:
         specifier: ^16.0.0
         version: 16.3.0
