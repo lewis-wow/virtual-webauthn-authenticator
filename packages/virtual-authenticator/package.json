@@ -7,24 +7,26 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test:integration": "vitest run integration --config __tests__/vitest.config.ts",
-    "test:integration:coverage": "vitest run integration --coverage --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run integration --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run integration --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
+    "@repo/keys": "workspace:*",
     "@repo/test-helpers": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
     "@vitest/coverage-v8": "3.2.4",
+    "prisma-mock": "^0.12.2",
+    "prismock": "^1.35.4",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4",
-    "vitest-mock-extended": "^3.1.0",
-    "@repo/keys": "workspace:*"
+    "vitest-mock-extended": "^3.1.0"
   },
   "dependencies": {
     "@repo/enums": "workspace:*",

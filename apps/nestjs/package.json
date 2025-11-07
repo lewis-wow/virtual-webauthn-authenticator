@@ -10,8 +10,8 @@
     "dev": "pnpm dotenvx nest start --watch",
     "start": "pnpm dotenvx node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test:integration": "vitest run ${1:-integration} --config __tests__/vitest.config.mts",
-    "test:integration:coverage": "vitest run ${1:-integration} --coverage --config __tests__/vitest.config.mts",
+    "test:integration": "vitest run ${1:-integration} --config __tests__/vitest.integration.config.mts",
+    "test:integration:coverage": "vitest run ${1:-integration} --coverage --config __tests__/vitest.integration.config.mts",
     "dotenvx": "../../scripts/dotenvx.sh",
     "pull:openapi-spec": "../../scripts/pull.sh ../../packages/contract/generated/openapi.json static/openapi.json"
   },

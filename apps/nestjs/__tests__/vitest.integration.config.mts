@@ -1,12 +1,13 @@
 import { config } from '@dotenvx/dotenvx';
 import { join } from 'node:path';
-import { defineConfig } from 'vitest/config';
+import swc from 'unplugin-swc';
+import { defineConfig, Plugin } from 'vitest/config';
 
 import pkg from '../package.json';
 
 const env = config({
   path: join(import.meta.dirname, '..', '.env.test'),
-  override: true,
+  overload: true,
 }).parsed;
 
 export default defineConfig({
@@ -16,5 +17,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
     },
+    fileParallelism: false,
   },
+  plugins: [swc.vite() as Plugin],
 });
