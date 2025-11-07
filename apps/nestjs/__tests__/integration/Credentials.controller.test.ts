@@ -11,6 +11,7 @@ import {
 } from '@repo/test-helpers';
 import {
   AuthenticationResponseJSON,
+  VerifiedAuthenticationResponse,
   VerifiedRegistrationResponse,
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
@@ -27,11 +28,113 @@ import { PrismaService } from '../../src/services/Prisma.service';
 import { MockJwtAudience } from '../helpers/MockJwtAudience';
 import { prisma } from '../helpers/prisma';
 
+/**
+ * Reusable request body for POST /api/credentials
+ */
+const REGISTRATION_PAYLOAD = {
+  challenge: CHALLENGE_BASE64URL,
+  rp: {
+    id: RP_ID,
+    name: RP_ID,
+  },
+  pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+};
+
+/**
+ * Reusable base query for GET /api/credentials
+ */
+const BASE_AUTH_QUERY = {
+  challenge: CHALLENGE_BASE64URL,
+  rpId: RP_ID,
+  userVerification: 'required',
+};
+
 describe('CredentialsController', () => {
   let app: INestApplication;
   let createCredentialResponse: Response;
   let registrationVerification: VerifiedRegistrationResponse;
   let token: string;
+
+  /**
+   * Helper to perform and verify a successful authentication (GET /api/credentials)
+   */
+  const performAndVerifyAuthRequest = async (
+    queryOptions: Record<string, unknown>,
+    expectedCounter: number,
+  ): Promise<{
+    response: Response;
+    verification: VerifiedAuthenticationResponse;
+  }> => {
+    const {
+      id: credentialID,
+      publicKey: credentialPublicKey,
+      counter: credentialCounter,
+    } = registrationVerification.registrationInfo!.credential;
+
+    const query = qs.stringify({
+      ...BASE_AUTH_QUERY,
+      ...queryOptions,
+    });
+
+    const response = await request(app.getHttpServer())
+      .get(`/api/credentials?${query}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send()
+      .expect('Content-Type', /json/)
+      .expect(200);
+
+    const verification = await verifyAuthenticationResponse({
+      response: response.body as AuthenticationResponseJSON,
+      expectedChallenge: CHALLENGE_BASE64URL,
+      expectedOrigin: RP_ID,
+      expectedRPID: RP_ID,
+      credential: {
+        id: credentialID,
+        publicKey: credentialPublicKey,
+        // The counter is stateful from the previous test verification
+        counter: expectedCounter - 1,
+      },
+      requireUserVerification: true,
+    });
+
+    // The most important check: confirm that the authentication was successful.
+    expect(verification.verified).toBe(true);
+
+    // A critical security check: ensure the signature counter has incremented.
+    expect(verification.authenticationInfo.newCounter).toBe(expectedCounter);
+
+    expect(response.body).toMatchInlineSnapshot(
+      {
+        clientExtensionResults: {},
+        id: expect.any(String),
+        rawId: expect.any(String),
+        response: {
+          authenticatorData: expect.any(String),
+          clientDataJSON:
+            'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
+          signature: expect.any(String),
+          userHandle: null,
+        },
+        type: 'public-key',
+      },
+      `
+      {
+        "clientExtensionResults": {},
+        "id": Any<String>,
+        "rawId": Any<String>,
+        "response": {
+          "authenticatorData": Any<String>,
+          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ",
+          "signature": Any<String>,
+          "userHandle": null,
+        },
+        "type": "public-key",
+      }
+    `,
+    );
+
+    return { response, verification };
+  };
 
   beforeAll(async () => {
     const jwtIssuer = new JwtIssuer({
@@ -175,124 +278,90 @@ describe('CredentialsController', () => {
 
   describe('GET /api/credentials', () => {
     test('As authenticated user', async () => {
-      const {
-        id: credentialID,
-        publicKey: credentialPublicKey,
-        counter: credentialCounter,
-      } = registrationVerification.registrationInfo!.credential;
-
-      const response = await request(app.getHttpServer())
-        .get('/api/credentials')
-        .set('Authorization', `Bearer ${token}`)
-        .query(
-          qs.stringify({
-            challenge: CHALLENGE_BASE64URL,
-            rpId: RP_ID,
-            allowCredentials: [
-              {
-                id: createCredentialResponse.body.rawId,
-                type: 'public-key',
-              },
-            ],
-            userVerification: 'required',
-          }),
-        )
-        .send()
-        .expect('Content-Type', /json/)
-        .expect(200);
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: response.body as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ID,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey: credentialPublicKey,
-          counter: credentialCounter,
-        },
-        requireUserVerification: true,
-      });
-
-      // The most important check: confirm that the authentication was successful.
-      expect(authenticationVerification.verified).toBe(true);
-
-      // A critical security check: ensure the signature counter has incremented.
-      // This prevents replay attacks. The server must store this new value.
-      expect(authenticationVerification.authenticationInfo.newCounter).toBe(1);
-
-      expect(response.body).toMatchInlineSnapshot(
+      await performAndVerifyAuthRequest(
         {
-          clientExtensionResults: {},
-          id: expect.any(String),
-          rawId: expect.any(String),
-          response: {
-            authenticatorData: expect.any(String),
-            clientDataJSON:
-              'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ',
-            signature: expect.any(String),
-            userHandle: null,
-          },
-          type: 'public-key',
+          allowCredentials: [
+            {
+              id: createCredentialResponse.body.rawId,
+              type: 'public-key',
+            },
+          ],
         },
-        `
-      {
-        "clientExtensionResults": {},
-        "id": Any<String>,
-        "rawId": Any<String>,
-        "response": {
-          "authenticatorData": Any<String>,
-          "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6ImV4YW1wbGUuY29tIiwiY3Jvc3NPcmlnaW4iOmZhbHNlfQ",
-          "signature": Any<String>,
-          "userHandle": null,
+        1, // Expected counter
+      );
+    });
+
+    test('With empty `allowCredentials` as authenticated user', async () => {
+      await performAndVerifyAuthRequest(
+        {
+          allowCredentials: [],
         },
-        "type": "public-key",
-      }
-    `,
+        2, // Expected counter
+      );
+    });
+
+    test('With undefined `allowCredentials` as authenticated user', async () => {
+      await performAndVerifyAuthRequest(
+        {},
+        3, // Expected counter
       );
     });
 
     test('As guest', async () => {
+      const query = qs.stringify({
+        ...BASE_AUTH_QUERY,
+        allowCredentials: [
+          {
+            id: createCredentialResponse.body.id,
+            type: 'public-key',
+          },
+        ],
+      });
+
       await request(app.getHttpServer())
         .get('/api/credentials')
-        .query(
-          qs.stringify({
-            challenge: CHALLENGE_BASE64URL,
-            rpId: RP_ID,
-            allowCredentials: [
-              {
-                id: Buffer.from(
-                  createCredentialResponse.body.rawId,
-                  'base64url',
-                ),
-                type: 'public-key',
-              },
-            ],
-            userVerification: 'required',
-          }),
-        )
+        .query(query)
         .send()
         .expect('Content-Type', /json/)
         .expect(401);
     });
 
     test('Allow credentials that does not exists', async () => {
+      const query = qs.stringify({
+        ...BASE_AUTH_QUERY,
+        allowCredentials: [
+          {
+            id: WRONG_UUID,
+            type: 'public-key',
+          },
+        ],
+      });
+
       await request(app.getHttpServer())
         .get('/api/credentials')
         .set('Authorization', `Bearer ${token}`)
-        .query(
-          qs.stringify({
-            challenge: CHALLENGE_BASE64URL,
-            rpId: RP_ID,
-            allowCredentials: [
-              {
-                id: WRONG_UUID,
-                type: 'public-key',
-              },
-            ],
-            userVerification: 'required',
-          }),
-        )
+        .query(query)
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(404);
+    });
+
+    test('rpId that does not exists', async () => {
+      const query = qs.stringify({
+        ...BASE_AUTH_QUERY,
+        rpId: 'WRONG_RP_ID',
+        allowCredentials: [
+          {
+            id: createCredentialResponse.body.id,
+            type: 'public-key',
+          },
+        ],
+      });
+
+      await request(app.getHttpServer())
+        .get('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .query(query)
         .send()
         .expect('Content-Type', /json/)
         .expect(404);
