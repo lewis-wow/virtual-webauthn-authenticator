@@ -3,10 +3,15 @@ import {
   Catch,
   ArgumentsHost,
 } from '@nestjs/common';
-import { HTTPException, InternalServerError } from '@repo/exception';
+import {
+  HTTPException,
+  InternalServerError,
+  RequestValidationFailed,
+} from '@repo/exception';
 import { PrismaErrorMapper } from '@repo/mappers';
 import { isAnyPrismaError } from '@repo/prisma';
-import { Response as ExpressResponse } from 'express';
+import { TsRestRequestValidationError } from '@ts-rest/nest';
+import type { Response as ExpressResponse } from 'express';
 
 @Catch()
 export class ExceptionFilter implements NestjsExceptionFilter {
@@ -22,6 +27,8 @@ export class ExceptionFilter implements NestjsExceptionFilter {
         PrismaErrorMapper.toHTTPException(exception) ??
         new InternalServerError()
       ).toResponse();
+    } else if (exception instanceof TsRestRequestValidationError) {
+      webResponse = new RequestValidationFailed(exception).toResponse();
     } else {
       webResponse = new InternalServerError().toResponse();
     }

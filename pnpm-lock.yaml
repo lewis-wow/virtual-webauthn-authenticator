@@ -65,6 +65,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../../packages/exception
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
@@ -391,6 +394,9 @@ importers:
       '@ts-rest/nest':
         specifier: ^3.53.0-rc.1
         version: 3.53.0-rc.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.8)(@ts-rest/core@3.53.0-rc.1(@types/node@22.15.3))(rxjs@7.8.2)
+      qs:
+        specifier: ^6.14.0
+        version: 6.14.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -434,6 +440,9 @@ importers:
       '@types/node':
         specifier: ^22.10.7
         version: 22.15.3
+      '@types/qs':
+        specifier: ^6.14.0
+        version: 6.14.0
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.3
@@ -488,6 +497,9 @@ importers:
       '@plasmohq/messaging':
         specifier: 0.7.1
         version: 0.7.1(react@18.2.0)
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
@@ -756,6 +768,9 @@ importers:
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation
+      '@standard-schema/spec':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
@@ -1157,6 +1172,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      qs:
+        specifier: ^6.14.0
+        version: 6.14.0
       typebox:
         specifier: ^1.0.34
         version: 1.0.34
@@ -1176,6 +1194,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      '@types/qs':
+        specifier: ^6.14.0
+        version: 6.14.0
       barrelsby:
         specifier: ^2.8.1
         version: 2.8.1
@@ -17790,7 +17811,7 @@ snapshots:
       formidable: 3.5.4
       methods: 1.1.2
       mime: 2.6.0
-      qs: 6.13.0
+      qs: 6.14.0
     transitivePeerDependencies:
       - supports-color
 

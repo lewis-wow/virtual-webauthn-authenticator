@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
+    "@repo/logger": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
     "@hono/node-server": "^1.19.5",

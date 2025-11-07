@@ -7,6 +7,7 @@ import {
   MOCK_JWT_PAYLOAD,
   RP_ID,
   upsertTestingUser,
+  WRONG_UUID,
 } from '@repo/test-helpers';
 import {
   AuthenticationResponseJSON,
@@ -15,6 +16,7 @@ import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
+import qs from 'qs';
 import request, { type Response } from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
@@ -156,14 +158,16 @@ describe('CredentialsController', () => {
     test('As guest', async () => {
       await request(app.getHttpServer())
         .post('/api/credentials')
-        .send({
-          challenge: CHALLENGE_BASE64URL,
-          rp: {
-            id: RP_ID,
-            name: RP_ID,
-          },
-          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-        })
+        .send(
+          qs.stringify({
+            challenge: CHALLENGE_BASE64URL,
+            rp: {
+              id: RP_ID,
+              name: RP_ID,
+            },
+            pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+          }),
+        )
         .expect('Content-Type', /json/)
         .expect(401);
     });
@@ -180,17 +184,19 @@ describe('CredentialsController', () => {
       const response = await request(app.getHttpServer())
         .get('/api/credentials')
         .set('Authorization', `Bearer ${token}`)
-        .query({
-          challenge: CHALLENGE_BASE64URL,
-          rpId: RP_ID,
-          allowCredentials: [
-            {
-              id: Buffer.from(createCredentialResponse.body.rawId, 'base64url'),
-              type: 'public-key',
-            },
-          ],
-          userVerification: 'required',
-        })
+        .query(
+          qs.stringify({
+            challenge: CHALLENGE_BASE64URL,
+            rpId: RP_ID,
+            allowCredentials: [
+              {
+                id: createCredentialResponse.body.rawId,
+                type: 'public-key',
+              },
+            ],
+            userVerification: 'required',
+          }),
+        )
         .send()
         .expect('Content-Type', /json/)
         .expect(200);
@@ -249,20 +255,47 @@ describe('CredentialsController', () => {
     test('As guest', async () => {
       await request(app.getHttpServer())
         .get('/api/credentials')
-        .query({
-          challenge: CHALLENGE_BASE64URL,
-          rpId: RP_ID,
-          allowCredentials: [
-            {
-              id: Buffer.from(createCredentialResponse.body.rawId, 'base64url'),
-              type: 'public-key',
-            },
-          ],
-          userVerification: 'required',
-        })
+        .query(
+          qs.stringify({
+            challenge: CHALLENGE_BASE64URL,
+            rpId: RP_ID,
+            allowCredentials: [
+              {
+                id: Buffer.from(
+                  createCredentialResponse.body.rawId,
+                  'base64url',
+                ),
+                type: 'public-key',
+              },
+            ],
+            userVerification: 'required',
+          }),
+        )
         .send()
         .expect('Content-Type', /json/)
         .expect(401);
+    });
+
+    test('Allow credentials that does not exists', async () => {
+      await request(app.getHttpServer())
+        .get('/api/credentials')
+        .set('Authorization', `Bearer ${token}`)
+        .query(
+          qs.stringify({
+            challenge: CHALLENGE_BASE64URL,
+            rpId: RP_ID,
+            allowCredentials: [
+              {
+                id: WRONG_UUID,
+                type: 'public-key',
+              },
+            ],
+            userVerification: 'required',
+          }),
+        )
+        .send()
+        .expect('Content-Type', /json/)
+        .expect(404);
     });
   });
 });

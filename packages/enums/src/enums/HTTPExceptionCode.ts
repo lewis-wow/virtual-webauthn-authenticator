@@ -5,6 +5,7 @@ import { HTTPStatusCode } from './HTTPStatusCode';
 
 export const HTTPExceptionCode = {
   ...HTTPStatusCode,
+  REQUEST_VALIDATION_FAILED: 'REQUEST_VALIDATION_FAILED',
 
   CREDENTIAL_NOT_FOUND: 'CREDENTIAL_NOT_FOUND',
 

@@ -36,6 +36,7 @@
     "@t3-oss/env-core": "^0.13.8",
     "@ts-rest/core": "^3.53.0-rc.1",
     "@ts-rest/nest": "^3.53.0-rc.1",
+    "qs": "^6.14.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^4.1.12"
@@ -52,6 +53,7 @@
     "@swc/core": "^1.13.5",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.7",
+    "@types/qs": "^6.14.0",
     "@types/supertest": "^6.0.2",
     "@types/webpack-node-externals": "^3.0.4",
     "globals": "^16.0.0",
