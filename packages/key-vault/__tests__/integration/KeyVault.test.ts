@@ -6,20 +6,13 @@ import {
   PublicKeyCredentialType,
 } from '@repo/enums';
 import { JsonWebKey } from '@repo/keys';
-import { uuidToBuffer } from '@repo/utils';
-import { type PublicKeyCredentialCreationOptions } from '@repo/validation';
+import { KEY_VAULT_KEY_NAME } from '@repo/test-helpers';
 import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';
 
 import { CryptographyClientFactory } from '../../src/CryptographyClientFactory';
 import { KeyVault } from '../../src/KeyVault';
 import { NoopCredential } from '../helpers/NoopCredential';
-import {
-  CHALLENGE_BASE64URL,
-  RP_ID,
-  USER_ID,
-  USER_NAME,
-} from '../helpers/consts';
 
 describe('KeyVault', () => {
   const azureCredential = new NoopCredential();
@@ -44,42 +37,21 @@ describe('KeyVault', () => {
   let keyVaultKey: KeyVaultKey;
 
   describe('EC', () => {
-    const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
-      {
-        challenge: Buffer.from(CHALLENGE_BASE64URL, 'base64url'),
-        rp: {
-          id: RP_ID,
-          name: RP_ID,
-        },
-        user: {
-          id: uuidToBuffer(USER_ID),
-          name: USER_NAME,
-          displayName: USER_NAME,
-        },
-        pubKeyCredParams: [
-          {
-            alg: COSEKeyAlgorithm.ES256,
-            type: PublicKeyCredentialType.PUBLIC_KEY,
-          },
-        ],
-      };
-
     beforeAll(async () => {
       ({
         jwk,
         meta: { keyVaultKey },
       } = await keyVault.createKey({
-        publicKeyCredentialCreationOptions,
-        user: {
-          id: USER_ID,
+        keyName: KEY_VAULT_KEY_NAME,
+        supportedPubKeyCredParam: {
+          alg: COSEKeyAlgorithm.ES256,
+          type: PublicKeyCredentialType.PUBLIC_KEY,
         },
       }));
     });
 
     test('createKey', async () => {
-      expect(keyVaultKey.name).toBe(
-        `rp-${Buffer.from(RP_ID).toString('hex')}-user-${uuidToBuffer(USER_ID).toString('hex')}`,
-      );
+      expect(keyVaultKey.name).toBe(KEY_VAULT_KEY_NAME);
       expect(jwk?.crv).toBe(KeyCurveName.P256);
       expect(jwk?.kty).toBe(KeyType.EC);
       expect(z.base64url().safeParse(jwk?.x).success).toBe(true);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
@@ -62,7 +63,13 @@ describe('WebAuthnCredentialsController', () => {
 
   afterAll(async () => {
     await prisma.user.deleteMany();
-    await prisma.webAuthnCredential.deleteMany();
+    await prisma.webAuthnCredential.deleteMany({
+      where: {
+        id: {
+          in: [WEBAUTHN_CREDENTIAL_ID],
+        },
+      },
+    });
     await prisma.jwks.deleteMany();
 
     await app.close();

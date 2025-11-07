@@ -863,6 +863,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
+      '@repo/test-helpers':
+        specifier: workspace:*
+        version: link:../test-helpers
       '@repo/types':
         specifier: workspace:*
         version: link:../types
