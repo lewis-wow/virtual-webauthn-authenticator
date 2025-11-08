@@ -1,7 +1,9 @@
 import z from 'zod';
 
-export const Base64urlToBytesCodecSchema = z
-  .codec(z.base64(), z.instanceof(Uint8Array), {
+import { BytesSchema } from '../models/common/BytesSchema';
+
+export const BytesSchemaCodec = z
+  .codec(z.base64(), BytesSchema, {
     decode: (base64String) => z.util.base64ToUint8Array(base64String),
     encode: (bytes) => z.util.uint8ArrayToBase64(bytes),
   })

@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { ApiKeySchema } from '../../../models/auth/ApiKeySchema';
+import { ApiKeySchemaCodec } from '../../../models/auth/ApiKeySchema';
 
 export const GetApiKeyRequestParamSchema = z
   .object({
@@ -10,4 +10,4 @@ export const GetApiKeyRequestParamSchema = z
     ref: 'GetApiKeyRequestParam',
   });
 
-export const GetApiKeyResponseSchema = ApiKeySchema;
+export const GetApiKeyResponseSchema = ApiKeySchemaCodec;

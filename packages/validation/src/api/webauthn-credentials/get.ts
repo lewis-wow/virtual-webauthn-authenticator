@@ -1,9 +1,10 @@
 import z from 'zod';
 
-import { WebAuthnCredentialSchema } from '../../models/webauthn-credential/WebAuthnCredentialSchema';
+import { WebAuthnCredentialSchemaCodec } from '../../models/webauthn-credential/WebAuthnCredentialSchema';
 
 export const GetWebAuthnCredentialRequestPathParamsSchema = z.object({
   id: z.uuid(),
 });
 
-export const GetWebAuthnCredentialResponseSchema = WebAuthnCredentialSchema;
+export const GetWebAuthnCredentialResponseSchema =
+  WebAuthnCredentialSchemaCodec;

@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
+
 export const ApiKeyPermissionsSchema = z.record(
   z.string(),
   z.array(z.string()),
@@ -30,5 +32,13 @@ export const ApiKeySchema = z
   .meta({
     ref: 'ApiKey',
   });
+
+export const ApiKeySchemaCodec = ApiKeySchema.extend({
+  expiresAt: DateSchemaCodec.optional().nullable(),
+  revokedAt: DateSchemaCodec.optional().nullable(),
+
+  createdAt: DateSchemaCodec,
+  updatedAt: DateSchemaCodec,
+});
 
 export type ApiKey = z.infer<typeof ApiKeySchema>;

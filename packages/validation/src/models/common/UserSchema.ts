@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { IsoDatetimeToDateCodecSchema } from '../../codecs/IsoDatetimeToDateCodecSchema';
+import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
 
 export const UserSchema = z.object({
   id: z.uuid(),
@@ -12,9 +12,9 @@ export const UserSchema = z.object({
   updatedAt: z.date(),
 });
 
-export type User = z.infer<typeof UserSchema>;
-
-export const UserCodecSchema = UserSchema.extend({
-  createdAt: IsoDatetimeToDateCodecSchema,
-  updatedAt: IsoDatetimeToDateCodecSchema,
+export const UserSchemaCodec = UserSchema.extend({
+  createdAt: DateSchemaCodec,
+  updatedAt: DateSchemaCodec,
 });
+
+export type User = z.infer<typeof UserSchema>;

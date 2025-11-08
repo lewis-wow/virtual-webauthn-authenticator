@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { Base64urlToBytesCodecSchema } from '../../codecs/Base64urlToBytesCodecSchema';
+import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { see } from '../../meta/see';
 import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
 
@@ -12,7 +12,7 @@ export const AuthenticatorAttestationResponseSchema =
     /**
      * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation-object
      */
-    attestationObject: Base64urlToBytesCodecSchema.meta({
+    attestationObject: BytesSchemaCodec.meta({
       description: `The attestation object is a CBOR-encoded object containing the authenticator data and the attestation statement. It is used by the Relying Party to verify the new credential and create a binding to the user account. ${see(
         'https://www.w3.org/TR/webauthn-2/#sctn-attestation-object',
       )}`,

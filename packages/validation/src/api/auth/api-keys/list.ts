@@ -1,5 +1,5 @@
 import z from 'zod';
 
-import { ApiKeySchema } from '../../../models/auth/ApiKeySchema';
+import { ApiKeySchemaCodec } from '../../../models/auth/ApiKeySchema';
 
-export const ListApiKeysResponseSchema = z.array(ApiKeySchema);
+export const ListApiKeysResponseSchema = z.array(ApiKeySchemaCodec);

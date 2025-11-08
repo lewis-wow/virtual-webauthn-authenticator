@@ -1,11 +1,11 @@
-import { ApiKeySchema } from '../../../models/auth/ApiKeySchema';
+import { ApiKeySchemaCodec } from '../../../models/auth/ApiKeySchema';
 import { GetApiKeyRequestParamSchema } from './get';
 
 export const UpdateApiKeyRequestParamSchema = GetApiKeyRequestParamSchema.meta({
   ref: 'UpdateApiKeyRequestParam',
 });
 
-export const UpdateApiKeyRequestBodySchema = ApiKeySchema.pick({
+export const UpdateApiKeyRequestBodySchema = ApiKeySchemaCodec.pick({
   name: true,
   metadata: true,
   expiresAt: true,
@@ -17,4 +17,4 @@ export const UpdateApiKeyRequestBodySchema = ApiKeySchema.pick({
     ref: 'UpdateApiKeyRequestBody',
   });
 
-export const UpdateApiKeyResponseSchema = ApiKeySchema;
+export const UpdateApiKeyResponseSchema = ApiKeySchemaCodec;
