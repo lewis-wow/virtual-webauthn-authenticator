@@ -9,8 +9,6 @@ import { contract } from '../src';
 
 export const ZOD_4_ASYNC: SchemaTransformerSync = ({ schema }) => {
   if (schema instanceof z.ZodType) {
-    // @ts-ignore
-    console.log('schema', schema.shape);
     const jsonSchema = z.toJSONSchema(schema, {
       io: 'input',
     });

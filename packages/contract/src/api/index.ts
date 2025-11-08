@@ -1,6 +1,6 @@
-import { HTTPExceptionSchema } from '@repo/validation';
 import { initContract } from '@ts-rest/core';
 
+import { authRouter } from './auth';
 import { credentialsRouter } from './credentials';
 import { healthcheckRouter } from './healthcheck';
 import { webAuthnCredentialsRouter } from './webAuthnCredentials';
@@ -12,15 +12,9 @@ export const apiRouter = c.router(
     healthcheck: healthcheckRouter,
     credentials: credentialsRouter,
     webAuthnCredentials: webAuthnCredentialsRouter,
+    auth: authRouter,
   },
   {
     pathPrefix: '/api',
-    commonResponses: {
-      400: HTTPExceptionSchema,
-      401: HTTPExceptionSchema,
-      403: HTTPExceptionSchema,
-      404: HTTPExceptionSchema,
-      500: HTTPExceptionSchema,
-    },
   },
 );

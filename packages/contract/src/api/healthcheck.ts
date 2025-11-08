@@ -1,4 +1,4 @@
-import { IsoDatetimeToDateSchema, JwtPayloadSchema } from '@repo/validation';
+import { JwtPayloadSchema } from '@repo/validation';
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
 
@@ -11,7 +11,6 @@ export const healthcheckRouter = c.router({
     responses: {
       200: z.object({
         healthy: z.literal(true),
-        codec: IsoDatetimeToDateSchema,
         jwtPayload: JwtPayloadSchema.nullable(),
       }),
     },
