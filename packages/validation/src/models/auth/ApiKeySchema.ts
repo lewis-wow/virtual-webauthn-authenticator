@@ -1,20 +1,19 @@
 import z from 'zod';
 
 import { IsoDatetimeToDateSchema } from '../../transformers/IsoDatetimeToDateSchema';
+import { JsonCodec } from '../../transformers/JsonCodec';
 
-export const ApikeySchema = z
+export const ApiKeySchema = z
   .object({
     id: z.uuid(),
     name: z.string().nullable(),
-    start: z.string().nullable(),
     prefix: z.string().nullable(),
     userId: z.string(),
     enabled: z.boolean(),
     expiresAt: IsoDatetimeToDateSchema.optional().nullable(),
-    permissions: z
-      .record(z.string(), z.array(z.string()))
-      .nullable()
-      .optional(),
+    revokedAt: IsoDatetimeToDateSchema.optional().nullable(),
+    permissions: JsonCodec(z.record(z.string(), z.array(z.string()))).nullish(),
+    metadata: JsonCodec(z.record(z.string(), z.unknown())).nullish(),
 
     createdAt: IsoDatetimeToDateSchema,
     updatedAt: IsoDatetimeToDateSchema,
@@ -22,3 +21,5 @@ export const ApikeySchema = z
   .meta({
     ref: 'ApiKey',
   });
+
+export type ApiKey = z.infer<typeof ApiKeySchema>;

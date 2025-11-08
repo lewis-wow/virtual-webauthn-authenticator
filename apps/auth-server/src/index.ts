@@ -1,10 +1,11 @@
 import { serve } from '@hono/node-server';
-import { HTTPExceptionCode } from '@repo/enums';
+import { HTTPExceptionCode, TokenType } from '@repo/enums';
 import { HTTPException } from '@repo/exception';
 import { Logger } from '@repo/logger';
 import { Hono } from 'hono';
 
 import { env } from './env';
+import { apiKeyManager } from './lib/apiKeyManager';
 import { auth } from './lib/auth';
 import { jwtIssuer } from './lib/jwtIssuer';
 
@@ -18,7 +19,16 @@ const app = new Hono();
 
 app.get('/api/auth/api-key/token', async (c) => {
   const bearerToken = c.req.header('Authorization');
-  const apiKey = bearerToken?.replace('Bearer ', '');
+  const plaintextKey = bearerToken?.replace('Bearer ', '');
+
+  if (!plaintextKey) {
+    throw new HTTPException({
+      status: 401,
+      code: HTTPExceptionCode.UNAUTHORIZED,
+    });
+  }
+
+  const apiKey = await apiKeyManager.verify(plaintextKey);
 
   if (!apiKey) {
     throw new HTTPException({
@@ -27,24 +37,11 @@ app.get('/api/auth/api-key/token', async (c) => {
     });
   }
 
-  const data = await auth.api.verifyApiKey({
-    body: {
-      key: apiKey,
-    },
-  });
-
-  if (!data.valid || data.error || !data.key) {
-    throw new HTTPException({
-      status: 401,
-      code: HTTPExceptionCode.UNAUTHORIZED,
-    });
-  }
-
   return c.json({
     token: await jwtIssuer.sign({
-      sub: data.key.id,
-      apiKey: data.key,
-      tokenType: 'API_KEY',
+      sub: apiKey.id,
+      apiKey,
+      tokenType: TokenType.API_KEY,
     }),
   });
 });

@@ -71,6 +71,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       '@t3-oss/env-core':
         specifier: ^0.13.8
         version: 0.13.8(typescript@5.9.2)(zod@4.1.12)
@@ -595,6 +598,9 @@ importers:
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       hono:
         specifier: ^4.9.10
         version: 4.9.10
@@ -604,6 +610,9 @@ importers:
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -5582,6 +5591,10 @@ packages:
   bcrypt@6.0.0:
     resolution: {integrity: sha512-cU8v/EGSrnH+HnxV2z0J7/blxH8gq7Xh2JFT6Aroax7UohdmiJJlxApMxtKfuI7z68NvvVcmR78k2LbT6efhRg==}
     engines: {node: '>= 18'}
+
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
+    hasBin: true
 
   better-auth@1.3.27:
     resolution: {integrity: sha512-SwiGAJ7yU6dBhNg0NdV1h5M8T5sa7/AszZVc4vBfMDrLLmvUfbt9JoJ0uRUJUEdKRAAxTyl9yA+F3+GhtAD80w==}
@@ -15027,6 +15040,8 @@ snapshots:
     dependencies:
       node-addon-api: 8.5.0
       node-gyp-build: 4.8.4
+
+  bcryptjs@3.0.3: {}
 
   better-auth@1.3.27(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2):
     dependencies:

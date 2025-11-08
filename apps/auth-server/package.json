@@ -9,6 +9,7 @@
     "auth:generate": "pnpm dotenvx npx @better-auth/cli generate"
   },
   "dependencies": {
+    "@repo/validation": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/enums": "workspace:*",

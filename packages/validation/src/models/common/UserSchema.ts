@@ -11,3 +11,5 @@ export const UserSchema = z.object({
   createdAt: IsoDatetimeToDateSchema,
   updatedAt: IsoDatetimeToDateSchema,
 });
+
+export type User = z.infer<typeof UserSchema>;
