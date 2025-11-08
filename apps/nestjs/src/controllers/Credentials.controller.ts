@@ -5,7 +5,7 @@ import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
 import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
-import { uuidToBuffer } from '@repo/utils';
+import { uuidToBytes } from '@repo/utils';
 import {
   type JwtPayload,
   PublicKeyCredentialCreationOptions,
@@ -35,7 +35,7 @@ export class CredentialsController {
       const { user } = jwtPayload;
 
       const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-        id: uuidToBuffer(jwtPayload.user.id),
+        id: uuidToBytes(user.id),
         name: user.name,
         displayName: user.name,
       };

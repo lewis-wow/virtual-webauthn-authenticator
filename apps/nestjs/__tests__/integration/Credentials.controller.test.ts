@@ -11,7 +11,7 @@ import {
   upsertTestingUser,
   WRONG_UUID,
 } from '@repo/test-helpers';
-import { bufferToUuid } from '@repo/utils';
+import { bytesToUuid } from '@repo/utils';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -124,7 +124,7 @@ const performAndVerifyRegistration = async (opts: {
   return {
     response,
     verification,
-    webAuthnCredentialId: bufferToUuid(
+    webAuthnCredentialId: bytesToUuid(
       Buffer.from(response.body.id, 'base64url'),
     ),
   };

@@ -1,6 +1,6 @@
 import { KeyCurveName, KeyType, TokenType } from '@repo/enums';
 import { COSEKey, JsonWebKey } from '@repo/keys';
-import { uuidToBuffer } from '@repo/utils';
+import { uuidToBytes } from '@repo/utils';
 import type {
   JwtPayload,
   PublicKeyCredentialCreationOptions,
@@ -12,7 +12,7 @@ export const CHALLENGE_BASE64URL = 'YN0gtCsuhL8HedwLHBEqmQ';
 export const CHALLENGE_RAW = Buffer.from(CHALLENGE_BASE64URL, 'base64url');
 
 export const USER_ID = 'f84468a3-f383-41ce-83e2-5aab4a712c15';
-export const USER_ID_RAW = uuidToBuffer(USER_ID);
+export const USER_ID_RAW = uuidToBytes(USER_ID);
 export const USER_EMAIL = 'john.doe@example.com';
 export const USER_NAME = 'John Doe';
 export const USER_DISPLAY_NAME = USER_NAME;
