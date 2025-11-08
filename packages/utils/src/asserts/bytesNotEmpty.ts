@@ -1,5 +1,3 @@
-export const bytesNotEmpty =
-  () =>
-  (value: unknown): value is Buffer => {
-    return Buffer.isBuffer(value) && value.byteLength > 0;
-  };
+export const bytesNotEmpty = () => (value: Uint8Array) => {
+  return value.byteLength > 0;
+};

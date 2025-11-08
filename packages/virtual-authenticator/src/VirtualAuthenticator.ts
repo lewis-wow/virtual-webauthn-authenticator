@@ -356,6 +356,10 @@ export class VirtualAuthenticator {
       publicKeyCredentialCreationOptions.attestation,
       isOptional(isEnum([Attestation.NONE])),
     );
+    console.log(
+      'challengechallenge',
+      publicKeyCredentialCreationOptions.challenge,
+    );
     assert(
       publicKeyCredentialCreationOptions.challenge,
       applyCascade(isInstanceOf(Uint8Array), hasMinBytes(16)),
