@@ -8,11 +8,6 @@ export const UserSchema = z.object({
   email: z.email(),
   emailVerified: z.boolean().default(false),
   image: z.string().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-});
-
-export const UserSchemaCodec = UserSchema.extend({
   createdAt: DateSchemaCodec,
   updatedAt: DateSchemaCodec,
 });

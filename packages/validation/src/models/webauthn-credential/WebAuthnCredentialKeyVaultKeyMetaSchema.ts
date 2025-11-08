@@ -8,18 +8,12 @@ export const WebAuthnCredentialKeyVaultKeyMetaSchema = z
     keyVaultKeyId: z.string().nullable(),
     keyVaultKeyName: z.string(),
     hsm: z.boolean(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    createdAt: DateSchemaCodec,
+    updatedAt: DateSchemaCodec,
   })
   .meta({
     id: 'WebAuthnCredentialKeyVaultKeyMeta',
     ref: 'WebAuthnCredentialKeyVaultKeyMeta',
-  });
-
-export const WebAuthnCredentialKeyVaultKeyMetaSchemaCodec =
-  WebAuthnCredentialKeyVaultKeyMetaSchema.extend({
-    createdAt: DateSchemaCodec,
-    updatedAt: DateSchemaCodec,
   });
 
 export type WebAuthnCredentialKeyVaultKeyMeta = z.infer<

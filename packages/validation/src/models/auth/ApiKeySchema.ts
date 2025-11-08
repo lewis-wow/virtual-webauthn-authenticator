@@ -16,8 +16,8 @@ export const ApiKeySchema = z
     prefix: z.string().nullable(),
     userId: z.string(),
     enabled: z.boolean(),
-    expiresAt: z.date().optional().nullable(),
-    revokedAt: z.date().optional().nullable(),
+    expiresAt: DateSchemaCodec.optional().nullable(),
+    revokedAt: DateSchemaCodec.optional().nullable(),
 
     permissions: ApiKeyPermissionsSchema.nullish(),
     metadata: ApiKeyMetadataSchema.nullish(),
@@ -26,19 +26,11 @@ export const ApiKeySchema = z
     // lookupKey: z.string(),
     // hashedKey: z.string(),
 
-    createdAt: z.date(),
-    updatedAt: z.date(),
+    createdAt: DateSchemaCodec,
+    updatedAt: DateSchemaCodec,
   })
   .meta({
     ref: 'ApiKey',
   });
-
-export const ApiKeySchemaCodec = ApiKeySchema.extend({
-  expiresAt: DateSchemaCodec.optional().nullable(),
-  revokedAt: DateSchemaCodec.optional().nullable(),
-
-  createdAt: DateSchemaCodec,
-  updatedAt: DateSchemaCodec,
-});
 
 export type ApiKey = z.infer<typeof ApiKeySchema>;

@@ -1,18 +1,18 @@
 import { TokenType } from '@repo/enums';
 import { z } from 'zod';
 
-import { UserSchemaCodec } from '../common/UserSchema';
-import { ApiKeySchemaCodec } from './ApiKeySchema';
+import { UserSchema } from '../common/UserSchema';
+import { ApiKeySchema } from './ApiKeySchema';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
 
 export const ApiKeyJwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
-  apiKey: ApiKeySchemaCodec.pick({
+  apiKey: ApiKeySchema.pick({
     id: true,
     enabled: true,
     permissions: true,
     metadata: true,
   }),
-  user: UserSchemaCodec.pick({
+  user: UserSchema.pick({
     id: true,
     email: true,
     name: true,

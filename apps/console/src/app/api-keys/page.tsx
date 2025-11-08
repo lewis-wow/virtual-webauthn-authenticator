@@ -15,14 +15,8 @@ import {
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { tsr } from '@/lib/tsr';
-// import { fetchClient } from '@/lib/api/client';
-// import { authClient } from '@/lib/authClient';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import {
-  CreateApiKeyRequestBodySchema,
-  // CreateApiKeyResponseSchema,
-  // ListApiKeysResponseSchema,
-} from '@repo/validation';
+import { CreateApiKeyRequestBodySchema } from '@repo/validation';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -70,7 +64,9 @@ const ApiKeys = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) => {
-                authApiKeyCreateMutation.mutate({ body: values });
+                authApiKeyCreateMutation.mutate({
+                  body: CreateApiKeyRequestBodySchema.encode(values),
+                });
               })}
               className="flex items-start gap-4"
             >
