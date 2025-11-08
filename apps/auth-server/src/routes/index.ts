@@ -19,11 +19,11 @@ export const app = factory.createApp().use('*', async (ctx, next) => {
   await next();
 });
 
+app.route('/', apiKey);
+
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   return auth.handler(c.req.raw);
 });
-
-app.route('/api/auth/api-key', apiKey);
 
 app.get('/.well-known/jwks.json', async (c) => {
   return c.json(await jwtIssuer.getKeys());

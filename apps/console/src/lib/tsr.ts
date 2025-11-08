@@ -8,9 +8,10 @@ export const tsr = initTsrReactQuery(contract, {
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
   },
+  validateResponse: true,
 });
 
-export const apiClient = initClient(contract, {
+export const $api = initClient(contract, {
   baseUrl: '/',
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,

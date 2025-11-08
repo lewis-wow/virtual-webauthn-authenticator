@@ -112,6 +112,8 @@ export class Proxy {
         duplex: 'half' as const, // Required for streaming request bodies
       };
 
+      console.log('proxyInit', proxyInit);
+
       // Call Hono's proxy helper to forward the request and get the response.
       const proxyResponse = await proxy(targetURL, proxyInit);
 

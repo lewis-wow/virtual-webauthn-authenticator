@@ -1,8 +1,11 @@
 import z from 'zod';
 
-import { ApiKeySchemaCodec } from '../../../models/auth/ApiKeySchema';
+import {
+  ApiKeySchemaCodec,
+  ApiKeySchema,
+} from '../../../models/auth/ApiKeySchema';
 
-export const CreateApiKeyRequestBodySchema = ApiKeySchemaCodec.pick({
+export const CreateApiKeyRequestBodySchema = ApiKeySchema.pick({
   name: true,
   permissions: true,
   metadata: true,
