@@ -3,7 +3,7 @@ import type { PublicKeyCredentialRequestOptions } from '@repo/validation';
 import { CHALLENGE_RAW, RP_ID } from './consts';
 
 export const createPublicKeyCredentialRequestOptions = (opts: {
-  credentialID: Buffer;
+  credentialID: Uint8Array;
 }) =>
   ({
     challenge: CHALLENGE_RAW,

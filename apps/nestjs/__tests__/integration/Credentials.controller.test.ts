@@ -6,7 +6,7 @@ import { COSEKeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import {
   CHALLENGE_BASE64URL,
-  MOCK_JWT_PAYLOAD,
+  MOCK_PERSONAL_JWT_PAYLOAD,
   RP_ID,
   upsertTestingUser,
   WRONG_UUID,
@@ -222,7 +222,7 @@ describe('CredentialsController', () => {
   let base64CredentialID: string;
 
   beforeAll(async () => {
-    token = await jwtIssuer.sign(MOCK_JWT_PAYLOAD);
+    token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
 
     const appRef = await Test.createTestingModule({
       imports: [AppModule],

@@ -95,7 +95,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   let authenticator: VirtualAuthenticator;
 
   let credentialID: string;
-  let credentialRawID: Buffer;
+  let credentialRawID: Uint8Array;
   let counter: number;
   let publicKey: Uint8Array<ArrayBuffer>;
 

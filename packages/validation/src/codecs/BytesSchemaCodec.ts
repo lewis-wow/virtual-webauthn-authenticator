@@ -3,9 +3,9 @@ import z from 'zod';
 import { BytesSchema } from '../models/common/BytesSchema';
 
 export const BytesSchemaCodec = z
-  .codec(z.base64(), BytesSchema, {
-    decode: (base64String) => z.util.base64ToUint8Array(base64String),
-    encode: (bytes) => z.util.uint8ArrayToBase64(bytes),
+  .codec(z.base64url(), BytesSchema, {
+    decode: (base64String) => z.util.base64urlToUint8Array(base64String),
+    encode: (bytes) => z.util.uint8ArrayToBase64url(bytes),
   })
   .meta({
     ref: 'Base64URL',

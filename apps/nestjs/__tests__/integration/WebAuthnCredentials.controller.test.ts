@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
 import { KeyVault } from '@repo/key-vault';
 import {
-  MOCK_JWT_PAYLOAD,
+  MOCK_PERSONAL_JWT_PAYLOAD,
   upsertTestingUser,
   upsertTestingWebAuthnCredential,
   WEBAUTHN_CREDENTIAL_ID,
@@ -35,7 +35,7 @@ describe('WebAuthnCredentialsController', () => {
       },
     });
 
-    token = await jwtIssuer.sign(MOCK_JWT_PAYLOAD);
+    token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
 
     const appRef = await Test.createTestingModule({
       imports: [AppModule],
@@ -85,27 +85,27 @@ describe('WebAuthnCredentialsController', () => {
         .expect(200);
 
       expect(listWebAuthnCredentialsResponse.body).toMatchInlineSnapshot(`
-      [
-        {
-          "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8+Tf52KT82i3pT68spV2unkjceXY=",
-          "counter": 0,
-          "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
-          "name": null,
-          "rpId": "example.com",
-          "transports": [],
-          "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
-          "webAuthnCredentialKeyMetaType": "KEY_VAULT",
-          "webAuthnCredentialKeyVaultKeyMeta": {
-            "createdAt": "1970-01-01T00:00:00.000Z",
-            "hsm": false,
-            "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
-            "keyVaultKeyId": "4b45595f5641554c545f4b45595f4944",
-            "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
-            "updatedAt": "1970-01-01T00:00:00.000Z",
+        [
+          {
+            "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
+            "counter": 0,
+            "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
+            "name": null,
+            "rpId": "example.com",
+            "transports": [],
+            "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
+            "webAuthnCredentialKeyMetaType": "KEY_VAULT",
+            "webAuthnCredentialKeyVaultKeyMeta": {
+              "createdAt": "1970-01-01T00:00:00.000Z",
+              "hsm": false,
+              "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
+              "keyVaultKeyId": "4b45595f5641554c545f4b45595f4944",
+              "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
+              "updatedAt": "1970-01-01T00:00:00.000Z",
+            },
           },
-        },
-      ]
-    `);
+        ]
+      `);
     });
 
     test('As guest', async () => {
@@ -127,25 +127,25 @@ describe('WebAuthnCredentialsController', () => {
         .expect(200);
 
       expect(getWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
-      {
-        "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8+Tf52KT82i3pT68spV2unkjceXY=",
-        "counter": 0,
-        "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
-        "name": null,
-        "rpId": "example.com",
-        "transports": [],
-        "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
-        "webAuthnCredentialKeyMetaType": "KEY_VAULT",
-        "webAuthnCredentialKeyVaultKeyMeta": {
-          "createdAt": "1970-01-01T00:00:00.000Z",
-          "hsm": false,
-          "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
-          "keyVaultKeyId": "4b45595f5641554c545f4b45595f4944",
-          "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
-          "updatedAt": "1970-01-01T00:00:00.000Z",
-        },
-      }
-    `);
+        {
+          "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
+          "counter": 0,
+          "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
+          "name": null,
+          "rpId": "example.com",
+          "transports": [],
+          "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
+          "webAuthnCredentialKeyMetaType": "KEY_VAULT",
+          "webAuthnCredentialKeyVaultKeyMeta": {
+            "createdAt": "1970-01-01T00:00:00.000Z",
+            "hsm": false,
+            "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
+            "keyVaultKeyId": "4b45595f5641554c545f4b45595f4944",
+            "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
+            "updatedAt": "1970-01-01T00:00:00.000Z",
+          },
+        }
+      `);
     });
 
     test('As guest', async () => {
