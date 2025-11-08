@@ -5,27 +5,16 @@ import { jwtIssuer } from '@/lib/jwtIssuer';
 import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
+import { contract } from '@repo/contract';
 import { TokenType } from '@repo/enums';
 import { Unauthorized } from '@repo/exception';
-import {
-  CreateApiKeyRequestBodySchema,
-  CreateApiKeyResponseSchema,
-  DeleteApiKeyRequestParamSchema,
-  DeleteApiKeyResponseSchema,
-  GetApiKeyRequestParamSchema,
-  GetApiKeyResponseSchema,
-  ListApiKeysResponseSchema,
-  UpdateApiKeyRequestBodySchema,
-  UpdateApiKeyRequestParamSchema,
-  UpdateApiKeyResponseSchema,
-} from '@repo/validation';
 
 export const apiKey = factory.createApp();
 
 apiKey.post(
-  '/',
+  contract.api.auth.apiKeys.create.path,
   requireAuthMiddleware,
-  sValidator('json', CreateApiKeyRequestBodySchema),
+  sValidator('json', contract.api.auth.apiKeys.create.body),
   async (ctx) => {
     const json = ctx.req.valid('json');
 
@@ -37,22 +26,30 @@ apiKey.post(
       expiresAt: json.expiresAt,
     });
 
-    return ctx.json(CreateApiKeyResponseSchema.encode(apiKey));
+    return ctx.json(
+      contract.api.auth.apiKeys.create.responses[200].encode(apiKey),
+    );
   },
 );
 
-apiKey.get('/', requireAuthMiddleware, async (ctx) => {
-  const apiKeys = await apiKeyManager.list({
-    userId: ctx.var.user!.id,
-  });
+apiKey.get(
+  contract.api.auth.apiKeys.list.path,
+  requireAuthMiddleware,
+  async (ctx) => {
+    const apiKeys = await apiKeyManager.list({
+      userId: ctx.var.user!.id,
+    });
 
-  return ctx.json(ListApiKeysResponseSchema.encode(apiKeys));
-});
+    return ctx.json(
+      contract.api.auth.apiKeys.list.responses[200].encode(apiKeys),
+    );
+  },
+);
 
 apiKey.get(
-  '/:id',
+  contract.api.auth.apiKeys.get.path,
   requireAuthMiddleware,
-  sValidator('param', GetApiKeyRequestParamSchema),
+  sValidator('param', contract.api.auth.apiKeys.get.pathParams),
   async (ctx) => {
     const param = ctx.req.valid('param');
 
@@ -61,15 +58,17 @@ apiKey.get(
       id: param.id,
     });
 
-    return ctx.json(GetApiKeyResponseSchema.encode(apiKey));
+    return ctx.json(
+      contract.api.auth.apiKeys.get.responses[200].encode(apiKey),
+    );
   },
 );
 
 apiKey.put(
-  '/:id',
+  contract.api.auth.apiKeys.update.path,
   requireAuthMiddleware,
-  sValidator('param', UpdateApiKeyRequestParamSchema),
-  sValidator('json', UpdateApiKeyRequestBodySchema),
+  sValidator('param', contract.api.auth.apiKeys.update.pathParams),
+  sValidator('json', contract.api.auth.apiKeys.update.body),
   async (ctx) => {
     const param = ctx.req.valid('param');
     const json = ctx.req.valid('json');
@@ -86,14 +85,16 @@ apiKey.put(
       },
     });
 
-    return ctx.json(UpdateApiKeyResponseSchema.encode(apiKey));
+    return ctx.json(
+      contract.api.auth.apiKeys.update.responses[200].encode(apiKey),
+    );
   },
 );
 
 apiKey.delete(
-  '/:id',
+  contract.api.auth.apiKeys.delete.path,
   requireAuthMiddleware,
-  sValidator('param', DeleteApiKeyRequestParamSchema),
+  sValidator('param', contract.api.auth.apiKeys.delete.pathParams),
   async (ctx) => {
     const param = ctx.req.valid('param');
 
@@ -103,14 +104,14 @@ apiKey.delete(
     });
 
     return ctx.json(
-      DeleteApiKeyResponseSchema.encode({
+      contract.api.auth.apiKeys.delete.responses[200].encode({
         success: true,
       }),
     );
   },
 );
 
-apiKey.get('/token', async (ctx) => {
+apiKey.get(contract.api.auth.apiKeys.getToken.path, async (ctx) => {
   const bearerToken = ctx.req.header('Authorization');
   const plaintextKey = bearerToken?.replace('Bearer ', '');
 
@@ -130,12 +131,14 @@ apiKey.get('/token', async (ctx) => {
     },
   });
 
-  return ctx.json({
-    token: await jwtIssuer.sign({
-      sub: apiKey.id,
-      apiKey,
-      user,
-      tokenType: TokenType.API_KEY,
+  return ctx.json(
+    contract.api.auth.apiKeys.getToken.responses[200].encode({
+      token: await jwtIssuer.sign({
+        sub: apiKey.id,
+        apiKey,
+        user,
+        tokenType: TokenType.API_KEY,
+      }),
     }),
-  });
+  );
 });

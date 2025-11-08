@@ -5,6 +5,7 @@ import {
   DeleteApiKeyResponseSchema,
   GetApiKeyRequestParamSchema,
   GetApiKeyResponseSchema,
+  GetTokenApiKeysResponseSchema,
   ListApiKeysResponseSchema,
   UpdateApiKeyRequestBodySchema,
   UpdateApiKeyRequestParamSchema,
@@ -28,6 +29,13 @@ export const apiKeysRouter = c.router({
     path: '/api-keys',
     responses: {
       200: ListApiKeysResponseSchema,
+    },
+  },
+  getToken: {
+    method: 'GET',
+    path: '/api-keys/token',
+    responses: {
+      200: GetTokenApiKeysResponseSchema,
     },
   },
   get: {
