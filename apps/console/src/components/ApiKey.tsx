@@ -12,7 +12,7 @@ export type ApiKeyProps = {
   name: string | null;
   prefix: string | null;
   createdAt: Date;
-  revokedAt: Date | null;
+  revokedAt?: Date | null;
   onDelete?: () => void;
   onRevoke?: () => void;
 };
