@@ -1,5 +1,5 @@
 {
-  "name": "@repo/auth-server",
+  "name": "@repo/example-hono",
   "type": "module",
   "scripts": {
     "start": "VIRTUAL_AUTHENTICATOR_API_KEY=__YOUR_API_KEY__ pnpm dotenvx node dist/index.js"
