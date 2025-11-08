@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { IsoDatetimeToDateSchema } from '../../transformers/IsoDatetimeToDateSchema';
+import { IsoDatetimeToDateCodecSchema } from '../../codecs/IsoDatetimeToDateCodecSchema';
 
 export const UserSchema = z.object({
   id: z.uuid(),
@@ -8,8 +8,13 @@ export const UserSchema = z.object({
   email: z.email(),
   emailVerified: z.boolean().default(false),
   image: z.string().nullable(),
-  createdAt: IsoDatetimeToDateSchema,
-  updatedAt: IsoDatetimeToDateSchema,
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export type User = z.infer<typeof UserSchema>;
+
+export const UserCodecSchema = UserSchema.extend({
+  createdAt: IsoDatetimeToDateCodecSchema,
+  updatedAt: IsoDatetimeToDateCodecSchema,
+});

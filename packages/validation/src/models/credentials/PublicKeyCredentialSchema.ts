@@ -1,7 +1,7 @@
 import z from 'zod';
 
+import { Base64urlToBytesCodecSchema } from '../../codecs/Base64urlToBytesCodecSchema';
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema';
@@ -15,7 +15,7 @@ import { CredentialSchema } from './CredentialSchema';
  * @see https://www.w3.org/TR/webauthn/#iface-publickeycredential
  */
 export const PublicKeyCredentialSchema = CredentialSchema.extend({
-  rawId: Base64URLBufferSchema.meta({
+  rawId: Base64urlToBytesCodecSchema.meta({
     description: 'The raw ID of the credential.',
   }),
   response: z.union([

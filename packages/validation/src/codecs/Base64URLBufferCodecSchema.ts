@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const Base64URLBufferSchema = z
+export const Base64URLBufferCodecSchema = z
   .codec(z.base64url(), z.instanceof(Buffer), {
     decode: (value) => Buffer.from(value, 'base64url'),
     encode: (value) => value.toString('base64url'),

@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { IsoDatetimeToDateSchema } from '../../transformers/IsoDatetimeToDateSchema';
+import { IsoDatetimeToDateCodecSchema } from '../../codecs/IsoDatetimeToDateCodecSchema';
 
 export const WebAuthnCredentialKeyVaultKeyMetaSchema = z
   .object({
@@ -8,8 +8,8 @@ export const WebAuthnCredentialKeyVaultKeyMetaSchema = z
     keyVaultKeyId: z.string().nullable(),
     keyVaultKeyName: z.string(),
     hsm: z.boolean(),
-    createdAt: IsoDatetimeToDateSchema,
-    updatedAt: IsoDatetimeToDateSchema,
+    createdAt: IsoDatetimeToDateCodecSchema,
+    updatedAt: IsoDatetimeToDateCodecSchema,
   })
   .meta({
     id: 'WebAuthnCredentialKeyVaultKeyMeta',

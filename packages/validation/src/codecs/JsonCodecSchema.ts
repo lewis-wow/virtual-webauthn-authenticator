@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const JsonCodec = <T extends z.ZodType>(schema: T) =>
+export const JsonCodecSchema = <T extends z.ZodType>(schema: T) =>
   z.codec(z.string(), schema, {
     decode: (jsonString, ctx) => {
       try {

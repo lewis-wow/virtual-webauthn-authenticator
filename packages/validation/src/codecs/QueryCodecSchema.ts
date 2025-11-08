@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 // Make sure you have 'qs' and '@types/qs' installed
 
-export const QuerySchema = <T extends z.ZodObject>(
+export const QueryCodecSchema = <T extends z.ZodObject>(
   out: T, // The inner schema that validates the object
   options?: IStringifyOptions, // Optional: allow passing qs options
 ) =>

@@ -1,10 +1,10 @@
 import z from 'zod';
 
+import { QueryCodecSchema } from '../../codecs/QueryCodecSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from '../../models/credentials/PublicKeyCredentialRequestOptionsSchema';
 import { PublicKeyCredentialSchema } from '../../models/credentials/PublicKeyCredentialSchema';
-import { QuerySchema } from '../../transformers/QuerySchema';
 
-export const GetCredentialRequestQuerySchema = QuerySchema(
+export const GetCredentialRequestQuerySchema = QueryCodecSchema(
   PublicKeyCredentialRequestOptionsSchema.extend({
     rpId: z.string(),
   }),
