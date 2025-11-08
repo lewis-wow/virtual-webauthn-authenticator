@@ -4,7 +4,7 @@ import { TokenType } from '@repo/enums';
 import { type JwtPayload } from '@repo/validation';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { jwt as jwtPlugin, bearer, apiKey } from 'better-auth/plugins';
+import { jwt as jwtPlugin, bearer } from 'better-auth/plugins';
 
 import { jwtIssuer } from './jwtIssuer';
 import { prisma } from './prisma';
@@ -21,6 +21,7 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    bearer(),
     jwtPlugin({
       jwks: {
         remoteUrl: `${env.BASE_URL}/.well-known/jwks.json`,
@@ -54,7 +55,6 @@ export const auth = betterAuth({
         },
       },
     }),
-    bearer(),
   ],
   trustedOrigins: env.TRUSTED_ORIGINS,
   advanced: {

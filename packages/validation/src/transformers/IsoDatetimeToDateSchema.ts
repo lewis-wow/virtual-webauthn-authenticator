@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const IsoDatetimeToDateSchema = z
-  .codec(z.iso.datetime().or(z.date()), z.date(), {
+  .codec(z.iso.datetime(), z.date(), {
     decode: (isoString) => new Date(isoString),
     encode: (date) => date.toISOString(),
   })

@@ -1,4 +1,4 @@
-import { KeyCurveName, KeyType } from '@repo/enums';
+import { KeyCurveName, KeyType, TokenType } from '@repo/enums';
 import { COSEKey, JsonWebKey } from '@repo/keys';
 import { uuidToBuffer } from '@repo/utils';
 import type {
@@ -16,11 +16,28 @@ export const USER_ID_RAW = uuidToBuffer(USER_ID);
 export const USER_EMAIL = 'john.doe@example.com';
 export const USER_NAME = 'John Doe';
 export const USER_DISPLAY_NAME = USER_NAME;
-export const MOCK_JWT_PAYLOAD = {
-  id: USER_ID,
-  name: USER_NAME,
-  email: USER_EMAIL,
-} satisfies JwtPayload;
+
+export const API_KEY_ID = 'f84468a3-f383-41ce-83e2-5aab4a712c16';
+
+export const MOCK_PERSONAL_JWT_PAYLOAD = {
+  user: {
+    id: USER_ID,
+    name: USER_NAME,
+    email: USER_EMAIL,
+  },
+  tokenType: TokenType.PERSONAL,
+} as const satisfies JwtPayload;
+
+export const MOCK_API_KEY_JWT_PAYLOAD = {
+  ...MOCK_PERSONAL_JWT_PAYLOAD,
+  apiKey: {
+    id: API_KEY_ID,
+    enabled: true,
+    permissions: {},
+    metadata: undefined,
+  },
+  tokenType: TokenType.API_KEY,
+} as const satisfies JwtPayload;
 
 export const RP_ID = 'example.com';
 export const RP_NAME = 'example.com';

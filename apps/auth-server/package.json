@@ -9,13 +9,14 @@
     "auth:generate": "pnpm dotenvx npx @better-auth/cli generate"
   },
   "dependencies": {
-    "@repo/validation": "workspace:*",
+    "@hono/node-server": "^1.19.5",
+    "@hono/standard-validator": "^0.1.5",
     "@repo/auth": "workspace:*",
-    "@repo/logger": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
-    "@hono/node-server": "^1.19.5",
+    "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/validation": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "better-auth": "^1.3.27",
     "hono": "^4.9.10",

@@ -5,7 +5,11 @@ import { UserSchema } from '../common/UserSchema';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
 
 export const PersonalJwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
-  user: UserSchema,
+  user: UserSchema.pick({
+    id: true,
+    email: true,
+    name: true,
+  }),
   tokenType: z.literal(TokenType.PERSONAL),
 }).meta({
   ref: 'JwtPayload',

@@ -1,9 +1,14 @@
+import {
+  ApiKeyDeleteEnabledFailed,
+  ApiKeyDeleteFailed,
+  ApiKeyNotFound,
+  ApiKeyRevokeFailed,
+} from '@repo/exception';
 import { Logger } from '@repo/logger';
 import { Prisma, type PrismaClient } from '@repo/prisma';
-import { ApiKeySchema, type ApiKey } from '@repo/validation';
+import { type ApiKey } from '@repo/validation';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
-import z from 'zod';
 
 const LOG_PREFIX = 'API_KEY';
 const log = new Logger({
@@ -54,6 +59,26 @@ export class ApiKeyManager {
     this.prisma = opts.prisma;
   }
 
+  private _stringifyNonNullish(
+    value: object | null | undefined,
+  ): string | null | undefined {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    return JSON.stringify(value);
+  }
+
+  private _parseNonNullish<T>(
+    value: string | null | undefined,
+  ): T | null | undefined {
+    if (value === null || value === undefined) {
+      return value;
+    }
+
+    return JSON.parse(value);
+  }
+
   /**
    * Generates a new, secure random string.
    * @param length Number of random bytes to generate.
@@ -71,10 +96,10 @@ export class ApiKeyManager {
    */
   async generate(opts: {
     userId: string;
-    name?: string;
-    expiresAt?: Date;
-    permissions?: Record<string, string[]>;
-    metadata?: Record<string, unknown>;
+    name?: string | null;
+    expiresAt?: Date | null;
+    permissions?: Record<string, string[]> | null;
+    metadata?: Record<string, unknown> | null;
   }): Promise<{ plaintextKey: string; apiKey: ApiKey }> {
     const { userId, name, expiresAt, permissions, metadata } = opts;
 
@@ -98,8 +123,8 @@ export class ApiKeyManager {
         lookupKey,
         name,
         prefix: ApiKeyManager.KEY_PREFIX,
-        permissions: permissions ? JSON.stringify(permissions) : undefined,
-        metadata: metadata ? JSON.stringify(metadata) : undefined,
+        permissions: this._stringifyNonNullish(permissions),
+        metadata: this._stringifyNonNullish(metadata),
       },
     });
 
@@ -108,7 +133,14 @@ export class ApiKeyManager {
       keyId: apiKey.id,
     });
 
-    return { plaintextKey, apiKey: ApiKeySchema.decode(apiKey) };
+    return {
+      plaintextKey,
+      apiKey: {
+        ...apiKey,
+        metadata: this._parseNonNullish(apiKey.metadata),
+        permissions: this._parseNonNullish(apiKey.permissions),
+      },
+    };
   }
 
   /**
@@ -173,9 +205,9 @@ export class ApiKeyManager {
       return null;
     }
 
-    // 4. Update last used time.
+    // Update last used time.
     // We do this after returning, so we don't slow down the request.
-    this.prisma.apikey
+    void this.prisma.apikey
       .update({
         where: { id: apiKey.id },
         data: { lastUsedAt: new Date() },
@@ -189,62 +221,111 @@ export class ApiKeyManager {
 
     log.info('API key validated', { keyId: apiKey.id });
 
-    return ApiKeySchema.decode(apiKey);
+    return {
+      ...apiKey,
+      metadata: this._parseNonNullish(apiKey.metadata),
+      permissions: this._parseNonNullish(apiKey.permissions),
+    };
   }
 
   /**
    * Revokes a key by its 'id' (cuid).
    * This is a soft-delete.
    */
-  async revoke(opts: { id: string }): Promise<ApiKey | null> {
-    const { id } = opts;
+  async revoke(opts: { userId: string; id: string }): Promise<ApiKey> {
+    const { userId, id } = opts;
 
     try {
       const apiKey = await this.prisma.apikey.update({
-        where: { id },
+        where: { userId, id },
         data: { revokedAt: new Date() },
       });
 
       log.info('API key revoked', { keyId: id });
-      return ApiKeySchema.decode(apiKey);
-    } catch (error) {
-      log.error('Failed to revoke key', { keyId: id, error });
-      return null;
+      return {
+        ...apiKey,
+        metadata: this._parseNonNullish(apiKey.metadata),
+        permissions: this._parseNonNullish(apiKey.permissions),
+      };
+    } catch {
+      throw new ApiKeyRevokeFailed();
     }
+  }
+
+  async update(opts: {
+    userId: string;
+    id: string;
+    data: Partial<
+      Pick<ApiKey, 'enabled' | 'name' | 'metadata' | 'expiresAt' | 'revokedAt'>
+    >;
+  }): Promise<ApiKey> {
+    const { userId, id, data } = opts;
+
+    const apiKey = await this.prisma.apikey.update({
+      where: { userId, id },
+      data: {
+        enabled: data.enabled,
+        name: data.name,
+        expiresAt: data.expiresAt,
+        revokedAt: data.revokedAt,
+        metadata: this._stringifyNonNullish(data.metadata),
+      },
+    });
+
+    return {
+      ...apiKey,
+      metadata: this._parseNonNullish(apiKey.metadata),
+      permissions: this._parseNonNullish(apiKey.permissions),
+    };
   }
 
   /**
    * Deletes a key by its 'id' (cuid).
    * This is a hard-delete. Use with caution.
    */
-  async delete(opts: { id: string }): Promise<ApiKey | null> {
-    const { id } = opts;
+  async delete(opts: { userId: string; id: string }): Promise<ApiKey | null> {
+    const { userId, id } = opts;
 
-    try {
-      const apiKey = await this.prisma.apikey.delete({
-        where: { id },
+    const apiKey = await this.prisma.apikey
+      .delete({
+        where: { userId, id },
+      })
+      .catch(() => {
+        throw new ApiKeyDeleteFailed();
       });
 
-      log.info('API key deleted', { keyId: id });
-      return ApiKeySchema.decode(apiKey);
-    } catch (error) {
-      log.error('Failed to delete key', { keyId: id, error });
-      return null;
+    if (apiKey.enabled) {
+      throw new ApiKeyDeleteEnabledFailed();
     }
+
+    log.info('API key deleted', { keyId: id });
+    return {
+      ...apiKey,
+      metadata: this._parseNonNullish(apiKey.metadata),
+      permissions: this._parseNonNullish(apiKey.permissions),
+    };
   }
 
   /**
    * Gets the public-safe details of a single key.
    */
-  async get(opts: { id: string }): Promise<ApiKey | null> {
-    const { id } = opts;
+  async get(opts: { userId: string; id: string }): Promise<ApiKey> {
+    const { userId, id } = opts;
 
     const apiKey = await this.prisma.apikey.findUnique({
-      where: { id },
+      where: { userId, id },
       select: PUBLIC_API_KEY_SELECT,
     });
 
-    return apiKey ? ApiKeySchema.decode(apiKey) : null;
+    if (!apiKey) {
+      throw new ApiKeyNotFound();
+    }
+
+    return {
+      ...apiKey,
+      metadata: this._parseNonNullish(apiKey.metadata),
+      permissions: this._parseNonNullish(apiKey.permissions),
+    };
   }
 
   /**
@@ -259,6 +340,10 @@ export class ApiKeyManager {
       orderBy: { createdAt: 'desc' },
     });
 
-    return z.array(ApiKeySchema).decode(apiKeys);
+    return apiKeys.map((apiKey) => ({
+      ...apiKey,
+      metadata: this._parseNonNullish(apiKey.metadata),
+      permissions: this._parseNonNullish(apiKey.permissions),
+    }));
   }
 }
