@@ -1,6 +1,6 @@
 import type z from 'zod';
 
-import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
+import { BytesSchemaCodec } from '../../dto/common/BytesSchemaCodec';
 import { see } from '../../meta/see';
 
 /**

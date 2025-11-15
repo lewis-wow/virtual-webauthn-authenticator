@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
+import { DateSchemaCodec } from '../../dto/common/DateSchemaCodec';
 
 export const UserSchema = z.object({
   id: z.uuid(),
