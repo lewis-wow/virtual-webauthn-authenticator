@@ -7,11 +7,13 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run integration --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run integration --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/test-helpers": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
