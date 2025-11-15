@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {
     "test:integration": "vitest run integration --config __tests__/vitest.integration.config.ts",

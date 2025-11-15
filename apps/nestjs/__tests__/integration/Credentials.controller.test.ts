@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { MockJwtAudience } from '@repo/auth/__mocks__';
+
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
@@ -30,7 +32,7 @@ import { AppModule } from '../../src/app.module';
 import { env } from '../../src/env';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
-import { MockJwtAudience } from '../helpers/MockJwtAudience';
+import { JWT_CONFIG } from '../helpers/consts';
 import { prisma } from '../helpers/prisma';
 
 /**
@@ -208,10 +210,7 @@ const performAndVerifyAuthRequest = async (opts: {
 const jwtIssuer = new JwtIssuer({
   prisma,
   encryptionKey: env.ENCRYPTION_KEY,
-  config: {
-    aud: 'http://localhost:3002',
-    iss: 'http://localhost:3002',
-  },
+  config: JWT_CONFIG,
 });
 
 describe('CredentialsController', () => {
@@ -228,7 +227,14 @@ describe('CredentialsController', () => {
       imports: [AppModule],
     })
       .overrideProvider(JwtAudience)
-      .useValue(new MockJwtAudience(await jwtIssuer.getKeys()))
+      .useValue(
+        new MockJwtAudience({
+          config: JWT_CONFIG,
+          jwksFactory: async () => {
+            return await jwtIssuer.jsonWebKeySet();
+          },
+        }),
+      )
       .overrideProvider(PrismaService)
       .useValue(prisma)
       .compile();
