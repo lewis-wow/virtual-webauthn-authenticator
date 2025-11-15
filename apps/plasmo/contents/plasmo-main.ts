@@ -1,11 +1,8 @@
 import { sendToBackgroundViaRelay } from '@plasmohq/messaging';
 import type { PlasmoCSConfig } from 'plasmo';
-import { Logger } from '~node_modules/@repo/logger/src/Logger';
 
 const LOG_PREFIX = 'MAIN';
-const log = new Logger({
-  prefix: LOG_PREFIX,
-});
+console.log(`[${LOG_PREFIX}] Running interceptor.`);
 
 export const config: PlasmoCSConfig = {
   matches: ['<all_urls>'],
@@ -14,23 +11,23 @@ export const config: PlasmoCSConfig = {
 };
 
 navigator.credentials.get = async (opts) => {
-  log.debug('Intercepted navigator.credentials.get');
+  console.log(`[${LOG_PREFIX}] Intercepted navigator.credentials.get`);
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.get',
-    body: {},
+    body: opts,
   });
 
-  log.debug('response', response);
+  console.log(`[${LOG_PREFIX}] response: `, response);
   return response.data;
 };
 
 navigator.credentials.create = async (opts) => {
-  log.debug('Intercepted navigator.credentials.create');
+  console.log(`[${LOG_PREFIX}] Intercepted navigator.credentials.create`);
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.create',
     body: opts,
   });
 
-  log.debug('response', response);
+  console.log(`[${LOG_PREFIX}] response: `, response);
   return response.data;
 };

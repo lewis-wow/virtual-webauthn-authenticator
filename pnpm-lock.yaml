@@ -509,9 +509,9 @@ importers:
       '@plasmohq/messaging':
         specifier: 0.7.1
         version: 0.7.1(react@18.2.0)
-      '@repo/logger':
+      '@repo/validation':
         specifier: workspace:*
-        version: link:../../packages/logger
+        version: link:../../packages/validation
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
@@ -1291,9 +1291,6 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
-      qs:
-        specifier: ^6.14.0
-        version: 6.14.0
       typebox:
         specifier: ^1.0.34
         version: 1.0.34
@@ -1313,9 +1310,6 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
-      '@types/qs':
-        specifier: ^6.14.0
-        version: 6.14.0
       barrelsby:
         specifier: ^2.8.1
         version: 2.8.1

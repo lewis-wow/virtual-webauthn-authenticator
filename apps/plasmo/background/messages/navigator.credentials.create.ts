@@ -1,26 +1,30 @@
 import type { PlasmoMessaging } from '@plasmohq/messaging';
-import type {
-  IPublicKeyCredentialCreationOptions,
-  IPublicKeyCredentialAuthenticatorAttestationResponse,
-} from '@repo/types';
+import {
+  type PublicKeyCredentialCreationOptions,
+  PublicKeyCredentialCreationOptionsSchema,
+  type PublicKeyCredential,
+  PublicKeyCredentialSchema,
+} from '@repo/validation';
 import type { MessageResponse } from '~types';
 
 const handler: PlasmoMessaging.MessageHandler<
-  IPublicKeyCredentialCreationOptions,
-  MessageResponse<IPublicKeyCredentialAuthenticatorAttestationResponse>
+  PublicKeyCredentialCreationOptions,
+  MessageResponse<PublicKeyCredential>
 > = async (req, res) => {
   try {
     const response = await fetch(
-      `${process.env.PLASMO_PUBLIC_API_BASE_URL}/credentials`,
+      `${process.env.PLASMO_PUBLIC_API_BASE_URL}/credentials/create`,
       {
         method: 'POST',
-        body: JSON.stringify(req.body!),
+        body: JSON.stringify(
+          PublicKeyCredentialCreationOptionsSchema.encode(req.body!),
+        ),
       },
     );
 
     const json = await response.json();
 
-    res.send({ success: true, data: json });
+    res.send({ success: true, data: PublicKeyCredentialSchema.parse(json) });
   } catch (error) {
     res.send({ success: false, error: error as Error });
   }
