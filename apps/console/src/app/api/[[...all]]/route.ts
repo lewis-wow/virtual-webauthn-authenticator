@@ -4,7 +4,7 @@ import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
 import { handle } from 'hono/vercel';
 
-export const authClient = createAuthClient({
+const authClient = createAuthClient({
   plugins: [jwtClient()],
 });
 
