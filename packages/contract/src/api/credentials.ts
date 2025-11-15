@@ -11,16 +11,16 @@ const c = initContract();
 export const credentialsRouter = c.router({
   create: {
     method: 'POST',
-    path: '/credentials',
+    path: '/credentials/create',
     body: CreateCredentialRequestBodySchema,
     responses: {
       200: CreateCredentialResponseSchema,
     },
   },
   get: {
-    method: 'GET',
-    path: '/credentials',
-    query: GetCredentialRequestQuerySchema,
+    method: 'POST',
+    path: '/credentials/get',
+    body: GetCredentialRequestQuerySchema,
     responses: {
       200: GetCredentialResponseSchema,
     },

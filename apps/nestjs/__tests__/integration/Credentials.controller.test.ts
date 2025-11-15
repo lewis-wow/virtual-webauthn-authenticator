@@ -23,7 +23,6 @@ import {
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
-import qs from 'qs';
 import request, { type Response } from 'supertest';
 import { App } from 'supertest/types';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
@@ -70,7 +69,7 @@ const performAndVerifyRegistration = async (opts: {
   const { app, token, payload } = opts;
 
   const response = await request(app)
-    .post('/api/credentials')
+    .post('/api/credentials/create')
     .set('Authorization', `Bearer ${token}`)
     .send(payload)
     .expect('Content-Type', /json/)
@@ -156,16 +155,15 @@ const performAndVerifyAuthRequest = async (opts: {
   const { id: credentialID, publicKey: credentialPublicKey } =
     registrationVerification.registrationInfo!.credential;
 
-  const query = qs.stringify({
+  const query = {
     ...BASE_AUTH_QUERY,
     ...queryOptions,
-  });
+  };
 
   const response = await request(app)
-    .get(`/api/credentials`)
-    .query(query)
+    .post('/api/credentials/get')
     .set('Authorization', `Bearer ${token}`)
-    .send()
+    .send(query)
     .expect('Content-Type', /json/)
     .expect(200);
 
@@ -269,7 +267,7 @@ describe('CredentialsController', () => {
     await app.close();
   });
 
-  describe('POST /api/credentials', () => {
+  describe('POST /api/credentials/create', () => {
     test('With multiple supported `pubKeyCredParams`', async () => {
       const { webAuthnCredentialId } = await performAndVerifyRegistration({
         app: app.getHttpServer(),
@@ -312,7 +310,7 @@ describe('CredentialsController', () => {
 
     test('With multiple unsupported `pubKeyCredParams`', async () => {
       await request(app.getHttpServer())
-        .post('/api/credentials')
+        .post('/api/credentials/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
           ...REGISTRATION_PAYLOAD,
@@ -327,7 +325,7 @@ describe('CredentialsController', () => {
 
     test('As guest', async () => {
       await request(app.getHttpServer())
-        .post('/api/credentials')
+        .post('/api/credentials/create')
         .send(REGISTRATION_PAYLOAD)
         .expect('Content-Type', /json/)
         .expect(401);
@@ -335,7 +333,7 @@ describe('CredentialsController', () => {
 
     test('With short `challenge`', async () => {
       await request(app.getHttpServer())
-        .post('/api/credentials')
+        .post('/api/credentials/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
           ...REGISTRATION_PAYLOAD,
@@ -347,7 +345,7 @@ describe('CredentialsController', () => {
 
     test('With wrong `pubKeyCredParams.type`', async () => {
       await request(app.getHttpServer())
-        .post('/api/credentials')
+        .post('/api/credentials/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
           ...REGISTRATION_PAYLOAD,
@@ -361,7 +359,7 @@ describe('CredentialsController', () => {
 
     test('With wrong symetric `pubKeyCredParams.alg`', async () => {
       await request(app.getHttpServer())
-        .post('/api/credentials')
+        .post('/api/credentials/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
           ...REGISTRATION_PAYLOAD,
@@ -376,7 +374,7 @@ describe('CredentialsController', () => {
 
     test('With unsupported asymetric `pubKeyCredParams.alg`', async () => {
       await request(app.getHttpServer())
-        .post('/api/credentials')
+        .post('/api/credentials/create')
         .set('Authorization', `Bearer ${token}`)
         .send({
           ...REGISTRATION_PAYLOAD,
@@ -390,7 +388,7 @@ describe('CredentialsController', () => {
     });
   });
 
-  describe('GET /api/credentials', () => {
+  describe('POST /api/credentials/get', () => {
     test('As authenticated user', async () => {
       await performAndVerifyAuthRequest({
         app: app.getHttpServer(),
@@ -430,7 +428,7 @@ describe('CredentialsController', () => {
     });
 
     test('As guest', async () => {
-      const query = qs.stringify({
+      const query = {
         ...BASE_AUTH_QUERY,
         allowCredentials: [
           {
@@ -438,18 +436,17 @@ describe('CredentialsController', () => {
             type: 'public-key',
           },
         ],
-      });
+      };
 
       await request(app.getHttpServer())
-        .get('/api/credentials')
-        .query(query)
-        .send()
+        .post('/api/credentials/get')
+        .send(query)
         .expect('Content-Type', /json/)
         .expect(401);
     });
 
     test('With wrong token', async () => {
-      const query = qs.stringify({
+      const query = {
         ...BASE_AUTH_QUERY,
         allowCredentials: [
           {
@@ -457,19 +454,18 @@ describe('CredentialsController', () => {
             type: 'public-key',
           },
         ],
-      });
+      };
 
       await request(app.getHttpServer())
-        .get('/api/credentials')
+        .post('/api/credentials/get')
         .set('Authorization', `Bearer WRONG_TOKEN`)
-        .query(query)
-        .send()
+        .send(query)
         .expect('Content-Type', /json/)
         .expect(401);
     });
 
     test('`allowCredentials` that does not exists', async () => {
-      const query = qs.stringify({
+      const query = {
         ...BASE_AUTH_QUERY,
         allowCredentials: [
           {
@@ -477,19 +473,18 @@ describe('CredentialsController', () => {
             type: 'public-key',
           },
         ],
-      });
+      };
 
       await request(app.getHttpServer())
-        .get('/api/credentials')
+        .post('/api/credentials/get')
         .set('Authorization', `Bearer ${token}`)
-        .query(query)
-        .send()
+        .send(query)
         .expect('Content-Type', /json/)
         .expect(404);
     });
 
     test('`rpId` that does not exists', async () => {
-      const query = qs.stringify({
+      const query = {
         ...BASE_AUTH_QUERY,
         rpId: 'WRONG_RP_ID',
         allowCredentials: [
@@ -498,19 +493,18 @@ describe('CredentialsController', () => {
             type: 'public-key',
           },
         ],
-      });
+      };
 
       await request(app.getHttpServer())
-        .get('/api/credentials')
+        .post('/api/credentials/get')
         .set('Authorization', `Bearer ${token}`)
-        .query(query)
-        .send()
+        .send(query)
         .expect('Content-Type', /json/)
         .expect(404);
     });
 
     test('Short `challenge`', async () => {
-      const query = qs.stringify({
+      const query = {
         ...BASE_AUTH_QUERY,
         challenge: randomBytes(10).toString('base64url'),
         allowCredentials: [
@@ -519,19 +513,18 @@ describe('CredentialsController', () => {
             type: 'public-key',
           },
         ],
-      });
+      };
 
       await request(app.getHttpServer())
-        .get('/api/credentials')
+        .post('/api/credentials/get')
         .set('Authorization', `Bearer ${token}`)
-        .query(query)
-        .send()
+        .send(query)
         .expect('Content-Type', /json/)
         .expect(400);
     });
 
     test('With undefined `rpId`', async () => {
-      const query = qs.stringify({
+      const query = {
         ...BASE_AUTH_QUERY,
         rpId: undefined,
         allowCredentials: [
@@ -540,13 +533,12 @@ describe('CredentialsController', () => {
             type: 'public-key',
           },
         ],
-      });
+      };
 
       await request(app.getHttpServer())
-        .get('/api/credentials')
+        .post('/api/credentials/get')
         .set('Authorization', `Bearer ${token}`)
-        .query(query)
-        .send()
+        .send(query)
         .expect('Content-Type', /json/)
         .expect(400);
     });

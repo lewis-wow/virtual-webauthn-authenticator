@@ -97,7 +97,7 @@ export class CredentialsController {
   @TsRestHandler(contract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
   async getCredential(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
+    return tsRestHandler(contract.api.credentials.get, async ({ body }) => {
       const { user } = jwtPayload;
 
       this.logger.debug('Getting credential', {
@@ -106,7 +106,7 @@ export class CredentialsController {
 
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
-          publicKeyCredentialRequestOptions: query,
+          publicKeyCredentialRequestOptions: body,
           signatureFactory: async ({ data, webAuthnCredential, meta }) => {
             if (
               webAuthnCredential.webAuthnCredentialKeyMetaType !==
