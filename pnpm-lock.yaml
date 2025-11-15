@@ -713,6 +713,9 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.5(hono@4.9.10)
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1182,38 +1185,40 @@ importers:
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   packages/test-helpers:
-    dependencies:
+    devDependencies:
+      '@prisma/internals':
+        specifier: 6.16.3
+        version: 6.16.3(magicast@0.3.5)(typescript@5.9.2)
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
-      '@repo/utils':
-        specifier: workspace:*
-        version: link:../utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
-    devDependencies:
-      '@prisma/internals':
-        specifier: 6.16.3
-        version: 6.16.3(magicast@0.3.5)(typescript@5.9.2)
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
       '@repo/types':
         specifier: workspace:*
         version: link:../types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
       prismock:
         specifier: ^1.35.4
         version: 1.35.4(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))

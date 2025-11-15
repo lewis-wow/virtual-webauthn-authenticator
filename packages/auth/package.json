@@ -13,8 +13,9 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/test-helpers": "workspace:*",
+    "@hono/node-server": "^1.19.5",
     "@repo/eslint-config": "workspace:*",
+    "@repo/test-helpers": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",

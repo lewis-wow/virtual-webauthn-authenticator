@@ -17,11 +17,10 @@
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
+    "jose": "^6.1.0",
     "prismock": "^1.35.4",
     "type-fest": "^5.0.1",
-    "typescript": "^5.5.4"
-  },
-  "dependencies": {
+    "typescript": "^5.5.4",
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",

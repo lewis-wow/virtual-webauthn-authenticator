@@ -7,7 +7,7 @@ import {
 } from '@repo/validation';
 
 export class JwtUtils {
-  isPersonalJwtPayload(
+  static isPersonalJwtPayload(
     jwtPayload: JwtPayload,
   ): jwtPayload is PersonalJwtPayload {
     const result = PersonalJwtPayloadSchema.safeParse(jwtPayload);
@@ -15,7 +15,9 @@ export class JwtUtils {
     return result.success;
   }
 
-  isApiKeyJwtPayload(jwtPayload: JwtPayload): jwtPayload is ApiKeyJwtPayload {
+  static isApiKeyJwtPayload(
+    jwtPayload: JwtPayload,
+  ): jwtPayload is ApiKeyJwtPayload {
     const result = ApiKeyJwtPayloadSchema.safeParse(jwtPayload);
 
     return result.success;

@@ -11,6 +11,7 @@ import {
   type JWK,
 } from 'jose';
 
+import { JwtUtils } from './JwtUtils';
 import { JWT_ALG, JWT_CRV } from './consts';
 
 const LOG_PREFIX = 'JWT_ISSUER';
@@ -92,7 +93,7 @@ export class JwtIssuer {
     return key[0];
   }
 
-  async getKeys(): Promise<JSONWebKeySet> {
+  async jsonWebKeySet(): Promise<JSONWebKeySet> {
     const keySets = await this.prisma.jwks.findMany();
 
     if (keySets.length === 0) {
@@ -137,7 +138,16 @@ export class JwtIssuer {
       .setIssuer(this.config.iss)
       .setAudience(this.config.aud);
 
-    if (payload.sub) jwt.setSubject(payload.sub);
+    let sub = payload.sub;
+    if (sub === undefined && JwtUtils.isPersonalJwtPayload(payload)) {
+      sub = payload.user.id;
+    }
+
+    if (sub === undefined && JwtUtils.isApiKeyJwtPayload(payload)) {
+      sub = payload.apiKey.id;
+    }
+
+    if (sub) jwt.setSubject(sub);
 
     return await jwt.sign(privateKey);
   }
