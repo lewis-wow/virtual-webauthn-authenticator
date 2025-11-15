@@ -1,5 +1,11 @@
-export const bufferSourceToUint8Array = (bufferSource: BufferSource) => {
-  // Case 1: If it's an ArrayBufferView (e.g., Uint8Array, DataView, Uint16Array)
+import type { BufferSource } from 'node:stream/web';
+import z from 'zod';
+
+export const BufferSourceBrowserSchema = z.custom<BufferSource>(
+  (data) => ArrayBuffer.isView(data) || data instanceof ArrayBuffer,
+);
+
+export const decode = (bufferSource: BufferSource): Uint8Array => {
   if (ArrayBuffer.isView(bufferSource)) {
     // If it's already a Uint8Array, you can return it directly or create a copy
     // This creates a new Uint8Array view on the *same* underlying memory segment
@@ -11,10 +17,5 @@ export const bufferSourceToUint8Array = (bufferSource: BufferSource) => {
   }
 
   // Case 2: If it's an ArrayBuffer
-  if (bufferSource instanceof ArrayBuffer) {
-    return new Uint8Array(bufferSource);
-  }
-
-  // Handle other potential cases or invalid input
-  throw new Error('Input is not a valid BufferSource.');
+  return new Uint8Array(bufferSource);
 };
