@@ -3,6 +3,7 @@ import {
   type PublicKeyCredentialCreationOptions,
   type PublicKeyCredential,
 } from '@repo/validation';
+import { AuthType } from '~node_modules/@repo/enums/src';
 import type { MessageResponse } from '~types';
 import { serializeError } from '~utils/serializeError';
 
@@ -18,6 +19,10 @@ const handler: PlasmoMessaging.MessageHandler<
       `${process.env.PLASMO_PUBLIC_API_BASE_URL}/api/credentials/create`,
       {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.PLASMO_PUBLIC_API_KEY}`,
+          'X-Auth-Type': AuthType.API_KEY,
+        },
         body: JSON.stringify(req.body!),
       },
     );

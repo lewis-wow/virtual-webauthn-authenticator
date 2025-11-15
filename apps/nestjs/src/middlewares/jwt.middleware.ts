@@ -18,6 +18,8 @@ export class JwtMiddleware implements NestMiddleware {
       JwtMiddleware.name,
     );
 
+    this.logger.debug('BODY', req.body);
+
     const jwt = authorizationHeader?.replace('Bearer ', '');
 
     if (jwt) {

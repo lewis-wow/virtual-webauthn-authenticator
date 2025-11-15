@@ -99,9 +99,8 @@ export class Proxy {
       }
 
       // Construct the final target URL to proxy to.
-      const targetURL = new URL(
-        `${targetBaseURL}/${targetPathname}${requestSearchParams.toString()}`,
-      );
+      const targetURL = new URL(`${targetBaseURL}/${targetPathname}`);
+      targetURL.search = requestSearchParams.toString();
 
       this.logger.debug('PROXY_TARGET_URL', targetURL);
 
@@ -112,10 +111,13 @@ export class Proxy {
         duplex: 'half' as const, // Required for streaming request bodies
       };
 
-      console.log('proxyInit', proxyInit);
+      const body = await ctx.req.text();
 
       // Call Hono's proxy helper to forward the request and get the response.
-      const proxyResponse = await proxy(targetURL, proxyInit);
+      const proxyResponse = await proxy(targetURL, {
+        ...proxyInit,
+        body: body.length > 0 ? body : undefined,
+      });
 
       this.logger.debug('PROXY_RESPONSE', proxyResponse);
 
@@ -132,12 +134,12 @@ export class Proxy {
    */
   private _trimSlashes(path: string | undefined): string | undefined {
     // This regex looks for:
-    // ^\/  - A slash at the beginning of the string
+    // ^\/+ - One or more slashes at the beginning of the string
     // |    - OR
-    // \/$  - A slash at the end of the string
+    // \/+$ - One or more slashes at the end of the string
     //
     // The 'g' (global) flag ensures it replaces both if they exist.
-    return path?.replace(/^\/|\/$/g, '');
+    return path?.replace(/^\/+|\/+$/g, '');
   }
 
   /**

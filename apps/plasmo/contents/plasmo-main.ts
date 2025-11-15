@@ -7,7 +7,9 @@ import {
 import type { PlasmoCSConfig } from 'plasmo';
 
 const LOG_PREFIX = 'MAIN';
-console.log(`[${LOG_PREFIX}] Running interceptor.`);
+console.log(
+  `[${LOG_PREFIX}] Running interceptor. Base URL: ${process.env.PLASMO_PUBLIC_API_BASE_URL}, Token: ${process.env.PLASMO_PUBLIC_API_KEY}`,
+);
 
 export const config: PlasmoCSConfig = {
   matches: ['<all_urls>'],

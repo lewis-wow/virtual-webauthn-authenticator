@@ -9,7 +9,48 @@ import { contract } from '@repo/contract';
 import { TokenType } from '@repo/enums';
 import { Unauthorized } from '@repo/exception';
 
-export const apiKey = factory.createApp();
+export const apiKey = factory.createApp().use(async (ctx, next) => {
+  console.log('APIKEY');
+  return await next();
+});
+
+apiKey.on(
+  [contract.api.auth.apiKeys.getToken.method],
+  contract.api.auth.apiKeys.getToken.path,
+  async (ctx) => {
+    console.log('TOKEN');
+
+    const bearerToken = ctx.req.header('Authorization');
+    const plaintextKey = bearerToken?.replace('Bearer ', '');
+
+    if (!plaintextKey) {
+      throw new Unauthorized('API key is invalid.');
+    }
+
+    const apiKey = await apiKeyManager.verify(plaintextKey);
+
+    if (!apiKey) {
+      throw new Unauthorized('API key is invalid.');
+    }
+
+    const user = await prisma.user.findUniqueOrThrow({
+      where: {
+        id: apiKey.userId,
+      },
+    });
+
+    return ctx.json(
+      contract.api.auth.apiKeys.getToken.responses[200].encode({
+        token: await jwtIssuer.sign({
+          sub: apiKey.id,
+          apiKey,
+          user,
+          tokenType: TokenType.API_KEY,
+        }),
+      }),
+    );
+  },
+);
 
 apiKey.post(
   contract.api.auth.apiKeys.create.path,
@@ -110,35 +151,3 @@ apiKey.delete(
     );
   },
 );
-
-apiKey.get(contract.api.auth.apiKeys.getToken.path, async (ctx) => {
-  const bearerToken = ctx.req.header('Authorization');
-  const plaintextKey = bearerToken?.replace('Bearer ', '');
-
-  if (!plaintextKey) {
-    throw new Unauthorized('API key is invalid.');
-  }
-
-  const apiKey = await apiKeyManager.verify(plaintextKey);
-
-  if (!apiKey) {
-    throw new Unauthorized('API key is invalid.');
-  }
-
-  const user = await prisma.user.findUniqueOrThrow({
-    where: {
-      id: apiKey.userId,
-    },
-  });
-
-  return ctx.json(
-    contract.api.auth.apiKeys.getToken.responses[200].encode({
-      token: await jwtIssuer.sign({
-        sub: apiKey.id,
-        apiKey,
-        user,
-        tokenType: TokenType.API_KEY,
-      }),
-    }),
-  );
-});

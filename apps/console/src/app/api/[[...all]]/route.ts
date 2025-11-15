@@ -14,6 +14,8 @@ const proxy = new Proxy({
   authorization: async ({ req }) => {
     const xAuthTypeHeader = req.headers.get('X-Auth-Type');
 
+    console.log('xAuthTypeHeader', xAuthTypeHeader);
+
     if (xAuthTypeHeader === AuthType.API_KEY) {
       const response = await fetch(
         `http://localhost:3002/api/auth/api-keys/token`,
@@ -23,11 +25,14 @@ const proxy = new Proxy({
         },
       );
 
+      console.log('response', response);
+
       if (!response.ok) {
         return undefined;
       }
 
       const { token } = await response.json();
+      console.log('jwt', token);
 
       return `Bearer ${token}`;
     }

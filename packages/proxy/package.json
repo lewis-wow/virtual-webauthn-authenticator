@@ -8,10 +8,12 @@
   },
   "scripts": {
     "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@hono/node-server": "^1.19.5",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",

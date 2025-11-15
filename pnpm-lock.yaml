@@ -509,6 +509,9 @@ importers:
       '@plasmohq/messaging':
         specifier: 0.7.1
         version: 0.7.1(react@18.2.0)
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../../packages/enums
       '@repo/validation':
         specifier: workspace:*
         version: link:../../packages/validation
@@ -1162,6 +1165,9 @@ importers:
         specifier: ^3.14.0
         version: 3.14.0
     devDependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.5(hono@4.9.10)
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
