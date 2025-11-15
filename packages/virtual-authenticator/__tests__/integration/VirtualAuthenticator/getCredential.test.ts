@@ -11,8 +11,8 @@ import {
   USER_ID,
 } from '@repo/test-helpers';
 import {
+  PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptions,
-  PublicKeyCredentialSchema,
 } from '@repo/validation';
 import {
   verifyAuthenticationResponse,
@@ -60,7 +60,7 @@ const performAndVerifyAuth = async (opts: {
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialSchema.encode(
+    response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
@@ -135,7 +135,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
 
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialSchema.encode(
+      response: PublicKeyCredentialDtoSchema.encode(
         publicKeyCredential,
       ) as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,

@@ -11,7 +11,7 @@ import {
   USER_ID,
 } from '@repo/test-helpers';
 import { bytesToUuid } from '@repo/utils';
-import { PublicKeyCredentialSchema } from '@repo/validation';
+import { PublicKeyCredentialDtoSchema } from '@repo/validation';
 import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
@@ -79,7 +79,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
     // This confirms the credential was created correctly according to
     // WebAuthn standards and our server's expectations (challenge, RP ID, etc.).
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialSchema.encode(
+      response: PublicKeyCredentialDtoSchema.encode(
         publicKeyCredential,
       ) as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
