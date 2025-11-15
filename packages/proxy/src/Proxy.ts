@@ -101,7 +101,7 @@ export class Proxy {
 
       if (
         this._requestHasBody(ctx.req.raw) &&
-        targetHeaders.has('Content-Type')
+        !targetHeaders.has('Content-Type')
       ) {
         targetHeaders.set('Content-Type', 'application/json');
       }
