@@ -1,4 +1,4 @@
-export type MessageResponse<TData> =
+export type MessageResponse<TData> = (
   | {
       data: TData;
       success: true;
@@ -6,4 +6,7 @@ export type MessageResponse<TData> =
   | {
       success: false;
       error: Error;
-    };
+    }
+) & {
+  [key: string]: unknown;
+};
