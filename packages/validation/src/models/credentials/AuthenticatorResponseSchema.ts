@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { BytesSchemaCodec } from '../../dto/common/BytesSchemaCodec';
 import { see } from '../../meta/see';
+import { BytesSchema } from '../common/BytesSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#authenticatorresponse
@@ -14,7 +14,7 @@ export const AuthenticatorResponseSchema = z
      *
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
      */
-    clientDataJSON: BytesSchemaCodec.meta({
+    clientDataJSON: BytesSchema.meta({
       description: `The client data for the response. ${see(
         'https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson',
       )}`,

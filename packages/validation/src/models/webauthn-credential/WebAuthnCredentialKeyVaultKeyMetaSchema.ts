@@ -1,15 +1,13 @@
 import z from 'zod';
 
-import { DateSchemaCodec } from '../../dto/common/DateSchemaCodec';
-
 export const WebAuthnCredentialKeyVaultKeyMetaSchema = z
   .object({
     id: z.uuid(),
     keyVaultKeyId: z.string().nullable(),
     keyVaultKeyName: z.string(),
     hsm: z.boolean(),
-    createdAt: DateSchemaCodec,
-    updatedAt: DateSchemaCodec,
+    createdAt: z.date(),
+    updatedAt: z.date(),
   })
   .meta({
     id: 'WebAuthnCredentialKeyVaultKeyMeta',

@@ -5,6 +5,3 @@ export const PublicKeyCredentialDescriptorDtoSchema =
   PublicKeyCredentialDescriptorSchema.extend({
     id: BytesSchemaCodec,
   });
-
-export type PublicKeyCredentialDescriptorDto =
-  typeof PublicKeyCredentialDescriptorDtoSchema;

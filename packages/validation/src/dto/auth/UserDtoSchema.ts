@@ -1,5 +1,5 @@
 import { UserSchema } from '../../models/common/UserSchema';
-import { DateSchemaCodec } from './DateSchemaCodec';
+import { DateSchemaCodec } from '../common/DateSchemaCodec';
 
 export const UserDtoSchema = UserSchema.extend({
   createdAt: DateSchemaCodec,

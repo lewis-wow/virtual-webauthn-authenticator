@@ -1,9 +1,9 @@
 import { TokenType } from '@repo/enums';
 import { z } from 'zod';
 
-import { UserDtoSchema } from '../common/UserDtoSchema';
 import { ApiKeyDtoSchema } from './ApiKeyDtoSchema';
 import { JwtRegisteredClaimsDtoSchema } from './JwtRegisteredClaimsDtoSchema';
+import { UserDtoSchema } from './UserDtoSchema';
 
 export const ApiKeyJwtPayloadDtoSchema = JwtRegisteredClaimsDtoSchema.extend({
   apiKey: ApiKeyDtoSchema.pick({

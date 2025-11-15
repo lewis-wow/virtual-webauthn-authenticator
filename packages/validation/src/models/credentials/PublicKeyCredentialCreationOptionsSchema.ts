@@ -2,6 +2,7 @@ import { AttestationSchema } from '@repo/enums';
 import z from 'zod';
 
 import { see } from '../../meta/see';
+import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema';
 import { ChallengeSchema } from './ChallengeSchema';
 import { PubKeyCredParamLooseSchema } from './PubKeyCredParamSchema';
@@ -26,7 +27,7 @@ export const PublicKeyCredentialCreationOptionsSchema = z
     authenticatorSelection: AuthenticatorSelectionCriteriaSchema.optional(),
     attestation: AttestationSchema.optional(),
     // Extensions can be complex; a generic record is often sufficient for validation
-    extensions: z.record(z.string(), z.unknown()).optional(),
+    extensions: AuthenticationExtensionsClientInputsSchema.optional(),
   })
   .meta({
     id: 'PublicKeyCredentialCreationOptions',

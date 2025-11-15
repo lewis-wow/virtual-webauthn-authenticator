@@ -12,5 +12,3 @@ export const PublicKeyCredentialDtoSchema = PublicKeyCredentialSchema.extend({
     AuthenticatorAssertionResponseDtoSchema,
   ]),
 });
-
-export type PublicKeyCredentialDto = typeof PublicKeyCredentialDtoSchema;
