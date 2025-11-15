@@ -1,7 +1,7 @@
 import z from 'zod';
 
+import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#authenticatorresponse
@@ -14,7 +14,7 @@ export const AuthenticatorResponseSchema = z
      *
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson
      */
-    clientDataJSON: Base64URLBufferSchema.meta({
+    clientDataJSON: BytesSchemaCodec.meta({
       description: `The client data for the response. ${see(
         'https://www.w3.org/TR/webauthn/#dom-authenticatorresponse-clientdatajson',
       )}`,

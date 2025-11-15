@@ -1,16 +1,18 @@
 import z from 'zod';
 
-import { ApikeySchema } from '../../../models/auth/ApiKeySchema';
+import { ApiKeySchema } from '../../../models/auth/ApiKeySchema';
 
-export const CreateApiKeyRequestBodySchema = z
-  .object({
-    name: z.string(),
-  })
-  .meta({
-    ref: 'CreateApiKeyRequestBody',
-  });
+export const CreateApiKeyRequestBodySchema = ApiKeySchema.pick({
+  name: true,
+  permissions: true,
+  metadata: true,
+  expiresAt: true,
+  enabled: true,
+}).meta({
+  ref: 'CreateApiKeyRequestBody',
+});
 
 export const CreateApiKeyResponseSchema = z.object({
-  apiKey: ApikeySchema.omit({ keyHash: true }),
-  fullKey: z.string(),
+  apiKey: ApiKeySchema,
+  plaintextKey: z.string(),
 });

@@ -4,8 +4,8 @@ import {
 } from '@repo/enums';
 import z from 'zod';
 
+import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { see } from '../../meta/see';
-import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema';
 
 // Used to exclude existing credentials for a user
 
@@ -15,7 +15,7 @@ import { Base64URLBufferSchema } from '../../transformers/Base64URLBufferSchema'
 export const PublicKeyCredentialDescriptorSchema = z
   .object({
     type: PublicKeyCredentialTypeSchema,
-    id: Base64URLBufferSchema.meta({
+    id: BytesSchemaCodec.meta({
       description: 'The credential ID of the public key credential.',
     }),
     /**

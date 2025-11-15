@@ -7,25 +7,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import type { CommonFieldProps } from '@/types';
-import type { ChangeEvent } from 'react';
 import type { FieldValues } from 'react-hook-form';
+import z from 'zod';
 
 import { FormLabel } from './FormLabel';
 
 export type NumericFieldProps<TFieldValues extends FieldValues> =
   {} & CommonFieldProps<TFieldValues>;
-
-export const transformEventToNumberValue = (
-  event: ChangeEvent<HTMLInputElement>,
-) => {
-  const stringValue = event.target.value;
-
-  if (stringValue === '') {
-    return undefined;
-  }
-
-  return parseFloat(stringValue);
-};
 
 export const NumericField = <TFieldValues extends FieldValues>({
   ...commonProps
@@ -49,7 +37,7 @@ export const NumericField = <TFieldValues extends FieldValues>({
               required={required}
               {...field}
               onChange={(event) =>
-                field.onChange(transformEventToNumberValue(event))
+                field.onChange(z.coerce.number().parse(event.target.value))
               }
               value={field.value ?? ''}
             />

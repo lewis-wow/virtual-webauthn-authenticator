@@ -80,26 +80,19 @@ model Verification {
 }
 
 model Apikey {
-  id                  String    @id @default(uuid())
-  name                String?
-  start               String?
-  prefix              String?
-  key                 String
-  userId              String
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  refillInterval      Int?
-  refillAmount        Int?
-  lastRefillAt        DateTime?
-  enabled             Boolean?  @default(true)
-  rateLimitEnabled    Boolean?  @default(true)
-  rateLimitTimeWindow Int?
-  rateLimitMax        Int?
-  requestCount        Int?
-  remaining           Int?
-  lastRequest         DateTime?
-  expiresAt           DateTime?
-  permissions         String?
-  metadata            String?
+  id          String    @id @default(uuid())
+  lookupKey   String    @unique
+  name        String?
+  prefix      String?
+  hashedKey   String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled     Boolean   @default(true)
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  lastUsedAt  DateTime?
+  permissions String?
+  metadata    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt

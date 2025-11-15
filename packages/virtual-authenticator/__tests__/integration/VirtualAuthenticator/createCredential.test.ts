@@ -10,7 +10,7 @@ import {
   upsertTestingUser,
   USER_ID,
 } from '@repo/test-helpers';
-import { bufferToUuid } from '@repo/utils';
+import { bytesToUuid } from '@repo/utils';
 import { PublicKeyCredentialSchema } from '@repo/validation';
 import {
   verifyRegistrationResponse,
@@ -89,7 +89,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       requireUserPresence: false, // Authenticator does NOT perform UP
     });
 
-    const webAuthnCredentialId = bufferToUuid(publicKeyCredential.rawId);
+    const webAuthnCredentialId = bytesToUuid(publicKeyCredential.rawId);
 
     expect(registrationVerification.verified).toBe(true);
 

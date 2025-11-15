@@ -14,75 +14,37 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
-import { authClient } from '@/lib/authClient';
-import { apiClient, tsr } from '@/lib/tsr';
-// import { fetchClient } from '@/lib/api/client';
-// import { authClient } from '@/lib/authClient';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { AuthType } from '@repo/enums';
-import {
-  CreateApiKeyRequestBodySchema,
-  // CreateApiKeyResponseSchema,
-  // ListApiKeysResponseSchema,
-} from '@repo/validation';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { tsr } from '@/lib/tsr';
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { CreateApiKeyRequestBodySchema } from '@repo/validation';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 const ApiKeys = () => {
-  const queryClient = useQueryClient();
+  const queryClient = tsr.useQueryClient();
 
-  const authApiKeyListQuery = useQuery({
-    queryKey: ['auth', 'apiKey', 'list'],
-    queryFn: async () => {
-      const { data } = await authClient.apiKey.list();
-
-      return data;
-    },
+  const authApiKeysListQuery = tsr.api.auth.apiKeys.list.useQuery({
+    queryKey: ['api', 'auth', 'apiKeys', 'list'],
   });
 
-  const authApiKeyCreateMutation = useMutation({
-    mutationFn: async (opts: { name: string }) => {
-      const { data } = await authClient.apiKey.create({
-        name: opts.name,
-      });
-
-      return data;
-    },
+  const authApiKeyCreateMutation = tsr.api.auth.apiKeys.create.useMutation({
     onSuccess: () => {
       form.reset();
 
-      toast('API key has been created.', {
-        action: {
-          label: 'Undo',
-          onClick: () => console.log('Undo'),
-        },
+      toast('API key has been created.');
+
+      queryClient.invalidateQueries({
+        queryKey: ['api', 'auth', 'apiKeys', 'list'],
       });
-
-      queryClient.invalidateQueries({ queryKey: ['auth', 'apiKey', 'list'] });
     },
-  });
-
-  const healthcheckQueryApiKey = useQuery({
-    queryFn: async () => {
-      const response = await apiClient.api.healthcheck.get({
-        extraHeaders: {
-          Authorization: `Bearer ${authApiKeyCreateMutation.data?.key}`,
-          'X-Auth-Type': AuthType.API_KEY,
-        },
-      });
-
-      return response.body;
-    },
-    queryKey: ['api', 'healthcheck'],
-    enabled: false,
   });
 
   const form = useForm({
-    resolver: zodResolver(CreateApiKeyRequestBodySchema),
+    resolver: standardSchemaResolver(CreateApiKeyRequestBodySchema),
     defaultValues: {
       name: '',
+      enabled: true,
     },
   });
 
@@ -102,7 +64,9 @@ const ApiKeys = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) => {
-                authApiKeyCreateMutation.mutate(values);
+                authApiKeyCreateMutation.mutate({
+                  body: CreateApiKeyRequestBodySchema.encode(values),
+                });
               })}
               className="flex items-start gap-4"
             >
@@ -130,29 +94,24 @@ const ApiKeys = () => {
         </CardHeader>
         <CardContent>
           <Guard
-            isLoading={authApiKeyListQuery.isLoading}
-            error={authApiKeyListQuery.error}
-            isEmpty={authApiKeyListQuery.data?.length === 0}
+            isLoading={authApiKeysListQuery.isLoading}
+            error={authApiKeysListQuery.error}
+            isEmpty={authApiKeysListQuery.data?.body.length === 0}
           >
             <Stack direction="column" gap="1rem">
-              {authApiKeyCreateMutation.data && (
+              {authApiKeyCreateMutation.data?.body && (
                 <ApiKey
-                  {...authApiKeyCreateMutation.data}
-                  secret={authApiKeyCreateMutation.data.key}
-                  key={authApiKeyCreateMutation.data.id}
+                  {...authApiKeyCreateMutation.data?.body.apiKey}
+                  plaintextKey={
+                    authApiKeyCreateMutation.data?.body.plaintextKey
+                  }
+                  key={authApiKeyCreateMutation.data?.body.apiKey.id}
                 />
               )}
-              <Button
-                onClick={async () => {
-                  const res = await healthcheckQueryApiKey.refetch();
-                  console.log({ res });
-                }}
-              >
-                Test Api Key
-              </Button>
-              {authApiKeyListQuery.data
-                ?.filter(
-                  (apiKey) => apiKey.id !== authApiKeyCreateMutation.data?.id,
+              {authApiKeysListQuery.data?.body
+                .filter(
+                  (apiKey) =>
+                    apiKey.id !== authApiKeyCreateMutation.data?.body.apiKey.id,
                 )
                 .map((apiKey) => (
                   <ApiKey {...apiKey} key={apiKey.id} />

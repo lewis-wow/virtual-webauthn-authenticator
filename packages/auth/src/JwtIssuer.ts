@@ -1,6 +1,7 @@
 import { Encryption } from '@repo/crypto';
 import { Logger } from '@repo/logger';
 import type { Jwks, PrismaClient } from '@repo/prisma';
+import { JwtPayloadSchema, type JwtPayload } from '@repo/validation';
 import {
   exportJWK,
   generateKeyPair,
@@ -8,9 +9,9 @@ import {
   SignJWT,
   type JSONWebKeySet,
   type JWK,
-  type JWTPayload,
 } from 'jose';
 
+import { JwtUtils } from './JwtUtils';
 import { JWT_ALG, JWT_CRV } from './consts';
 
 const LOG_PREFIX = 'JWT_ISSUER';
@@ -92,7 +93,7 @@ export class JwtIssuer {
     return key[0];
   }
 
-  async getKeys(): Promise<JSONWebKeySet> {
+  async jsonWebKeySet(): Promise<JSONWebKeySet> {
     const keySets = await this.prisma.jwks.findMany();
 
     if (keySets.length === 0) {
@@ -110,7 +111,7 @@ export class JwtIssuer {
     };
   }
 
-  async sign(payload: JWTPayload) {
+  async sign(payload: JwtPayload) {
     let latestKey = await this.getLatestKey();
 
     if (!latestKey) {
@@ -126,7 +127,7 @@ export class JwtIssuer {
 
     const privateKey = await importJWK(privateWebKey, JWT_ALG);
 
-    const jwt = new SignJWT(payload)
+    const jwt = new SignJWT(JwtPayloadSchema.encode(payload))
       .setProtectedHeader({
         alg: JWT_ALG,
         kid: latestKey.id,
@@ -137,7 +138,16 @@ export class JwtIssuer {
       .setIssuer(this.config.iss)
       .setAudience(this.config.aud);
 
-    if (payload.sub) jwt.setSubject(payload.sub);
+    let sub = payload.sub;
+    if (sub === undefined && JwtUtils.isPersonalJwtPayload(payload)) {
+      sub = payload.user.id;
+    }
+
+    if (sub === undefined && JwtUtils.isApiKeyJwtPayload(payload)) {
+      sub = payload.apiKey.id;
+    }
+
+    if (sub) jwt.setSubject(sub);
 
     return await jwt.sign(privateKey);
   }

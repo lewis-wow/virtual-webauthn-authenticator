@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { MockJwtAudience } from '@repo/auth/__mocks__';
+
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
@@ -6,12 +8,12 @@ import { COSEKeyAlgorithm } from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import {
   CHALLENGE_BASE64URL,
-  MOCK_JWT_PAYLOAD,
+  MOCK_PERSONAL_JWT_PAYLOAD,
   RP_ID,
   upsertTestingUser,
   WRONG_UUID,
 } from '@repo/test-helpers';
-import { bufferToUuid } from '@repo/utils';
+import { bytesToUuid } from '@repo/utils';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -30,7 +32,7 @@ import { AppModule } from '../../src/app.module';
 import { env } from '../../src/env';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
-import { MockJwtAudience } from '../helpers/MockJwtAudience';
+import { JWT_CONFIG } from '../helpers/consts';
 import { prisma } from '../helpers/prisma';
 
 /**
@@ -124,7 +126,7 @@ const performAndVerifyRegistration = async (opts: {
   return {
     response,
     verification,
-    webAuthnCredentialId: bufferToUuid(
+    webAuthnCredentialId: bytesToUuid(
       Buffer.from(response.body.id, 'base64url'),
     ),
   };
@@ -208,10 +210,7 @@ const performAndVerifyAuthRequest = async (opts: {
 const jwtIssuer = new JwtIssuer({
   prisma,
   encryptionKey: env.ENCRYPTION_KEY,
-  config: {
-    aud: 'http://localhost:3002',
-    iss: 'http://localhost:3002',
-  },
+  config: JWT_CONFIG,
 });
 
 describe('CredentialsController', () => {
@@ -222,13 +221,20 @@ describe('CredentialsController', () => {
   let base64CredentialID: string;
 
   beforeAll(async () => {
-    token = await jwtIssuer.sign(MOCK_JWT_PAYLOAD);
+    token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
 
     const appRef = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(JwtAudience)
-      .useValue(new MockJwtAudience(await jwtIssuer.getKeys()))
+      .useValue(
+        new MockJwtAudience({
+          config: JWT_CONFIG,
+          jwksFactory: async () => {
+            return await jwtIssuer.jsonWebKeySet();
+          },
+        }),
+      )
       .overrideProvider(PrismaService)
       .useValue(prisma)
       .compile();

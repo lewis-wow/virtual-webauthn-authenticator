@@ -18,10 +18,10 @@ import {
 } from '@repo/prisma';
 import type { MaybePromise } from '@repo/types';
 import {
-  bufferToUuid,
+  bytesToUuid,
+  uuidToBytes,
   bytesNotEmpty,
   hasMinBytes,
-  uuidToBuffer,
 } from '@repo/utils';
 import { sha256 } from '@repo/utils';
 import {
@@ -135,9 +135,9 @@ export class VirtualAuthenticator {
    * @see https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
    */
   private async _createAttestedCredentialData(opts: {
-    credentialID: Buffer;
+    credentialID: Uint8Array;
     COSEPublicKey: Uint8Array;
-  }): Promise<Buffer> {
+  }): Promise<Uint8Array> {
     const { credentialID, COSEPublicKey } = opts;
 
     // Byte length L of Credential ID, 16-bit unsigned big-endian integer.
@@ -174,9 +174,9 @@ export class VirtualAuthenticator {
   private async _createAuthenticatorData(opts: {
     rpId: string;
     counter: number;
-    credentialID?: Buffer;
+    credentialID?: Uint8Array;
     COSEPublicKey: Uint8Array;
-  }): Promise<Buffer> {
+  }): Promise<Uint8Array> {
     const { rpId, counter, credentialID, COSEPublicKey } = opts;
 
     // SHA-256 hash of the RP ID the credential is scoped to.
@@ -270,7 +270,7 @@ export class VirtualAuthenticator {
       isOptional(
         isArray(
           isPartial({
-            id: isInstanceOf(Buffer),
+            id: isInstanceOf(Uint8Array),
           }),
         ),
       ),
@@ -287,7 +287,7 @@ export class VirtualAuthenticator {
     ) {
       const allowedIDs = publicKeyCredentialRequestOptions.allowCredentials.map(
         (publicKeyCredentialDescriptor) =>
-          bufferToUuid(publicKeyCredentialDescriptor.id),
+          bytesToUuid(publicKeyCredentialDescriptor.id),
       );
 
       where.id = {
@@ -356,17 +356,24 @@ export class VirtualAuthenticator {
       publicKeyCredentialCreationOptions.attestation,
       isOptional(isEnum([Attestation.NONE])),
     );
+    console.log(
+      'challengechallenge',
+      publicKeyCredentialCreationOptions.challenge,
+    );
     assert(
       publicKeyCredentialCreationOptions.challenge,
-      applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
+      applyCascade(isInstanceOf(Uint8Array), hasMinBytes(16)),
     );
-    assert(publicKeyCredentialCreationOptions.user.id, isInstanceOf(Buffer));
     assert(
       publicKeyCredentialCreationOptions.user.id,
-      applyCascade(isInstanceOf(Buffer), bytesNotEmpty()),
+      isInstanceOf(Uint8Array),
     );
     assert(
-      bufferToUuid(publicKeyCredentialCreationOptions.user.id),
+      publicKeyCredentialCreationOptions.user.id,
+      applyCascade(isInstanceOf(Uint8Array), bytesNotEmpty()),
+    );
+    assert(
+      bytesToUuid(publicKeyCredentialCreationOptions.user.id),
       isLiteral(meta.user.id),
     );
     assert(
@@ -383,7 +390,7 @@ export class VirtualAuthenticator {
     );
 
     const credentialID = randomUUID();
-    const rawCredentialID = uuidToBuffer(credentialID);
+    const rawCredentialID = uuidToBytes(credentialID);
 
     const {
       meta: {
@@ -442,19 +449,20 @@ export class VirtualAuthenticator {
 
     const clientData: CollectedClientData = {
       type: 'webauthn.create',
-      challenge:
-        publicKeyCredentialCreationOptions.challenge.toString('base64url'),
+      challenge: Buffer.from(
+        publicKeyCredentialCreationOptions.challenge,
+      ).toString('base64url'),
       origin: publicKeyCredentialCreationOptions.rp.id,
       crossOrigin: false,
     };
 
     return {
-      id: rawCredentialID.toString('base64url'),
+      id: Buffer.from(rawCredentialID).toString('base64url'),
       rawId: rawCredentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: Buffer.from(JSON.stringify(clientData)),
-        attestationObject: cbor.encode(attestationObject),
+        attestationObject: Uint8Array.from(cbor.encode(attestationObject)),
       },
       clientExtensionResults: {},
     };
@@ -478,7 +486,7 @@ export class VirtualAuthenticator {
       isOptional(
         isArray(
           isObject({
-            id: isInstanceOf(Buffer),
+            id: isInstanceOf(Uint8Array),
             type: isEnum(PublicKeyCredentialType),
             transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
           }),
@@ -487,7 +495,7 @@ export class VirtualAuthenticator {
     );
     assert(
       publicKeyCredentialRequestOptions.challenge,
-      applyCascade(isInstanceOf(Buffer), hasMinBytes(16)),
+      applyCascade(isInstanceOf(Uint8Array), hasMinBytes(16)),
     );
     assert(
       publicKeyCredentialRequestOptions.userVerification,
@@ -500,12 +508,13 @@ export class VirtualAuthenticator {
         user: meta.user,
       });
 
-    const credentialID = uuidToBuffer(webAuthnCredential.id);
+    const credentialID = uuidToBytes(webAuthnCredential.id);
 
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
-      challenge:
-        publicKeyCredentialRequestOptions.challenge.toString('base64url'),
+      challenge: Buffer.from(
+        publicKeyCredentialRequestOptions.challenge,
+      ).toString('base64url'),
       origin: publicKeyCredentialRequestOptions.rpId,
       crossOrigin: false,
     };
@@ -533,7 +542,7 @@ export class VirtualAuthenticator {
     });
 
     return {
-      id: credentialID.toString('base64url'),
+      id: Buffer.from(credentialID).toString('base64url'),
       rawId: credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {

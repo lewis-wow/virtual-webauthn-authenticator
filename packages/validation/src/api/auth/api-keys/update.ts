@@ -1,15 +1,20 @@
-import { ApikeySchema } from '../../../models/auth/ApiKeySchema';
-import { CreateApiKeyRequestBodySchema } from './create';
+import { ApiKeySchema } from '../../../models/auth/ApiKeySchema';
 import { GetApiKeyRequestParamSchema } from './get';
 
 export const UpdateApiKeyRequestParamSchema = GetApiKeyRequestParamSchema.meta({
   ref: 'UpdateApiKeyRequestParam',
 });
 
-export const UpdateApiKeyRequestBodySchema = CreateApiKeyRequestBodySchema.meta(
-  {
+export const UpdateApiKeyRequestBodySchema = ApiKeySchema.pick({
+  name: true,
+  metadata: true,
+  expiresAt: true,
+  enabled: true,
+  revokedAt: true,
+})
+  .partial()
+  .meta({
     ref: 'UpdateApiKeyRequestBody',
-  },
-);
+  });
 
-export const UpdateApiKeyResponseSchema = ApikeySchema.omit({ keyHash: true });
+export const UpdateApiKeyResponseSchema = ApiKeySchema;

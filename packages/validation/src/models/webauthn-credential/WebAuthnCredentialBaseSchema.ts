@@ -1,13 +1,13 @@
 import z from 'zod';
 
-import { Base64urlToBytesSchema } from '../../transformers/Base64urlToBytesSchema';
+import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 
 export const WebAuthnCredentialBaseSchema = z
   .object({
     id: z.uuid(),
     name: z.string().nullable(),
     userId: z.string(),
-    COSEPublicKey: Base64urlToBytesSchema,
+    COSEPublicKey: BytesSchemaCodec,
     counter: z.number().int().nonnegative(),
     transports: z.array(z.string()),
     rpId: z.string(),

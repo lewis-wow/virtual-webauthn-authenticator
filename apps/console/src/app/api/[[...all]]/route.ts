@@ -16,7 +16,7 @@ const proxy = new Proxy({
 
     if (xAuthTypeHeader === AuthType.API_KEY) {
       const response = await fetch(
-        `http://localhost:3002/api/auth/api-key/token`,
+        `http://localhost:3002/api/auth/api-keys/token`,
         {
           method: 'GET',
           headers: req.headers,

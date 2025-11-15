@@ -5,7 +5,7 @@ import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
 import { COSEKey } from '@repo/keys';
 import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
-import { uuidToBuffer } from '@repo/utils';
+import { uuidToBytes } from '@repo/utils';
 import {
   type JwtPayload,
   PublicKeyCredentialCreationOptions,
@@ -32,10 +32,12 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async createCredential(@User() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
+      const { user } = jwtPayload;
+
       const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-        id: uuidToBuffer(jwtPayload.id),
-        name: jwtPayload.name,
-        displayName: jwtPayload.name,
+        id: uuidToBytes(user.id),
+        name: user.name,
+        displayName: user.name,
       };
 
       const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
@@ -45,7 +47,7 @@ export class CredentialsController {
         };
 
       this.logger.debug('Creating credential', {
-        userId: jwtPayload.id,
+        userId: user.id,
       });
 
       const publicKeyCredential =
@@ -79,7 +81,7 @@ export class CredentialsController {
             };
           },
           meta: {
-            user: jwtPayload,
+            user,
           },
         });
 
@@ -96,8 +98,10 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async getCredential(@User() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
+      const { user } = jwtPayload;
+
       this.logger.debug('Getting credential', {
-        userId: jwtPayload.id,
+        userId: user.id,
       });
 
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
@@ -126,7 +130,7 @@ export class CredentialsController {
             return await credentialSigner.sign(data);
           },
           meta: {
-            user: jwtPayload,
+            user,
           },
         },
       );

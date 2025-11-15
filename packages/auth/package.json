@@ -4,15 +4,19 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run integration --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run integration --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@hono/node-server": "^1.19.5",
     "@repo/eslint-config": "workspace:*",
+    "@repo/test-helpers": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
@@ -24,11 +28,13 @@
     "@repo/crypto": "workspace:*",
     "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/validation": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "hono": "^4.9.10",
     "jose": "^6.1.0",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   }
 }

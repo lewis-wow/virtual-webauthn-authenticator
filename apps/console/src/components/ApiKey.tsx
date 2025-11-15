@@ -1,49 +1,65 @@
-import { authClient } from '@/lib/authClient';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { tsr } from '@/lib/tsr';
+import { cn } from '@/lib/utils';
 import { CopyIcon, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { match, P } from 'ts-pattern';
 
 import { Button } from './Button';
 
 export type ApiKeyProps = {
   id: string;
-  secret?: string;
+  plaintextKey?: string;
   name: string | null;
   prefix: string | null;
-  start: string | null;
   createdAt: Date;
+  revokedAt?: Date | null;
   onDelete?: () => void;
+  onRevoke?: () => void;
 };
 
 export const ApiKey = ({
   id,
-  secret,
+  plaintextKey,
   name,
   prefix,
-  start,
   createdAt,
+  revokedAt,
   onDelete,
+  onRevoke,
 }: ApiKeyProps) => {
-  const queryClient = useQueryClient();
+  const queryClient = tsr.useQueryClient();
 
   const [isVisible, setIsVisible] = useState(false);
 
-  const handleCopyKey = (key: string) => {
-    navigator.clipboard.writeText(key);
+  const handleCopyKey = () => {
+    if (!plaintextKey) {
+      return;
+    }
+
+    navigator.clipboard.writeText(plaintextKey);
 
     toast('API key has been copied to clipboard.');
   };
 
-  const authApiKeyDeleteMutation = useMutation({
-    mutationFn: async (opts: { keyId: string }) => {
-      await authClient.apiKey.delete({ keyId: opts.keyId });
+  const authApiKeyRevokeMutation = tsr.api.auth.apiKeys.update.useMutation({
+    onSuccess: () => {
+      toast('API key has been revoked.');
+
+      queryClient.invalidateQueries({
+        queryKey: ['api', 'auth', 'apiKeys', 'list'],
+      });
+
+      onRevoke?.();
     },
+  });
+
+  const authApiKeyDeleteMutation = tsr.api.auth.apiKeys.delete.useMutation({
     onSuccess: () => {
       toast('API key has been deleted.');
 
-      queryClient.invalidateQueries({ queryKey: ['auth', 'apiKey', 'list'] });
+      queryClient.invalidateQueries({
+        queryKey: ['api', 'auth', 'apiKeys', 'list'],
+      });
 
       onDelete?.();
     },
@@ -52,26 +68,21 @@ export const ApiKey = ({
   return (
     <div className="flex items-center justify-between p-4 border rounded-lg">
       <div className="flex-1 space-y-1">
-        <p className="font-medium">{name}</p>
-        {secret !== undefined && (
+        <p className="font-medium">
+          <span
+            className={cn({
+              'line-through': revokedAt !== null,
+            })}
+          >
+            {name}
+          </span>
+        </p>
+        {plaintextKey !== undefined && (
           <div className="flex items-center gap-2">
             <code className="text-sm text-muted-foreground font-mono">
-              {match({ prefix })
-                .with(
-                  {
-                    prefix: P.not(null),
-                  },
-                  () => `${prefix}_${secret}`,
-                )
-                .otherwise(() => secret)}
+              {plaintextKey}
             </code>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                handleCopyKey(prefix !== null ? `${prefix}_${secret}` : secret)
-              }
-            >
+            <Button variant="ghost" size="sm" onClick={() => handleCopyKey()}>
               <CopyIcon />
             </Button>
           </div>
@@ -79,15 +90,7 @@ export const ApiKey = ({
         {prefix !== null && (
           <div className="flex items-center gap-2">
             <code className="text-sm text-muted-foreground font-mono">
-              {match({ prefix, start, isVisible })
-                .with(
-                  {
-                    start: P.not(null),
-                    isVisible: true,
-                  },
-                  () => `${prefix}_${start}`,
-                )
-                .otherwise(() => `${prefix}_`)}
+              {`${prefix}_`}
             </code>
             <Button
               variant="ghost"
@@ -110,7 +113,18 @@ export const ApiKey = ({
         <Button
           variant="destructive"
           size="sm"
-          onClick={() => authApiKeyDeleteMutation.mutate({ keyId: id })}
+          onClick={() => {
+            if (revokedAt === null) {
+              authApiKeyRevokeMutation.mutate({
+                params: { id },
+                body: { revokedAt: new Date().toISOString(), enabled: false },
+              });
+
+              return;
+            }
+
+            authApiKeyDeleteMutation.mutate({ params: { id } });
+          }}
         >
           <Trash2 className="h-4 w-4" />
         </Button>

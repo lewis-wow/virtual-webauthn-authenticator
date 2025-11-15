@@ -12,35 +12,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { withDefaultFieldTransform } from '@/lib/withDefaultTransform';
 import type { CommonFieldProps } from '@/types';
 import type { FieldValues } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 
-export type SelectFieldItem<T> = {
-  value: T;
+export type SelectFieldItem = {
+  value: string;
   label: string;
 };
 
-export type SelectFieldProps<TFieldValues extends FieldValues, T> = {
-  items: SelectFieldItem<T>[];
-} & CommonFieldProps<TFieldValues, T>;
+export type SelectFieldProps<TFieldValues extends FieldValues> = {
+  items: SelectFieldItem[];
+} & CommonFieldProps<TFieldValues>;
 
-export const SelectField = <TFieldValues extends FieldValues, T>({
+export const SelectField = <TFieldValues extends FieldValues>({
   items,
   ...commonProps
-}: SelectFieldProps<TFieldValues, T>) => {
-  const {
-    form,
-    name,
-    label,
-    hint,
-    placeholder,
-    description,
-    required,
-    transform,
-  } = withDefaultFieldTransform(commonProps);
+}: SelectFieldProps<TFieldValues>) => {
+  const { form, name, label, hint, placeholder, description, required } =
+    commonProps;
 
   return (
     <FormField
@@ -52,10 +43,8 @@ export const SelectField = <TFieldValues extends FieldValues, T>({
             <FormLabel label={label} hint={hint} required={required} />
           )}
           <Select
-            onValueChange={(value: string) =>
-              field.onChange(transform.output(value))
-            }
-            defaultValue={transform.input(field.value)}
+            onValueChange={(value: string) => field.onChange(value)}
+            defaultValue={field.value}
             required={required}
           >
             <FormControl>
@@ -65,10 +54,7 @@ export const SelectField = <TFieldValues extends FieldValues, T>({
             </FormControl>
             <SelectContent>
               {items.map((item) => (
-                <SelectItem
-                  key={transform.input(item.value)}
-                  value={transform.input(item.value)}
-                >
+                <SelectItem key={item.value} value={item.value}>
                   {item.label}
                 </SelectItem>
               ))}
