@@ -14,7 +14,7 @@ import {
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
-import { User } from '../decorators/User.decorator';
+import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 
@@ -30,7 +30,7 @@ export class CredentialsController {
 
   @TsRestHandler(contract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
-  async createCredential(@User() jwtPayload: JwtPayload) {
+  async createCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
       const { user } = jwtPayload;
 
@@ -96,7 +96,7 @@ export class CredentialsController {
 
   @TsRestHandler(contract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
-  async getCredential(@User() jwtPayload: JwtPayload) {
+  async getCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ query }) => {
       const { user } = jwtPayload;
 

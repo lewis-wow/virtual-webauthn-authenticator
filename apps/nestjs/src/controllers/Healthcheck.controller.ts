@@ -3,12 +3,12 @@ import { contract } from '@repo/contract';
 import type { JwtPayload } from '@repo/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
-import { User } from '../decorators/User.decorator';
+import { Jwt } from '../decorators/Jwt.decorator';
 
 @Controller()
 export class HealthcheckController {
   @TsRestHandler(contract.api.healthcheck.get)
-  async healthcheck(@User() jwtPayload?: JwtPayload | null) {
+  async healthcheck(@Jwt() jwtPayload?: JwtPayload | null) {
     return tsRestHandler(contract.api.healthcheck.get, async () => {
       return {
         status: 200,
