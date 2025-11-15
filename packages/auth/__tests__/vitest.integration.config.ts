@@ -15,6 +15,8 @@ export default defineConfig({
     env,
     coverage: {
       provider: 'v8',
+      exclude: ['__mocks__', '__tests__', 'src/index.ts'],
+      include: ['src'],
     },
     fileParallelism: false,
   },
