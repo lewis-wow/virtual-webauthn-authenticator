@@ -403,9 +403,6 @@ importers:
       '@ts-rest/nest':
         specifier: ^3.53.0-rc.1
         version: 3.53.0-rc.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.8)(@ts-rest/core@3.53.0-rc.1(@types/node@22.15.3))(rxjs@7.8.2)
-      express:
-        specifier: ^5.1.0
-        version: 5.1.0
       qs:
         specifier: ^6.14.0
         version: 6.14.0
@@ -512,6 +509,9 @@ importers:
       '@plasmohq/messaging':
         specifier: 0.7.1
         version: 0.7.1(react@18.2.0)
+      '@repo/browser':
+        specifier: workspace:*
+        version: link:../../packages/browser
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
@@ -746,6 +746,37 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+
+  packages/browser:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   packages/contract:
     dependencies:
@@ -1238,6 +1269,37 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
+  packages/transformers:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+
   packages/types:
     devDependencies:
       '@azure/keyvault-keys':
@@ -1300,12 +1362,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
-      superstruct:
-        specifier: ^2.0.2
-        version: 2.0.2
-      typebox:
-        specifier: ^1.0.34
-        version: 1.0.34
+      '@repo/transformers':
+        specifier: workspace:*
+        version: link:../transformers
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -9340,10 +9399,6 @@ packages:
     resolution: {integrity: sha512-y/hkYGeXAj7wUMjxRbB21g/l6aAEituGXM9Rwl4o20+SX3e8YOSV6BxFXl+dL3Uk0mjSL3kCbNkwURm8/gEDig==}
     engines: {node: '>=14.18.0'}
 
-  superstruct@2.0.2:
-    resolution: {integrity: sha512-uV+TFRZdXsqXTL2pRvujROjdZQ4RAlBUS5BTh9IGm+jTqQntYThciG/qu57Gs69yjnVUSqdxF9YLmSnpupBW9A==}
-    engines: {node: '>=14.0.0'}
-
   supertest@7.1.4:
     resolution: {integrity: sha512-tjLPs7dVyqgItVFirHYqe2T+MfWc2VOBQ8QFKKbWTA3PU7liZR8zoSpAi/C1k1ilm9RsXIKYf197oap9wXGVYg==}
     engines: {node: '>=14.18.0'}
@@ -9697,9 +9752,6 @@ packages:
   type-is@2.0.1:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
-
-  typebox@1.0.34:
-    resolution: {integrity: sha512-GqNFeg2y2oAW4tAhHdV1w9mGgDqsAMI/0Z+gtQeJ5BAmqXvi+q2pFl/rvOUnIaO9JPqrPXxMKlU/XhmAI3CERw==}
 
   typed-array-buffer@1.0.3:
     resolution: {integrity: sha512-nAYYwfY3qnzX30IkA6AQZjVbtK6duGontcQm1WSG1MD94YLqK0515GNApXkoxKOWMusVssAHWLh9SeaoefYFGw==}
@@ -19367,8 +19419,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  superstruct@2.0.2: {}
-
   supertest@7.1.4:
     dependencies:
       methods: 1.1.2
@@ -19749,8 +19799,6 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.1
-
-  typebox@1.0.34: {}
 
   typed-array-buffer@1.0.3:
     dependencies:

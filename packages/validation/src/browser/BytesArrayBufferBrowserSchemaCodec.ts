@@ -1,12 +1,12 @@
 import { BytesTransformer } from '@repo/transformers';
 import z from 'zod';
 
-import { ChallengeSchema } from '../../models/credentials/ChallengeSchema';
-import { ArrayBufferBrowserSchema } from '../common';
+import { BytesSchema } from '../models/common/BytesSchema';
+import { ArrayBufferBrowserSchema } from './common';
 
-export const ChallengeBrowserSchema = z.codec(
+export const BytesArrayBufferBrowserSchemaCodec = z.codec(
   ArrayBufferBrowserSchema,
-  ChallengeSchema,
+  BytesSchema,
   {
     decode: BytesTransformer.fromArrayBuffer,
     encode: BytesTransformer.toArrayBuffer,

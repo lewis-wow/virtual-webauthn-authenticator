@@ -11,42 +11,25 @@ const handler: PlasmoMessaging.MessageHandler<
   PublicKeyCredentialCreationOptions,
   MessageResponse<PublicKeyCredential>
 > = async (req, res) => {
-  let response: Response;
-  let body: string;
-
   try {
-    response = await fetch(
+    const response = await fetch(
       `${process.env.PLASMO_PUBLIC_API_BASE_URL}/api/credentials/create`,
       {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${process.env.PLASMO_PUBLIC_API_KEY}`,
           'X-Auth-Type': AuthType.API_KEY,
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(req.body!),
       },
     );
 
-    body = await response.text();
-  } catch (error) {
-    res.send({
-      success: false,
-      error: serializeError(error),
-    });
-    return;
-  }
+    const json = await response.json();
 
-  try {
-    const json = JSON.parse(body);
-
-    res.send({ success: true, response, data: json });
+    res.send({ ok: response.ok, data: json });
   } catch (error) {
-    res.send({
-      success: false,
-      error: serializeError(error),
-      response,
-      body,
-    });
+    res.send({ ok: false, error: serializeError(error) });
   }
 };
 

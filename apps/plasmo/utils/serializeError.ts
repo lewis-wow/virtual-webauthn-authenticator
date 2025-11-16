@@ -2,11 +2,15 @@ export type SerializableError = {
   name: string;
   message: string;
   stack?: string;
-  cause?: SerializableError;
+  cause?: SerializableError | null;
   [key: string]: any;
 };
 
-export const serializeError = (value: unknown): SerializableError => {
+export const serializeError = (value: unknown): SerializableError | null => {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
   // Handle non-Error values
   if (!(value instanceof Error)) {
     // If it's a plain object, spread its properties

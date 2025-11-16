@@ -1,12 +1,14 @@
 import { sendToBackgroundViaRelay } from '@plasmohq/messaging';
 import {
+  PublicKeyCredentialBrowserSchema,
   PublicKeyCredentialCreationOptionsBrowserSchema,
-  PublicKeyCredentialCreationOptionsSchema,
+  PublicKeyCredentialCreationOptionsDtoSchema,
+  PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptionsBrowserSchema,
-  PublicKeyCredentialRequestOptionsSchema,
-  PublicKeyCredentialSchema,
+  PublicKeyCredentialRequestOptionsDtoSchema,
 } from '@repo/validation';
 import type { PlasmoCSConfig } from 'plasmo';
+import { PublicKeyCredentialImpl } from '~node_modules/@repo/browser/src';
 
 const LOG_PREFIX = 'MAIN';
 console.log(
@@ -29,18 +31,29 @@ navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
     return fallbackNavigatorCredentialsGet(opts);
   }
 
-  console.log(
-    `[${LOG_PREFIX}] Intercepted navigator.credentials.get`,
-    result.data,
-  );
+  const body = PublicKeyCredentialRequestOptionsDtoSchema.encode(result.data);
+
+  console.log(`[${LOG_PREFIX}] Intercepted navigator.credentials.get`, body);
 
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.get',
-    body: PublicKeyCredentialRequestOptionsSchema.encode(result.data),
+    body,
   });
 
   console.log(`[${LOG_PREFIX}] response: `, response);
-  return PublicKeyCredentialSchema.parse(response.data);
+
+  if (!response.ok) {
+    throw new Error('TODO: message');
+  }
+
+  const parsedData = PublicKeyCredentialDtoSchema.parse(response.data);
+  const browserEncodedData =
+    PublicKeyCredentialBrowserSchema.encode(parsedData);
+
+  return new PublicKeyCredentialImpl({
+    ...browserEncodedData,
+    authenticatorAttachment: null,
+  });
 };
 
 const fallbackNavigatorCredentialsCreate = navigator.credentials.create;
@@ -60,9 +73,21 @@ navigator.credentials.create = async (opts?: CredentialCreationOptions) => {
 
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.create',
-    body: PublicKeyCredentialCreationOptionsSchema.encode(result.data),
+    body: PublicKeyCredentialCreationOptionsDtoSchema.encode(result.data),
   });
 
   console.log(`[${LOG_PREFIX}] response: `, response);
-  return PublicKeyCredentialSchema.parse(response.data);
+
+  if (!response.ok) {
+    throw new Error('TODO: message');
+  }
+
+  const parsedData = PublicKeyCredentialDtoSchema.parse(response.data);
+  const browserEncodedData =
+    PublicKeyCredentialBrowserSchema.encode(parsedData);
+
+  return new PublicKeyCredentialImpl({
+    ...browserEncodedData,
+    authenticatorAttachment: null,
+  });
 };
