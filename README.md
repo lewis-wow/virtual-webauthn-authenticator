@@ -11,6 +11,9 @@
 ### Icons
 
 <https://simpleicons.org>
+
 <https://lucide.dev/icons/blocks>
+
 <https://portal.azure.com>
+
 <https://www.plasmo.com>
