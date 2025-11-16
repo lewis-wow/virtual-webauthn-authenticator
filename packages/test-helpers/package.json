@@ -13,18 +13,20 @@
   },
   "devDependencies": {
     "@prisma/internals": "6.16.3",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/types": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.5.2",
-    "jose": "^6.1.0",
-    "prismock": "^1.35.4",
-    "type-fest": "^5.0.1",
-    "typescript": "^5.5.4",
     "@repo/enums": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*"
+    "@repo/validation": "workspace:*",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.5.2",
+    "jose": "^6.1.0",
+    "lodash-es": "^4.17.21",
+    "prismock": "^1.35.4",
+    "type-fest": "^5.0.1",
+    "typescript": "^5.5.4"
   }
 }

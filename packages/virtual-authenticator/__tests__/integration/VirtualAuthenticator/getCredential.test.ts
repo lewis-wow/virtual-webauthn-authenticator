@@ -5,14 +5,15 @@ import {
   createPublicKeyCredentialRequestOptions,
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
+  RP_ORIGIN,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   upsertTestingUser,
   USER_ID,
 } from '@repo/test-helpers';
 import {
+  PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptions,
-  PublicKeyCredentialSchema,
 } from '@repo/validation';
 import {
   verifyAuthenticationResponse,
@@ -56,15 +57,16 @@ const performAndVerifyAuth = async (opts: {
       user: {
         id: USER_ID,
       },
+      origin: RP_ORIGIN,
     },
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialSchema.encode(
+    response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
-    expectedOrigin: RP_ID,
+    expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
     credential: {
       id,
@@ -131,15 +133,16 @@ describe('VirtualAuthenticator.getCredential()', () => {
         user: {
           id: USER_ID,
         },
+        origin: RP_ORIGIN,
       },
     });
 
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialSchema.encode(
+      response: PublicKeyCredentialDtoSchema.encode(
         publicKeyCredential,
       ) as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
-      expectedOrigin: RP_ID,
+      expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
@@ -225,6 +228,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           user: {
             id: USER_ID,
           },
+          origin: RP_ORIGIN,
         },
       }),
     ).to.rejects.toThrowError();
@@ -243,6 +247,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           user: {
             id: 'WRONG_USER_ID',
           },
+          origin: RP_ORIGIN,
         },
       }),
     ).to.rejects.toThrowError();
@@ -266,6 +271,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           user: {
             id: 'WRONG_USER_ID',
           },
+          origin: RP_ORIGIN,
         },
       }),
     ).to.rejects.toThrowError();

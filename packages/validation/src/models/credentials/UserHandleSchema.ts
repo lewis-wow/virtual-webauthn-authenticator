@@ -1,7 +1,7 @@
 import type z from 'zod';
 
-import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { see } from '../../meta/see';
+import { BytesSchema } from '../common/BytesSchema';
 
 /**
  * This attribute contains the **user handle** returned from the authenticator,
@@ -16,7 +16,7 @@ import { see } from '../../meta/see';
  *
  * @see https://www.w3.org/TR/webauthn/#user-handle
  */
-export const UserHandleSchema = BytesSchemaCodec.meta({
+export const UserHandleSchema = BytesSchema.meta({
   id: 'UserHandle',
   ref: 'UserHandle',
   description: `The user handle for the assertion (max 64 bytes). ${see(

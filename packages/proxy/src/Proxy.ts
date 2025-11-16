@@ -6,6 +6,21 @@ import { getCookie } from 'hono/cookie';
 import { proxy } from 'hono/proxy';
 import { assert, isOptional, isString } from 'typanion';
 
+export type RewriteHeaders = (opts: {
+  headers: Headers;
+  req: Request;
+}) => MaybePromise<Headers>;
+
+export type RewritePath = (opts: {
+  path: string | undefined;
+  req: Request;
+}) => MaybePromise<string | undefined>;
+
+export type GetAuthorization = (opts: {
+  getCookie: (name: string) => string | undefined;
+  req: Request;
+}) => MaybePromise<string | undefined>;
+
 /**
  * Defines the configuration options for the Proxy.
  */
@@ -15,20 +30,11 @@ export type ProxyOptions = {
   /** An optional name for logging purposes. */
   proxyName?: string;
   /** An optional function to modify the request path before proxying. */
-  rewritePath?: (opts: {
-    path: string | undefined;
-    req: Request;
-  }) => MaybePromise<string | undefined>;
+  rewritePath?: RewritePath;
   /** An optional function to modify request headers before proxying. */
-  rewriteHeaders?: (opts: {
-    headers: Headers;
-    req: Request;
-  }) => MaybePromise<Headers>;
+  rewriteHeaders?: RewriteHeaders;
   /** An optional function to get an authorization token (e.g., from cookies) to add to the proxy request. */
-  authorization?: (opts: {
-    getCookie: (name: string) => string | undefined;
-    req: Request;
-  }) => MaybePromise<string | undefined>;
+  authorization?: GetAuthorization;
 };
 
 /**
@@ -77,31 +83,32 @@ export class Proxy {
           : requestURL.pathname,
       );
 
-      // Determine the target headers:
-      // 1. Use the original request headers.
-      // 2. If `rewriteHeaders` is provided, use it to transform the headers.
       const targetHeaders = rewriteHeaders
         ? await rewriteHeaders({
-            headers: ctx.req.raw.headers,
             req: ctx.req.raw,
+            headers: ctx.req.raw.headers,
           })
         : ctx.req.raw.headers;
 
-      // If an `authorization` function is provided, run it to get a token.
       const Authorization = await authorization?.({
-        getCookie: (key: string) => getCookie(ctx, key), // Pass hono's getCookie helper
+        getCookie: (key: string) => getCookie(ctx, key),
         req: ctx.req.raw,
       });
 
-      // If a token was returned, set it as the 'authorization' header.
       if (Authorization) {
-        targetHeaders.set('authorization', Authorization);
+        targetHeaders.set('Authorization', Authorization);
+      }
+
+      if (
+        this._requestHasBody(ctx.req.raw) &&
+        !targetHeaders.has('Content-Type')
+      ) {
+        targetHeaders.set('Content-Type', 'application/json');
       }
 
       // Construct the final target URL to proxy to.
-      const targetURL = new URL(
-        `${targetBaseURL}/${targetPathname}${requestSearchParams.toString()}`,
-      );
+      const targetURL = new URL(`${targetBaseURL}/${targetPathname}`);
+      targetURL.search = requestSearchParams.toString();
 
       this.logger.debug('PROXY_TARGET_URL', targetURL);
 
@@ -112,10 +119,13 @@ export class Proxy {
         duplex: 'half' as const, // Required for streaming request bodies
       };
 
-      console.log('proxyInit', proxyInit);
+      const body = await ctx.req.text();
 
       // Call Hono's proxy helper to forward the request and get the response.
-      const proxyResponse = await proxy(targetURL, proxyInit);
+      const proxyResponse = await proxy(targetURL, {
+        ...proxyInit,
+        body: body.length > 0 ? body : undefined,
+      });
 
       this.logger.debug('PROXY_RESPONSE', proxyResponse);
 
@@ -132,12 +142,24 @@ export class Proxy {
    */
   private _trimSlashes(path: string | undefined): string | undefined {
     // This regex looks for:
-    // ^\/  - A slash at the beginning of the string
+    // ^\/+ - One or more slashes at the beginning of the string
     // |    - OR
-    // \/$  - A slash at the end of the string
+    // \/+$ - One or more slashes at the end of the string
     //
     // The 'g' (global) flag ensures it replaces both if they exist.
-    return path?.replace(/^\/|\/$/g, '');
+    return path?.replace(/^\/+|\/+$/g, '');
+  }
+
+  private _requestHasBody(request: Request): boolean {
+    const contentLength = request.headers.get('content-length');
+    const transferEncoding = request.headers.get('transfer-encoding');
+
+    // A body is present if Content-Length > 0 OR if it's chunked.
+    const hasBody =
+      (contentLength != null && contentLength !== '0') ||
+      transferEncoding === 'chunked';
+
+    return hasBody;
   }
 
   /**

@@ -446,6 +446,9 @@ importers:
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.5
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^22.10.7
         version: 22.15.3
@@ -467,6 +470,9 @@ importers:
       jose:
         specifier: ^6.1.0
         version: 6.1.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -509,9 +515,15 @@ importers:
       '@plasmohq/messaging':
         specifier: 0.7.1
         version: 0.7.1(react@18.2.0)
-      '@repo/logger':
+      '@repo/browser':
         specifier: workspace:*
-        version: link:../../packages/logger
+        version: link:../../packages/browser
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../../packages/enums
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
@@ -740,6 +752,37 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+
+  packages/browser:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   packages/contract:
     dependencies:
@@ -1162,6 +1205,9 @@ importers:
         specifier: ^3.14.0
         version: 3.14.0
     devDependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.5(hono@4.9.10)
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1213,12 +1259,18 @@ importers:
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
       jose:
         specifier: ^6.1.0
         version: 6.1.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       prismock:
         specifier: ^1.35.4
         version: 1.35.4(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))
@@ -1228,6 +1280,37 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
+
+  packages/transformers:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   packages/types:
     devDependencies:
@@ -1291,12 +1374,9 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
-      qs:
-        specifier: ^6.14.0
-        version: 6.14.0
-      typebox:
-        specifier: ^1.0.34
-        version: 1.0.34
+      '@repo/transformers':
+        specifier: workspace:*
+        version: link:../transformers
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1313,9 +1393,6 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
-      '@types/qs':
-        specifier: ^6.14.0
-        version: 6.14.0
       barrelsby:
         specifier: ^2.8.1
         version: 2.8.1
@@ -9688,9 +9765,6 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
-  typebox@1.0.34:
-    resolution: {integrity: sha512-GqNFeg2y2oAW4tAhHdV1w9mGgDqsAMI/0Z+gtQeJ5BAmqXvi+q2pFl/rvOUnIaO9JPqrPXxMKlU/XhmAI3CERw==}
-
   typed-array-buffer@1.0.3:
     resolution: {integrity: sha512-nAYYwfY3qnzX30IkA6AQZjVbtK6duGontcQm1WSG1MD94YLqK0515GNApXkoxKOWMusVssAHWLh9SeaoefYFGw==}
     engines: {node: '>= 0.4'}
@@ -14605,14 +14679,6 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))':
-    dependencies:
-      '@vitest/spy': 3.2.4
-      estree-walker: 3.0.3
-      magic-string: 0.30.19
-    optionalDependencies:
-      vite: 5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
-
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@24.9.1)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
       '@vitest/spy': 3.2.4
@@ -14650,7 +14716,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -19738,8 +19804,6 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.1
 
-  typebox@1.0.34: {}
-
   typed-array-buffer@1.0.3:
     dependencies:
       call-bound: 1.0.4
@@ -20066,7 +20130,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
+      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@24.9.1)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

@@ -1,7 +1,5 @@
 import z from 'zod';
 
-import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
-
 export const ApiKeyPermissionsSchema = z.record(
   z.string(),
   z.array(z.string()),
@@ -16,8 +14,8 @@ export const ApiKeySchema = z
     prefix: z.string().nullable(),
     userId: z.string(),
     enabled: z.boolean(),
-    expiresAt: DateSchemaCodec.optional().nullable(),
-    revokedAt: DateSchemaCodec.optional().nullable(),
+    expiresAt: z.date().optional().nullable(),
+    revokedAt: z.date().optional().nullable(),
 
     permissions: ApiKeyPermissionsSchema.nullish(),
     metadata: ApiKeyMetadataSchema.nullish(),
@@ -26,8 +24,8 @@ export const ApiKeySchema = z
     // lookupKey: z.string(),
     // hashedKey: z.string(),
 
-    createdAt: DateSchemaCodec,
-    updatedAt: DateSchemaCodec,
+    createdAt: z.date(),
+    updatedAt: z.date(),
   })
   .meta({
     ref: 'ApiKey',

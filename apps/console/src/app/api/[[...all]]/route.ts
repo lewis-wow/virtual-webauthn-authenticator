@@ -4,7 +4,7 @@ import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
 import { handle } from 'hono/vercel';
 
-export const authClient = createAuthClient({
+const authClient = createAuthClient({
   plugins: [jwtClient()],
 });
 
@@ -13,6 +13,8 @@ const proxy = new Proxy({
   targetBaseURL: 'http://localhost:3001',
   authorization: async ({ req }) => {
     const xAuthTypeHeader = req.headers.get('X-Auth-Type');
+
+    console.log('xAuthTypeHeader', xAuthTypeHeader);
 
     if (xAuthTypeHeader === AuthType.API_KEY) {
       const response = await fetch(
@@ -23,11 +25,14 @@ const proxy = new Proxy({
         },
       );
 
+      console.log('response', response);
+
       if (!response.ok) {
         return undefined;
       }
 
       const { token } = await response.json();
+      console.log('jwt', token);
 
       return `Bearer ${token}`;
     }

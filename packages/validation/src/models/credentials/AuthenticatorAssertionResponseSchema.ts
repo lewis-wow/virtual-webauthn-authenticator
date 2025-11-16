@@ -1,7 +1,7 @@
 import z from 'zod';
 
-import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { see } from '../../meta/see';
+import { BytesSchema } from '../common/BytesSchema';
 import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
 import { UserHandleSchema } from './UserHandleSchema';
 
@@ -18,7 +18,7 @@ export const AuthenticatorAssertionResponseSchema =
     /**
      * @see https://www.w3.org/TR/webauthn/#sctn-authenticator-data
      */
-    authenticatorData: BytesSchemaCodec.meta({
+    authenticatorData: BytesSchema.meta({
       description: `The authenticator data for the assertion. ${see(
         'https://www.w3.org/TR/webauthn/#sctn-authenticator-data',
       )}`,
@@ -28,7 +28,7 @@ export const AuthenticatorAssertionResponseSchema =
      *
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature
      */
-    signature: BytesSchemaCodec.meta({
+    signature: BytesSchema.meta({
       description: `The signature for the assertion. ${see(
         'https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature',
       )}`,

@@ -6,7 +6,7 @@ import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredential, type JwtPayload } from '@repo/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
-import { User } from '../decorators/User.decorator';
+import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
@@ -22,7 +22,7 @@ export class WebAuthnCredentialsController {
 
   @TsRestHandler(contract.api.webAuthnCredentials.list)
   @UseGuards(AuthenticatedGuard)
-  async listWebAuthnCredentials(@User() jwtPayload: JwtPayload) {
+  async listWebAuthnCredentials(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.webAuthnCredentials.list, async () => {
       const { user } = jwtPayload;
 
@@ -50,7 +50,7 @@ export class WebAuthnCredentialsController {
 
   @TsRestHandler(contract.api.webAuthnCredentials.get)
   @UseGuards(AuthenticatedGuard)
-  async getWebAuthnCredential(@User() jwtPayload: JwtPayload) {
+  async getWebAuthnCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
       contract.api.webAuthnCredentials.get,
       async ({ params }) => {
@@ -79,7 +79,7 @@ export class WebAuthnCredentialsController {
 
   @TsRestHandler(contract.api.webAuthnCredentials.delete)
   @UseGuards(AuthenticatedGuard)
-  async deleteWebAuthnCredential(@User() jwtPayload: JwtPayload) {
+  async deleteWebAuthnCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
       contract.api.webAuthnCredentials.delete,
       async ({ params }) => {

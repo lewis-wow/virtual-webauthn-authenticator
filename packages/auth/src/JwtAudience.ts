@@ -40,7 +40,7 @@ export class JwtAudience {
 
       return JwtPayloadSchema.parse(payload);
     } catch (error) {
-      log.error('Token validation failed.', error);
+      log.error('Token validation failed.', { token, error });
       throw error;
     }
   }

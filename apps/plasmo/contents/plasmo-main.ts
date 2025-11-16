@@ -1,11 +1,19 @@
 import { sendToBackgroundViaRelay } from '@plasmohq/messaging';
+import {
+  PublicKeyCredentialBrowserSchema,
+  PublicKeyCredentialCreationOptionsBrowserSchema,
+  PublicKeyCredentialCreationOptionsDtoSchema,
+  PublicKeyCredentialDtoSchema,
+  PublicKeyCredentialRequestOptionsBrowserSchema,
+  PublicKeyCredentialRequestOptionsDtoSchema,
+} from '@repo/validation';
 import type { PlasmoCSConfig } from 'plasmo';
-import { Logger } from '~node_modules/@repo/logger/src/Logger';
+import { PublicKeyCredentialImpl } from '~node_modules/@repo/browser/src';
 
 const LOG_PREFIX = 'MAIN';
-const log = new Logger({
-  prefix: LOG_PREFIX,
-});
+console.log(
+  `[${LOG_PREFIX}] Running interceptor. Base URL: ${process.env.PLASMO_PUBLIC_API_BASE_URL}, Token: ${process.env.PLASMO_PUBLIC_API_KEY}`,
+);
 
 export const config: PlasmoCSConfig = {
   matches: ['<all_urls>'],
@@ -13,24 +21,90 @@ export const config: PlasmoCSConfig = {
   run_at: 'document_start',
 };
 
-navigator.credentials.get = async (opts) => {
-  log.debug('Intercepted navigator.credentials.get');
+const fallbackNavigatorCredentialsGet = navigator.credentials.get;
+navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
+  const result = PublicKeyCredentialRequestOptionsBrowserSchema.safeParse(
+    opts?.publicKey,
+  );
+
+  if (!result.success) {
+    return fallbackNavigatorCredentialsGet(opts);
+  }
+
+  const publicKeyCredentialRequestOptions =
+    PublicKeyCredentialRequestOptionsDtoSchema.encode(result.data);
+
+  console.log(
+    `[${LOG_PREFIX}] Intercepted navigator.credentials.get`,
+    publicKeyCredentialRequestOptions,
+  );
+
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.get',
-    body: {},
+    body: {
+      publicKeyCredentialRequestOptions,
+      meta: {
+        origin: window.location.origin,
+      },
+    },
   });
 
-  log.debug('response', response);
-  return response.data;
+  console.log(`[${LOG_PREFIX}] response: `, response);
+
+  if (!response.ok) {
+    throw new Error('TODO: message');
+  }
+
+  const parsedData = PublicKeyCredentialDtoSchema.parse(response.data);
+  const browserEncodedData =
+    PublicKeyCredentialBrowserSchema.encode(parsedData);
+
+  return new PublicKeyCredentialImpl({
+    ...browserEncodedData,
+    authenticatorAttachment: null,
+  });
 };
 
-navigator.credentials.create = async (opts) => {
-  log.debug('Intercepted navigator.credentials.create');
+const fallbackNavigatorCredentialsCreate = navigator.credentials.create;
+navigator.credentials.create = async (opts?: CredentialCreationOptions) => {
+  const result = PublicKeyCredentialCreationOptionsBrowserSchema.safeParse(
+    opts?.publicKey,
+  );
+
+  if (!result.success) {
+    return fallbackNavigatorCredentialsCreate(opts);
+  }
+
+  const publicKeyCredentialCreationOptions =
+    PublicKeyCredentialCreationOptionsDtoSchema.encode(result.data);
+
+  console.log(
+    `[${LOG_PREFIX}] Intercepted navigator.credentials.create`,
+    publicKeyCredentialCreationOptions,
+  );
+
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.create',
-    body: opts,
+    body: {
+      publicKeyCredentialCreationOptions,
+      meta: {
+        origin: window.location.origin,
+      },
+    },
   });
 
-  log.debug('response', response);
-  return response.data;
+  console.log(`[${LOG_PREFIX}] response: `, response);
+
+  if (!response.ok) {
+    throw new Error('TODO: message');
+  }
+
+  const parsedData = PublicKeyCredentialDtoSchema.parse(response.data);
+  const browserEncodedData =
+    PublicKeyCredentialBrowserSchema.encode(parsedData);
+
+  return new PublicKeyCredentialImpl({
+    ...browserEncodedData,
+    authenticatorAttachment: null,
+  });
 };

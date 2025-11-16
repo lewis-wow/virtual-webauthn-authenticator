@@ -7,11 +7,12 @@ import {
   KEY_VAULT_KEY_NAME,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
+  RP_ORIGIN,
   upsertTestingUser,
   USER_ID,
 } from '@repo/test-helpers';
 import { bytesToUuid } from '@repo/utils';
-import { PublicKeyCredentialSchema } from '@repo/validation';
+import { PublicKeyCredentialDtoSchema } from '@repo/validation';
 import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
@@ -72,6 +73,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         user: {
           id: USER_ID,
         },
+        origin: RP_ORIGIN,
       },
     });
 
@@ -79,11 +81,11 @@ describe('VirtualAuthenticator.createCredential()', () => {
     // This confirms the credential was created correctly according to
     // WebAuthn standards and our server's expectations (challenge, RP ID, etc.).
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialSchema.encode(
+      response: PublicKeyCredentialDtoSchema.encode(
         publicKeyCredential,
       ) as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
-      expectedOrigin: RP_ID,
+      expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
