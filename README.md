@@ -7,3 +7,10 @@
 ## Architecture
 
 ![Architecture image](.architecture/export/architecture.svg)
+
+### Icons
+
+<https://simpleicons.org>
+<https://lucide.dev/icons/blocks>
+<https://portal.azure.com>
+<https://www.plasmo.com>
