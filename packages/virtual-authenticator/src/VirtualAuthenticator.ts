@@ -1,6 +1,7 @@
 import {
   Attestation,
   AuthenticatorTransport,
+  Fmt,
   PublicKeyCredentialType,
   UserVerificationRequirement,
   WebAuthnCredentialKeyMetaType,
@@ -34,7 +35,7 @@ import {
   type PubKeyCredParamStrict,
 } from '@repo/validation';
 import * as cbor from 'cbor';
-import { randomUUID, type UUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import {
   applyCascade,
   assert,
@@ -51,6 +52,13 @@ import {
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
+import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
+
+export type WebAuthnCredentialWithMeta = WebAuthnCredential & {
+  webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
+  webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMeta;
+};
+
 export type GenerateKeyPairPayload = {
   COSEPublicKey: Uint8Array;
   meta: {
@@ -62,6 +70,10 @@ export type GenerateKeyPairPayload = {
     };
   };
 };
+
+export type GenerateKeyPair = (
+  webAuthnCredentialUuid: string,
+) => MaybePromise<GenerateKeyPairPayload>;
 
 export type SignatureFactoryArgs = {
   data: Uint8Array;
@@ -75,6 +87,10 @@ export type SignatureFactoryArgs = {
     };
   };
 };
+
+export type SignatureFactory = (
+  args: SignatureFactoryArgs,
+) => MaybePromise<Uint8Array>;
 
 export type VirtualAuthenticatorOptions = {
   prisma: PrismaClient;
@@ -336,30 +352,126 @@ export class VirtualAuthenticator {
     }
   }
 
+  private async _createWebauthnCredential(
+    data: {
+      id: string;
+      COSEPublicKey: Uint8Array;
+      rpId: string;
+      userId: string;
+    } & {
+      webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
+      webAuthnCredentialKeyVaultKeyMeta: {
+        keyVaultKeyId?: string | null | undefined;
+        keyVaultKeyName: string;
+        hsm?: boolean | undefined;
+      };
+    },
+  ): Promise<WebAuthnCredentialWithMeta> {
+    const webAuthnCredential = await this.prisma.webAuthnCredential.create({
+      data: {
+        ...data,
+        webAuthnCredentialKeyVaultKeyMeta: {
+          create: {
+            ...data.webAuthnCredentialKeyVaultKeyMeta,
+          },
+        },
+        counter: 0,
+      },
+      include: {
+        webAuthnCredentialKeyVaultKeyMeta: true,
+      },
+    });
+
+    return webAuthnCredential as WebAuthnCredentialWithMeta;
+  }
+
+  private _createDataToSign(opts: {
+    clientDataJSON: Uint8Array;
+    authData: Uint8Array;
+  }): Uint8Array {
+    const { clientDataJSON, authData } = opts;
+    const clientDataHash = sha256(clientDataJSON);
+
+    const dataToSign = Buffer.concat([authData, clientDataHash]);
+
+    return dataToSign;
+  }
+
+  private _handleAttestationNone(): {
+    fmt: Fmt;
+    attStmt: Map<string, Uint8Array>;
+  } {
+    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
+    const fmt = Fmt.NONE;
+
+    // https://www.w3.org/TR/webauthn-2/#attestation-statement
+    const attStmt = new Map<string, Uint8Array>([]);
+
+    return {
+      fmt,
+      attStmt,
+    };
+  }
+
+  private async _handleAttestationDirect(opts: {
+    signatureFactory: SignatureFactory;
+    webAuthnCredential: WebAuthnCredentialWithMeta;
+    data: {
+      clientDataJSON: Uint8Array;
+      authData: Uint8Array;
+    };
+  }): Promise<{ fmt: Fmt; attStmt: Map<string, Uint8Array> }> {
+    const { signatureFactory, webAuthnCredential, data } = opts;
+
+    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
+    const fmt = Fmt.PACKED;
+
+    const dataToSign = this._createDataToSign(data);
+
+    const signature = await signatureFactory({
+      data: dataToSign,
+      webAuthnCredential,
+      meta: {
+        webAuthnCredentialKeyMetaType:
+          webAuthnCredential.webAuthnCredentialKeyMetaType,
+        webAuthnCredentialKeyVaultKeyMeta:
+          webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!,
+      },
+    });
+
+    // https://www.w3.org/TR/webauthn-2/#attestation-statement
+    const attStmt = new Map<string, Uint8Array>([['sig', signature]]);
+
+    return {
+      fmt,
+      attStmt,
+    };
+  }
+
   /**
    *
    * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation
    */
   public async createCredential(opts: {
     publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
-    generateKeyPair: (
-      webAuthnCredentialUuid: UUID,
-    ) => MaybePromise<GenerateKeyPairPayload>;
+    generateKeyPair: GenerateKeyPair;
+    signatureFactory: SignatureFactory;
     meta: {
       user: Pick<User, 'id'>;
       origin: string;
     };
   }): Promise<PublicKeyCredential> {
-    const { publicKeyCredentialCreationOptions, generateKeyPair, meta } = opts;
+    const {
+      publicKeyCredentialCreationOptions,
+      generateKeyPair,
+      signatureFactory,
+      meta,
+    } = opts;
 
     assert(publicKeyCredentialCreationOptions.rp.id, isString());
     assert(
       publicKeyCredentialCreationOptions.attestation,
-      isOptional(isEnum([Attestation.NONE])),
-    );
-    console.log(
-      'challengechallenge',
-      publicKeyCredentialCreationOptions.challenge,
+      isOptional(isEnum(Attestation)),
     );
     assert(
       publicKeyCredentialCreationOptions.challenge,
@@ -390,6 +502,14 @@ export class VirtualAuthenticator {
       ),
     );
 
+    switch (publicKeyCredentialCreationOptions.attestation) {
+      case Attestation.ENTERPRISE:
+      case Attestation.INDIRECT:
+        throw new AttestationNotSupported({
+          attestation: publicKeyCredentialCreationOptions.attestation,
+        });
+    }
+
     const credentialID = randomUUID();
     const rawCredentialID = uuidToBytes(credentialID);
 
@@ -401,38 +521,14 @@ export class VirtualAuthenticator {
       COSEPublicKey,
     } = await generateKeyPair(credentialID);
 
-    const webAuthnCredential = await this.prisma.webAuthnCredential.create({
-      data: {
-        id: credentialID,
-        webAuthnCredentialKeyMetaType,
-        webAuthnCredentialKeyVaultKeyMeta: {
-          create: {
-            ...webAuthnCredentialKeyVaultKeyMeta,
-          },
-        },
-        COSEPublicKey,
-        counter: 0,
-        rpId: publicKeyCredentialCreationOptions.rp.id,
-        userId: meta.user.id,
-      },
+    const webAuthnCredential = await this._createWebauthnCredential({
+      id: credentialID,
+      webAuthnCredentialKeyMetaType,
+      webAuthnCredentialKeyVaultKeyMeta,
+      COSEPublicKey,
+      rpId: publicKeyCredentialCreationOptions.rp.id,
+      userId: meta.user.id,
     });
-
-    //  If credentialCreationData.attestationConveyancePreferenceOption’s value is "none"
-    //  1. Replace potentially uniquely identifying information with non-identifying versions of the same:
-    //      If the AAGUID in the attested credential data is 16 zero bytes,
-    //      credentialCreationData.attestationObjectResult.fmt is "packed",
-    //      and "x5c" is absent from credentialCreationData.attestationObjectResult,
-    //      then self attestation is being used and no further action is needed.
-    //  2. Otherwise
-    //      Replace the AAGUID in the attested credential data with 16 zero bytes.
-    //      Set the value of credentialCreationData.attestationObjectResult.fmt to "none",
-    //      and set the value of credentialCreationData.attestationObjectResult.attStmt
-    //      to be an empty CBOR map.
-    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
-    const fmt = 'none';
-
-    // https://www.w3.org/TR/webauthn-2/#attestation-statement
-    const attStmt = new Map<string, never>([]);
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
@@ -441,12 +537,6 @@ export class VirtualAuthenticator {
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
     });
-
-    const attestationObject = new Map<string, unknown>([
-      ['fmt', fmt],
-      ['attStmt', attStmt],
-      ['authData', authData],
-    ]);
 
     const clientData: CollectedClientData = {
       type: 'webauthn.create',
@@ -457,12 +547,42 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
+    const clientDataJSON = Uint8Array.from(JSON.stringify(clientData));
+
+    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
+    let fmt: Fmt;
+    // https://www.w3.org/TR/webauthn-2/#attestation-statement
+    let attStmt: Map<string, Uint8Array>;
+
+    switch (publicKeyCredentialCreationOptions.attestation) {
+      case Attestation.NONE:
+      case undefined:
+        ({ fmt, attStmt } = this._handleAttestationNone());
+        break;
+      case Attestation.DIRECT:
+        ({ fmt, attStmt } = await this._handleAttestationDirect({
+          webAuthnCredential,
+          signatureFactory,
+          data: {
+            clientDataJSON,
+            authData,
+          },
+        }));
+        break;
+    }
+
+    const attestationObject = new Map<string, unknown>([
+      ['fmt', fmt],
+      ['attStmt', attStmt],
+      ['authData', authData],
+    ]);
+
     return {
       id: Buffer.from(rawCredentialID).toString('base64url'),
       rawId: rawCredentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
-        clientDataJSON: Buffer.from(JSON.stringify(clientData)),
+        clientDataJSON,
         attestationObject: Uint8Array.from(cbor.encode(attestationObject)),
       },
       clientExtensionResults: {},
@@ -474,7 +594,7 @@ export class VirtualAuthenticator {
    */
   public async getCredential(opts: {
     publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
-    signatureFactory: (args: SignatureFactoryArgs) => MaybePromise<Uint8Array>;
+    signatureFactory: SignatureFactory;
     meta: {
       user: Pick<User, 'id'>;
       origin: string;
@@ -521,8 +641,7 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
-    const clientDataJSON = Buffer.from(JSON.stringify(clientData));
-    const clientDataHash = sha256(clientDataJSON);
+    const clientDataJSON = Uint8Array.from(JSON.stringify(clientData));
 
     const authData = await this._createAuthenticatorData({
       rpId: publicKeyCredentialRequestOptions.rpId,
@@ -530,7 +649,10 @@ export class VirtualAuthenticator {
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
     });
 
-    const dataToSign = Buffer.concat([authData, clientDataHash]);
+    const dataToSign = this._createDataToSign({
+      clientDataJSON,
+      authData,
+    });
 
     const signature = await signatureFactory({
       data: dataToSign,
