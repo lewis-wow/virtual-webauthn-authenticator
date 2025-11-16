@@ -41,6 +41,7 @@ export const MOCK_API_KEY_JWT_PAYLOAD = {
 
 export const RP_ID = 'example.com';
 export const RP_NAME = 'example.com';
+export const RP_ORIGIN = 'https://example.com';
 
 export const KEY_VAULT_KEY_NAME =
   Buffer.from('KEY_VAULT_KEY_NAME').toString('hex');

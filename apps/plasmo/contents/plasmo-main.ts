@@ -31,13 +31,22 @@ navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
     return fallbackNavigatorCredentialsGet(opts);
   }
 
-  const body = PublicKeyCredentialRequestOptionsDtoSchema.encode(result.data);
+  const publicKeyCredentialRequestOptions =
+    PublicKeyCredentialRequestOptionsDtoSchema.encode(result.data);
 
-  console.log(`[${LOG_PREFIX}] Intercepted navigator.credentials.get`, body);
+  console.log(
+    `[${LOG_PREFIX}] Intercepted navigator.credentials.get`,
+    publicKeyCredentialRequestOptions,
+  );
 
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.get',
-    body,
+    body: {
+      publicKeyCredentialRequestOptions,
+      meta: {
+        origin: window.location.origin,
+      },
+    },
   });
 
   console.log(`[${LOG_PREFIX}] response: `, response);
@@ -66,14 +75,22 @@ navigator.credentials.create = async (opts?: CredentialCreationOptions) => {
     return fallbackNavigatorCredentialsCreate(opts);
   }
 
+  const publicKeyCredentialCreationOptions =
+    PublicKeyCredentialCreationOptionsDtoSchema.encode(result.data);
+
   console.log(
     `[${LOG_PREFIX}] Intercepted navigator.credentials.create`,
-    result.data,
+    publicKeyCredentialCreationOptions,
   );
 
   const response = await sendToBackgroundViaRelay({
     name: 'navigator.credentials.create',
-    body: PublicKeyCredentialCreationOptionsDtoSchema.encode(result.data),
+    body: {
+      publicKeyCredentialCreationOptions,
+      meta: {
+        origin: window.location.origin,
+      },
+    },
   });
 
   console.log(`[${LOG_PREFIX}] response: `, response);

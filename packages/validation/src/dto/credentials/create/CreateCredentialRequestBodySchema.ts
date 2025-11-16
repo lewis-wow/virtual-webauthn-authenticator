@@ -1,9 +1,16 @@
+import z from 'zod';
+
 import { PublicKeyCredentialCreationOptionsDtoSchema } from '../PublicKeyCredentialCreationOptionsDtoSchema';
 
-export const CreateCredentialRequestBodySchema =
-  PublicKeyCredentialCreationOptionsDtoSchema.omit({
-    /**
-     * User is infered from token.
-     */
-    user: true,
-  });
+export const CreateCredentialRequestBodySchema = z.object({
+  publicKeyCredentialCreationOptions:
+    PublicKeyCredentialCreationOptionsDtoSchema.omit({
+      /**
+       * User is infered from token.
+       */
+      user: true,
+    }),
+  meta: z.object({
+    origin: z.url(),
+  }),
+});

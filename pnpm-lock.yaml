@@ -446,6 +446,9 @@ importers:
       '@types/express':
         specifier: ^5.0.0
         version: 5.0.5
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^22.10.7
         version: 22.15.3
@@ -467,6 +470,9 @@ importers:
       jose:
         specifier: ^6.1.0
         version: 6.1.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -1253,12 +1259,18 @@ importers:
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
       jose:
         specifier: ^6.1.0
         version: 6.1.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       prismock:
         specifier: ^1.35.4
         version: 1.35.4(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))
@@ -14667,14 +14679,6 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))':
-    dependencies:
-      '@vitest/spy': 3.2.4
-      estree-walker: 3.0.3
-      magic-string: 0.30.19
-    optionalDependencies:
-      vite: 5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
-
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@24.9.1)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
       '@vitest/spy': 3.2.4
@@ -14712,7 +14716,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -20126,7 +20130,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
+      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@24.9.1)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

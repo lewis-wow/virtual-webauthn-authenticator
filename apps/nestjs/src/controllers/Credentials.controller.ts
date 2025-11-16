@@ -33,6 +33,7 @@ export class CredentialsController {
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
       const { user } = jwtPayload;
+      const { publicKeyCredentialCreationOptions, meta } = body;
 
       const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
         id: uuidToBytes(user.id),
@@ -40,9 +41,9 @@ export class CredentialsController {
         displayName: user.name,
       };
 
-      const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions =
+      const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
         {
-          ...body,
+          ...publicKeyCredentialCreationOptions,
           user: publicKeyCredentialUserEntity,
         };
 
@@ -52,7 +53,8 @@ export class CredentialsController {
 
       const publicKeyCredential =
         await this.virtualAuthenticator.createCredential({
-          publicKeyCredentialCreationOptions,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptionsWithUser,
           generateKeyPair: async (webAuthnCredentialUuid) => {
             const {
               jwk,
@@ -81,6 +83,7 @@ export class CredentialsController {
             };
           },
           meta: {
+            ...meta,
             user,
           },
         });
@@ -99,6 +102,7 @@ export class CredentialsController {
   async getCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ body }) => {
       const { user } = jwtPayload;
+      const { publicKeyCredentialRequestOptions, meta } = body;
 
       this.logger.debug('Getting credential', {
         userId: user.id,
@@ -106,7 +110,7 @@ export class CredentialsController {
 
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
-          publicKeyCredentialRequestOptions: body,
+          publicKeyCredentialRequestOptions,
           signatureFactory: async ({ data, webAuthnCredential, meta }) => {
             if (
               webAuthnCredential.webAuthnCredentialKeyMetaType !==
@@ -130,6 +134,7 @@ export class CredentialsController {
             return await credentialSigner.sign(data);
           },
           meta: {
+            ...meta,
             user,
           },
         },

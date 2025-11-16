@@ -347,6 +347,7 @@ export class VirtualAuthenticator {
     ) => MaybePromise<GenerateKeyPairPayload>;
     meta: {
       user: Pick<User, 'id'>;
+      origin: string;
     };
   }): Promise<PublicKeyCredential> {
     const { publicKeyCredentialCreationOptions, generateKeyPair, meta } = opts;
@@ -452,7 +453,7 @@ export class VirtualAuthenticator {
       challenge: Buffer.from(
         publicKeyCredentialCreationOptions.challenge,
       ).toString('base64url'),
-      origin: publicKeyCredentialCreationOptions.rp.id,
+      origin: meta.origin,
       crossOrigin: false,
     };
 
@@ -476,6 +477,7 @@ export class VirtualAuthenticator {
     signatureFactory: (args: SignatureFactoryArgs) => MaybePromise<Uint8Array>;
     meta: {
       user: Pick<User, 'id'>;
+      origin: string;
     };
   }): Promise<PublicKeyCredential> {
     const { publicKeyCredentialRequestOptions, signatureFactory, meta } = opts;
@@ -515,7 +517,7 @@ export class VirtualAuthenticator {
       challenge: Buffer.from(
         publicKeyCredentialRequestOptions.challenge,
       ).toString('base64url'),
-      origin: publicKeyCredentialRequestOptions.rpId,
+      origin: meta.origin,
       crossOrigin: false,
     };
 

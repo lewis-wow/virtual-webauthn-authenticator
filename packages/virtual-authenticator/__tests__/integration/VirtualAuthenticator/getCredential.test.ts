@@ -5,6 +5,7 @@ import {
   createPublicKeyCredentialRequestOptions,
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
+  RP_ORIGIN,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   upsertTestingUser,
@@ -56,6 +57,7 @@ const performAndVerifyAuth = async (opts: {
       user: {
         id: USER_ID,
       },
+      origin: RP_ORIGIN,
     },
   });
 
@@ -64,7 +66,7 @@ const performAndVerifyAuth = async (opts: {
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
-    expectedOrigin: RP_ID,
+    expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
     credential: {
       id,
@@ -131,6 +133,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         user: {
           id: USER_ID,
         },
+        origin: RP_ORIGIN,
       },
     });
 
@@ -139,7 +142,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         publicKeyCredential,
       ) as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
-      expectedOrigin: RP_ID,
+      expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
@@ -225,6 +228,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           user: {
             id: USER_ID,
           },
+          origin: RP_ORIGIN,
         },
       }),
     ).to.rejects.toThrowError();
@@ -243,6 +247,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           user: {
             id: 'WRONG_USER_ID',
           },
+          origin: RP_ORIGIN,
         },
       }),
     ).to.rejects.toThrowError();
@@ -266,6 +271,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           user: {
             id: 'WRONG_USER_ID',
           },
+          origin: RP_ORIGIN,
         },
       }),
     ).to.rejects.toThrowError();

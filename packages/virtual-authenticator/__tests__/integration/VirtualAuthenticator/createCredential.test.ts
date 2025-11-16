@@ -7,6 +7,7 @@ import {
   KEY_VAULT_KEY_NAME,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
+  RP_ORIGIN,
   upsertTestingUser,
   USER_ID,
 } from '@repo/test-helpers';
@@ -72,6 +73,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         user: {
           id: USER_ID,
         },
+        origin: RP_ORIGIN,
       },
     });
 
@@ -83,7 +85,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         publicKeyCredential,
       ) as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
-      expectedOrigin: RP_ID,
+      expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
       requireUserVerification: true, // Authenticator does perform UV
       requireUserPresence: false, // Authenticator does NOT perform UP
