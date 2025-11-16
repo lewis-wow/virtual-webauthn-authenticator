@@ -9,7 +9,8 @@ export interface AuthenticatorResponse {
   readonly clientDataJSON: ArrayBuffer;
 }
 
-export interface AuthenticatorAttestationResponse extends AuthenticatorResponse {
+export interface AuthenticatorAttestationResponse
+  extends AuthenticatorResponse {
   readonly attestationObject: ArrayBuffer;
 }
 
