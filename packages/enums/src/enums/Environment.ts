@@ -1,6 +1,5 @@
+import type { ValueOfEnum } from '@repo/types';
 import z from 'zod';
-
-import type { ValueOfEnum } from '../types';
 
 export const Environment = {
   PRODUCTION: 'production',

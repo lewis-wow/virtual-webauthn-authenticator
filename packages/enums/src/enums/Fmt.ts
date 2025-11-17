@@ -1,6 +1,5 @@
+import type { ValueOfEnum } from '@repo/types';
 import z from 'zod';
-
-import type { ValueOfEnum } from '../types';
 
 /**
  * The attestation statement format, which identifies the type of

@@ -1,6 +1,6 @@
+import type { ValueOfEnum } from '@repo/types';
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types';
 import { HTTPStatusCode } from './HTTPStatusCode';
 
 export const HTTPExceptionCode = {

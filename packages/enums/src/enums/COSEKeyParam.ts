@@ -1,6 +1,5 @@
+import type { ValueOfEnum } from '@repo/types';
 import z from 'zod';
-
-import type { ValueOfEnum } from '../types';
 
 // COSE Key Common Parameters
 export const COSEKeyParam = {

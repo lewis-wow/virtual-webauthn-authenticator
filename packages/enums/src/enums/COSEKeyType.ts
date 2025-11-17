@@ -1,6 +1,6 @@
+import type { ValueOfEnum } from '@repo/types';
 import z from 'zod';
 
-import type { ValueOfEnum } from '../types';
 import { KeyType } from './KeyType';
 
 export const COSEKeyType = {
