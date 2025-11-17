@@ -24,6 +24,7 @@ import {
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { credentialSigner } from '../../helpers/credentialSigner';
 import { COSEPublicKey } from '../../helpers/key';
 
@@ -211,36 +212,50 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
+    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      {
+        ...requestOptions,
+        rpId: 'WRONG_RP_ID',
+      };
+
     await expect(() =>
       authenticator.getCredential({
-        publicKeyCredentialRequestOptions: {
-          ...requestOptions,
-          rpId: 'WRONG_RP_ID',
-        },
+        publicKeyCredentialRequestOptions,
         signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
         },
       }),
-    ).to.rejects.toThrowError();
+    ).to.rejects.toThrowError(
+      new CredentialNotFound({
+        userId: USER_ID,
+        publicKeyCredentialRequestOptions,
+      }),
+    );
   });
 
   test('should fail with different user ID', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
+    const publicKeyCredentialRequestOptions =
+      createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
 
     await expect(() =>
       authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
+        publicKeyCredentialRequestOptions,
         signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: 'WRONG_USER_ID',
           origin: RP_ORIGIN,
         },
       }),
-    ).to.rejects.toThrowError();
+    ).to.rejects.toThrowError(
+      new CredentialNotFound({
+        userId: 'WRONG_USER_ID',
+        publicKeyCredentialRequestOptions,
+      }),
+    );
   });
 
   test('should fail with wrong allowCredentials', async () => {
@@ -248,20 +263,28 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
+    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      {
+        ...requestOptions,
+        allowCredentials: [
+          { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
+        ],
+      };
+
     await expect(() =>
       authenticator.getCredential({
-        publicKeyCredentialRequestOptions: {
-          ...requestOptions,
-          allowCredentials: [
-            { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
-          ],
-        },
+        publicKeyCredentialRequestOptions,
         signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
         },
       }),
-    ).to.rejects.toThrowError();
+    ).to.rejects.toThrowError(
+      new CredentialNotFound({
+        userId: USER_ID,
+        publicKeyCredentialRequestOptions,
+      }),
+    );
   });
 });

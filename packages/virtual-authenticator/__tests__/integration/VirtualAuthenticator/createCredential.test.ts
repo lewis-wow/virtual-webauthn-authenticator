@@ -1,4 +1,9 @@
-import { Attestation, WebAuthnCredentialKeyMetaType } from '@repo/enums';
+import {
+  Attestation,
+  COSEKeyAlgorithm,
+  PublicKeyCredentialType,
+  WebAuthnCredentialKeyMetaType,
+} from '@repo/enums';
 import { COSEKey } from '@repo/keys';
 import { PrismaClient } from '@repo/prisma';
 import {
@@ -26,6 +31,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
+import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { credentialSigner } from '../../helpers/credentialSigner';
 import { COSEPublicKey, keyPair } from '../../helpers/key';
 
@@ -93,11 +99,25 @@ const cleanup = async () => {
 describe('VirtualAuthenticator.createCredential()', () => {
   const authenticator = new VirtualAuthenticator({ prisma });
 
-  describe.each([undefined, Attestation.NONE])(
-    'attestation %s',
-    (attestation) => {
+  describe('PublicKeyCredentialCreationOptions.attestation', () => {
+    describe.each([
+      {
+        attestation: undefined,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.NONE,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.DIRECT,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+    ])('With attestation $attestation', ({ attestation }) => {
       let registrationVerification: VerifiedRegistrationResponse;
       let webAuthnCredentialId: string;
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation,
+      };
 
       beforeAll(async () => {
         await cleanup();
@@ -106,11 +126,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         ({ registrationVerification, webAuthnCredentialId } =
           await createCredentialAndVerifyRegistrationResponse({
             authenticator,
-            publicKeyCredentialCreationOptions: setDeep(
-              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-              'attestation',
-              () => attestation,
-            ),
+            publicKeyCredentialCreationOptions,
           }));
       });
 
@@ -118,24 +134,24 @@ describe('VirtualAuthenticator.createCredential()', () => {
         await cleanup();
       });
 
-      test('should return a verified registration', () => {
+      test('Should return a verified registration', () => {
         expect(registrationVerification.verified).toBe(true);
       });
 
-      test('should have a counter of 0', () => {
+      test('Should have a counter of 0', () => {
         expect(
           registrationVerification.registrationInfo?.credential.counter,
         ).toBe(0);
       });
 
-      test('should have the correct public key', () => {
+      test('Should have the correct public key', () => {
         const jwk = COSEKey.fromBuffer(
           registrationVerification.registrationInfo!.credential.publicKey,
         ).toJwk();
         expect(jwk).toMatchObject(keyPair.publicKey.export({ format: 'jwk' }));
       });
 
-      test('should save the WebAuthnCredential to the database', async () => {
+      test('Should save the WebAuthnCredential to the database', async () => {
         const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
           where: {
             id: webAuthnCredentialId,
@@ -149,7 +165,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
       });
 
-      test('should save the KeyVaultKeyMeta to the database', async () => {
+      test('Should save the KeyVaultKeyMeta to the database', async () => {
         const keyMeta =
           await prisma.webAuthnCredentialKeyVaultKeyMeta.findFirst({
             where: {
@@ -165,93 +181,102 @@ describe('VirtualAuthenticator.createCredential()', () => {
           hsm: false,
         });
       });
-    },
-  );
-
-  describe.each([Attestation.DIRECT])('attestation %s', (attestation) => {
-    let registrationVerification: VerifiedRegistrationResponse;
-    let webAuthnCredentialId: string;
-
-    beforeAll(async () => {
-      await cleanup();
-      await upsertTestingUser({ prisma });
-
-      ({ registrationVerification, webAuthnCredentialId } =
-        await createCredentialAndVerifyRegistrationResponse({
-          authenticator,
-          publicKeyCredentialCreationOptions: setDeep(
-            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-            'attestation',
-            () => attestation,
-          ),
-        }));
     });
 
-    afterAll(async () => {
-      await cleanup();
-    });
+    test.each([
+      {
+        attestation: Attestation.ENTERPRISE,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.INDIRECT,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+    ])(
+      `Should throw ${AttestationNotSupported.name} with attestation $attestation`,
+      async ({ attestation }) => {
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions: setDeep(
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              'attestation',
+              () => attestation,
+            ),
+          }),
+        ).rejects.toThrowError(new AttestationNotSupported({ attestation }));
+      },
+    );
 
-    test('should return a verified registration', () => {
-      expect(registrationVerification.verified).toBe(true);
-    });
+    test('Shold throw type mismatch when attestation is not in enum', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: 'WRONG_ATTESTATION',
+      };
 
-    test('should have a counter of 0', () => {
-      expect(
-        registrationVerification.registrationInfo?.credential.counter,
-      ).toBe(0);
-    });
-
-    test('should have the correct public key', () => {
-      const jwk = COSEKey.fromBuffer(
-        registrationVerification.registrationInfo!.credential.publicKey,
-      ).toJwk();
-      expect(jwk).toMatchObject(keyPair.publicKey.export({ format: 'jwk' }));
-    });
-
-    test('should save the WebAuthnCredential to the database', async () => {
-      const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
-        where: {
-          id: webAuthnCredentialId,
-        },
-      });
-
-      expect(webAuthnCredential).not.toBeNull();
-      expect(webAuthnCredential).toMatchObject({
-        id: webAuthnCredentialId,
-        userId: USER_ID,
-      });
-    });
-
-    test('should save the KeyVaultKeyMeta to the database', async () => {
-      const keyMeta = await prisma.webAuthnCredentialKeyVaultKeyMeta.findFirst({
-        where: {
-          webAuthnCredentialId: webAuthnCredentialId,
-        },
-      });
-
-      expect(keyMeta).not.toBeNull();
-      expect(keyMeta).toMatchObject({
-        webAuthnCredentialId: webAuthnCredentialId,
-        keyVaultKeyId: KEY_VAULT_KEY_ID,
-        keyVaultKeyName: KEY_VAULT_KEY_NAME,
-        hsm: false,
-      });
-    });
-  });
-
-  test.each([Attestation.ENTERPRISE, Attestation.INDIRECT])(
-    'should throw with attestation %s',
-    async (attestation) => {
       await expect(async () =>
         createCredentialAndVerifyRegistrationResponse({
           authenticator,
-          publicKeyCredentialCreationOptions: setDeep(
-            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-            'attestation',
-            () => attestation,
-          ),
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrow(new AttestationNotSupported({ attestation }));
-    },
-  );
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
+    test('Should throw type mismatch when pubKeyCredParams is empty', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        pubKeyCredParams: [],
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test.each([
+      {
+        pubKeyCredParams: [{ type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 }],
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: -8,
+          },
+        ],
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: -8,
+          },
+          {
+            type: 'WRONG_TYPE',
+            alg: COSEKeyAlgorithm.ES256,
+          },
+        ],
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+    ])(
+      'Should throw with any supported pubKeyCredParams',
+      async ({ pubKeyCredParams }) => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          pubKeyCredParams,
+          attestation: undefined,
+        };
+
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError(new NoSupportedPubKeyCredParamFound());
+      },
+    );
+  });
 });

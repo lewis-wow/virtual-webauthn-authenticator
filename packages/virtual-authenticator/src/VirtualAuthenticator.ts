@@ -8,10 +8,6 @@ import {
   WebAuthnCredentialKeyMetaType,
 } from '@repo/enums';
 import {
-  CredentialNotFound,
-  NoSupportedPubKeyCredParamWasFound,
-} from '@repo/exception';
-import {
   Prisma,
   type PrismaClient,
   type WebAuthnCredential,
@@ -31,7 +27,6 @@ import {
   type PublicKeyCredentialRequestOptions,
   type PublicKeyCredential,
   type PubKeyCredParamLoose,
-  PubKeyCredParamStrictSchema,
   type PubKeyCredParamStrict,
 } from '@repo/validation';
 import * as cbor from 'cbor';
@@ -52,7 +47,11 @@ import {
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
+import { SupportedCOSEKeyAlgorithm } from './enums/SupportedCOSEKeyAlgorithm';
+import { SupportedPublicKeyCredentialType } from './enums/SupportedPublicKeyCredentialType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
+import { CredentialNotFound } from './exceptions/CredentialNotFound';
+import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
 
 export type WebAuthnCredentialWithMeta = WebAuthnCredential & {
   webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
@@ -61,6 +60,7 @@ export type WebAuthnCredentialWithMeta = WebAuthnCredential & {
 
 export type GenerateKeyPair = (args: {
   webAuthnCredentialId: string;
+  pubKeyCredParams: PubKeyCredParamStrict;
 }) => MaybePromise<
   {
     COSEPublicKey: Uint8Array;
@@ -103,9 +103,9 @@ export class VirtualAuthenticator {
    *
    * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
    * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
-   * @throws {NoSupportedPubKeyCredParamWasFound} Throws this error if no parameter in the array is supported.
+   * @throws {NoSupportedPubKeyCredParamFound} Throws this error if no parameter in the array is supported.
    */
-  public static findFirstSupportedPubKeyCredParams(
+  private _findFirstSupportedPubKeyCredParamsOrThrow(
     pubKeyCredParams: PubKeyCredParamLoose[],
   ): PubKeyCredParamStrict {
     assert(
@@ -122,15 +122,18 @@ export class VirtualAuthenticator {
     );
 
     for (const pubKeyCredParam of pubKeyCredParams) {
-      const parseResult =
-        PubKeyCredParamStrictSchema.safeParse(pubKeyCredParam);
-
-      if (parseResult.success === true) {
-        return parseResult.data;
+      if (
+        isEnum(SupportedPublicKeyCredentialType)(pubKeyCredParam.type) &&
+        isEnum(SupportedCOSEKeyAlgorithm)(pubKeyCredParam.alg)
+      ) {
+        return {
+          type: pubKeyCredParam.type,
+          alg: pubKeyCredParam.alg,
+        };
       }
     }
 
-    throw new NoSupportedPubKeyCredParamWasFound();
+    throw new NoSupportedPubKeyCredParamFound();
   }
 
   /**
@@ -490,11 +493,16 @@ export class VirtualAuthenticator {
         });
     }
 
+    const pubKeyCredParams = this._findFirstSupportedPubKeyCredParamsOrThrow(
+      publicKeyCredentialCreationOptions.pubKeyCredParams,
+    );
+
     const webAuthnCredentialId = randomUUID();
     const rawCredentialID = uuidToBytes(webAuthnCredentialId);
 
     const webAuthnCredentialPublicKey = await generateKeyPair({
       webAuthnCredentialId,
+      pubKeyCredParams,
     });
 
     const webAuthnCredential =
