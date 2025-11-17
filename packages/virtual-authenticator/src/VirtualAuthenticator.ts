@@ -621,7 +621,7 @@ export class VirtualAuthenticator {
     );
     assert(
       publicKeyCredentialRequestOptions.userVerification,
-      isOptional(isEnum(Object.values(UserVerificationRequirement))),
+      isOptional(isEnum(UserVerificationRequirement)),
     );
 
     const webAuthnCredential =
