@@ -1,4 +1,4 @@
-import type { ValueOfEnum } from '@repo/enums';
+import type { ValueOfEnum } from '@repo/types';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-credentialType

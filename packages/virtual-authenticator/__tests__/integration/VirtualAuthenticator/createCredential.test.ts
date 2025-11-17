@@ -279,4 +279,30 @@ describe('VirtualAuthenticator.createCredential()', () => {
       },
     );
   });
+
+  describe('meta.userId', () => {
+    test('Should throw type mismatch when userId is invalid', async () => {
+      await expect(async () =>
+        authenticator.createCredential({
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          generateKeyPair: async () => ({
+            COSEPublicKey: COSEPublicKey.toBuffer(),
+            webAuthnCredentialKeyMetaType:
+              WebAuthnCredentialKeyMetaType.KEY_VAULT,
+            webAuthnCredentialKeyVaultKeyMeta: {
+              keyVaultKeyId: KEY_VAULT_KEY_ID,
+              keyVaultKeyName: KEY_VAULT_KEY_NAME,
+              hsm: false,
+            },
+          }),
+          signatureFactory: ({ data }) => credentialSigner.sign(data),
+          meta: {
+            userId: 'INVALID_USER_ID',
+            origin: RP_ORIGIN,
+          },
+        }),
+      ).to.rejects.toThrowError();
+    });
+  });
 });

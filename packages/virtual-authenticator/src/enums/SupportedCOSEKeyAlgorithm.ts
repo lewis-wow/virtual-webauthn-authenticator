@@ -1,4 +1,5 @@
-import { KeyAlgorithm, type ValueOfEnum } from '@repo/enums';
+import { KeyAlgorithm } from '@repo/enums';
+import type { ValueOfEnum } from '@repo/types';
 
 export const SupportedCOSEKeyAlgorithm = {
   /** ECDSA w/ SHA-256 */

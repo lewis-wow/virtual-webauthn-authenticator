@@ -1320,9 +1320,6 @@ importers:
       '@azure/keyvault-keys':
         specifier: ^4.10.0
         version: 4.10.0
-      '@repo/enums':
-        specifier: workspace:*
-        version: link:../enums
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
