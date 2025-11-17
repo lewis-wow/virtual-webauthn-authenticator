@@ -79,6 +79,25 @@ export type SignatureFactory = (args: {
   webAuthnCredential: WebAuthnCredentialWithMeta;
 }) => MaybePromise<{ signature: Uint8Array; alg: COSEKeyAlgorithm }>;
 
+export type VirtualAuthenticatorCreateCredentialArgs = {
+  publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
+  generateKeyPair: GenerateKeyPair;
+  signatureFactory: SignatureFactory;
+  meta: {
+    userId: string;
+    origin: string;
+  };
+};
+
+export type VirtualAuthenticatorGetCredentialArgs = {
+  publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
+  signatureFactory: SignatureFactory;
+  meta: {
+    userId: string;
+    origin: string;
+  };
+};
+
 export type VirtualAuthenticatorOptions = {
   prisma: PrismaClient;
 };
@@ -435,15 +454,9 @@ export class VirtualAuthenticator {
    *
    * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation
    */
-  public async createCredential(opts: {
-    publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
-    generateKeyPair: GenerateKeyPair;
-    signatureFactory: SignatureFactory;
-    meta: {
-      userId: string;
-      origin: string;
-    };
-  }): Promise<PublicKeyCredential> {
+  public async createCredential(
+    opts: VirtualAuthenticatorCreateCredentialArgs,
+  ): Promise<PublicKeyCredential> {
     const {
       publicKeyCredentialCreationOptions,
       generateKeyPair,
@@ -581,14 +594,9 @@ export class VirtualAuthenticator {
   /**
    * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
    */
-  public async getCredential(opts: {
-    publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
-    signatureFactory: SignatureFactory;
-    meta: {
-      userId: string;
-      origin: string;
-    };
-  }): Promise<PublicKeyCredential> {
+  public async getCredential(
+    opts: VirtualAuthenticatorGetCredentialArgs,
+  ): Promise<PublicKeyCredential> {
     const { publicKeyCredentialRequestOptions, signatureFactory, meta } = opts;
 
     assert(publicKeyCredentialRequestOptions.rpId, isString());
