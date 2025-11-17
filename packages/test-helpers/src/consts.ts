@@ -74,5 +74,4 @@ export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   challenge: CHALLENGE_RAW,
   pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
   timeout: 60000,
-  attestation: 'none',
 } as const satisfies PublicKeyCredentialCreationOptions;

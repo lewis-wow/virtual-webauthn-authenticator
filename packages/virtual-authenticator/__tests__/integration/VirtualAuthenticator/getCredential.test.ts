@@ -54,9 +54,7 @@ const performAndVerifyAuth = async (opts: {
     publicKeyCredentialRequestOptions: requestOptions,
     signatureFactory: ({ data }) => credentialSigner.sign(data),
     meta: {
-      user: {
-        id: USER_ID,
-      },
+      userId: USER_ID,
       origin: RP_ORIGIN,
     },
   });
@@ -119,20 +117,16 @@ describe('VirtualAuthenticator.getCredential()', () => {
         PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
       generateKeyPair: async () => ({
         COSEPublicKey: COSEPublicKey.toBuffer(),
-        meta: {
-          webAuthnCredentialKeyMetaType:
-            WebAuthnCredentialKeyMetaType.KEY_VAULT,
-          webAuthnCredentialKeyVaultKeyMeta: {
-            keyVaultKeyId: KEY_VAULT_KEY_ID,
-            keyVaultKeyName: KEY_VAULT_KEY_NAME,
-            hsm: false,
-          },
+        webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
+        webAuthnCredentialKeyVaultKeyMeta: {
+          keyVaultKeyId: KEY_VAULT_KEY_ID,
+          keyVaultKeyName: KEY_VAULT_KEY_NAME,
+          hsm: false,
         },
       }),
+      signatureFactory: ({ data }) => credentialSigner.sign(data),
       meta: {
-        user: {
-          id: USER_ID,
-        },
+        userId: USER_ID,
         origin: RP_ORIGIN,
       },
     });
@@ -225,9 +219,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         },
         signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
-          user: {
-            id: USER_ID,
-          },
+          userId: USER_ID,
           origin: RP_ORIGIN,
         },
       }),
@@ -244,9 +236,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         publicKeyCredentialRequestOptions: requestOptions,
         signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
-          user: {
-            id: 'WRONG_USER_ID',
-          },
+          userId: 'WRONG_USER_ID',
           origin: RP_ORIGIN,
         },
       }),
@@ -268,9 +258,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         },
         signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
-          user: {
-            id: 'WRONG_USER_ID',
-          },
+          userId: USER_ID,
           origin: RP_ORIGIN,
         },
       }),

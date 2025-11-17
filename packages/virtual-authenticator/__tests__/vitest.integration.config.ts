@@ -13,6 +13,7 @@ export default defineConfig({
   test: {
     name: pkg.name,
     env,
+    include: ['__tests__/integration/**'],
     coverage: {
       provider: 'v8',
       exclude: ['__mocks__', '__tests__', 'src/index.ts'],
