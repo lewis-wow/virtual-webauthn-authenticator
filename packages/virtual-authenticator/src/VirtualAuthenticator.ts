@@ -79,23 +79,22 @@ export type SignatureFactory = (args: {
   webAuthnCredential: WebAuthnCredentialWithMeta;
 }) => MaybePromise<{ signature: Uint8Array; alg: COSEKeyAlgorithm }>;
 
+export type VirtualAuthenticatorCredentialMetaArgs = {
+  userId: string;
+  origin: string;
+};
+
 export type VirtualAuthenticatorCreateCredentialArgs = {
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
   generateKeyPair: GenerateKeyPair;
   signatureFactory: SignatureFactory;
-  meta: {
-    userId: string;
-    origin: string;
-  };
+  meta: VirtualAuthenticatorCredentialMetaArgs;
 };
 
 export type VirtualAuthenticatorGetCredentialArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   signatureFactory: SignatureFactory;
-  meta: {
-    userId: string;
-    origin: string;
-  };
+  meta: VirtualAuthenticatorCredentialMetaArgs;
 };
 
 export type VirtualAuthenticatorOptions = {
