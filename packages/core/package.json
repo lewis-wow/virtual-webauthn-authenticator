@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./mappers": "./src/mappers/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {

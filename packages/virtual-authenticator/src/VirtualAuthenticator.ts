@@ -1,3 +1,4 @@
+import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
@@ -35,7 +36,6 @@ import type { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKe
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialNotFound } from './exceptions/CredentialNotFound';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
-import { UUIDMapper } from './mappers';
 import type { CollectedClientData } from './validation/CollectedClientDataSchema';
 import type {
   PubKeyCredParamLoose,

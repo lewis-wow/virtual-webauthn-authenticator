@@ -5,14 +5,14 @@ import {
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   RP_ORIGIN,
-  upsertTestingUser,
   USER_ID,
   setDeep,
-} from '@repo/core';
+} from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+
 import { COSEKey } from '@repo/keys';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
-import { bytesToUuid } from '@repo/utils';
 import {
   VerifiedRegistrationResponse,
   verifyRegistrationResponse,
@@ -20,6 +20,7 @@ import {
 } from '@simplewebauthn/server';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
+import { UUIDMapper } from '../../../../core/src/mappers';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
@@ -85,7 +86,9 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
     requireUserPresence: false, // Authenticator does NOT perform UP
   });
 
-  const webAuthnCredentialId = bytesToUuid(publicKeyCredential.rawId);
+  const webAuthnCredentialId = UUIDMapper.bytesToUUID(
+    publicKeyCredential.rawId,
+  );
 
   return {
     publicKeyCredential,

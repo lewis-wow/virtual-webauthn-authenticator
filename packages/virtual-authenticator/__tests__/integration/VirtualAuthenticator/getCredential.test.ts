@@ -1,30 +1,29 @@
 import {
   CHALLENGE_BASE64URL,
-  createPublicKeyCredentialRequestOptions,
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
   RP_ORIGIN,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
-  upsertTestingUser,
   USER_ID,
-} from '@repo/core';
-import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
+} from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+
 import { PrismaClient } from '@repo/prisma';
-import {
-  PublicKeyCredentialDtoSchema,
-  PublicKeyCredentialRequestOptions,
-} from '@repo/validation';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
-  type AuthenticationResponseJSON,
   type RegistrationResponseJSON,
+  type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
+import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/validation/credentials/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { WebAuthnCredentialKeyMetaType } from '../../../src/enums/WebAuthnCredentialKeyMetaType';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
+import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
+import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
 import { credentialSigner } from '../../helpers/credentialSigner';
 import { COSEPublicKey } from '../../helpers/key';
 
