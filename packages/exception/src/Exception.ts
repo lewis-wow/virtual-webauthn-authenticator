@@ -18,7 +18,11 @@ export class Exception extends Error {
       ...opts,
     });
 
-    if (this.code === undefined || this.status === undefined || this.message) {
+    if (
+      this.code === undefined ||
+      this.status === undefined ||
+      this.message === undefined
+    ) {
       throw new TypeError('Invalid exception.');
     }
 
