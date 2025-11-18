@@ -1,11 +1,9 @@
-import {
-  AuthenticatorTransportSchema,
-  PublicKeyCredentialTypeSchema,
-} from '@repo/enums';
 import z from 'zod';
 
-import { BytesSchema } from '../../../../virtual-authenticator/src/validation/BytesSchema';
-import { see } from '../../meta/see';
+import { AuthenticatorTransportSchema } from '../enums/AuthenticatorTransport';
+import { PublicKeyCredentialTypeSchema } from '../enums/PublicKeyCredentialType';
+import { see } from '../meta/see';
+import { BytesSchema } from './BytesSchema';
 
 // Used to exclude existing credentials for a user
 

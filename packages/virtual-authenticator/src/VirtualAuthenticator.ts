@@ -1,12 +1,4 @@
-import {
-  Attestation,
-  AuthenticatorTransport,
-  Fmt,
-  COSEKeyAlgorithm,
-  PublicKeyCredentialType,
-  UserVerificationRequirement,
-  WebAuthnCredentialKeyMetaType,
-} from '@repo/enums';
+import { COSEKeyAlgorithm, WebAuthnCredentialKeyMetaType } from '@repo/enums';
 import {
   Prisma,
   type PrismaClient,
@@ -21,14 +13,6 @@ import {
   hasMinBytes,
 } from '@repo/utils';
 import { sha256 } from '@repo/utils';
-import {
-  type CollectedClientData,
-  type PublicKeyCredentialCreationOptions,
-  type PublicKeyCredentialRequestOptions,
-  type PublicKeyCredential,
-  type PubKeyCredParamLoose,
-  type PubKeyCredParamStrict,
-} from '@repo/validation';
 import * as cbor from 'cbor';
 import { randomUUID } from 'node:crypto';
 import {
@@ -47,9 +31,22 @@ import {
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
+import type { CollectedClientData } from '../../validation/src/models/credentials/CollectedClientDataSchema';
+import type {
+  PubKeyCredParamLoose,
+  PubKeyCredParamStrict,
+} from '../../validation/src/models/credentials/PubKeyCredParamSchema';
+import { Attestation } from './enums/Attestation';
+import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
+import { Fmt } from './enums/Fmt';
+import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialNotFound } from './exceptions/CredentialNotFound';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
+import type { PublicKeyCredentialCreationOptions } from './validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 
 export type WebAuthnCredentialWithMeta = WebAuthnCredential & {
   webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;

@@ -1,8 +1,8 @@
 import z from 'zod';
 
-import { BytesSchema } from '../../../../virtual-authenticator/src/validation/BytesSchema';
-import { see } from '../../meta/see';
+import { see } from '../meta/see';
 import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
+import { BytesSchema } from './BytesSchema';
 import { UserHandleSchema } from './UserHandleSchema';
 
 /**

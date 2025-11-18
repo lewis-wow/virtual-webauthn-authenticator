@@ -10,7 +10,9 @@
     "../virtual-authenticator/src/enums/CollectedClientDataType.ts",
     "../virtual-authenticator/src/enums/ResidentKeyRequirement.ts",
     "../virtual-authenticator/src/enums/PublicKeyCredentialType.ts",
-    "../virtual-authenticator/src/enums/UserVerificationRequirement.ts"
+    "../virtual-authenticator/src/enums/UserVerificationRequirement.ts",
+    "../virtual-authenticator/src/enums/TokenBindingStatus.ts",
+    "../virtual-authenticator/src/enums/WebAuthnCredentialKeyMetaType.ts"
   ],
   "exclude": ["node_modules"]
 }

@@ -1,5 +1,6 @@
-import type { Attestation } from '@repo/enums';
 import { Exception } from '@repo/exception';
+
+import type { Attestation } from '../enums/Attestation';
 
 export type AttestationNotSupportedOptions = {
   attestation: Attestation;

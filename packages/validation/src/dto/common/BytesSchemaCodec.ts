@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { BytesSchema } from '../../models/common/BytesSchema';
+import { BytesSchema } from '../../../../virtual-authenticator/src/validation/BytesSchema';
 
 export const BytesSchemaCodec = z
   .codec(z.base64url(), BytesSchema, {

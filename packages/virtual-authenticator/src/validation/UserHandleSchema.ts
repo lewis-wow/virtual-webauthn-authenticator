@@ -1,7 +1,7 @@
 import type z from 'zod';
 
-import { BytesSchema } from '../../../../virtual-authenticator/src/validation/BytesSchema';
-import { see } from '../../meta/see';
+import { see } from '../meta/see';
+import { BytesSchema } from './BytesSchema';
 
 /**
  * This attribute contains the **user handle** returned from the authenticator,

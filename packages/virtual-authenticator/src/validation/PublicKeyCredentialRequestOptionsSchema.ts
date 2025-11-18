@@ -1,6 +1,7 @@
 import z from 'zod';
 
-import { see } from '../../meta/see';
+import { UserVerificationRequirementSchema } from '../enums/UserVerificationRequirement';
+import { see } from '../meta/see';
 import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema';
 import { ChallengeSchema } from './ChallengeSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';

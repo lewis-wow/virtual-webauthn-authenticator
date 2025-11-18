@@ -1,6 +1,9 @@
 import z from 'zod';
 
-import { see } from '../../meta/see';
+import { AuthenticatorAttachmentSchema } from '../enums/AuthenticatorAttachment';
+import { ResidentKeyRequirementSchema } from '../enums/ResidentKeyRequirement';
+import { UserVerificationRequirementSchema } from '../enums/UserVerificationRequirement';
+import { see } from '../meta/see';
 
 /**
  * WebAuthn Relying Parties may use the AuthenticatorSelectionCriteria dictionary

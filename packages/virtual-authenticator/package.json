@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts",
+    "./exception": "./src/exception/index.ts",
+    "./validation": "./src/validation/index.ts"
   },
   "scripts": {
-    "build": "pnpm barrel",
-    "barrel": "../../scripts/barrel.ts",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
     "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
@@ -35,7 +36,6 @@
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*",
     "cbor": "^10.0.11",
     "class-transformer": "^0.5.1",
     "reflect-metadata": "^0.2.2",

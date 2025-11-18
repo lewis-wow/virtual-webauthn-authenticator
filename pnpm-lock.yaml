@@ -1062,6 +1062,9 @@ importers:
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -1429,9 +1432,6 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       cbor:
         specifier: ^10.0.11
         version: 10.0.11

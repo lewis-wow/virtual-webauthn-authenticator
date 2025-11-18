@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { BytesSchema } from '../common/BytesSchema';
+import { BytesSchema } from '../../../../virtual-authenticator/src/validation/BytesSchema';
 
 export const WebAuthnCredentialBaseSchema = z
   .object({

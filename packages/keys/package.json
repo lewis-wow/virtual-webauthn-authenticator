@@ -24,10 +24,11 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@repo/exception": "workspace:*",
+    "@repo/utils": "workspace:*",
     "cbor": "^10.0.11",
     "ts-pattern": "^5.8.0",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   }
 }

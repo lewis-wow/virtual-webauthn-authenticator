@@ -1,10 +1,10 @@
 import z from 'zod';
 
-import { BytesSchema } from '../../../../virtual-authenticator/src/validation/BytesSchema';
-import { see } from '../../meta/see';
+import { see } from '../meta/see';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema';
 import { AuthenticatorAssertionResponseSchema } from './AuthenticatorAssertionResponseSchema';
 import { AuthenticatorAttestationResponseSchema } from './AuthenticatorAttestationResponseSchema';
+import { BytesSchema } from './BytesSchema';
 import { CredentialSchema } from './CredentialSchema';
 
 /**

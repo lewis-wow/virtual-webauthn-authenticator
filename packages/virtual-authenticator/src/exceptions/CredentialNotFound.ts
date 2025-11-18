@@ -1,6 +1,7 @@
 import { Exception } from '@repo/exception';
-import type { PublicKeyCredentialRequestOptions } from '@repo/validation';
 import type { PickDeep } from 'type-fest';
+
+import type { PublicKeyCredentialRequestOptions } from '../validation/PublicKeyCredentialRequestOptionsSchema';
 
 export class CredentialNotFound extends Exception {
   constructor(opts: {
