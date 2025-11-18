@@ -1,7 +1,9 @@
-import { KeyAlgorithm } from '@repo/enums';
 import type { ValueOfEnum } from '@repo/types';
+import z from 'zod';
 
-export const SupportedCOSEKeyAlgorithm = {
+import { KeyAlgorithm } from './KeyAlgorithm';
+
+export const COSEKeyAlgorithm = {
   /** ECDSA w/ SHA-256 */
   [KeyAlgorithm.ES256]: -7,
   /** ECDSA w/ SHA-384 */
@@ -32,6 +34,12 @@ export const SupportedCOSEKeyAlgorithm = {
   [KeyAlgorithm.RS1]: -65535,
 } as const;
 
-export type SupportedCOSEKeyAlgorithm = ValueOfEnum<
-  typeof SupportedCOSEKeyAlgorithm
->;
+export type COSEKeyAlgorithm = ValueOfEnum<typeof COSEKeyAlgorithm>;
+
+export const COSEKeyAlgorithmSchema = z.enum(COSEKeyAlgorithm).meta({
+  description: 'COSE Key Algorithm',
+  examples: [COSEKeyAlgorithm[KeyAlgorithm.ES256]],
+});
+
+export type COSEKeyAlgorithmLoose = number;
+export const COSEKeyAlgorithmLooseSchema = z.number();

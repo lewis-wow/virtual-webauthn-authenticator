@@ -1,8 +1,8 @@
 import {
   Attestation,
   AuthenticatorTransport,
-  COSEKeyAlgorithm,
   Fmt,
+  COSEKeyAlgorithm,
   PublicKeyCredentialType,
   UserVerificationRequirement,
   WebAuthnCredentialKeyMetaType,
@@ -47,8 +47,6 @@ import {
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
-import { SupportedCOSEKeyAlgorithm } from './enums/SupportedCOSEKeyAlgorithm';
-import { SupportedPublicKeyCredentialType } from './enums/SupportedPublicKeyCredentialType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialNotFound } from './exceptions/CredentialNotFound';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
@@ -141,8 +139,8 @@ export class VirtualAuthenticator {
 
     for (const pubKeyCredParam of pubKeyCredParams) {
       if (
-        isEnum(SupportedPublicKeyCredentialType)(pubKeyCredParam.type) &&
-        isEnum(SupportedCOSEKeyAlgorithm)(pubKeyCredParam.alg)
+        isEnum(PublicKeyCredentialType)(pubKeyCredParam.type) &&
+        isEnum(COSEKeyAlgorithm)(pubKeyCredParam.alg)
       ) {
         return {
           type: pubKeyCredParam.type,

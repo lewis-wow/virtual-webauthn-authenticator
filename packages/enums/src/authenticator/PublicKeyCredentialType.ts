@@ -18,3 +18,6 @@ export const PublicKeyCredentialTypeSchema = z
     description: 'Public key credential type',
     examples: [PublicKeyCredentialType.PUBLIC_KEY],
   });
+
+export type PublicKeyCredentialTypeLoose = string;
+export const PublicKeyCredentialTypeLooseSchema = z.string();
