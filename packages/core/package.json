@@ -24,5 +24,8 @@
     "lodash-es": "^4.17.21",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3"
   }
 }

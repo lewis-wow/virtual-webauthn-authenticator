@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 export class UUIDMapper {
   static UUIDtoBytes(uuid: string) {
     return Buffer.from(uuid.replace(/-/g, ''), 'hex');
