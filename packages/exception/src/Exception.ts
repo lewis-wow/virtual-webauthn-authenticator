@@ -11,14 +11,14 @@ export class Exception extends Error {
   message!: string;
   cause?: unknown;
 
-  constructor(opts: ExceptionOptions) {
-    super(opts.message);
+  constructor(opts?: ExceptionOptions) {
+    super(opts?.message);
 
     Object.assign(this, {
       ...opts,
     });
 
-    if (this.code === undefined || this.status === undefined) {
+    if (this.code === undefined || this.status === undefined || this.message) {
       throw new TypeError('Invalid exception.');
     }
 

@@ -17,3 +17,7 @@ export * from './PublicKeyCredentialRpEntitySchema';
 export * from './PublicKeyCredentialSchema';
 export * from './PublicKeyCredentialUserEntitySchema';
 export * from './UserHandleSchema';
+export * from './WebAuthnCredentialBaseSchema';
+export * from './WebAuthnCredentialKeyVaultKeyMetaSchema';
+export * from './WebAuthnCredentialKeyVaultSchema';
+export * from './WebAuthnCredentialSchema';

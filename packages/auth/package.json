@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
+    "./exceptions": "./src/exceptions/index.ts",
+    "./validation": "./src/validation/index.ts",
     "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {

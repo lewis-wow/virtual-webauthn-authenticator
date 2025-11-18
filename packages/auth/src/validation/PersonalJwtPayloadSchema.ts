@@ -1,8 +1,8 @@
 import { TokenType } from '@repo/enums';
 import { z } from 'zod';
 
-import { UserSchema } from '../common/UserSchema';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
+import { UserSchema } from './UserSchema';
 
 export const PersonalJwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
   user: UserSchema.pick({
