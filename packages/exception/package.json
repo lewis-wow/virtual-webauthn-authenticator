@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./http": "./src/http/index.ts"
+    "./http": "./src/http/index.ts",
+    "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
     "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",

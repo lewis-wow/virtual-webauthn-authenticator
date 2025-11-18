@@ -1,1 +1,7 @@
-export * from './Environment';
+/**
+ * @file Automatically generated.
+ *
+ * @noprettier
+ */
+
+export * from "./Environment";
