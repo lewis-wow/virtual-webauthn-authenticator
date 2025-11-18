@@ -786,6 +786,9 @@ importers:
 
   packages/contract:
     dependencies:
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../auth
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
@@ -795,6 +798,9 @@ importers:
       '@repo/validation':
         specifier: workspace:*
         version: link:../validation
+      '@repo/virtual-authenticator':
+        specifier: workspace:*
+        version: link:../virtual-authenticator
       '@ts-rest/core':
         specifier: 3.53.0-rc.1
         version: 3.53.0-rc.1(@types/node@22.15.3)

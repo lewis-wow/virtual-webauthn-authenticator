@@ -1,9 +1,0 @@
-{
-  "extends": "@repo/typescript-config/base.json",
-  "include": [
-    "src",
-    "zod-openapi.d.ts",
-    "../virtual-authenticator/src/validation/BytesSchema.ts"
-  ],
-  "exclude": ["node_modules"]
-}
