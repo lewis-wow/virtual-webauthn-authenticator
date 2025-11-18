@@ -14,6 +14,11 @@ export type DecodedAttestationObject = {
   attStmt: Record<string, unknown>;
 };
 
+export type AuthenticatorAttestationResponseImplOptions = {
+  attestationObject: ArrayBuffer;
+  clientDataJSON: ArrayBuffer;
+};
+
 export class AuthenticatorAttestationResponseImpl
   extends AuthenticatorResponseImpl
   implements AuthenticatorAttestationResponse
@@ -26,9 +31,9 @@ export class AuthenticatorAttestationResponseImpl
   private _publicKey: ArrayBuffer | null = null;
   private _publicKeyAlgo: COSEAlgorithmIdentifier | undefined;
 
-  constructor(attestationObject: ArrayBuffer, clientDataJSON: ArrayBuffer) {
-    super(clientDataJSON);
-    this.attestationObject = attestationObject;
+  constructor(opts: AuthenticatorAttestationResponseImplOptions) {
+    super(opts.clientDataJSON);
+    this.attestationObject = opts.attestationObject;
   }
 
   /**

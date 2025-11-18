@@ -1,10 +1,16 @@
 import { sendToBackgroundViaRelay } from '@plasmohq/messaging';
-import { PublicKeyCredentialImpl } from '@repo/browser';
+import {
+  AuthenticatorAssertionResponseImpl,
+  AuthenticatorAttestationResponseImpl,
+  PublicKeyCredentialImpl,
+} from '@repo/browser';
 import {
   PublicKeyCredentialBrowserSchema,
+  PublicKeyCredentialCreationOptionsBrowserSchema,
   PublicKeyCredentialRequestOptionsBrowserSchema,
 } from '@repo/browser/validation';
 import {
+  PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptionsDtoSchema,
 } from '@repo/contract/validation';
@@ -59,8 +65,18 @@ navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
   const browserEncodedData =
     PublicKeyCredentialBrowserSchema.encode(parsedData);
 
+  const authenticatorAssertionResponse = new AuthenticatorAssertionResponseImpl(
+    browserEncodedData.response as {
+      clientDataJSON: ArrayBuffer;
+      authenticatorData: ArrayBuffer;
+      signature: ArrayBuffer;
+      userHandle: ArrayBuffer | null;
+    },
+  );
+
   return new PublicKeyCredentialImpl({
     ...browserEncodedData,
+    response: authenticatorAssertionResponse,
     authenticatorAttachment: null,
   });
 };
@@ -103,8 +119,17 @@ navigator.credentials.create = async (opts?: CredentialCreationOptions) => {
   const browserEncodedData =
     PublicKeyCredentialBrowserSchema.encode(parsedData);
 
+  const authenticatorAttestationResponse =
+    new AuthenticatorAttestationResponseImpl(
+      browserEncodedData.response as {
+        clientDataJSON: ArrayBuffer;
+        attestationObject: ArrayBuffer;
+      },
+    );
+
   return new PublicKeyCredentialImpl({
     ...browserEncodedData,
+    response: authenticatorAttestationResponse,
     authenticatorAttachment: null,
   });
 };
