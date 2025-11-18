@@ -1,8 +1,8 @@
 import type { PlasmoMessaging } from '@plasmohq/messaging';
 import { AuthType } from '@repo/auth/enums';
-import {
-  type PublicKeyCredentialCreationOptions,
-  type PublicKeyCredential,
+import type {
+  PublicKeyCredentialCreationOptions,
+  PublicKeyCredential,
 } from '@repo/virtual-authenticator/validation';
 import type { MessageResponse } from '~types';
 import { serializeError } from '~utils/serializeError';
