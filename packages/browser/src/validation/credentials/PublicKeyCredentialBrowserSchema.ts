@@ -1,7 +1,7 @@
+import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/validation';
 import { z } from 'zod';
 
-import { BytesArrayBufferBrowserSchemaCodec } from '../../../../validation/src/browser/BytesArrayBufferBrowserSchemaCodec';
-import { PublicKeyCredentialSchema } from '../../models/credentials/PublicKeyCredentialSchema';
+import { BytesArrayBufferBrowserSchemaCodec } from '../BytesArrayBufferBrowserSchemaCodec';
 import { AuthenticatorAssertionResponseBrowserSchema } from './AuthenticatorAssertionResponseBrowserSchema';
 import { AuthenticatorAttestationResponseBrowserSchema } from './AuthenticatorAttestationResponseBrowserSchema';
 

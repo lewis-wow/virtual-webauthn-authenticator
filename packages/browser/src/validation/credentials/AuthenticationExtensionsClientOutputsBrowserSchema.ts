@@ -1,4 +1,4 @@
-import { AuthenticationExtensionsClientOutputsSchema } from '../../models/credentials/AuthenticationExtensionsClientOutputsSchema';
+import { AuthenticationExtensionsClientOutputsSchema } from '@repo/virtual-authenticator/validation';
 
 export const AuthenticationExtensionsClientOutputsBrowserSchema =
   AuthenticationExtensionsClientOutputsSchema;

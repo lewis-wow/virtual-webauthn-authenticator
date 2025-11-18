@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./validation": "./src/validation/index.ts"
+    "./validation": "./src/validation/index.ts",
+    "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
     "build": "pnpm barrel",
@@ -21,7 +22,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }

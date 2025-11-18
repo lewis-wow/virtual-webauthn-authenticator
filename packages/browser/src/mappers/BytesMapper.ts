@@ -1,6 +1,4 @@
-import type { BufferSource } from 'node:stream/web';
-
-export class BytesTransformer {
+export class BytesMapper {
   static toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
     return bytes.buffer.slice(
       bytes.byteOffset,
@@ -25,17 +23,17 @@ export class BytesTransformer {
   }
 
   static toBufferSource(bytes: Uint8Array): BufferSource {
-    return bytes;
+    return BytesMapper.toArrayBuffer(bytes);
   }
 
   static fromBufferSource(bufferSource: BufferSource): Uint8Array {
     if (ArrayBuffer.isView(bufferSource)) {
       // If it's already a Uint8Array, you can return it directly or create a copy
       // This creates a new Uint8Array view on the *same* underlying memory segment
-      return BytesTransformer.fromArrayBufferView(bufferSource);
+      return BytesMapper.fromArrayBufferView(bufferSource);
     }
 
     // Case 2: If it's an ArrayBuffer
-    return BytesTransformer.fromArrayBuffer(bufferSource);
+    return BytesMapper.fromArrayBuffer(bufferSource);
   }
 }

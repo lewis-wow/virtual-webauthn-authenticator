@@ -1,5 +1,6 @@
-import { BytesArrayBufferBrowserSchemaCodec } from '../../../../validation/src/browser/BytesArrayBufferBrowserSchemaCodec';
-import { AuthenticatorResponseSchema } from '../../models/credentials/AuthenticatorResponseSchema';
+import { AuthenticatorResponseSchema } from '@repo/virtual-authenticator/validation';
+
+import { BytesArrayBufferBrowserSchemaCodec } from '../BytesArrayBufferBrowserSchemaCodec';
 
 export const AuthenticatorResponseBrowserSchema =
   AuthenticatorResponseSchema.extend({

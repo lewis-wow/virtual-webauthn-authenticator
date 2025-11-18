@@ -1,20 +1,18 @@
-import {
-  KeyAlgorithm,
-  COSEKeyAlgorithm,
-  COSEKeyCurve,
-  COSEKeyCurveParam,
-  COSEKeyParam,
-  COSEKeyType,
-  COSEKeyRsaParam,
-  KeyType,
-} from '@repo/enums';
-import { CannotParseCOSEKey } from '@repo/exception';
 import type { BufferLike } from '@repo/types';
 import { objectKeys, swapKeysAndValues } from '@repo/utils';
 import * as cbor from 'cbor';
 import { assert, isEnum, isInstanceOf, isNumber, isString } from 'typanion';
 
 import { JsonWebKey, type JsonWebKeyOptions } from './JsonWebKey';
+import { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
+import { COSEKeyCurve } from './enums/COSEKeyCurve';
+import { COSEKeyCurveParam } from './enums/COSEKeyCurveParam';
+import { COSEKeyParam } from './enums/COSEKeyParam';
+import { COSEKeyRsaParam } from './enums/COSEKeyRsaParam';
+import { COSEKeyType } from './enums/COSEKeyType';
+import { KeyAlgorithm } from './enums/KeyAlgorithm';
+import { KeyType } from './enums/KeyType';
+import { CannotParseCOSEKey } from './exceptions/CannotParseCOSEKey';
 
 export class COSEKey {
   readonly map: Map<number, string | number | Uint8Array>;

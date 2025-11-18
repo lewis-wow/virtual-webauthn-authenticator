@@ -1,3 +1,3 @@
-import { CredentialSchema } from '../../models/credentials/CredentialSchema';
+import { CredentialSchema } from '@repo/virtual-authenticator/validation';
 
 export const CredentialBrowserSchema = CredentialSchema;

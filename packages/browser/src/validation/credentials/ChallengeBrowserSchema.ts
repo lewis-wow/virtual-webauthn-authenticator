@@ -1,14 +1,14 @@
-import { BytesTransformer } from '@repo/transformers';
+import { ChallengeSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
-import { ArrayBufferBrowserSchema } from '../../../../validation/src/browser/common';
-import { ChallengeSchema } from '../../models/credentials/ChallengeSchema';
+import { BytesMapper } from '../../mappers/BytesMapper';
+import { ArrayBufferBrowserSchema } from '../ArrayBufferBrowserSchema';
 
 export const ChallengeBrowserSchema = z.codec(
   ArrayBufferBrowserSchema,
   ChallengeSchema,
   {
-    decode: BytesTransformer.fromArrayBuffer,
-    encode: BytesTransformer.toArrayBuffer,
+    decode: BytesMapper.fromArrayBuffer,
+    encode: BytesMapper.toArrayBuffer,
   },
 );

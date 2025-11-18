@@ -1,5 +1,6 @@
-import { BytesBufferSourceSchemaCodec } from '../../../../validation/src/browser/BytesBufferSourceSchemaCodec';
-import { PublicKeyCredentialDescriptorSchema } from '../../models/credentials/PublicKeyCredentialDescriptorSchema';
+import { PublicKeyCredentialDescriptorSchema } from '@repo/virtual-authenticator/validation';
+
+import { BytesBufferSourceSchemaCodec } from '../BytesBufferSourceSchemaCodec';
 
 export const PublicKeyCredentialDescriptorBrowserSchema =
   PublicKeyCredentialDescriptorSchema.extend({

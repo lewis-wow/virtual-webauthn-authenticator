@@ -1,6 +1,10 @@
-import { KeyAlgorithm, KeyCurveName, KeyType, KeyOperation } from '@repo/enums';
-import { CannotParseJsonWebKey } from '@repo/exception';
 import { assert, isArray, isEnum, isOptional } from 'typanion';
+
+import { KeyAlgorithm } from './enums/KeyAlgorithm';
+import { KeyCurveName } from './enums/KeyCurveName';
+import { KeyOperation } from './enums/KeyOperation';
+import { KeyType } from './enums/KeyType';
+import { CannotParseJsonWebKey } from './exceptions/CannotParseJsonWebKey';
 
 export type JsonWebKeyOptions = {
   /**

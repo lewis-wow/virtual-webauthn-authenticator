@@ -1,5 +1,6 @@
-import { BytesBufferSourceSchemaCodec } from '../../../../validation/src/browser/BytesBufferSourceSchemaCodec';
-import { CollectedClientDataSchema } from '../../models/credentials/CollectedClientDataSchema';
+import { CollectedClientDataSchema } from '@repo/virtual-authenticator/validation';
+
+import { BytesBufferSourceSchemaCodec } from '../BytesBufferSourceSchemaCodec';
 
 export const CollectedClientDataBrowserSchema =
   CollectedClientDataSchema.extend({

@@ -1,4 +1,4 @@
-import { PublicKeyCredentialEntitySchema } from '../../models/credentials/PublicKeyCredentialEntitySchema';
+import { PublicKeyCredentialEntitySchema } from '@repo/virtual-authenticator/validation';
 
 export const PublicKeyCredentialEntityBrowserSchema =
   PublicKeyCredentialEntitySchema;

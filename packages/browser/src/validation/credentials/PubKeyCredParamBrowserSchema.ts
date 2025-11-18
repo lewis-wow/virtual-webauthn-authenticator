@@ -1,3 +1,3 @@
-import { PubKeyCredParamStrictSchema } from '../../models/credentials/PubKeyCredParamSchema';
+import { PubKeyCredParamStrictSchema } from '@repo/virtual-authenticator/validation';
 
 export const PubKeyCredParamBrowserSchema = PubKeyCredParamStrictSchema;
