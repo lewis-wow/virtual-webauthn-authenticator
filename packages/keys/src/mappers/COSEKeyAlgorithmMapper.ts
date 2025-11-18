@@ -1,14 +1,13 @@
-import {
-  COSEKeyAlgorithm,
-  KeyAlgorithm,
-  KeyCurveAlgorithm,
-  KeyCurveName,
-  KeyRsaAlgorithm,
-  KeyType,
-} from '@repo/enums';
 import { swapKeysAndValues } from '@repo/utils';
 import { match } from 'ts-pattern';
 import { assert, isEnum } from 'typanion';
+
+import { COSEKeyAlgorithm } from '../enums/COSEKeyAlgorithm';
+import { KeyAlgorithm } from '../enums/KeyAlgorithm';
+import { KeyCurveAlgorithm } from '../enums/KeyCurveAlgorithm';
+import { KeyCurveName } from '../enums/KeyCurveName';
+import { KeyRsaAlgorithm } from '../enums/KeyRsaAlgorithm';
+import { KeyType } from '../enums/KeyType';
 
 export class COSEKeyAlgorithmMapper {
   static toKeyAlgorithm(value: COSEKeyAlgorithm): KeyAlgorithm {

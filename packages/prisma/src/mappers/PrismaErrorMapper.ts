@@ -1,5 +1,4 @@
-import { HTTPExceptionCode } from '@repo/enums';
-import { HTTPException } from '@repo/exception';
+import { Exception } from '@repo/exception';
 import { Prisma, type AnyPrismaError } from '@repo/prisma';
 
 export class PrismaErrorMapper {
@@ -8,22 +7,22 @@ export class PrismaErrorMapper {
    * @param error The error to map.
    * @returns An instance of HTTPException.
    */
-  static toHTTPException(error: AnyPrismaError): HTTPException | null {
+  static toHTTPException(error: AnyPrismaError): Exception | null {
     // 2. Handle known Prisma request errors (P-codes)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {
         case 'P2002': // Unique constraint violation
-          return new HTTPException({
+          return new Exception({
             status: 409, // Conflict
-            code: HTTPExceptionCode.CONFLICT,
+            code: 'CONFLICT',
             message: 'A record with this value already exists.',
             cause: error,
           });
 
         case 'P2025': // Record not found (e.g., in an update or delete)
-          return new HTTPException({
+          return new Exception({
             status: 404, // Not Found
-            code: HTTPExceptionCode.NOT_FOUND,
+            code: 'NOT_FOUND',
             message: 'The requested record was not found.',
             cause: error,
           });
@@ -31,9 +30,9 @@ export class PrismaErrorMapper {
         case 'P2000': // Value too long for column
         case 'P2001': // Record not found (where clause)
         case 'P2011': // Null constraint violation
-          return new HTTPException({
+          return new Exception({
             status: 400, // Bad Request
-            code: HTTPExceptionCode.BAD_REQUEST,
+            code: 'BAD_REQUEST',
             message: 'Invalid input data provided.',
             cause: error,
           });
@@ -42,9 +41,9 @@ export class PrismaErrorMapper {
 
         // Default for other *known* DB errors
         default:
-          return new HTTPException({
+          return new Exception({
             status: 500, // Internal Server Error
-            code: HTTPExceptionCode.INTERNAL_SERVER_ERROR,
+            code: 'INTERNAL_SERVER_ERROR',
             message: 'A known database error occurred.',
             cause: error,
           });
@@ -53,9 +52,9 @@ export class PrismaErrorMapper {
 
     // 3. Handle Prisma validation errors (e.g., wrong field type)
     if (error instanceof Prisma.PrismaClientValidationError) {
-      return new HTTPException({
+      return new Exception({
         status: 400, // Bad Request
-        code: HTTPExceptionCode.BAD_REQUEST,
+        code: 'BAD_REQUEST',
         message: 'Invalid request data or arguments.',
         cause: error,
       });
@@ -63,9 +62,9 @@ export class PrismaErrorMapper {
 
     // 4. Handle Prisma initialization/connection errors
     if (error instanceof Prisma.PrismaClientInitializationError) {
-      return new HTTPException({
+      return new Exception({
         status: 503, // Service Unavailable
-        code: HTTPExceptionCode.SERVICE_UNAVAILABLE,
+        code: 'SERVICE_UNAVAILABLE',
         message: 'Could not connect to the database.',
         cause: error,
       });
@@ -73,9 +72,9 @@ export class PrismaErrorMapper {
 
     // 5. Handle unknown Prisma errors
     if (error instanceof Prisma.PrismaClientUnknownRequestError) {
-      return new HTTPException({
+      return new Exception({
         status: 500, // Internal Server Error
-        code: HTTPExceptionCode.INTERNAL_SERVER_ERROR,
+        code: 'INTERNAL_SERVER_ERROR',
         message: 'An unknown database error occurred.',
         cause: error,
       });
@@ -83,9 +82,9 @@ export class PrismaErrorMapper {
 
     // 6. Handle Prisma engine panics
     if (error instanceof Prisma.PrismaClientRustPanicError) {
-      return new HTTPException({
+      return new Exception({
         status: 500, // Internal Server Error
-        code: HTTPExceptionCode.INTERNAL_SERVER_ERROR,
+        code: 'INTERNAL_SERVER_ERROR',
         message: 'A fatal database engine error occurred.',
         cause: error,
       });

@@ -9,8 +9,8 @@ import {
   RequestValidationFailed,
 } from '@repo/exception';
 import { Logger } from '@repo/logger';
-import { PrismaErrorMapper } from '@repo/mappers';
 import { isAnyPrismaError } from '@repo/prisma';
+import { PrismaErrorMapper } from '@repo/prisma/mappers';
 import { TsRestRequestValidationError } from '@ts-rest/nest';
 import type { Response as ExpressResponse } from 'express';
 

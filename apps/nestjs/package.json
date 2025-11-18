@@ -29,7 +29,6 @@
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/logger": "workspace:*",
-    "@repo/mappers": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",

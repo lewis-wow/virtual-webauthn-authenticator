@@ -30,7 +30,6 @@
     "@azure/keyvault-keys": "^4.10.0",
     "@repo/enums": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/mappers": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "ecdsa-sig-formatter": "^1.0.11",
