@@ -1,20 +1,5 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": [
-    "src",
-    "zod-openapi.d.ts",
-    "../virtual-authenticator/src/enums/Attestation.ts",
-    "../virtual-authenticator/src/enums/AuthenticatorAttachment.ts",
-    "../virtual-authenticator/src/enums/AuthenticatorTransport.ts",
-    "../virtual-authenticator/src/enums/Fmt.ts",
-    "../virtual-authenticator/src/enums/CollectedClientDataType.ts",
-    "../virtual-authenticator/src/enums/ResidentKeyRequirement.ts",
-    "../virtual-authenticator/src/enums/PublicKeyCredentialType.ts",
-    "../virtual-authenticator/src/enums/UserVerificationRequirement.ts",
-    "../virtual-authenticator/src/enums/TokenBindingStatus.ts",
-    "../virtual-authenticator/src/enums/WebAuthnCredentialKeyMetaType.ts",
-    "../auth/src/enums/AuthType.ts",
-    "../auth/src/enums/TokenType.ts"
-  ],
+  "include": ["src", "zod-openapi.d.ts"],
   "exclude": ["node_modules"]
 }
