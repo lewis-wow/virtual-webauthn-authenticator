@@ -33,6 +33,7 @@
   "dependencies": {
     "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",

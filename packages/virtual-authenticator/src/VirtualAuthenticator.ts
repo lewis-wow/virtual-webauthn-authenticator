@@ -1,3 +1,4 @@
+import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm, WebAuthnCredentialKeyMetaType } from '@repo/enums';
 import {
   Prisma,
@@ -12,7 +13,6 @@ import {
   bytesNotEmpty,
   hasMinBytes,
 } from '@repo/utils';
-import { sha256 } from '@repo/utils';
 import * as cbor from 'cbor';
 import { randomUUID } from 'node:crypto';
 import {
@@ -200,7 +200,7 @@ export class VirtualAuthenticator {
 
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
-    const rpIdHash = sha256(Buffer.from(rpId));
+    const rpIdHash = Hash.sha256(Buffer.from(rpId));
 
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
@@ -389,7 +389,7 @@ export class VirtualAuthenticator {
     authData: Uint8Array;
   }): Uint8Array {
     const { clientDataJSON, authData } = opts;
-    const clientDataHash = sha256(clientDataJSON);
+    const clientDataHash = Hash.sha256(clientDataJSON);
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
 

@@ -1417,6 +1417,9 @@ importers:
 
   packages/virtual-authenticator:
     dependencies:
+      '@repo/crypto':
+        specifier: workspace:*
+        version: link:../crypto
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
