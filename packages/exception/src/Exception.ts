@@ -1,12 +1,12 @@
 export type ExceptionOptions = {
   status?: number;
-  code: string;
+  code?: string;
   message: string;
   cause?: unknown;
 };
 
 export class Exception extends Error {
-  status?: number;
+  status!: number;
   code!: string;
   message!: string;
   cause?: unknown;
@@ -17,6 +17,10 @@ export class Exception extends Error {
     Object.assign(this, {
       ...opts,
     });
+
+    if (this.code === undefined || this.status === undefined) {
+      throw new TypeError('Invalid exception.');
+    }
 
     Object.setPrototypeOf(this, Exception.prototype);
   }
