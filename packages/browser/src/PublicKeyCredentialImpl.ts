@@ -1,10 +1,3 @@
-import type {
-  AuthenticatorAssertionResponse,
-  AuthenticatorAttestationResponse,
-  AuthenticationExtensionsClientOutputs,
-  PublicKeyCredential,
-} from './types';
-
 export class PublicKeyCredentialImpl implements PublicKeyCredential {
   readonly id: string;
   readonly rawId: ArrayBuffer;
@@ -25,6 +18,10 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
     this.type = 'public-key';
     this.response = opts.response;
     this.authenticatorAttachment = opts.authenticatorAttachment;
+  }
+
+  toJSON() {
+    throw new Error('Method not implemented.');
   }
 
   getClientExtensionResults(): AuthenticationExtensionsClientOutputs {

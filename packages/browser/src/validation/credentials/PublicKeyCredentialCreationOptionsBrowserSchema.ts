@@ -1,7 +1,7 @@
 import z from 'zod';
 
+import { BytesBufferSourceSchemaCodec } from '../../../../validation/src/browser/BytesBufferSourceSchemaCodec';
 import { PublicKeyCredentialCreationOptionsSchema } from '../../models/credentials/PublicKeyCredentialCreationOptionsSchema';
-import { BytesBufferSourceSchemaCodec } from '../BytesBufferSourceSchemaCodec';
 import { PublicKeyCredentialDescriptorBrowserSchema } from './PublicKeyCredentialDescriptorBrowserSchema';
 import { PublicKeyCredentialUserEntityBrowserSchema } from './PublicKeyCredentialUserEntityBrowserSchema';
 

@@ -15,8 +15,11 @@ console.log('🌀 Starting barrel generation...');
 const DEFAULT_DIRECTORY = './src';
 const DEFAULT_OUTPUT = './src/index.ts';
 
-const directory = process.argv[1] ?? DEFAULT_DIRECTORY;
-const output = process.argv[2] ?? DEFAULT_OUTPUT;
+const directory = process.argv[2] ?? DEFAULT_DIRECTORY;
+const output = process.argv[3] ?? DEFAULT_OUTPUT;
+
+console.log('Directory: ', directory);
+console.log('Output: ', output);
 
 const configPath = path.join(import.meta.dirname, '..', '.barrelsby.json');
 try {

@@ -1,7 +1,7 @@
 import z from 'zod';
 
+import { BytesBufferSourceSchemaCodec } from '../../../../validation/src/browser/BytesBufferSourceSchemaCodec';
 import { PublicKeyCredentialRequestOptionsSchema } from '../../models/credentials/PublicKeyCredentialRequestOptionsSchema';
-import { BytesBufferSourceSchemaCodec } from '../BytesBufferSourceSchemaCodec';
 import { PublicKeyCredentialDescriptorBrowserSchema } from './PublicKeyCredentialDescriptorBrowserSchema';
 
 export const PublicKeyCredentialRequestOptionsBrowserSchema =
