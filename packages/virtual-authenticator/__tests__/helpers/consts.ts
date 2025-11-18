@@ -1,3 +1,12 @@
+import {
+  CHALLENGE_RAW,
+  RP_ID,
+  RP_NAME,
+  USER_DISPLAY_NAME,
+  USER_ID_RAW,
+  USER_NAME,
+} from '@repo/core/__tests__/helpers';
+
 export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   rp: {
     name: RP_NAME,
@@ -11,4 +20,4 @@ export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   challenge: CHALLENGE_RAW,
   pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
   timeout: 60000,
-} as const;
+} as const satisfies PublicKeyCredentialCreationOptions;

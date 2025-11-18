@@ -5,9 +5,9 @@ import { jwtIssuer } from '@/lib/jwtIssuer';
 import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
+import { TokenType } from '@repo/auth/enums';
 import { contract } from '@repo/contract';
-import { TokenType } from '@repo/enums';
-import { Unauthorized } from '@repo/exception';
+import { Unauthorized } from '@repo/exception/http';
 
 export const apiKey = factory.createApp().use(async (ctx, next) => {
   console.log('APIKEY');

@@ -506,9 +506,15 @@ importers:
       '@repo/browser':
         specifier: workspace:*
         version: link:../../packages/browser
+      '@repo/contract':
+        specifier: workspace:*
+        version: link:../../packages/contract
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
+      '@repo/virtual-authenticator':
+        specifier: workspace:*
+        version: link:../../packages/virtual-authenticator
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
@@ -737,6 +743,9 @@ importers:
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
+      cbor:
+        specifier: ^10.0.11
+        version: 10.0.11
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -753,6 +762,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/cbor':
+        specifier: ^6.0.4
+        version: 6.0.4
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
@@ -4810,6 +4822,10 @@ packages:
 
   '@types/body-parser@1.19.6':
     resolution: {integrity: sha512-HLFeCYgz89uk22N5Qg3dvGvsv46B8GLvKKo1zKG4NybA8U2DiEO3w9lqGg29t/tfLRJpJ6iQxnVw4OnB7MoM9g==}
+
+  '@types/cbor@6.0.4':
+    resolution: {integrity: sha512-Mgo9dwJw9o4K3buIAVChFwud9WQTz4vLgWv7z8RVQnY6vIocZaDTr6Yxa8ldKCyQO5w1rBb5ovzBpfGMOgWZEQ==}
+    deprecated: This is a stub types definition. cbor provides its own type definitions, so you do not need this installed.
 
   '@types/chai@5.2.2':
     resolution: {integrity: sha512-8kB30R7Hwqf40JPiKhVzodJs2Qc1ZJ5zuT3uzw5Hq/dhNCl3G3l83jfpdI1e20BP348+fV7VIL/+FxaXkqBmWg==}
@@ -13915,6 +13931,10 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 24.9.1
 
+  '@types/cbor@6.0.4':
+    dependencies:
+      cbor: 10.0.11
+
   '@types/chai@5.2.2':
     dependencies:
       '@types/deep-eql': 4.0.2
@@ -14346,7 +14366,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:

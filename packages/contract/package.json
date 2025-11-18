@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./validation": "./src/validation/index.ts"
   },
   "scripts": {
-    "build": "pnpm generate:spec",
+    "build": "pnpm barrel && pnpm generate:spec",
+    "barrel": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",

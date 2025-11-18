@@ -1,14 +1,14 @@
 import { sendToBackgroundViaRelay } from '@plasmohq/messaging';
+import { PublicKeyCredentialImpl } from '@repo/browser';
 import {
   PublicKeyCredentialBrowserSchema,
-  PublicKeyCredentialCreationOptionsBrowserSchema,
-  PublicKeyCredentialCreationOptionsDtoSchema,
-  PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptionsBrowserSchema,
+} from '@repo/browser/validation';
+import {
+  PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptionsDtoSchema,
-} from '@repo/validation';
+} from '@repo/contract/validation';
 import type { PlasmoCSConfig } from 'plasmo';
-import { PublicKeyCredentialImpl } from '~node_modules/@repo/browser/src';
 
 const LOG_PREFIX = 'MAIN';
 console.log(
