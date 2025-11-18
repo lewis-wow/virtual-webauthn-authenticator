@@ -1,7 +1,7 @@
 import type { ValueOfEnum } from '@repo/types';
 import z from 'zod';
 
-export const KeyAlgorithm = {
+export const SupportedKeyAlgorithm = {
   /** ECDSA w/ SHA-256 */
   ES256: 'ES256',
   /** ECDSA w/ SHA-384 */
@@ -33,9 +33,9 @@ export const KeyAlgorithm = {
   RS1: 'RS1',
 } as const;
 
-export type KeyAlgorithm = ValueOfEnum<typeof KeyAlgorithm>;
+export type SupportedKeyAlgorithm = ValueOfEnum<typeof SupportedKeyAlgorithm>;
 
-export const KeyAlgorithmSchema = z.enum(KeyAlgorithm).meta({
-  description: 'Key algorithm',
-  examples: [KeyAlgorithm.ES256],
+export const SupportedKeyAlgorithmSchema = z.enum(SupportedKeyAlgorithm).meta({
+  description: 'Supported Key Algorithm',
+  examples: [SupportedKeyAlgorithm.ES256],
 });
