@@ -7,6 +7,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "pnpm barrel",
+    "barrel": "../../scripts/barrel.ts",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
     "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
@@ -37,6 +39,7 @@
     "cbor": "^10.0.11",
     "class-transformer": "^0.5.1",
     "reflect-metadata": "^0.2.2",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   }
 }

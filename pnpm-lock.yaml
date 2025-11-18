@@ -1444,6 +1444,9 @@ importers:
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
