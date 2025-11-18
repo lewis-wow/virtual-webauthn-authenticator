@@ -1,3 +1,5 @@
+import { MethodNotImplemented } from './exceptions/MethodNotImplemented';
+
 export class PublicKeyCredentialImpl implements PublicKeyCredential {
   readonly id: string;
   readonly rawId: ArrayBuffer;
@@ -21,7 +23,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
   }
 
   toJSON() {
-    throw new Error('Method not implemented.');
+    throw new MethodNotImplemented();
   }
 
   getClientExtensionResults(): AuthenticationExtensionsClientOutputs {

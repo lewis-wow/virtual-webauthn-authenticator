@@ -23,8 +23,11 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/core": "workspace:*",
+    "@repo/exception": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "cbor": "^10.0.11",
+    "cbor-x": "^1.6.0",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }

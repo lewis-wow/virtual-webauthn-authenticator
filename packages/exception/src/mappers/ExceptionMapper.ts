@@ -9,7 +9,7 @@ export class ExceptionMapper {
         name: exception.name,
       },
       {
-        status: exception.status,
+        status: exception.status ?? 500,
       },
     );
   }

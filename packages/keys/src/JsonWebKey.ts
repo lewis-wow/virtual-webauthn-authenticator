@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { assert, isArray, isEnum, isOptional } from 'typanion';
 
 import { KeyAlgorithm } from './enums/KeyAlgorithm';

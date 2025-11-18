@@ -1,6 +1,6 @@
-import type { BufferLike } from '@repo/types';
 import { objectKeys, swapKeysAndValues } from '@repo/utils';
-import * as cbor from 'cbor';
+import { Buffer } from 'buffer';
+import * as cbor from 'cbor-x';
 import { assert, isEnum, isInstanceOf, isNumber, isString } from 'typanion';
 
 import { JsonWebKey, type JsonWebKeyOptions } from './JsonWebKey';
@@ -74,7 +74,7 @@ export class COSEKey {
     return new COSEKey(coseMap);
   }
 
-  static fromBuffer(buffer: BufferLike): COSEKey {
+  static fromBytes(buffer: Uint8Array): COSEKey {
     return new COSEKey(cbor.decode(buffer));
   }
 
@@ -134,7 +134,7 @@ export class COSEKey {
     return new JsonWebKey(jwk);
   }
 
-  toBuffer(): Uint8Array {
+  toBytes(): Uint8Array {
     return cbor.encode(this.map);
   }
 

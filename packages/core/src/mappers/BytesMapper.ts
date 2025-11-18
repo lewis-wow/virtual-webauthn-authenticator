@@ -1,5 +1,5 @@
 // 1. Define BufferSource locally to avoid 'node:' or 'dom' library dependency issues
-type BufferSource = ArrayBuffer | ArrayBufferView;
+type BufferSource = ArrayBuffer | ArrayBufferView<ArrayBuffer>;
 
 export class BytesMapper {
   static bytesToBase64(bytes: Uint8Array): string {
@@ -73,7 +73,9 @@ export class BytesMapper {
     return BytesMapper.bytesToArrayBuffer(bytes);
   }
 
-  static bufferSourceToBytes(bufferSource: BufferSource): Uint8Array {
+  static bufferSourceToBytes(
+    bufferSource: BufferSource | ArrayBufferView<SharedArrayBuffer>,
+  ): Uint8Array {
     if (ArrayBuffer.isView(bufferSource)) {
       return BytesMapper.arrayBufferViewToBytes(bufferSource);
     }

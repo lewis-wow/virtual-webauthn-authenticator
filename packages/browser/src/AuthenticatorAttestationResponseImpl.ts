@@ -1,6 +1,18 @@
-import * as cbor from 'cbor';
+import { BytesMapper } from '@repo/core/mappers';
+import * as cbor from 'cbor-x';
 
 import { AuthenticatorResponseImpl } from './AuthenticatorResponseImpl';
+import { AlgorithmIdentifierNotFoundInCoseKey } from './exceptions/AlgorithmIdentifierNotFoundInCoseKey';
+import { AttestationObjectMissingAuthData } from './exceptions/AttestationObjectMissingAuthData';
+import { AuthenticatorDataTooShort } from './exceptions/AuthenticatorDataTooShort';
+import { FailedToDecodeAttestationObject } from './exceptions/FailedToDecodeAttestationObject';
+import { FailedToParseCosePublicKey } from './exceptions/FailedToParseCosePublicKey';
+
+export type DecodedAttestationObject = {
+  authData: Uint8Array;
+  fmt: string;
+  attStmt: Record<string, unknown>;
+};
 
 export class AuthenticatorAttestationResponseImpl
   extends AuthenticatorResponseImpl
@@ -9,7 +21,7 @@ export class AuthenticatorAttestationResponseImpl
   readonly attestationObject: ArrayBuffer;
 
   // Caches to prevent repeated expensive parsing
-  private _decodedAttestationObject: any = null;
+  private _decodedAttestationObject: DecodedAttestationObject | null = null;
   private _authenticatorData: ArrayBuffer | null = null;
   private _publicKey: ArrayBuffer | null = null;
   private _publicKeyAlgo: COSEAlgorithmIdentifier | undefined;
@@ -28,23 +40,32 @@ export class AuthenticatorAttestationResponseImpl
     }
 
     // 1. Decode the top-level CBOR map
-    // attestationObject structure: { "authData": bytes, "fmt": string, "attStmt": map }
+    // Use BytesMapper to ensure we have a clean Uint8Array for the CBOR decoder
+    const attestationBytes = BytesMapper.arrayBufferToBytes(
+      this.attestationObject,
+    );
+
     try {
-      this._decodedAttestationObject = cbor.decodeFirstSync(
-        Buffer.from(this.attestationObject),
-      );
+      // cbor.decodeFirstSync accepts Uint8Array
+      this._decodedAttestationObject = cbor.decode(attestationBytes);
     } catch (e) {
-      throw new Error('Failed to decode attestationObject: ' + e);
+      throw new FailedToDecodeAttestationObject({
+        cause: e,
+      });
     }
 
     // 2. Extract authData
-    const authDataBuffer = this._decodedAttestationObject.authData;
-    if (!authDataBuffer) {
-      throw new Error('attestationObject is missing "authData".');
+    // cbor usually returns Node Buffers for binary fields.
+    // We treat it as a generic BufferSource.
+    const authDataBytes = this._decodedAttestationObject!.authData;
+
+    if (!authDataBytes) {
+      throw new AttestationObjectMissingAuthData();
     }
 
-    // Convert Buffer back to ArrayBuffer/Uint8Array for storage
-    this._authenticatorData = this._toUint8Array(authDataBuffer).buffer;
+    // Normalize to Uint8Array using Mapper, then store the underlying ArrayBuffer
+    this._authenticatorData = BytesMapper.bytesToArrayBuffer(authDataBytes);
+
     return this._authenticatorData!;
   }
 
@@ -54,15 +75,25 @@ export class AuthenticatorAttestationResponseImpl
   getPublicKey(): ArrayBuffer | null {
     if (this._publicKey) return this._publicKey;
 
-    const authData = this.getAuthenticatorData();
-    const view = new DataView(authData);
-    const u8 = new Uint8Array(authData);
+    // Get authData as Uint8Array for parsing
+    const authData = BytesMapper.arrayBufferToBytes(
+      this.getAuthenticatorData(),
+    );
+    const view = new DataView(
+      authData.buffer,
+      authData.byteOffset,
+      authData.byteLength,
+    );
 
     // --- Binary Parsing of Authenticator Data ---
 
-    // 1. Read Flags (Byte 32) to check if Attested Credential Data is present
+    // 1. Read Flags (Byte 32)
     // Layout: [RPIDHash (32)] [Flags (1)] [SignCount (4)] ...
-    const flags = u8[32];
+    if (authData.length < 37) {
+      throw new AuthenticatorDataTooShort();
+    }
+
+    const flags = authData[32]!;
     const attestationDataIncluded = !!(flags & 0x40); // Bit 6
 
     if (!attestationDataIncluded) {
@@ -77,6 +108,7 @@ export class AuthenticatorAttestationResponseImpl
     offset += 16;
 
     // 4. Read Credential ID Length (2 bytes, Big-Endian)
+    if (view.byteLength < offset + 2) return null;
     const credIdLen = view.getUint16(offset, false);
     offset += 2;
 
@@ -85,29 +117,30 @@ export class AuthenticatorAttestationResponseImpl
 
     // 6. Extract COSE Public Key
     // The key starts at 'offset'. It is a CBOR map.
-    // There might be extensions *after* the key, so we cannot just take the rest of the buffer.
-    const remainingBytes = Buffer.from(u8.slice(offset));
+    const remainingBytes = authData.subarray(offset);
 
     try {
       // decodeFirstSync will decode exactly one CBOR item (the key map)
-      // and ignore any trailing bytes (extensions)
-      const coseKeyMap = cbor.decodeFirstSync(remainingBytes);
+      const coseKeyMap = cbor.decode(remainingBytes);
 
-      // Extract the Algorithm while we have the map (Key "3" is "alg")
-      // Note: cbor library typically returns a Map for COSE keys
+      // Extract the Algorithm (Key "3" is "alg")
       if (coseKeyMap instanceof Map) {
         this._publicKeyAlgo = coseKeyMap.get(3);
       } else {
         this._publicKeyAlgo = coseKeyMap[3];
       }
 
-      // Re-encode the map to get the exact ArrayBuffer of just the public key
-      // This ensures clean separation from any trailing extensions.
+      // Re-encode to get the exact raw bytes of the key map
+      // cbor.encode returns a Node Buffer
       const rawKeyBuffer = cbor.encode(coseKeyMap);
-      this._publicKey = this._toUint8Array(rawKeyBuffer).buffer;
+
+      // Normalize to ArrayBuffer using Mapper
+      const rawKeyBytes = BytesMapper.bufferSourceToBytes(rawKeyBuffer);
+      this._publicKey = BytesMapper.bytesToArrayBuffer(rawKeyBytes);
     } catch (e) {
-      console.error('Failed to parse COSE Public Key', e);
-      return null;
+      throw new FailedToParseCosePublicKey({
+        cause: e,
+      });
     }
 
     return this._publicKey;
@@ -119,47 +152,13 @@ export class AuthenticatorAttestationResponseImpl
     }
 
     if (this._publicKeyAlgo === undefined) {
-      // -7 is ES256, -257 is RS256.
-      // If we can't find it, strict WebAuthn impls might throw or return a default.
-      throw new Error('Algorithm identifier not found in COSE key.');
+      throw new AlgorithmIdentifierNotFoundInCoseKey();
     }
 
     return this._publicKeyAlgo;
   }
 
-  /**
-   * Transports are usually provided by the browser in a separate field
-   * and are not reliably packed into the standard binary attestation object.
-   */
   getTransports(): string[] {
     return [];
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      rawId: this._toBase64Url(this.rawId),
-      response: {
-        clientDataJSON: this._toBase64Url(this.clientDataJSON),
-        attestationObject: this._toBase64Url(this.attestationObject),
-        transports: this.getTransports(),
-        authenticatorData: this._toBase64Url(this.getAuthenticatorData()),
-        publicKey: this.getPublicKey()
-          ? this._toBase64Url(this.getPublicKey()!)
-          : null,
-        publicKeyAlgorithm: this._publicKeyAlgo || null,
-      },
-      type: 'public-key',
-      clientExtensionResults: this.getClientExtensionResults(),
-    };
-  }
-
-  private _toUint8Array(buffer: Buffer | ArrayBuffer): Uint8Array<ArrayBuffer> {
-    return new Uint8Array(buffer);
-  }
-
-  private _toBase64Url(buffer: ArrayBuffer): string {
-    const str = Buffer.from(buffer).toString('base64');
-    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
 }
