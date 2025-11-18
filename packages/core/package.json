@@ -14,7 +14,6 @@
   "devDependencies": {
     "@repo/enums": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/keys": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/utils": "workspace:*",
