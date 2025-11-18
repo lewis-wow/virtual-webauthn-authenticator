@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
     "./exception": "./src/exception/index.ts",
-    "./validation": "./src/validation/index.ts"
+    "./validation": "./src/validation/index.ts",
+    "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",

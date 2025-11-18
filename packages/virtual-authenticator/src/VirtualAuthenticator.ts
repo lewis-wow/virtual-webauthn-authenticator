@@ -1,5 +1,5 @@
 import { Hash } from '@repo/crypto';
-import { COSEKeyAlgorithm, WebAuthnCredentialKeyMetaType } from '@repo/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   Prisma,
   type PrismaClient,
@@ -7,12 +7,7 @@ import {
   type WebAuthnCredentialKeyVaultKeyMeta,
 } from '@repo/prisma';
 import type { MaybePromise } from '@repo/types';
-import {
-  bytesToUuid,
-  uuidToBytes,
-  bytesNotEmpty,
-  hasMinBytes,
-} from '@repo/utils';
+import { bytesNotEmpty, hasMinBytes } from '@repo/utils';
 import * as cbor from 'cbor';
 import { randomUUID } from 'node:crypto';
 import {
@@ -31,19 +26,21 @@ import {
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
-import type { CollectedClientData } from '../../validation/src/models/credentials/CollectedClientDataSchema';
-import type {
-  PubKeyCredParamLoose,
-  PubKeyCredParamStrict,
-} from '../../validation/src/models/credentials/PubKeyCredParamSchema';
 import { Attestation } from './enums/Attestation';
 import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
 import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
+import type { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialNotFound } from './exceptions/CredentialNotFound';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
+import { UUIDMapper } from './mappers';
+import type { CollectedClientData } from './validation/CollectedClientDataSchema';
+import type {
+  PubKeyCredParamLoose,
+  PubKeyCredParamStrict,
+} from './validation/PubKeyCredParamSchema';
 import type { PublicKeyCredentialCreationOptions } from './validation/PublicKeyCredentialCreationOptionsSchema';
 import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
@@ -306,7 +303,7 @@ export class VirtualAuthenticator {
     ) {
       const allowedIDs = publicKeyCredentialRequestOptions.allowCredentials.map(
         (publicKeyCredentialDescriptor) =>
-          bytesToUuid(publicKeyCredentialDescriptor.id),
+          UUIDMapper.bytesToUUID(publicKeyCredentialDescriptor.id),
       );
 
       where.id = {
@@ -476,7 +473,7 @@ export class VirtualAuthenticator {
       applyCascade(isInstanceOf(Uint8Array), bytesNotEmpty()),
     );
     assert(
-      bytesToUuid(publicKeyCredentialCreationOptions.user.id),
+      UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
       isLiteral(meta.userId),
     );
     assert(
@@ -505,7 +502,7 @@ export class VirtualAuthenticator {
     );
 
     const webAuthnCredentialId = randomUUID();
-    const rawCredentialID = uuidToBytes(webAuthnCredentialId);
+    const rawCredentialID = UUIDMapper.UUIDtoBytes(webAuthnCredentialId);
 
     const webAuthnCredentialPublicKey = await generateKeyPair({
       webAuthnCredentialId,
@@ -621,7 +618,7 @@ export class VirtualAuthenticator {
         userId: meta.userId,
       });
 
-    const credentialID = uuidToBytes(webAuthnCredential.id);
+    const credentialID = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
 
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
