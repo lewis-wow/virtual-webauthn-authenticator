@@ -33,7 +33,6 @@
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
-    "@repo/validation": "workspace:*",
     "bcryptjs": "^3.0.3",
     "hono": "^4.9.10",
     "jose": "^6.1.0",

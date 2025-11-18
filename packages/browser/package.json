@@ -22,7 +22,6 @@
   },
   "dependencies": {
     "@repo/enums": "workspace:*",
-    "@repo/validation": "workspace:*",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }

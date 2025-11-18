@@ -77,9 +77,6 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       '@t3-oss/env-core':
         specifier: ^0.13.8
         version: 0.13.8(typescript@5.9.2)(zod@4.1.12)
@@ -225,9 +222,6 @@ importers:
       '@repo/proxy':
         specifier: workspace:*
         version: link:../../packages/proxy
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       '@tanstack/react-query':
         specifier: ^5.90.5
         version: 5.90.5(react@19.1.0)
@@ -388,9 +382,6 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../../packages/virtual-authenticator
@@ -521,9 +512,6 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../../packages/enums
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
@@ -591,9 +579,6 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../../packages/validation
       '@t3-oss/env-core':
         specifier: ^0.13.8
         version: 0.13.8(typescript@5.9.2)(zod@4.1.12)
@@ -706,9 +691,6 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       bcryptjs:
         specifier: ^3.0.3
         version: 3.0.3
@@ -758,9 +740,6 @@ importers:
       '@repo/enums':
         specifier: workspace:*
         version: link:../enums
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -795,9 +774,6 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
@@ -931,9 +907,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       '@standard-schema/spec':
         specifier: ^1.0.0
         version: 1.0.0
@@ -1004,9 +977,6 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
@@ -1268,9 +1238,6 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
-      '@repo/validation':
-        specifier: workspace:*
-        version: link:../validation
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -1377,49 +1344,6 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
-
-  packages/validation:
-    dependencies:
-      '@repo/enums':
-        specifier: workspace:*
-        version: link:../enums
-      '@repo/transformers':
-        specifier: workspace:*
-        version: link:../transformers
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.12
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/node':
-        specifier: ^22.5.2
-        version: 22.15.3
-      barrelsby:
-        specifier: ^2.8.1
-        version: 2.8.1
-      npm-run-all:
-        specifier: ^4.1.5
-        version: 4.1.5
-      type-fest:
-        specifier: ^5.0.1
-        version: 5.0.1
-      typescript:
-        specifier: ^5.5.4
-        version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
-      zod-openapi:
-        specifier: ^5.4.3
-        version: 5.4.3(zod@4.1.12)
 
   packages/virtual-authenticator:
     dependencies:

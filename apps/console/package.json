@@ -28,7 +28,6 @@
     "@repo/enums": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/proxy": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@tanstack/react-query": "^5.90.5",
     "@ts-rest/core": "^3.53.0-rc.1",
     "@ts-rest/react-query": "^3.52.1",

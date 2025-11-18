@@ -15,7 +15,6 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@standard-schema/spec": "^1.0.0",
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",

@@ -26,7 +26,6 @@
     "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@repo/auth": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",
     "zod": "^4.1.12"

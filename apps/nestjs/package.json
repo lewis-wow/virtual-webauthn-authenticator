@@ -32,7 +32,6 @@
     "@repo/mappers": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "@ts-rest/core": "^3.53.0-rc.1",

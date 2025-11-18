@@ -14,7 +14,6 @@
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "better-auth": "^1.3.27",
     "hono": "^4.9.10",

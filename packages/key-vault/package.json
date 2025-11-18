@@ -32,7 +32,6 @@
     "@repo/keys": "workspace:*",
     "@repo/mappers": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "ecdsa-sig-formatter": "^1.0.11",
     "typanion": "^3.14.0"
