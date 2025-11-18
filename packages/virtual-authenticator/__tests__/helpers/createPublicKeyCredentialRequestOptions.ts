@@ -1,4 +1,4 @@
-import { CHALLENGE_RAW, RP_ID } from '@repo/test-helpers';
+import { CHALLENGE_RAW, RP_ID } from '@repo/core';
 
 import type { PublicKeyCredentialRequestOptions } from '../../src/validation/PublicKeyCredentialRequestOptionsSchema';
 

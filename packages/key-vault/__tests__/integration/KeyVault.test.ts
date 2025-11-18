@@ -1,7 +1,7 @@
 import { KeyClient, KeyVaultKey } from '@azure/keyvault-keys';
+import { KEY_VAULT_KEY_NAME } from '@repo/core';
 import { JsonWebKey } from '@repo/keys';
 import { COSEKeyAlgorithm, KeyCurveName, KeyType } from '@repo/keys/enums';
-import { KEY_VAULT_KEY_NAME } from '@repo/test-helpers';
 import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
 import { describe, test, expect, beforeAll } from 'vitest';
 import { z } from 'zod';

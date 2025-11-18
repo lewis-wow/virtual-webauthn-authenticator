@@ -1,10 +1,4 @@
 import {
-  WebAuthnCredentialKeyMetaType,
-  type PrismaClient,
-  Prisma,
-} from '@repo/prisma';
-
-import {
   COSEPublicKey,
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
@@ -12,7 +6,13 @@ import {
   USER_ID,
   WEBAUTHN_CREDENTIAL_ID,
   WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
-} from './consts';
+} from '../../../core/__tests__/helpers/consts';
+
+import {
+  WebAuthnCredentialKeyMetaType,
+  type PrismaClient,
+  Prisma,
+} from '@repo/prisma';
 
 export const upsertTestingWebAuthnCredential = async (opts: {
   prisma: PrismaClient;

@@ -5,14 +5,14 @@ import { MockKeyVault } from '@repo/key-vault/__mocks__';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
-import { KeyVault } from '@repo/key-vault';
 import {
   MOCK_PERSONAL_JWT_PAYLOAD,
   upsertTestingUser,
   upsertTestingWebAuthnCredential,
   WEBAUTHN_CREDENTIAL_ID,
   WRONG_UUID,
-} from '@repo/test-helpers';
+} from '@repo/core';
+import { KeyVault } from '@repo/key-vault';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 

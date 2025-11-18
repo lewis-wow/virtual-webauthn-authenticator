@@ -1,13 +1,13 @@
 import { MockJwtAudience } from '../../__mocks__/MockJwtAudience.mock';
 
-import { PrismaClient } from '@repo/prisma';
 import {
   API_KEY_ID,
   MOCK_API_KEY_JWT_PAYLOAD,
   MOCK_PERSONAL_JWT_PAYLOAD,
   upsertTestingUser,
   USER_ID,
-} from '@repo/test-helpers';
+} from '@repo/core';
+import { PrismaClient } from '@repo/prisma';
 import { ApiKeyJwtPayload } from '@repo/validation';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 

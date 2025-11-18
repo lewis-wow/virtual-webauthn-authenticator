@@ -4,8 +4,6 @@ import { MockJwtAudience } from '@repo/auth/__mocks__';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
-import { COSEKeyAlgorithm } from '@repo/enums';
-import { COSEKey } from '@repo/keys';
 import {
   CHALLENGE_BASE64URL,
   MOCK_PERSONAL_JWT_PAYLOAD,
@@ -14,7 +12,9 @@ import {
   setDeep,
   upsertTestingUser,
   WRONG_UUID,
-} from '@repo/test-helpers';
+} from '@repo/core';
+import { COSEKeyAlgorithm } from '@repo/enums';
+import { COSEKey } from '@repo/keys';
 import { bytesToUuid } from '@repo/utils';
 import {
   AuthenticationResponseJSON,

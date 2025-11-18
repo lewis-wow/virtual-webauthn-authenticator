@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./mappers": "./src/mappers/index.ts"
+    "./mappers": "./src/mappers/index.ts",
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
     "build": "prisma generate",
@@ -23,7 +24,8 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "prisma": "^6.16.3",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "@repo/core": "workspace:*"
   },
   "dependencies": {
     "@repo/exception": "workspace:*",

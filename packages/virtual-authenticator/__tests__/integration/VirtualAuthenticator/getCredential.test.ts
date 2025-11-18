@@ -1,5 +1,3 @@
-import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
-import { PrismaClient } from '@repo/prisma';
 import {
   CHALLENGE_BASE64URL,
   createPublicKeyCredentialRequestOptions,
@@ -10,7 +8,9 @@ import {
   RP_ID,
   upsertTestingUser,
   USER_ID,
-} from '@repo/test-helpers';
+} from '@repo/core';
+import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
+import { PrismaClient } from '@repo/prisma';
 import {
   PublicKeyCredentialDtoSchema,
   PublicKeyCredentialRequestOptions,

@@ -1,5 +1,5 @@
+import { upsertTestingUser, USER_ID } from '@repo/core';
 import { PrismaClient } from '@repo/prisma';
-import { upsertTestingUser, USER_ID } from '@repo/test-helpers';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { ApiKeyManager } from '../../src/ApiKeyManager';

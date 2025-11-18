@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@repo/test-helpers": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@repo/types": "workspace:*",

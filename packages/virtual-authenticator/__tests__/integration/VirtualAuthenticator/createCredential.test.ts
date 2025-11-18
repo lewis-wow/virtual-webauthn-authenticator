@@ -1,6 +1,3 @@
-import { COSEKey } from '@repo/keys';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { PrismaClient } from '@repo/prisma';
 import {
   CHALLENGE_BASE64URL,
   KEY_VAULT_KEY_ID,
@@ -11,7 +8,10 @@ import {
   upsertTestingUser,
   USER_ID,
   setDeep,
-} from '@repo/test-helpers';
+} from '@repo/core';
+import { COSEKey } from '@repo/keys';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { PrismaClient } from '@repo/prisma';
 import { bytesToUuid } from '@repo/utils';
 import {
   VerifiedRegistrationResponse,

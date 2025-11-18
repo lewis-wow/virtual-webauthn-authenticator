@@ -20,7 +20,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/test-helpers": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
     "@simplewebauthn/types": "^12.0.0",

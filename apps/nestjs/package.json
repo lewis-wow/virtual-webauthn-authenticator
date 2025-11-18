@@ -45,7 +45,7 @@
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@repo/eslint-config": "workspace:*",
-    "@repo/test-helpers": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.2",
