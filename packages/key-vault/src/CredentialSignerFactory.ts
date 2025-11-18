@@ -1,5 +1,5 @@
 import type { KeyVaultKey } from '@azure/keyvault-keys';
-import type { KeyAlgorithm } from '@repo/enums';
+import type { KeyAlgorithm } from '@repo/keys/enums';
 
 import type { KeyVault } from './KeyVault';
 

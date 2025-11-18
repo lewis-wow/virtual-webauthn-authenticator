@@ -1,4 +1,4 @@
-import { COSEKeyAlgorithmSchema } from '@repo/enums';
+import { COSEKeyAlgorithmSchema } from '@repo/keys/enums';
 import z from 'zod';
 
 import { PublicKeyCredentialTypeSchema } from '../enums/PublicKeyCredentialType';

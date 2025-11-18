@@ -1,6 +1,7 @@
-import { JwtPayloadDtoSchema } from '@repo/validation';
 import { initContract } from '@ts-rest/core';
 import { z } from 'zod';
+
+import { JwtPayloadDtoSchema } from '../validation/auth/JwtPayloadDtoSchema';
 
 const c = initContract();
 

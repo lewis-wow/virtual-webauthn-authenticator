@@ -1,10 +1,9 @@
-import {
-  CreateCredentialRequestBodySchema,
-  CreateCredentialResponseSchema,
-  GetCredentialRequestBodySchema,
-  GetCredentialResponseSchema,
-} from '@repo/validation';
 import { initContract } from '@ts-rest/core';
+
+import { CreateCredentialRequestBodySchema } from '../validation/credentials/create/CreateCredentialRequestBodySchema';
+import { CreateCredentialResponseSchema } from '../validation/credentials/create/CreateCredentialResponseSchema';
+import { GetCredentialRequestBodySchema } from '../validation/credentials/get/GetCredentialRequestBodySchema';
+import { GetCredentialResponseSchema } from '../validation/credentials/get/GetCredentialResponseSchema';
 
 const c = initContract();
 

@@ -1,6 +1,6 @@
-import type { PublicKeyCredentialRequestOptions } from '@repo/validation';
+import { CHALLENGE_RAW, RP_ID } from '@repo/test-helpers';
 
-import { CHALLENGE_RAW, RP_ID } from './consts';
+import type { PublicKeyCredentialRequestOptions } from '../../src/validation/PublicKeyCredentialRequestOptionsSchema';
 
 export const createPublicKeyCredentialRequestOptions = (opts: {
   credentialID: Uint8Array;

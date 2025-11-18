@@ -1,10 +1,12 @@
 import {
   ApiKeyJwtPayloadSchema,
-  PersonalJwtPayloadSchema,
   type ApiKeyJwtPayload,
-  type JwtPayload,
+} from './validation/ApiKeyJwtPayloadSchema';
+import type { JwtPayload } from './validation/JwtPayloadSchema';
+import {
+  PersonalJwtPayloadSchema,
   type PersonalJwtPayload,
-} from '@repo/validation';
+} from './validation/PersonalJwtPayloadSchema';
 
 export class JwtUtils {
   static isPersonalJwtPayload(

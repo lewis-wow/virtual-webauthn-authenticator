@@ -1,7 +1,7 @@
-import { TokenBindingStatusSchema } from '@repo/enums';
 import z from 'zod';
 
 import { CollectedClientDataTypeSchema } from '../enums/CollectedClientDataType';
+import { TokenBindingStatusSchema } from '../enums/TokenBindingStatus';
 import { see } from '../meta/see';
 
 /**

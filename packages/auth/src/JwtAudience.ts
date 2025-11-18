@@ -1,6 +1,10 @@
 import { Logger } from '@repo/logger';
-import { JwtPayloadSchema, type JwtPayload } from '@repo/validation';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
+
+import {
+  JwtPayloadSchema,
+  type JwtPayload,
+} from './validation/JwtPayloadSchema';
 
 const LOG_PREFIX = 'JWT_AUDIENCE';
 

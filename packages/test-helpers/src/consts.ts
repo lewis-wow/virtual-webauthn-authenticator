@@ -1,10 +1,5 @@
-import { KeyCurveName, KeyType, TokenType } from '@repo/enums';
 import { COSEKey, JsonWebKey } from '@repo/keys';
 import { uuidToBytes } from '@repo/utils';
-import type {
-  JwtPayload,
-  PublicKeyCredentialCreationOptions,
-} from '@repo/validation';
 
 // https://www.uuidgenerator.net/version4
 
@@ -25,8 +20,8 @@ export const MOCK_PERSONAL_JWT_PAYLOAD = {
     name: USER_NAME,
     email: USER_EMAIL,
   },
-  tokenType: TokenType.PERSONAL,
-} as const satisfies JwtPayload;
+  tokenType: 'PERSONAL',
+} as const;
 
 export const MOCK_API_KEY_JWT_PAYLOAD = {
   ...MOCK_PERSONAL_JWT_PAYLOAD,
@@ -36,8 +31,8 @@ export const MOCK_API_KEY_JWT_PAYLOAD = {
     permissions: {},
     metadata: undefined,
   },
-  tokenType: TokenType.API_KEY,
-} as const satisfies JwtPayload;
+  tokenType: 'API_KEY',
+} as const;
 
 export const RP_ID = 'example.com';
 export const RP_NAME = 'example.com';
@@ -52,8 +47,8 @@ export const WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID =
   '2721c4a0-1581-49f2-8fcc-8677a84e717d';
 
 export const JsonWebPublicKey = new JsonWebKey({
-  kty: KeyType.EC,
-  crv: KeyCurveName.P256,
+  kty: 'EC',
+  crv: 'P256',
   x: '46h_Gf2I-GAe3AnwT3a4u2bYgPKFF5eQ8eZ5LLu-DPg',
   y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
 });
@@ -74,4 +69,4 @@ export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   challenge: CHALLENGE_RAW,
   pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
   timeout: 60000,
-} as const satisfies PublicKeyCredentialCreationOptions;
+} as const;

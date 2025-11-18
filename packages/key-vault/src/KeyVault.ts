@@ -4,10 +4,10 @@ import {
   type SignResult,
   type VerifyResult,
 } from '@azure/keyvault-keys';
-import { KeyOperation, type KeyAlgorithm } from '@repo/enums';
 import { JsonWebKey } from '@repo/keys';
-import { COSEKeyAlgorithmMapper } from '@repo/mappers';
-import type { PubKeyCredParamStrict } from '@repo/validation';
+import { KeyOperation, type KeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyAlgorithmMapper } from '@repo/keys/mappers';
+import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/validation';
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';

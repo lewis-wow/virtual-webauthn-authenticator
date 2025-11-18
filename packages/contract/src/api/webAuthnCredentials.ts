@@ -1,11 +1,10 @@
-import {
-  DeleteWebAuthnCredentialRequestPathParamsSchema,
-  DeleteWebAuthnCredentialResponseSchema,
-  GetWebAuthnCredentialRequestPathParamsSchema,
-  GetWebAuthnCredentialResponseSchema,
-  ListWebAuthnCredentialsResponseSchema,
-} from '@repo/validation';
 import { initContract } from '@ts-rest/core';
+
+import { DeleteWebAuthnCredentialRequestPathParamsSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialRequestPathParamsSchema';
+import { DeleteWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialResponseSchema';
+import { GetWebAuthnCredentialRequestPathParamsSchema } from '../validation/webauthn-credentials/get/GetWebAuthnCredentialRequestPathParamsSchema';
+import { GetWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/get/GetWebAuthnCredentialResponseSchema';
+import { ListWebAuthnCredentialsResponseSchema } from '../validation/webauthn-credentials/list/ListWebAuthnCredentialsResponseSchema';
 
 const c = initContract();
 

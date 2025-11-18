@@ -1,6 +1,6 @@
-import { TokenType } from '@repo/enums';
 import { z } from 'zod';
 
+import { TokenType } from '../enums/TokenType';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
 import { UserSchema } from './UserSchema';
 

@@ -1,6 +1,6 @@
-import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
 import z from 'zod';
 
+import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
 import { WebAuthnCredentialBaseSchema } from './WebAuthnCredentialBaseSchema';
 import { WebAuthnCredentialKeyVaultKeyMetaSchema } from './WebAuthnCredentialKeyVaultKeyMetaSchema';
 
