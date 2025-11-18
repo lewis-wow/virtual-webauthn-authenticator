@@ -12,7 +12,9 @@
     "../virtual-authenticator/src/enums/PublicKeyCredentialType.ts",
     "../virtual-authenticator/src/enums/UserVerificationRequirement.ts",
     "../virtual-authenticator/src/enums/TokenBindingStatus.ts",
-    "../virtual-authenticator/src/enums/WebAuthnCredentialKeyMetaType.ts"
+    "../virtual-authenticator/src/enums/WebAuthnCredentialKeyMetaType.ts",
+    "../auth/src/enums/AuthType.ts",
+    "../auth/src/enums/TokenType.ts"
   ],
   "exclude": ["node_modules"]
 }

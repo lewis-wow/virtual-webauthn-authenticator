@@ -1,10 +1,12 @@
 export type ExceptionOptions = {
+  status?: number;
   code: string;
   message: string;
   cause?: unknown;
 };
 
 export class Exception extends Error {
+  status?: number;
   code!: string;
   message!: string;
   cause?: unknown;

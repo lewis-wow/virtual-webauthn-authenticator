@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts",
     "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {
