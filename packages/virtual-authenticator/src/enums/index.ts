@@ -4,7 +4,6 @@ export * from './AuthenticatorTransport';
 export * from './CollectedClientDataType';
 export * from './Fmt';
 export * from './PublicKeyCredentialType';
-export * from './PublicKeyCredentialType';
 export * from './ResidentKeyRequirement';
 export * from './UserVerificationRequirement';
 export * from './TokenBindingStatus';

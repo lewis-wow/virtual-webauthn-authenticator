@@ -1276,6 +1276,9 @@ importers:
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -6290,6 +6293,9 @@ packages:
 
   effect@3.16.12:
     resolution: {integrity: sha512-N39iBk0K71F9nb442TLbTkjl24FLUzuvx2i1I2RsEAQsdAdUTuUoW0vlfUXgkMTUOnYqKnWcFfqw4hK4Pw27hg==}
+
+  effect@3.19.4:
+    resolution: {integrity: sha512-gApFffMwpDVgmw/FzCaYWt6zw4m0xAnQf5+cPS0+Sl85AxfeovJeEIsiEQVlk+ZvtBYcoPXxi65GIyruzanQ5g==}
 
   ejs@3.1.10:
     resolution: {integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==}
@@ -15590,6 +15596,11 @@ snapshots:
   ee-first@1.1.1: {}
 
   effect@3.16.12:
+    dependencies:
+      '@standard-schema/spec': 1.0.0
+      fast-check: 3.23.2
+
+  effect@3.19.4:
     dependencies:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2

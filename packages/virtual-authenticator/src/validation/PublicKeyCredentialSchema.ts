@@ -1,4 +1,4 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
 import { see } from '../meta/see';
 import { AuthenticationExtensionsClientOutputsSchema } from './AuthenticationExtensionsClientOutputsSchema';
@@ -14,21 +14,26 @@ import { CredentialSchema } from './CredentialSchema';
  *
  * @see https://www.w3.org/TR/webauthn/#iface-publickeycredential
  */
-export const PublicKeyCredentialSchema = CredentialSchema.extend({
-  rawId: BytesSchema.meta({
-    description: 'The raw ID of the credential.',
+export const PublicKeyCredentialSchema = Schema.extend(
+  CredentialSchema,
+  Schema.Struct({
+    rawId: BytesSchema.annotations({
+      description: 'The raw ID of the credential.',
+    }),
+    response: Schema.Union(
+      AuthenticatorAttestationResponseSchema,
+      AuthenticatorAssertionResponseSchema,
+    ),
+    clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
   }),
-  response: z.union([
-    AuthenticatorAttestationResponseSchema,
-    AuthenticatorAssertionResponseSchema,
-  ]),
-  clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
-}).meta({
-  id: 'PublicKeyCredential',
+).annotations({
+  identifier: 'PublicKeyCredential',
   ref: 'PublicKeyCredential',
   description: `The primary schema for validating the incoming credential object from the client during registration or authentication verification. ${see(
     'https://www.w3.org/TR/webauthn/#iface-publickeycredential',
   )}`,
 });
 
-export type PublicKeyCredential = z.infer<typeof PublicKeyCredentialSchema>;
+export type PublicKeyCredential = Schema.Schema.Type<
+  typeof PublicKeyCredentialSchema
+>;

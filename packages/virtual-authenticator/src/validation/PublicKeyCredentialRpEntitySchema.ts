@@ -1,4 +1,4 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
 import { see } from '../meta/see';
 import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema';
@@ -8,21 +8,23 @@ import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySche
  *
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity
  */
-export const PublicKeyCredentialRpEntitySchema =
-  PublicKeyCredentialEntitySchema.extend({
-    id: z.string().meta({
+export const PublicKeyCredentialRpEntitySchema = Schema.extend(
+  PublicKeyCredentialEntitySchema,
+  Schema.Struct({
+    id: Schema.String.annotations({
       description:
         'A unique identifier for the Relying Party entity, which sets the RP ID.',
       examples: ['example.com'],
     }),
-  }).meta({
-    id: 'PublicKeyCredentialRpEntity',
-    ref: 'PublicKeyCredentialRpEntity',
-    description: `Represents the Relying Party. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity',
-    )}`,
-  });
+  }),
+).annotations({
+  identifier: 'PublicKeyCredentialRpEntity',
+  ref: 'PublicKeyCredentialRpEntity',
+  description: `Represents the Relying Party. ${see(
+    'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity',
+  )}`,
+});
 
-export type PublicKeyCredentialRpEntity = z.infer<
+export type PublicKeyCredentialRpEntity = Schema.Schema.Type<
   typeof PublicKeyCredentialRpEntitySchema
 >;

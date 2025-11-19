@@ -1,4 +1,4 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
 import { see } from '../meta/see';
 import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
@@ -13,12 +13,13 @@ import { UserHandleSchema } from './UserHandleSchema';
  *
  * @see https://www.w3.org/TR/webauthn/#authenticatorassertionresponse
  */
-export const AuthenticatorAssertionResponseSchema =
-  AuthenticatorResponseSchema.extend({
+export const AuthenticatorAssertionResponseSchema = Schema.extend(
+  AuthenticatorResponseSchema,
+  Schema.Struct({
     /**
      * @see https://www.w3.org/TR/webauthn/#sctn-authenticator-data
      */
-    authenticatorData: BytesSchema.meta({
+    authenticatorData: BytesSchema.annotations({
       description: `The authenticator data for the assertion. ${see(
         'https://www.w3.org/TR/webauthn/#sctn-authenticator-data',
       )}`,
@@ -28,21 +29,22 @@ export const AuthenticatorAssertionResponseSchema =
      *
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature
      */
-    signature: BytesSchema.meta({
+    signature: BytesSchema.annotations({
       description: `The signature for the assertion. ${see(
         'https://www.w3.org/TR/webauthn/#dom-authenticatorassertionresponse-signature',
       )}`,
     }),
 
-    userHandle: UserHandleSchema.nullable(),
-  }).meta({
-    id: 'AuthenticatorAssertionResponse',
-    ref: 'AuthenticatorAssertionResponse',
-    description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see(
-      'https://www.w3.org/TR/webauthn/#authenticatorassertionresponse',
-    )}`,
-  });
+    userHandle: Schema.NullOr(UserHandleSchema),
+  }),
+).annotations({
+  identifier: 'AuthenticatorAssertionResponse',
+  ref: 'AuthenticatorAssertionResponse',
+  description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see(
+    'https://www.w3.org/TR/webauthn/#authenticatorassertionresponse',
+  )}`,
+});
 
-export type AuthenticatorAssertionResponse = z.infer<
+export type AuthenticatorAssertionResponse = Schema.Schema.Type<
   typeof AuthenticatorAssertionResponseSchema
 >;

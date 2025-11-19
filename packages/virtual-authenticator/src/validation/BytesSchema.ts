@@ -1,6 +1,9 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-export const BytesSchema = z.custom<Uint8Array>(
-  (val) => val instanceof Uint8Array,
-  { message: 'Expected a Uint8Array' },
+export const BytesSchema = Schema.Uint8ArrayFromBase64Url.pipe(
+  Schema.annotations({
+    jsonSchema: {
+      contentEncoding: 'base64url',
+    },
+  }),
 );

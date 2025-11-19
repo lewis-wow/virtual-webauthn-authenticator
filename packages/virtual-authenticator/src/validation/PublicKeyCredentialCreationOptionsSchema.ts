@@ -1,6 +1,5 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-import { AttestationSchema } from '../enums/Attestation';
 import { see } from '../meta/see';
 import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema';
 import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCriteriaSchema';
@@ -9,6 +8,7 @@ import { PubKeyCredParamLooseSchema } from './PubKeyCredParamSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
 import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema';
 import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema';
+import { AttestationSchema } from './enums/AttestationSchema';
 
 /**
  * Zod schema for WebAuthn's PublicKeyCredentialCreationOptions.
@@ -16,27 +16,29 @@ import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEn
  *
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions
  */
-export const PublicKeyCredentialCreationOptionsSchema = z
-  .object({
-    rp: PublicKeyCredentialRpEntitySchema,
-    user: PublicKeyCredentialUserEntitySchema,
-    challenge: ChallengeSchema,
-    pubKeyCredParams: z.array(PubKeyCredParamLooseSchema).min(1),
-    timeout: z.number().optional(),
-    excludeCredentials: z.array(PublicKeyCredentialDescriptorSchema).optional(),
-    authenticatorSelection: AuthenticatorSelectionCriteriaSchema.optional(),
-    attestation: AttestationSchema.optional(),
-    // Extensions can be complex; a generic record is often sufficient for validation
-    extensions: AuthenticationExtensionsClientInputsSchema.optional(),
-  })
-  .meta({
-    id: 'PublicKeyCredentialCreationOptions',
-    ref: 'PublicKeyCredentialCreationOptions',
-    description: `Options for creating a new public key credential. ${see(
-      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions',
-    )}`,
-  });
+export const PublicKeyCredentialCreationOptionsSchema = Schema.Struct({
+  rp: PublicKeyCredentialRpEntitySchema,
+  user: PublicKeyCredentialUserEntitySchema,
+  challenge: ChallengeSchema,
+  pubKeyCredParams: Schema.Array(PubKeyCredParamLooseSchema).pipe(
+    Schema.minItems(1),
+  ),
+  timeout: Schema.optional(Schema.Number),
+  excludeCredentials: Schema.optional(
+    Schema.Array(PublicKeyCredentialDescriptorSchema),
+  ),
+  authenticatorSelection: Schema.optional(AuthenticatorSelectionCriteriaSchema),
+  attestation: Schema.optional(AttestationSchema),
+  // Extensions can be complex; a generic record is often sufficient for validation
+  extensions: Schema.optional(AuthenticationExtensionsClientInputsSchema),
+}).annotations({
+  identifier: 'PublicKeyCredentialCreationOptions',
+  ref: 'PublicKeyCredentialCreationOptions',
+  description: `Options for creating a new public key credential. ${see(
+    'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions',
+  )}`,
+});
 
-export type PublicKeyCredentialCreationOptions = z.infer<
+export type PublicKeyCredentialCreationOptions = Schema.Schema.Type<
   typeof PublicKeyCredentialCreationOptionsSchema
 >;

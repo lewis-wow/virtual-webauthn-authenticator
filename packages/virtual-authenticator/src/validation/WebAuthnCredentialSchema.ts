@@ -1,10 +1,11 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
 import { WebAuthnCredentialKeyVaultSchema } from './WebAuthnCredentialKeyVaultSchema';
 
-export const WebAuthnCredentialSchema = z.discriminatedUnion(
-  'webAuthnCredentialKeyMetaType',
-  [WebAuthnCredentialKeyVaultSchema],
+export const WebAuthnCredentialSchema = Schema.Union(
+  WebAuthnCredentialKeyVaultSchema,
 );
 
-export type WebAuthnCredential = z.infer<typeof WebAuthnCredentialSchema>;
+export type WebAuthnCredential = Schema.Schema.Type<
+  typeof WebAuthnCredentialSchema
+>;

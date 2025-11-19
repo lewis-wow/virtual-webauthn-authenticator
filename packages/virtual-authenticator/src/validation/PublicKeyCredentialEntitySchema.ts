@@ -1,17 +1,15 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-export const PublicKeyCredentialEntitySchema = z
-  .object({
-    name: z.string().meta({
-      description: 'A human-friendly name for the Relying Party.',
-      examples: ['Example Corp'],
-    }),
-  })
-  .meta({
-    id: 'PublicKeyCredentialEntity',
-    ref: 'PublicKeyCredentialEntity',
-  });
+export const PublicKeyCredentialEntitySchema = Schema.Struct({
+  name: Schema.String.annotations({
+    description: 'A human-friendly name for the Relying Party.',
+    examples: ['Example Corp'],
+  }),
+}).annotations({
+  identifier: 'PublicKeyCredentialEntity',
+  ref: 'PublicKeyCredentialEntity',
+});
 
-export type PublicKeyCredentialEntity = z.infer<
+export type PublicKeyCredentialEntity = Schema.Schema.Type<
   typeof PublicKeyCredentialEntitySchema
 >;

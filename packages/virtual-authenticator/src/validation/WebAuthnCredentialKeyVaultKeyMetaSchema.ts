@@ -1,19 +1,17 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-export const WebAuthnCredentialKeyVaultKeyMetaSchema = z
-  .object({
-    id: z.uuid(),
-    keyVaultKeyId: z.string().nullable(),
-    keyVaultKeyName: z.string(),
-    hsm: z.boolean(),
-    createdAt: z.date(),
-    updatedAt: z.date(),
-  })
-  .meta({
-    id: 'WebAuthnCredentialKeyVaultKeyMeta',
-    ref: 'WebAuthnCredentialKeyVaultKeyMeta',
-  });
+export const WebAuthnCredentialKeyVaultKeyMetaSchema = Schema.Struct({
+  id: Schema.UUID,
+  keyVaultKeyId: Schema.NullOr(Schema.String),
+  keyVaultKeyName: Schema.String,
+  hsm: Schema.Boolean,
+  createdAt: Schema.DateFromString,
+  updatedAt: Schema.DateFromString,
+}).annotations({
+  identifier: 'WebAuthnCredentialKeyVaultKeyMeta',
+  ref: 'WebAuthnCredentialKeyVaultKeyMeta',
+});
 
-export type WebAuthnCredentialKeyVaultKeyMeta = z.infer<
+export type WebAuthnCredentialKeyVaultKeyMeta = Schema.Schema.Type<
   typeof WebAuthnCredentialKeyVaultKeyMetaSchema
 >;

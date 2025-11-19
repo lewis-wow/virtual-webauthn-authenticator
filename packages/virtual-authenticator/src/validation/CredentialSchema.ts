@@ -1,21 +1,27 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-import { PublicKeyCredentialTypeSchema } from '../enums/PublicKeyCredentialType';
 import { see } from '../meta/see';
+import { PublicKeyCredentialTypeSchema } from './enums/PublicKeyCredentialTypeSchema';
 
 /**
  * @see https://w3c.github.io/webappsec-credential-management/#credential
  */
-export const CredentialSchema = z
-  .object({
-    id: z
-      .base64url()
-      .meta({ description: 'The Base64URL-encoded credential ID.' }),
-    type: PublicKeyCredentialTypeSchema,
-  })
-  .meta({
-    id: 'CredentialSchema',
-    description: `${see('https://w3c.github.io/webappsec-credential-management/#credential')}`,
-  });
+export const CredentialSchema = Schema.Struct({
+  id: Schema.String.pipe(
+    // Zod's base64url() validates that the string is Base64URL encoded.
+    // We replicate this using a regex pattern: A-Z, a-z, 0-9, -, _
+    Schema.pattern(/^[a-zA-Z0-9\-_]*$/, {
+      message: () => 'Expected a Base64URL string',
+    }),
+  ).annotations({
+    description: 'The Base64URL-encoded credential ID.',
+  }),
+  type: PublicKeyCredentialTypeSchema,
+}).annotations({
+  identifier: 'CredentialSchema',
+  description: `${see(
+    'https://w3c.github.io/webappsec-credential-management/#credential',
+  )}`,
+});
 
-export type Credential = z.infer<typeof CredentialSchema>;
+export type Credential = Schema.Schema.Type<typeof CredentialSchema>;
