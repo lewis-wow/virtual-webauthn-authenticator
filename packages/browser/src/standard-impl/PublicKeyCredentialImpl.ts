@@ -1,4 +1,4 @@
-import { MethodNotImplemented } from './exceptions/MethodNotImplemented';
+import { MethodNotImplemented } from '../exceptions/MethodNotImplemented';
 
 export class PublicKeyCredentialImpl implements PublicKeyCredential {
   readonly id: string;

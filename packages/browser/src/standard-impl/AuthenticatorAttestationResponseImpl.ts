@@ -1,12 +1,12 @@
 import { BytesMapper } from '@repo/core/mappers';
 import * as cbor from 'cbor-x';
 
+import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
+import { AttestationObjectMissingAuthData } from '../exceptions/AttestationObjectMissingAuthData';
+import { AuthenticatorDataTooShort } from '../exceptions/AuthenticatorDataTooShort';
+import { FailedToDecodeAttestationObject } from '../exceptions/FailedToDecodeAttestationObject';
+import { FailedToParseCosePublicKey } from '../exceptions/FailedToParseCosePublicKey';
 import { AuthenticatorResponseImpl } from './AuthenticatorResponseImpl';
-import { AlgorithmIdentifierNotFoundInCoseKey } from './exceptions/AlgorithmIdentifierNotFoundInCoseKey';
-import { AttestationObjectMissingAuthData } from './exceptions/AttestationObjectMissingAuthData';
-import { AuthenticatorDataTooShort } from './exceptions/AuthenticatorDataTooShort';
-import { FailedToDecodeAttestationObject } from './exceptions/FailedToDecodeAttestationObject';
-import { FailedToParseCosePublicKey } from './exceptions/FailedToParseCosePublicKey';
 
 export type DecodedAttestationObject = {
   authData: Uint8Array;
