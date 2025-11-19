@@ -9,8 +9,8 @@
     "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
-    "build": "pnpm barrel",
-    "barrel": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
+    "build": "run-p barrel:*",
+    "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },

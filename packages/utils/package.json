@@ -7,8 +7,6 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "pnpm barrel",
-    "barrel": "../../scripts/barrel.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
