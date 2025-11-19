@@ -24,7 +24,6 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
     "typanion": "^3.14.0"
   }
 }

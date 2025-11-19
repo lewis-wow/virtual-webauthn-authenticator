@@ -10,6 +10,8 @@
     "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
+    "build": "run-p barrel:*",
+    "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
     "test": "vitest run unit --config __tests__/vitest.config.ts",
     "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
@@ -25,7 +27,6 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/utils": "workspace:*",
     "buffer": "^6.0.3",

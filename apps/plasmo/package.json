@@ -15,7 +15,6 @@
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "@repo/enums": "workspace:*",
     "@repo/browser": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@repo/contract": "workspace:*",

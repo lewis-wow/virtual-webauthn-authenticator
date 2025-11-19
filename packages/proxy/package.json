@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@repo/crypto": "workspace:*",
-    "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",

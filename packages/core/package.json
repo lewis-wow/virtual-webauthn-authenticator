@@ -13,7 +13,6 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/enums": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",

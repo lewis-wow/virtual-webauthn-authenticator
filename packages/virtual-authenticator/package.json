@@ -34,7 +34,6 @@
   },
   "dependencies": {
     "@repo/crypto": "workspace:*",
-    "@repo/enums": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
