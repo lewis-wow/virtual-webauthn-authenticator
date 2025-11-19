@@ -1,13 +1,8 @@
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
+import { ApiKeySchema } from '@repo/auth/validation';
+import { Schema } from 'effect';
 
-export const UpdateApiKeyRequestBodySchema = ApiKeyDtoSchema.pick({
-  name: true,
-  metadata: true,
-  expiresAt: true,
-  enabled: true,
-  revokedAt: true,
-})
-  .partial()
-  .meta({
-    ref: 'UpdateApiKeyRequestBody',
-  });
+export const UpdateApiKeyRequestBodySchema = Schema.partial(
+  ApiKeySchema.pick('name', 'metadata', 'expiresAt', 'enabled', 'revokedAt'),
+).annotations({
+  identifier: 'UpdateApiKeyRequestBody',
+});

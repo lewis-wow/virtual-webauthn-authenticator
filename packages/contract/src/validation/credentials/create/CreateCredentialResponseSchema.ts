@@ -1,3 +1,6 @@
-import { PublicKeyCredentialDtoSchema } from '../PublicKeyCredentialDtoSchema';
+import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/validation';
 
-export const CreateCredentialResponseSchema = PublicKeyCredentialDtoSchema;
+export const CreateCredentialResponseSchema =
+  PublicKeyCredentialSchema.annotations({
+    identifier: 'CreateCredentialResponse',
+  });

@@ -1,13 +1,14 @@
-import z from 'zod';
+import { PublicKeyCredentialRequestOptionsSchema } from '@repo/virtual-authenticator/validation';
+import { Schema } from 'effect';
 
-import { PublicKeyCredentialRequestOptionsDtoSchema } from '../PublicKeyCredentialRequestOptionsDtoSchema';
-
-export const GetCredentialRequestBodySchema = z.object({
-  publicKeyCredentialRequestOptions:
-    PublicKeyCredentialRequestOptionsDtoSchema.extend({
-      rpId: z.string(),
+export const GetCredentialRequestBodySchema = Schema.Struct({
+  publicKeyCredentialRequestOptions: Schema.extend(
+    PublicKeyCredentialRequestOptionsSchema.omit('rpId'),
+    Schema.Struct({
+      rpId: Schema.String,
     }),
-  meta: z.object({
-    origin: z.url(),
+  ),
+  meta: Schema.Struct({
+    origin: Schema.URL,
   }),
 });

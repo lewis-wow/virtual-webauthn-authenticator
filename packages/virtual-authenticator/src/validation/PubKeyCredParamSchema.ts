@@ -1,5 +1,4 @@
-// Assuming these have been converted to Effect Schemas
-import { COSEKeyAlgorithmSchema } from '@repo/keys/enums';
+import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
 import { Schema } from 'effect';
 
 import { see } from '../meta/see';

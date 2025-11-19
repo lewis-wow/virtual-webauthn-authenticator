@@ -1,7 +1,7 @@
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
+import { ApiKeySchema } from '@repo/auth/validation';
 
-export const UpdateApiKeyRequestParamSchema = ApiKeyDtoSchema.pick({
-  id: true,
-}).meta({
-  ref: 'UpdateApiKeyRequestParam',
+export const UpdateApiKeyRequestParamSchema = ApiKeySchema.pick(
+  'id',
+).annotations({
+  identifier: 'UpdateApiKeyRequestParam',
 });

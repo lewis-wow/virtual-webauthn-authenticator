@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
-    "./mappers": "./src/mappers/index.ts"
+    "./mappers": "./src/mappers/index.ts",
+    "./validation": "./src/validation/index.ts"
   },
   "scripts": {
     "build": "run-p barrel:*",

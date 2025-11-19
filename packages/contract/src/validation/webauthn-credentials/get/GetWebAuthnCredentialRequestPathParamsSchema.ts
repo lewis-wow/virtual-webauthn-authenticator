@@ -1,5 +1,7 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-export const GetWebAuthnCredentialRequestPathParamsSchema = z.object({
-  id: z.uuid(),
+export const GetWebAuthnCredentialRequestPathParamsSchema = Schema.Struct({
+  id: Schema.UUID,
+}).annotations({
+  identifier: 'GetWebAuthnCredentialRequestPathParams',
 });

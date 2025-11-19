@@ -1,5 +1,8 @@
-import z from 'zod';
+import { ApiKeySchema } from '@repo/auth/validation';
+import { Schema } from 'effect';
 
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
-
-export const ListApiKeysResponseSchema = z.array(ApiKeyDtoSchema);
+export const ListApiKeysResponseSchema = Schema.Array(ApiKeySchema).annotations(
+  {
+    identifier: 'ListApiKeysResponse',
+  },
+);

@@ -1,4 +1,5 @@
 import { initContract } from '@ts-rest/core';
+import { Schema } from 'effect';
 
 import { CreateCredentialRequestBodySchema } from '../validation/credentials/create/CreateCredentialRequestBodySchema';
 import { CreateCredentialResponseSchema } from '../validation/credentials/create/CreateCredentialResponseSchema';
@@ -11,17 +12,17 @@ export const credentialsRouter = c.router({
   create: {
     method: 'POST',
     path: '/credentials/create',
-    body: CreateCredentialRequestBodySchema,
+    body: Schema.standardSchemaV1(CreateCredentialRequestBodySchema),
     responses: {
-      200: CreateCredentialResponseSchema,
+      200: Schema.standardSchemaV1(CreateCredentialResponseSchema),
     },
   },
   get: {
     method: 'POST',
     path: '/credentials/get',
-    body: GetCredentialRequestBodySchema,
+    body: Schema.standardSchemaV1(GetCredentialRequestBodySchema),
     responses: {
-      200: GetCredentialResponseSchema,
+      200: Schema.standardSchemaV1(GetCredentialResponseSchema),
     },
   },
 });

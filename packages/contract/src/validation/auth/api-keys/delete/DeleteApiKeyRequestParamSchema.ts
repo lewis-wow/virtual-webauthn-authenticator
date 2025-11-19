@@ -1,7 +1,7 @@
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
+import { ApiKeySchema } from '@repo/auth/validation';
 
-export const DeleteApiKeyRequestParamSchema = ApiKeyDtoSchema.pick({
-  id: true,
-}).meta({
-  ref: 'DeleteApiKeyRequestParam',
+export const DeleteApiKeyRequestParamSchema = ApiKeySchema.pick(
+  'id',
+).annotations({
+  identifier: 'DeleteApiKeyRequestParam',
 });

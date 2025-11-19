@@ -1,7 +1,8 @@
-import z from 'zod';
+import { WebAuthnCredentialSchema } from '@repo/virtual-authenticator/validation';
+import { Schema } from 'effect';
 
-import { WebAuthnCredentialDtoSchema } from '../WebAuthnCredentialDtoSchema';
-
-export const ListWebAuthnCredentialsResponseSchema = z.array(
-  WebAuthnCredentialDtoSchema,
-);
+export const ListWebAuthnCredentialsResponseSchema = Schema.Array(
+  WebAuthnCredentialSchema,
+).annotations({
+  identifier: 'ListWebAuthnCredentialsResponse',
+});

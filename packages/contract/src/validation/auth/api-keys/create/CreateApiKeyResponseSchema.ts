@@ -1,8 +1,7 @@
-import z from 'zod';
+import { ApiKeySchema } from '@repo/auth/validation';
+import { Schema } from 'effect';
 
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
-
-export const CreateApiKeyResponseSchema = z.object({
-  apiKey: ApiKeyDtoSchema,
-  plaintextKey: z.string(),
+export const CreateApiKeyResponseSchema = Schema.Struct({
+  apiKey: ApiKeySchema,
+  plaintextKey: Schema.String,
 });

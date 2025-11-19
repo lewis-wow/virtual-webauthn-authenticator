@@ -1,3 +1,6 @@
-import { DeleteResponseSchema } from '../../common/DeleteResponseSchema';
+import { WebAuthnCredentialSchema } from '@repo/virtual-authenticator/validation';
 
-export const DeleteWebAuthnCredentialResponseSchema = DeleteResponseSchema;
+export const DeleteWebAuthnCredentialResponseSchema =
+  WebAuthnCredentialSchema.annotations({
+    identifier: 'DeleteWebAuthnCredentialResponse',
+  });

@@ -789,6 +789,9 @@ importers:
       '@ts-rest/open-api':
         specifier: 3.53.0-rc.1
         version: 3.53.0-rc.1(@ts-rest/core@3.53.0-rc.1(@types/node@22.15.3))(zod@4.1.12)
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -802,6 +805,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@standard-schema/spec':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3

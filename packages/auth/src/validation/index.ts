@@ -4,3 +4,4 @@ export * from './JwtPayloadSchema';
 export * from './JwtRegisteredClaimsSchema';
 export * from './PersonalJwtPayloadSchema';
 export * from './UserSchema';
+export * from './JwtSchema';

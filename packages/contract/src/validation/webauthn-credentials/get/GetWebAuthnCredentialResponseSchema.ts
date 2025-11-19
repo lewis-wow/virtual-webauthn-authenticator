@@ -1,3 +1,6 @@
-import { WebAuthnCredentialDtoSchema } from '../WebAuthnCredentialDtoSchema';
+import { WebAuthnCredentialSchema } from '@repo/virtual-authenticator/validation';
 
-export const GetWebAuthnCredentialResponseSchema = WebAuthnCredentialDtoSchema;
+export const GetWebAuthnCredentialResponseSchema =
+  WebAuthnCredentialSchema.annotations({
+    identifier: 'GetWebAuthnCredentialResponse',
+  });

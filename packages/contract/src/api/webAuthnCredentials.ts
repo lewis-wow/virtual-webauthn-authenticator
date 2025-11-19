@@ -1,4 +1,5 @@
 import { initContract } from '@ts-rest/core';
+import { Schema } from 'effect';
 
 import { DeleteWebAuthnCredentialRequestPathParamsSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialRequestPathParamsSchema';
 import { DeleteWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialResponseSchema';
@@ -13,23 +14,27 @@ export const webAuthnCredentialsRouter = c.router({
     method: 'GET',
     path: '/webauthn-credentials',
     responses: {
-      200: ListWebAuthnCredentialsResponseSchema,
+      200: Schema.standardSchemaV1(ListWebAuthnCredentialsResponseSchema),
     },
   },
   get: {
     method: 'GET',
     path: '/webauthn-credentials/:id',
-    pathParams: GetWebAuthnCredentialRequestPathParamsSchema,
+    pathParams: Schema.standardSchemaV1(
+      GetWebAuthnCredentialRequestPathParamsSchema,
+    ),
     responses: {
-      200: GetWebAuthnCredentialResponseSchema,
+      200: Schema.standardSchemaV1(GetWebAuthnCredentialResponseSchema),
     },
   },
   delete: {
     method: 'DELETE',
     path: '/webauthn-credentials/:id',
-    pathParams: DeleteWebAuthnCredentialRequestPathParamsSchema,
+    pathParams: Schema.standardSchemaV1(
+      DeleteWebAuthnCredentialRequestPathParamsSchema,
+    ),
     responses: {
-      200: DeleteWebAuthnCredentialResponseSchema,
+      200: Schema.standardSchemaV1(DeleteWebAuthnCredentialResponseSchema),
     },
   },
 });

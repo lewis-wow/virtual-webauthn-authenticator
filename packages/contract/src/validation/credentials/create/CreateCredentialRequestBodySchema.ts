@@ -1,16 +1,17 @@
-import z from 'zod';
+import { PublicKeyCredentialCreationOptionsSchema } from '@repo/virtual-authenticator/validation';
+import { Schema } from 'effect';
 
-import { PublicKeyCredentialCreationOptionsDtoSchema } from '../PublicKeyCredentialCreationOptionsDtoSchema';
-
-export const CreateCredentialRequestBodySchema = z.object({
+export const CreateCredentialRequestBodySchema = Schema.Struct({
   publicKeyCredentialCreationOptions:
-    PublicKeyCredentialCreationOptionsDtoSchema.omit({
+    PublicKeyCredentialCreationOptionsSchema.omit(
       /**
        * User is infered from token.
        */
-      user: true,
-    }),
-  meta: z.object({
-    origin: z.url(),
+      'user',
+    ),
+  meta: Schema.Struct({
+    origin: Schema.URL,
   }),
+}).annotations({
+  identifier: 'CreateCredentialRequestBody',
 });

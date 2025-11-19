@@ -1,11 +1,11 @@
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
+import { ApiKeySchema } from '@repo/auth/validation';
 
-export const CreateApiKeyRequestBodySchema = ApiKeyDtoSchema.pick({
-  name: true,
-  permissions: true,
-  metadata: true,
-  expiresAt: true,
-  enabled: true,
-}).meta({
-  ref: 'CreateApiKeyRequestBody',
+export const CreateApiKeyRequestBodySchema = ApiKeySchema.pick(
+  'name',
+  'permissions',
+  'metadata',
+  'expiresAt',
+  'enabled',
+).annotations({
+  identifier: 'CreateApiKeyRequestBody',
 });

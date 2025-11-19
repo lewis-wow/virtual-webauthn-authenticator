@@ -1,5 +1,5 @@
-import { DeleteResponseSchema } from '../../../common/DeleteResponseSchema';
+import { ApiKeySchema } from '@repo/auth/validation';
 
-export const DeleteApiKeyResponseSchema = DeleteResponseSchema.meta({
-  ref: 'DeleteApiKeyResponse',
+export const DeleteApiKeyResponseSchema = ApiKeySchema.annotations({
+  identifier: 'DeleteApiKeyResponse',
 });

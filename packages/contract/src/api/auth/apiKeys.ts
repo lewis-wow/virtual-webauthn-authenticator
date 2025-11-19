@@ -1,4 +1,6 @@
+import '@standard-schema/spec';
 import { initContract } from '@ts-rest/core';
+import { Schema } from 'effect';
 
 import { CreateApiKeyRequestBodySchema } from '../../validation/auth/api-keys/create/CreateApiKeyRequestBodySchema';
 import { CreateApiKeyResponseSchema } from '../../validation/auth/api-keys/create/CreateApiKeyResponseSchema';
@@ -18,48 +20,48 @@ export const apiKeysRouter = c.router({
   create: {
     method: 'POST',
     path: '/api-keys',
-    body: CreateApiKeyRequestBodySchema,
+    body: Schema.standardSchemaV1(CreateApiKeyRequestBodySchema),
     responses: {
-      200: CreateApiKeyResponseSchema,
+      200: Schema.standardSchemaV1(CreateApiKeyResponseSchema),
     },
   },
   list: {
     method: 'GET',
     path: '/api-keys',
     responses: {
-      200: ListApiKeysResponseSchema,
+      200: Schema.standardSchemaV1(ListApiKeysResponseSchema),
     },
   },
   getToken: {
     method: 'GET',
     path: '/api-keys/token',
     responses: {
-      200: GetTokenApiKeysResponseSchema,
+      200: Schema.standardSchemaV1(GetTokenApiKeysResponseSchema),
     },
   },
   get: {
     method: 'GET',
     path: '/api-keys/:id',
-    pathParams: GetApiKeyRequestParamSchema,
+    pathParams: Schema.standardSchemaV1(GetApiKeyRequestParamSchema),
     responses: {
-      200: GetApiKeyResponseSchema,
+      200: Schema.standardSchemaV1(GetApiKeyResponseSchema),
     },
   },
   update: {
     method: 'PUT',
     path: '/api-keys/:id',
-    pathParams: UpdateApiKeyRequestParamSchema,
-    body: UpdateApiKeyRequestBodySchema,
+    pathParams: Schema.standardSchemaV1(UpdateApiKeyRequestParamSchema),
+    body: Schema.standardSchemaV1(UpdateApiKeyRequestBodySchema),
     responses: {
-      200: UpdateApiKeyResponseSchema,
+      200: Schema.standardSchemaV1(UpdateApiKeyResponseSchema),
     },
   },
   delete: {
     method: 'DELETE',
     path: '/api-keys/:id',
-    pathParams: DeleteApiKeyRequestParamSchema,
+    pathParams: Schema.standardSchemaV1(DeleteApiKeyRequestParamSchema),
     responses: {
-      200: DeleteApiKeyResponseSchema,
+      200: Schema.standardSchemaV1(DeleteApiKeyResponseSchema),
     },
   },
 });

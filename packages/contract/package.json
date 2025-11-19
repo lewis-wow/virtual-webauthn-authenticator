@@ -19,16 +19,18 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@standard-schema/spec": "^1.0.0",
     "@types/node": "^22.5.2",
     "typescript": "^5.5.4",
     "yaml": "^2.8.1"
   },
   "dependencies": {
+    "@repo/auth": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
-    "@repo/auth": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",
+    "effect": "^3.19.4",
     "zod": "^4.1.12"
   }
 }

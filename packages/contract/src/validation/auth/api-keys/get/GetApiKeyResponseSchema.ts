@@ -1,3 +1,5 @@
-import { ApiKeyDtoSchema } from '../../ApiKeyDtoSchema';
+import { ApiKeySchema } from '@repo/auth/validation';
 
-export const GetApiKeyResponseSchema = ApiKeyDtoSchema;
+export const GetApiKeyResponseSchema = ApiKeySchema.annotations({
+  identifier: 'GetApiKeyResponse',
+});
