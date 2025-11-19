@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 export const Environment = {
   PRODUCTION: 'production',
@@ -8,8 +7,3 @@ export const Environment = {
 } as const;
 
 export type Environment = ValueOfEnum<typeof Environment>;
-
-export const EnvironmentSchema = z.enum(Environment).meta({
-  description: 'Environment',
-  examples: [Environment.PRODUCTION],
-});
