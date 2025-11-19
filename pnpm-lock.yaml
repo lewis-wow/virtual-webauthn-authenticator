@@ -509,6 +509,9 @@ importers:
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../../packages/virtual-authenticator
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
       nanoid:
         specifier: 3.3.7
         version: 3.3.7
