@@ -1,14 +1,18 @@
 import { Schema } from 'effect';
 
-export const ApiKeyPermissionsSchema = Schema.Record({
-  key: Schema.String,
-  value: Schema.Array(Schema.String),
-});
+export const ApiKeyPermissionsSchema = Schema.mutable(
+  Schema.Record({
+    key: Schema.String,
+    value: Schema.mutable(Schema.Array(Schema.String)),
+  }),
+);
 
-export const ApiKeyMetadataSchema = Schema.Record({
-  key: Schema.String,
-  value: Schema.Unknown,
-});
+export const ApiKeyMetadataSchema = Schema.mutable(
+  Schema.Record({
+    key: Schema.String,
+    value: Schema.Unknown,
+  }),
+);
 
 export const ApiKeySchema = Schema.Struct({
   id: Schema.UUID,

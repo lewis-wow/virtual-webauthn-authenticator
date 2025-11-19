@@ -8,7 +8,7 @@ export const WebAuthnCredentialBaseSchema = Schema.Struct({
   userId: Schema.String,
   COSEPublicKey: BytesSchema,
   counter: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
-  transports: Schema.Array(Schema.String),
+  transports: Schema.mutable(Schema.Array(Schema.String)),
   rpId: Schema.String,
 }).annotations({
   identifier: 'WebAuthnCredential',

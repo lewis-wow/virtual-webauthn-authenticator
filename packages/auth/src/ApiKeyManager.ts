@@ -282,7 +282,7 @@ export class ApiKeyManager {
    * Deletes a key by its 'id' (cuid).
    * This is a hard-delete. Use with caution.
    */
-  async delete(opts: { userId: string; id: string }): Promise<ApiKey | null> {
+  async delete(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
     const apiKey = await this.prisma.apikey

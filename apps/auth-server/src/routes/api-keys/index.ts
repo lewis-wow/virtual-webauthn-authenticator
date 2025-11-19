@@ -7,12 +7,18 @@ import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
 import { TokenType } from '@repo/auth/enums';
 import { contract } from '@repo/contract';
+import {
+  CreateApiKeyResponseSchema,
+  DeleteApiKeyResponseSchema,
+  GetApiKeyResponseSchema,
+  GetTokenApiKeysResponseSchema,
+  ListApiKeysResponseSchema,
+  UpdateApiKeyResponseSchema,
+} from '@repo/contract/validation';
 import { Unauthorized } from '@repo/exception/http';
+import { Schema } from 'effect';
 
-export const apiKey = factory.createApp().use(async (ctx, next) => {
-  console.log('APIKEY');
-  return await next();
-});
+export const apiKey = factory.createApp();
 
 apiKey.on(
   [contract.api.auth.apiKeys.getToken.method],
@@ -39,16 +45,14 @@ apiKey.on(
       },
     });
 
-    return ctx.json(
-      contract.api.auth.apiKeys.getToken.responses[200].encode({
-        token: await jwtIssuer.sign({
-          sub: apiKey.id,
-          apiKey,
-          user,
-          tokenType: TokenType.API_KEY,
-        }),
-      }),
-    );
+    const token = await jwtIssuer.sign({
+      sub: apiKey.id,
+      apiKey,
+      user,
+      tokenType: TokenType.API_KEY,
+    });
+
+    return ctx.json(Schema.encode(GetTokenApiKeysResponseSchema)({ token }));
   },
 );
 
@@ -67,9 +71,7 @@ apiKey.post(
       expiresAt: json.expiresAt,
     });
 
-    return ctx.json(
-      contract.api.auth.apiKeys.create.responses[200].encode(apiKey),
-    );
+    return ctx.json(Schema.encode(CreateApiKeyResponseSchema)(apiKey));
   },
 );
 
@@ -81,9 +83,7 @@ apiKey.get(
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(
-      contract.api.auth.apiKeys.list.responses[200].encode(apiKeys),
-    );
+    return ctx.json(Schema.encode(ListApiKeysResponseSchema)(apiKeys));
   },
 );
 
@@ -99,9 +99,7 @@ apiKey.get(
       id: param.id,
     });
 
-    return ctx.json(
-      contract.api.auth.apiKeys.get.responses[200].encode(apiKey),
-    );
+    return ctx.json(Schema.encode(GetApiKeyResponseSchema)(apiKey));
   },
 );
 
@@ -126,9 +124,7 @@ apiKey.put(
       },
     });
 
-    return ctx.json(
-      contract.api.auth.apiKeys.update.responses[200].encode(apiKey),
-    );
+    return ctx.json(Schema.encode(UpdateApiKeyResponseSchema)(apiKey));
   },
 );
 
@@ -139,15 +135,11 @@ apiKey.delete(
   async (ctx) => {
     const param = ctx.req.valid('param');
 
-    await apiKeyManager.delete({
+    const apiKey = await apiKeyManager.delete({
       userId: ctx.var.user!.id,
       id: param.id,
     });
 
-    return ctx.json(
-      contract.api.auth.apiKeys.delete.responses[200].encode({
-        success: true,
-      }),
-    );
+    return ctx.json(Schema.encode(DeleteApiKeyResponseSchema)(apiKey));
   },
 );

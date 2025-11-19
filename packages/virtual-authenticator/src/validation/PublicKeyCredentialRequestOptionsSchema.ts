@@ -26,7 +26,7 @@ export const PublicKeyCredentialRequestOptionsSchema = Schema.Struct({
    * (the first item in the list is the most preferred credential, and so on down the list).
    */
   allowCredentials: Schema.optional(
-    Schema.Array(PublicKeyCredentialDescriptorSchema),
+    Schema.mutable(Schema.Array(PublicKeyCredentialDescriptorSchema)),
   ),
 
   timeout: Schema.optional(Schema.Number),

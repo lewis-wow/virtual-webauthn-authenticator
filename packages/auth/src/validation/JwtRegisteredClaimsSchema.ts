@@ -26,7 +26,7 @@ export const JwtRegisteredClaimsSchema = Schema.Struct({
    * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.3 RFC7519#section-4.1.3}
    */
   aud: Schema.optional(
-    Schema.Union(Schema.String, Schema.Array(Schema.String)),
+    Schema.Union(Schema.String, Schema.mutable(Schema.Array(Schema.String))),
   ).annotations({
     description: 'JWT Audience',
   }),

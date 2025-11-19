@@ -20,12 +20,12 @@ export const PublicKeyCredentialCreationOptionsSchema = Schema.Struct({
   rp: PublicKeyCredentialRpEntitySchema,
   user: PublicKeyCredentialUserEntitySchema,
   challenge: ChallengeSchema,
-  pubKeyCredParams: Schema.Array(PubKeyCredParamLooseSchema).pipe(
-    Schema.minItems(1),
-  ),
+  pubKeyCredParams: Schema.mutable(
+    Schema.Array(PubKeyCredParamLooseSchema),
+  ).pipe(Schema.minItems(1)),
   timeout: Schema.optional(Schema.Number),
   excludeCredentials: Schema.optional(
-    Schema.Array(PublicKeyCredentialDescriptorSchema),
+    Schema.mutable(Schema.Array(PublicKeyCredentialDescriptorSchema)),
   ),
   authenticatorSelection: Schema.optional(AuthenticatorSelectionCriteriaSchema),
   attestation: Schema.optional(AttestationSchema),

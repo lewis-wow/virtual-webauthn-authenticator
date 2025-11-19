@@ -19,7 +19,9 @@ export const PublicKeyCredentialDescriptorSchema = Schema.Struct({
    * This OPTIONAL member contains a hint as to how the client might communicate
    * with the managing authenticator of the public key credential the caller is referring to.
    */
-  transports: Schema.optional(Schema.Array(AuthenticatorTransportSchema)),
+  transports: Schema.optional(
+    Schema.mutable(Schema.Array(AuthenticatorTransportSchema)),
+  ),
 }).annotations({
   identifier: 'PublicKeyCredentialDescriptor',
   ref: 'PublicKeyCredentialDescriptor',
