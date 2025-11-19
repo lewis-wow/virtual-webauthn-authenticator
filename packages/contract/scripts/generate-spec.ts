@@ -11,8 +11,10 @@ export const EFFECT_ASYNC: SchemaTransformerSync = ({ schema }) => {
   if (Schema.isSchema(schema)) {
     try {
       const jsonSchema = JSONSchema.make(schema);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+      const { $schema: _, ...rest } = jsonSchema as any;
 
-      return jsonSchema as object;
+      return rest as object;
     } catch (error) {
       console.error(error, schema);
     }
