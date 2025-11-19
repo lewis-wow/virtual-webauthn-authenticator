@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 import { KeyAlgorithm } from './KeyAlgorithm';
 
@@ -35,11 +34,3 @@ export const COSEKeyAlgorithm = {
 } as const;
 
 export type COSEKeyAlgorithm = ValueOfEnum<typeof COSEKeyAlgorithm>;
-
-export const COSEKeyAlgorithmSchema = z.enum(COSEKeyAlgorithm).meta({
-  description: 'COSE Key Algorithm',
-  examples: [COSEKeyAlgorithm[KeyAlgorithm.ES256]],
-});
-
-export type COSEKeyAlgorithmLoose = number;
-export const COSEKeyAlgorithmLooseSchema = z.number();

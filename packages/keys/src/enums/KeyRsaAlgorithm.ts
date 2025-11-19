@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 import { KeyAlgorithm } from './KeyAlgorithm';
 
@@ -26,8 +25,3 @@ export const KeyRsaAlgorithm = {
 } as const;
 
 export type KeyRsaAlgorithm = ValueOfEnum<typeof KeyRsaAlgorithm>;
-
-export const KeyRsaAlgorithmSchema = z.enum(KeyRsaAlgorithm).meta({
-  description: 'Key RSA Algorithm',
-  examples: [KeyRsaAlgorithm.PS256],
-});

@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 // COSE RSA Key Parameters
 export const COSEKeyRsaParam = {
@@ -9,8 +8,3 @@ export const COSEKeyRsaParam = {
 } as const;
 
 export type COSEKeyRsaParam = ValueOfEnum<typeof COSEKeyRsaParam>;
-
-export const COSEKeyRsaParamSchema = z.enum(COSEKeyRsaParam).meta({
-  description: 'COSE RSA param',
-  examples: [COSEKeyRsaParam.n],
-});

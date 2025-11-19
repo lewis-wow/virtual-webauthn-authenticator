@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 import { KeyCurveName } from './KeyCurveName';
 
@@ -11,8 +10,3 @@ export const COSEKeyCurve = {
 } as const;
 
 export type COSEKeyCurve = ValueOfEnum<typeof COSEKeyCurve>;
-
-export const COSEKeyCurveSchema = z.enum(COSEKeyCurve).meta({
-  description: 'COSE Key Curve',
-  examples: [COSEKeyCurve[KeyCurveName.P256]],
-});

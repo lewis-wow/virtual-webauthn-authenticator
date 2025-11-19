@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 import { KeyType } from './KeyType';
 
@@ -9,8 +8,3 @@ export const COSEKeyType = {
 } as const;
 
 export type COSEKeyType = ValueOfEnum<typeof COSEKeyType>;
-
-export const COSEKeyTypeSchema = z.enum(COSEKeyType).meta({
-  description: 'COSE Key Type',
-  examples: [COSEKeyType[KeyType.EC]],
-});

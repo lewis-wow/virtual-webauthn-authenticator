@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 export const KeyCurveName = {
   P256: 'P-256',
@@ -9,11 +8,3 @@ export const KeyCurveName = {
 } as const;
 
 export type KeyCurveName = ValueOfEnum<typeof KeyCurveName>;
-
-export const KeyCurveNameSchema = z.enum(KeyCurveName).meta({
-  description: 'Key Curve Name',
-  examples: [KeyCurveName.P256],
-});
-
-export type KeyCurveNameLoose = string;
-export const KeyCurveNameLooseSchema = z.string();

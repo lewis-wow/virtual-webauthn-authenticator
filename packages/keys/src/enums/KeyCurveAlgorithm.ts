@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 import { KeyAlgorithm } from './KeyAlgorithm';
 
@@ -13,8 +12,3 @@ export const KeyCurveAlgorithm = {
 } as const;
 
 export type KeyCurveAlgorithm = ValueOfEnum<typeof KeyCurveAlgorithm>;
-
-export const KeyCurveAlgorithmSchema = z.enum(KeyCurveAlgorithm).meta({
-  description: 'Key Curve Algorithm',
-  examples: [KeyCurveAlgorithm.ES256],
-});

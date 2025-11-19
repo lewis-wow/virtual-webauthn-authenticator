@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 export const KeyAlgorithm = {
   /** ECDSA w/ SHA-256 */
@@ -34,11 +33,3 @@ export const KeyAlgorithm = {
 } as const;
 
 export type KeyAlgorithm = ValueOfEnum<typeof KeyAlgorithm>;
-
-export const KeyAlgorithmSchema = z.enum(KeyAlgorithm).meta({
-  description: 'Key Algorithm',
-  examples: [KeyAlgorithm.ES256],
-});
-
-export type KeyAlgorithmLoose = string;
-export const KeyAlgorithmLooseSchema = z.string();

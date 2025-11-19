@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 // COSE EC Key Parameters
 export const COSEKeyCurveParam = {
@@ -10,8 +9,3 @@ export const COSEKeyCurveParam = {
 } as const;
 
 export type COSEKeyCurveParam = ValueOfEnum<typeof COSEKeyCurveParam>;
-
-export const COSEKeyCurveParamSchema = z.enum(COSEKeyCurveParam).meta({
-  description: 'COSE key curve param',
-  examples: [COSEKeyCurveParam.crv],
-});

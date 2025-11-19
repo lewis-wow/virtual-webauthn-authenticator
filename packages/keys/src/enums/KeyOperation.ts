@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 export const KeyOperation = {
   /** Indicates that the key can be used to encrypt. */
@@ -21,8 +20,3 @@ export const KeyOperation = {
 } as const;
 
 export type KeyOperation = ValueOfEnum<typeof KeyOperation>;
-
-export const KeyOperationSchema = z.enum(KeyOperation).meta({
-  description: 'Key operation',
-  examples: [KeyOperation.ENCRYPT],
-});

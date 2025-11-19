@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 // COSE Key Common Parameters
 export const COSEKeyParam = {
@@ -8,8 +7,3 @@ export const COSEKeyParam = {
 } as const;
 
 export type COSEKeyParam = ValueOfEnum<typeof COSEKeyParam>;
-
-export const COSEKeyParamSchema = z.enum(COSEKeyParam).meta({
-  description: 'COSE key param',
-  examples: [COSEKeyParam.kty],
-});
