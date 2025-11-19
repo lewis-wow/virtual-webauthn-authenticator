@@ -1,18 +1,19 @@
-import { z } from 'zod';
+import { Schema } from 'effect';
 
 import { TokenType } from '../enums/TokenType';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
 import { UserSchema } from './UserSchema';
 
-export const PersonalJwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
-  user: UserSchema.pick({
-    id: true,
-    email: true,
-    name: true,
+export const PersonalJwtPayloadSchema = Schema.extend(
+  JwtRegisteredClaimsSchema,
+  Schema.Struct({
+    user: UserSchema.pick('id', 'email', 'name'),
+    tokenType: Schema.Literal(TokenType.PERSONAL),
   }),
-  tokenType: z.literal(TokenType.PERSONAL),
-}).meta({
-  ref: 'JwtPayload',
+).annotations({
+  identifier: 'JwtPayload',
 });
 
-export type PersonalJwtPayload = z.infer<typeof PersonalJwtPayloadSchema>;
+export type PersonalJwtPayload = Schema.Schema.Type<
+  typeof PersonalJwtPayloadSchema
+>;

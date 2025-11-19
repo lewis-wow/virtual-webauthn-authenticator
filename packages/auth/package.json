@@ -18,8 +18,8 @@
   },
   "devDependencies": {
     "@hono/node-server": "^1.19.5",
-    "@repo/eslint-config": "workspace:*",
     "@repo/core": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
@@ -34,6 +34,7 @@
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
     "bcryptjs": "^3.0.3",
+    "effect": "^3.19.4",
     "hono": "^4.9.10",
     "jose": "^6.1.0",
     "typanion": "^3.14.0",

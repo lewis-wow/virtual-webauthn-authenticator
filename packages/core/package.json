@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./mappers": "./src/mappers/index.ts",
+    "./validation": "./src/validation/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
@@ -25,6 +26,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "effect": "^3.19.4"
   }
 }

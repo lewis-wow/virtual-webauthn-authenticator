@@ -1,13 +1,18 @@
-import z from 'zod';
+import { EmailSchema } from '@repo/core/validation';
+import { Schema } from 'effect';
 
-export const UserSchema = z.object({
-  id: z.uuid(),
-  name: z.string(),
-  email: z.email(),
-  emailVerified: z.boolean().default(false),
-  image: z.string().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
+export const UserSchema = Schema.Struct({
+  id: Schema.UUID,
+  name: Schema.String,
+  email: EmailSchema,
+  emailVerified: Schema.optionalWith(Schema.Boolean, { default: () => false }),
+
+  image: Schema.NullOr(Schema.String),
+
+  createdAt: Schema.DateFromString,
+  updatedAt: Schema.DateFromString,
+}).annotations({
+  identifier: 'User',
 });
 
-export type User = z.infer<typeof UserSchema>;
+export type User = Schema.Schema.Type<typeof UserSchema>;

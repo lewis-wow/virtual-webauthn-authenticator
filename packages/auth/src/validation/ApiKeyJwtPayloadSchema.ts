@@ -1,25 +1,21 @@
-import { z } from 'zod';
+import { Schema } from 'effect';
 
 import { TokenType } from '../enums/TokenType';
 import { ApiKeySchema } from './ApiKeySchema';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
 import { UserSchema } from './UserSchema';
 
-export const ApiKeyJwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
-  apiKey: ApiKeySchema.pick({
-    id: true,
-    enabled: true,
-    permissions: true,
-    metadata: true,
+export const ApiKeyJwtPayloadSchema = Schema.extend(
+  JwtRegisteredClaimsSchema,
+  Schema.Struct({
+    apiKey: ApiKeySchema.pick('id', 'enabled', 'permissions', 'metadata'),
+    user: UserSchema.pick('id', 'email', 'name'),
+    tokenType: Schema.Literal(TokenType.API_KEY),
   }),
-  user: UserSchema.pick({
-    id: true,
-    email: true,
-    name: true,
-  }),
-  tokenType: z.literal(TokenType.API_KEY),
-}).meta({
-  ref: 'JwtPayload',
+).annotations({
+  identifier: 'JwtPayload',
 });
 
-export type ApiKeyJwtPayload = z.infer<typeof ApiKeyJwtPayloadSchema>;
+export type ApiKeyJwtPayload = Schema.Schema.Type<
+  typeof ApiKeyJwtPayloadSchema
+>;

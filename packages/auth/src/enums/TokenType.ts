@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 export const TokenType = {
   PERSONAL: 'PERSONAL',
@@ -7,8 +6,3 @@ export const TokenType = {
 } as const;
 
 export type TokenType = ValueOfEnum<typeof TokenType>;
-
-export const TokenTypeSchema = z.enum(TokenType).meta({
-  description: 'Token type',
-  examples: [TokenType.PERSONAL],
-});

@@ -1,34 +1,38 @@
-import z from 'zod';
+import { Schema } from 'effect';
 
-export const ApiKeyPermissionsSchema = z.record(
-  z.string(),
-  z.array(z.string()),
-);
+export const ApiKeyPermissionsSchema = Schema.Record({
+  key: Schema.String,
+  value: Schema.Array(Schema.String),
+});
 
-export const ApiKeyMetadataSchema = z.record(z.string(), z.unknown());
+export const ApiKeyMetadataSchema = Schema.Record({
+  key: Schema.String,
+  value: Schema.Unknown,
+});
 
-export const ApiKeySchema = z
-  .object({
-    id: z.uuid(),
-    name: z.string().nullable(),
-    prefix: z.string().nullable(),
-    userId: z.string(),
-    enabled: z.boolean(),
-    expiresAt: z.date().optional().nullable(),
-    revokedAt: z.date().optional().nullable(),
+export const ApiKeySchema = Schema.Struct({
+  id: Schema.UUID,
+  name: Schema.NullOr(Schema.String),
+  prefix: Schema.NullOr(Schema.String),
+  userId: Schema.String,
+  enabled: Schema.Boolean,
 
-    permissions: ApiKeyPermissionsSchema.nullish(),
-    metadata: ApiKeyMetadataSchema.nullish(),
+  // z.date().optional().nullable() -> Optional field that can be null or a Date (ISO String)
+  expiresAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
+  revokedAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
 
-    // Internal fields
-    // lookupKey: z.string(),
-    // hashedKey: z.string(),
+  // z.nullish() -> Optional field that can be null or the type
+  permissions: Schema.optional(Schema.NullOr(ApiKeyPermissionsSchema)),
+  metadata: Schema.optional(Schema.NullOr(ApiKeyMetadataSchema)),
 
-    createdAt: z.date(),
-    updatedAt: z.date(),
-  })
-  .meta({
-    ref: 'ApiKey',
-  });
+  // Internal fields
+  // lookupKey: Schema.String,
+  // hashedKey: Schema.String,
 
-export type ApiKey = z.infer<typeof ApiKeySchema>;
+  createdAt: Schema.DateFromString,
+  updatedAt: Schema.DateFromString,
+}).annotations({
+  identifier: 'ApiKey',
+});
+
+export type ApiKey = Schema.Schema.Type<typeof ApiKeySchema>;

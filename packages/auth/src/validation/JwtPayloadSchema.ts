@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { Schema } from 'effect';
 
 import { ApiKeyJwtPayloadSchema } from './ApiKeyJwtPayloadSchema';
 import { PersonalJwtPayloadSchema } from './PersonalJwtPayloadSchema';
 
-export const JwtPayloadSchema = z.discriminatedUnion('tokenType', [
+export const JwtPayloadSchema = Schema.Union(
   ApiKeyJwtPayloadSchema,
   PersonalJwtPayloadSchema,
-]);
+);
 
-export type JwtPayload = z.infer<typeof JwtPayloadSchema>;
+export type JwtPayload = Schema.Schema.Type<typeof JwtPayloadSchema>;
