@@ -1,3 +1,4 @@
+import { OriginSchema } from '@repo/core/validation';
 import { PublicKeyCredentialCreationOptionsSchema } from '@repo/virtual-authenticator/validation';
 import { Schema } from 'effect';
 
@@ -10,7 +11,7 @@ export const CreateCredentialRequestBodySchema = Schema.Struct({
       'user',
     ),
   meta: Schema.Struct({
-    origin: Schema.String,
+    origin: OriginSchema,
   }),
 }).annotations({
   identifier: 'CreateCredentialRequestBody',

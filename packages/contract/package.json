@@ -27,6 +27,7 @@
   "dependencies": {
     "@repo/auth": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",

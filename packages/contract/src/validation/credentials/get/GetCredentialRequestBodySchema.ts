@@ -1,3 +1,4 @@
+import { OriginSchema } from '@repo/core/validation';
 import { PublicKeyCredentialRequestOptionsSchema } from '@repo/virtual-authenticator/validation';
 import { Schema } from 'effect';
 
@@ -9,6 +10,6 @@ export const GetCredentialRequestBodySchema = Schema.Struct({
     }),
   ),
   meta: Schema.Struct({
-    origin: Schema.String,
+    origin: OriginSchema,
   }),
 });
