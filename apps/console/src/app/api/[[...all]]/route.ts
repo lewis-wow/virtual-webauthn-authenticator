@@ -1,4 +1,4 @@
-import { AuthType } from '@repo/enums';
+import { AuthType } from '@repo/auth/enums';
 import { Proxy } from '@repo/proxy';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';

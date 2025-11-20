@@ -213,6 +213,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.2.2)(react@19.1.0)
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -246,6 +249,9 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
       hono:
         specifier: ^4.9.10
         version: 4.9.10

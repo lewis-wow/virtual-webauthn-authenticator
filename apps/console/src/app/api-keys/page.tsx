@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/card';
 import { Form } from '@/components/ui/form';
 import { tsr } from '@/lib/tsr';
-import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
-import { CreateApiKeyRequestBodySchema } from '@repo/validation';
+import { effectTsResolver } from '@hookform/resolvers/effect-ts';
+import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
+import { Schema } from 'effect';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -41,7 +42,7 @@ const ApiKeys = () => {
   });
 
   const form = useForm({
-    resolver: standardSchemaResolver(CreateApiKeyRequestBodySchema),
+    resolver: effectTsResolver(CreateApiKeyRequestBodySchema),
     defaultValues: {
       name: '',
       enabled: true,
@@ -64,8 +65,12 @@ const ApiKeys = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) => {
+                const encodedValues = Schema.encodeSync(
+                  CreateApiKeyRequestBodySchema,
+                )(values);
+
                 authApiKeyCreateMutation.mutate({
-                  body: CreateApiKeyRequestBodySchema.encode(values),
+                  body: encodedValues,
                 });
               })}
               className="flex items-start gap-4"

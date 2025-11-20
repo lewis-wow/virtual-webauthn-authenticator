@@ -1,5 +1,5 @@
+import { AuthType } from '@repo/auth/enums';
 import { contract } from '@repo/contract';
-import { AuthType } from '@repo/enums';
 import { initClient } from '@ts-rest/core';
 import { initTsrReactQuery } from '@ts-rest/react-query/v5';
 
