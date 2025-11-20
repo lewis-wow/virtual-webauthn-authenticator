@@ -540,8 +540,6 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
-    console.log({ clientData: JSON.stringify(clientData) });
-
     const clientDataJSON = Buffer.from(JSON.stringify(clientData));
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids

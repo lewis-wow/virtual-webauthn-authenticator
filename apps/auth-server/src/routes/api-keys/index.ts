@@ -24,8 +24,6 @@ apiKey.on(
   [contract.api.auth.apiKeys.getToken.method],
   contract.api.auth.apiKeys.getToken.path,
   async (ctx) => {
-    console.log('TOKEN');
-
     const bearerToken = ctx.req.header('Authorization');
     const plaintextKey = bearerToken?.replace('Bearer ', '');
 

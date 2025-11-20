@@ -25,10 +25,12 @@ export type PubKeyCredParamStrict = Schema.Schema.Type<
   typeof PubKeyCredParamStrictSchema
 >;
 
-export const PubKeyCredParamLooseSchema = Schema.Struct({
-  type: Schema.String,
-  alg: Schema.Number,
-}).annotations(annotations('PubKeyCredParamLoose'));
+export const PubKeyCredParamLooseSchema = Schema.mutable(
+  Schema.Struct({
+    type: Schema.String,
+    alg: Schema.Number,
+  }),
+).annotations(annotations('PubKeyCredParamLoose'));
 
 export type PubKeyCredParamLoose = Schema.Schema.Type<
   typeof PubKeyCredParamLooseSchema

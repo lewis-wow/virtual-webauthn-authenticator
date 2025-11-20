@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { MockJwtAudience } from '@repo/auth/__mocks__';
-
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { JwtAudience, JwtIssuer } from '@repo/auth';
 import {
   CHALLENGE_BASE64URL,
   MOCK_PERSONAL_JWT_PAYLOAD,
   RP_ID,
   RP_ORIGIN,
   setDeep,
-  upsertTestingUser,
   WRONG_UUID,
-} from '@repo/core';
-import { COSEKeyAlgorithm } from '@repo/enums';
-import { COSEKey } from '@repo/keys';
-import { bytesToUuid } from '@repo/utils';
+} from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { JwtAudience, JwtIssuer } from '@repo/auth';
+import { UUIDMapper } from '@repo/core/mappers';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyMapper } from '@repo/keys/mappers';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -100,9 +100,11 @@ const performAndVerifyRegistration = async (opts: {
   expect(verification.registrationInfo?.credential.counter).toBe(0);
 
   expect(
-    COSEKey.fromBuffer(
-      verification.registrationInfo!.credential.publicKey,
-    ).toJwk(),
+    COSEKeyMapper.COSEKeyToJwk(
+      COSEKeyMapper.bytesToCOSEKey(
+        verification.registrationInfo!.credential.publicKey,
+      ),
+    ),
   ).toMatchObject({
     crv: 'P-256',
     d: undefined,
@@ -137,7 +139,7 @@ const performAndVerifyRegistration = async (opts: {
   return {
     response,
     verification,
-    webAuthnCredentialId: bytesToUuid(
+    webAuthnCredentialId: UUIDMapper.bytesToUUID(
       Buffer.from(response.body.id, 'base64url'),
     ),
   };

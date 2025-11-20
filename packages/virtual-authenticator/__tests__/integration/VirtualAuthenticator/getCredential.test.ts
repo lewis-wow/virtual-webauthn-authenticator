@@ -9,6 +9,7 @@ import {
 } from '@repo/core/__tests__/helpers';
 import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
 
+import { COSEKeyMapper } from '@repo/keys/mappers';
 import { PrismaClient } from '@repo/prisma';
 import {
   verifyAuthenticationResponse,
@@ -16,13 +17,14 @@ import {
   type RegistrationResponseJSON,
   type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
+import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
-import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/validation/credentials/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { WebAuthnCredentialKeyMetaType } from '../../../src/enums/WebAuthnCredentialKeyMetaType';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
+import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
 import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
 import { credentialSigner } from '../../helpers/credentialSigner';
 import { COSEPublicKey } from '../../helpers/key';
@@ -60,7 +62,7 @@ const performAndVerifyAuth = async (opts: {
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialDtoSchema.encode(
+    response: Schema.encodeSync(PublicKeyCredentialSchema)(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
@@ -116,7 +118,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       publicKeyCredentialCreationOptions:
         PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
       generateKeyPair: async () => ({
-        COSEPublicKey: COSEPublicKey.toBuffer(),
+        COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
         webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
         webAuthnCredentialKeyVaultKeyMeta: {
           keyVaultKeyId: KEY_VAULT_KEY_ID,
@@ -131,10 +133,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
       },
     });
 
+    const encodedPublicKeyCredential = Schema.encodeSync(
+      PublicKeyCredentialSchema,
+    )(publicKeyCredential);
+
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialDtoSchema.encode(
-        publicKeyCredential,
-      ) as RegistrationResponseJSON,
+      response: encodedPublicKeyCredential as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
       expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,

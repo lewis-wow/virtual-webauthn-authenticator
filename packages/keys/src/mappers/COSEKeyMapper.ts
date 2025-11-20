@@ -1,8 +1,9 @@
 import { objectKeys, swapKeysAndValues } from '@repo/utils';
-import * as cbor from 'cbor-x';
+import * as cbor from 'cbor2';
 import { assert, isEnum, isNumber, isString } from 'typanion';
+import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras';
 
-import { COSEKey } from '../COSEKey';
+import { COSEKey, type COSEKeyMap } from '../COSEKey';
 import { JsonWebKey, type JsonWebKeyOptions } from '../JsonWebKey';
 import { COSEKeyAlgorithm } from '../enums/COSEKeyAlgorithm';
 import { COSEKeyCurve } from '../enums/COSEKeyCurve';
@@ -35,10 +36,9 @@ export class COSEKeyMapper {
 
         coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
         coseMap.set(COSEKeyCurveParam.crv, crv);
-        coseMap.set(COSEKeyCurveParam.x, Buffer.from(jwk.x, 'base64url'));
-        coseMap.set(COSEKeyCurveParam.y, Buffer.from(jwk.y, 'base64url'));
-        if (jwk.d)
-          coseMap.set(COSEKeyCurveParam.d, Buffer.from(jwk.d, 'base64url'));
+        coseMap.set(COSEKeyCurveParam.x, base64ToUint8Array(jwk.x));
+        coseMap.set(COSEKeyCurveParam.y, base64ToUint8Array(jwk.y));
+        if (jwk.d) coseMap.set(COSEKeyCurveParam.d, base64ToUint8Array(jwk.d));
         break;
       }
       case KeyType.RSA: {
@@ -48,10 +48,9 @@ export class COSEKeyMapper {
         assert(jwk.e, isString());
 
         coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
-        coseMap.set(COSEKeyRsaParam.n, Buffer.from(jwk.n, 'base64url'));
-        coseMap.set(COSEKeyRsaParam.e, Buffer.from(jwk.e, 'base64url'));
-        if (jwk.d)
-          coseMap.set(COSEKeyRsaParam.d, Buffer.from(jwk.d, 'base64url'));
+        coseMap.set(COSEKeyRsaParam.n, base64ToUint8Array(jwk.n));
+        coseMap.set(COSEKeyRsaParam.e, base64ToUint8Array(jwk.e));
+        if (jwk.d) coseMap.set(COSEKeyRsaParam.d, base64ToUint8Array(jwk.d));
         break;
       }
       default:
@@ -89,13 +88,16 @@ export class COSEKeyMapper {
                 jwk.crv = COSE_TO_JWK_CRV[value];
                 break;
               case COSEKeyCurveParam.x: // x
-                if (Buffer.isBuffer(value)) jwk.x = value.toString('base64url');
+                if (value instanceof Uint8Array)
+                  jwk.x = uint8ArrayToBase64(value, { urlSafe: true });
                 break;
               case COSEKeyCurveParam.y: // y
-                if (Buffer.isBuffer(value)) jwk.y = value.toString('base64url');
+                if (value instanceof Uint8Array)
+                  jwk.y = uint8ArrayToBase64(value, { urlSafe: true });
                 break;
               case COSEKeyCurveParam.d: // d (private key)
-                if (Buffer.isBuffer(value)) jwk.d = value.toString('base64url');
+                if (value instanceof Uint8Array)
+                  jwk.d = uint8ArrayToBase64(value, { urlSafe: true });
                 break;
             }
           }
@@ -103,13 +105,16 @@ export class COSEKeyMapper {
           if (jwk.kty === KeyType.RSA) {
             switch (key) {
               case COSEKeyRsaParam.n: // n (modulus)
-                if (Buffer.isBuffer(value)) jwk.n = value.toString('base64url');
+                if (value instanceof Uint8Array)
+                  jwk.n = uint8ArrayToBase64(value, { urlSafe: true });
                 break;
               case COSEKeyRsaParam.e: // e (exponent)
-                if (Buffer.isBuffer(value)) jwk.e = value.toString('base64url');
+                if (value instanceof Uint8Array)
+                  jwk.e = uint8ArrayToBase64(value, { urlSafe: true });
                 break;
               case COSEKeyRsaParam.d: // d (private key)
-                if (Buffer.isBuffer(value)) jwk.d = value.toString('base64url');
+                if (value instanceof Uint8Array)
+                  jwk.d = uint8ArrayToBase64(value, { urlSafe: true });
                 break;
             }
           }
@@ -120,7 +125,8 @@ export class COSEKeyMapper {
   }
 
   static bytesToCOSEKey(bytes: Uint8Array): COSEKey {
-    return new COSEKey(cbor.decode(bytes));
+    const decoded = cbor.decode<COSEKeyMap>(bytes);
+    return new COSEKey(decoded);
   }
 
   static COSEKeyToBytes(coseKey: COSEKey): Uint8Array {

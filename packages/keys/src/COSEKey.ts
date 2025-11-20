@@ -8,10 +8,12 @@ import { COSEKeyRsaParam } from './enums/COSEKeyRsaParam';
 import { COSEKeyType } from './enums/COSEKeyType';
 import { CannotParseCOSEKey } from './exceptions/CannotParseCOSEKey';
 
-export class COSEKey {
-  readonly map: Map<number, string | number | Uint8Array>;
+export type COSEKeyMap = Map<number, string | number | Uint8Array>;
 
-  constructor(map: Map<number, string | number | Uint8Array>) {
+export class COSEKey {
+  readonly map: COSEKeyMap;
+
+  constructor(map: COSEKeyMap) {
     if (!COSEKey.canParse(map)) {
       throw new CannotParseCOSEKey();
     }
@@ -19,9 +21,7 @@ export class COSEKey {
     this.map = map;
   }
 
-  public static canParse(
-    map: Map<number, string | number | Uint8Array>,
-  ): boolean {
+  public static canParse(map: COSEKeyMap): boolean {
     try {
       const kty = map.get(COSEKeyParam.kty);
       assert(kty, isEnum(COSEKeyType));
@@ -39,6 +39,11 @@ export class COSEKey {
 
           const y = map.get(COSEKeyCurveParam.y);
           assert(y, isInstanceOf(Uint8Array));
+
+          if (map.has(COSEKeyCurveParam.d)) {
+            const d = map.get(COSEKeyCurveParam.d);
+            assert(d, isInstanceOf(Uint8Array));
+          }
           break;
         }
         case COSEKeyType.RSA: {

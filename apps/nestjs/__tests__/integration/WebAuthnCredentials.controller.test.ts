@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { MockJwtAudience } from '@repo/auth/__mocks__';
+import {
+  MOCK_PERSONAL_JWT_PAYLOAD,
+  WEBAUTHN_CREDENTIAL_ID,
+  WRONG_UUID,
+} from '@repo/core/__tests__/helpers';
 import { MockKeyVault } from '@repo/key-vault/__mocks__';
+import {
+  upsertTestingUser,
+  upsertTestingWebAuthnCredential,
+} from '@repo/prisma/__tests__/helpers';
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
-import {
-  MOCK_PERSONAL_JWT_PAYLOAD,
-  upsertTestingUser,
-  upsertTestingWebAuthnCredential,
-  WEBAUTHN_CREDENTIAL_ID,
-  WRONG_UUID,
-} from '@repo/core';
 import { KeyVault } from '@repo/key-vault';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';

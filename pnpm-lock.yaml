@@ -761,6 +761,9 @@ importers:
       cbor-x:
         specifier: ^1.6.0
         version: 1.6.0
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -771,6 +774,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       '@repo/types':
         specifier: workspace:*
         version: link:../types
@@ -783,9 +789,6 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   packages/contract:
     dependencies:
@@ -1028,9 +1031,15 @@ importers:
       cbor:
         specifier: ^10.0.11
         version: 10.0.11
+      cbor-web:
+        specifier: ^10.0.11
+        version: 10.0.11
       cbor-x:
         specifier: ^1.6.0
         version: 1.6.0
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
       effect:
         specifier: ^3.19.4
         version: 3.19.4
@@ -1040,6 +1049,9 @@ importers:
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
+      uint8array-extras:
+        specifier: ^1.5.0
+        version: 1.5.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1236,6 +1248,9 @@ importers:
       cbor:
         specifier: ^10.0.11
         version: 10.0.11
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -1633,6 +1648,10 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@cto.af/wtf8@0.0.2':
+    resolution: {integrity: sha512-ATm4UQiKrdm5GnU6BvIwUDN+LDEtt23zuzKFpnfDT59ULAd0aMYm/nSFzbSO02garLcXumRC13PzNfa7BsfvSg==}
+    engines: {node: '>=20'}
 
   '@dabh/diagnostics@2.0.8':
     resolution: {integrity: sha512-R4MSXTVnuMzGD7bzHdW2ZhhdPC/igELENcq5IjEverBvq5hn1SXCWcsi6eSsdWP0/Ur+SItRRjAktmdoX/8R/Q==}
@@ -5731,8 +5750,16 @@ packages:
     resolution: {integrity: sha512-Ig1zM66BjLfTXpNgKpvBePq271BPOvu8MR0Jl080yG7Jsl+wAZunfrwiwA+9ruzm/WEdIV5QF/bjDZTqyAIVHA==}
     hasBin: true
 
+  cbor-web@10.0.11:
+    resolution: {integrity: sha512-bhhIZD2ycDtBWfZsuxri1t2djzzpQAqBpW2sxGWHElTZgaf3kTN3eKNIko0wkxv2OZ3Jl2J2ykhsnNMex8gxzw==}
+    engines: {node: '>=20'}
+
   cbor-x@1.6.0:
     resolution: {integrity: sha512-0kareyRwHSkL6ws5VXHEf8uY1liitysCVJjlmhaLG+IXLqhSaOO+t63coaso7yjwEzWZzLy8fJo06gZDVQM9Qg==}
+
+  cbor2@2.0.1:
+    resolution: {integrity: sha512-9bE8+tueGxONyxpttNKkAKKcGVtAPeoSJ64AjVTTjEuBOuRaeeP76EN9BbmQqkz1ZeTP0QPvksNBKwvEutIUzQ==}
+    engines: {node: '>=20'}
 
   cbor@10.0.11:
     resolution: {integrity: sha512-vIwORDd/WyB8Nc23o2zNN5RrtFGlR6Fca61TtjkUXueI3Jf2DOZDl1zsshvBntZ3wZHBM9ztjnkXSmzQDaq3WA==}
@@ -10459,6 +10486,8 @@ snapshots:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
 
+  '@cto.af/wtf8@0.0.2': {}
+
   '@dabh/diagnostics@2.0.8':
     dependencies:
       '@so-ric/colorspace': 1.1.6
@@ -14407,7 +14436,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -15045,9 +15074,15 @@ snapshots:
       '@cbor-extract/cbor-extract-win32-x64': 2.2.0
     optional: true
 
+  cbor-web@10.0.11: {}
+
   cbor-x@1.6.0:
     optionalDependencies:
       cbor-extract: 2.2.0
+
+  cbor2@2.0.1:
+    dependencies:
+      '@cto.af/wtf8': 0.0.2
 
   cbor@10.0.11:
     dependencies:

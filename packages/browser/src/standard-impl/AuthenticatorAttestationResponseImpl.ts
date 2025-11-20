@@ -1,5 +1,6 @@
 import { BytesMapper } from '@repo/core/mappers';
-import * as cbor from 'cbor-x';
+import type { COSEKeyMap } from '@repo/keys';
+import * as cbor from 'cbor2';
 
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
 import { AttestationObjectMissingAuthData } from '../exceptions/AttestationObjectMissingAuthData';
@@ -52,7 +53,9 @@ export class AuthenticatorAttestationResponseImpl
 
     try {
       // cbor.decodeFirstSync accepts Uint8Array
-      this._decodedAttestationObject = cbor.decode(attestationBytes);
+      this._decodedAttestationObject = cbor.decode(attestationBytes, {
+        preferMap: true,
+      });
     } catch (e) {
       throw new FailedToDecodeAttestationObject({
         cause: e,
@@ -126,21 +129,22 @@ export class AuthenticatorAttestationResponseImpl
 
     try {
       // decodeFirstSync will decode exactly one CBOR item (the key map)
-      const coseKeyMap = cbor.decode(remainingBytes);
+      const coseKeyMap = cbor.decode<COSEKeyMap>(remainingBytes, {
+        preferMap: true,
+      });
 
       // Extract the Algorithm (Key "3" is "alg")
       if (coseKeyMap instanceof Map) {
-        this._publicKeyAlgo = coseKeyMap.get(3);
+        this._publicKeyAlgo = coseKeyMap.get(3) as number | undefined;
       } else {
         this._publicKeyAlgo = coseKeyMap[3];
       }
 
       // Re-encode to get the exact raw bytes of the key map
       // cbor.encode returns a Node Buffer
-      const rawKeyBuffer = cbor.encode(coseKeyMap);
+      const rawKeyBytes = cbor.encode(coseKeyMap);
 
       // Normalize to ArrayBuffer using Mapper
-      const rawKeyBytes = BytesMapper.bufferSourceToBytes(rawKeyBuffer);
       this._publicKey = BytesMapper.bytesToArrayBuffer(rawKeyBytes);
     } catch (e) {
       throw new FailedToParseCosePublicKey({

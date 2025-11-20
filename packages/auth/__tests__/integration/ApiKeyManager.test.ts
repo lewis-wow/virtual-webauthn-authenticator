@@ -1,4 +1,6 @@
-import { upsertTestingUser, USER_ID } from '@repo/core';
+import { USER_ID } from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+
 import { PrismaClient } from '@repo/prisma';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 

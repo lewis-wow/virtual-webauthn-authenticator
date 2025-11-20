@@ -70,12 +70,11 @@ describe('COSEKeyMapper', () => {
 
   describe('CBOR Round-trip', () => {
     test('should serialize and deserialize a private key', () => {
-      const mapper = new COSEKeyMapper();
       // 1. Create COSEKey from a known JWK
       const originalCoseKey = COSEKeyMapper.jwkToCOSEKey(p256PrivateKeyJwk);
 
       // 2. Serialize to buffer
-      const buffer = mapper.COSEKeyToBytes(originalCoseKey);
+      const buffer = COSEKeyMapper.COSEKeyToBytes(originalCoseKey);
 
       // 3. Deserialize from buffer
       const deserializedCoseKey = COSEKeyMapper.bytesToCOSEKey(buffer);
