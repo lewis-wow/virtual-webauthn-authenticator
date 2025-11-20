@@ -6,6 +6,11 @@ export type ExceptionOptions = {
 };
 
 export class Exception extends Error {
+  static status?: number;
+  static code?: string;
+  static message?: string;
+  static cause?: unknown;
+
   status?: number;
   code!: string;
   message!: string;
@@ -15,16 +20,16 @@ export class Exception extends Error {
     super(opts?.message);
 
     const status =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      opts?.status ?? ((this as any).contructor.status as number | undefined);
+      opts?.status ??
+      ((this.constructor as typeof Exception)?.status as number | undefined);
 
     const message =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      opts?.message ?? ((this as any).contructor.message as string | undefined);
+      opts?.message ??
+      ((this.constructor as typeof Exception)?.message as string | undefined);
 
     const code =
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      opts?.code ?? ((this as any).contructor.code as string | undefined);
+      opts?.code ??
+      ((this.constructor as typeof Exception)?.code as string | undefined);
 
     Object.assign(this, {
       message,
