@@ -10,8 +10,6 @@
     "./standard-impl": "./src/standard-impl/index.ts"
   },
   "scripts": {
-    "build": "run-p barrel:*",
-    "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
