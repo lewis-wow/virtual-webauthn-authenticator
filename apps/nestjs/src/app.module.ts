@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
+import { ProfileController } from './controllers/Profile.controller';
 import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
@@ -26,6 +27,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
   ],
   controllers: [
     HealthcheckController,
+    ProfileController,
     CredentialsController,
     WebAuthnCredentialsController,
   ],

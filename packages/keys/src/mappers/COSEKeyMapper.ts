@@ -63,10 +63,6 @@ export class COSEKeyMapper {
     return new COSEKey(coseMap);
   }
 
-  static bytesToCOSEKey(bytes: Uint8Array): COSEKey {
-    return new COSEKey(cbor.decode(bytes));
-  }
-
   static COSEKeyToJwk(coseKey: COSEKey): JsonWebKey {
     const COSE_TO_JWK_KTY = swapKeysAndValues(COSEKeyType);
     const COSE_TO_JWK_CRV = swapKeysAndValues(COSEKeyCurve);
@@ -123,7 +119,11 @@ export class COSEKeyMapper {
     return new JsonWebKey(jwk);
   }
 
-  COSEKeyToBytes(coseKey: COSEKey): Uint8Array {
+  static bytesToCOSEKey(bytes: Uint8Array): COSEKey {
+    return new COSEKey(cbor.decode(bytes));
+  }
+
+  static COSEKeyToBytes(coseKey: COSEKey): Uint8Array {
     return cbor.encode(coseKey.map);
   }
 }

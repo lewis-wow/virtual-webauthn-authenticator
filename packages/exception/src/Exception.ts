@@ -24,4 +24,8 @@ export class Exception extends Error {
 
     Object.setPrototypeOf(this, Exception.prototype);
   }
+
+  static isException(error: unknown): error is Exception {
+    return error instanceof Exception;
+  }
 }

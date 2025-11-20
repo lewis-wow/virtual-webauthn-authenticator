@@ -1,3 +1,5 @@
+import { Schema } from 'effect';
+
 import {
   ApiKeyJwtPayloadSchema,
   type ApiKeyJwtPayload,
@@ -12,16 +14,12 @@ export class JwtUtils {
   static isPersonalJwtPayload(
     jwtPayload: JwtPayload,
   ): jwtPayload is PersonalJwtPayload {
-    const result = PersonalJwtPayloadSchema.safeParse(jwtPayload);
-
-    return result.success;
+    return Schema.is(PersonalJwtPayloadSchema)(jwtPayload);
   }
 
   static isApiKeyJwtPayload(
     jwtPayload: JwtPayload,
   ): jwtPayload is ApiKeyJwtPayload {
-    const result = ApiKeyJwtPayloadSchema.safeParse(jwtPayload);
-
-    return result.success;
+    return Schema.is(ApiKeyJwtPayloadSchema)(jwtPayload);
   }
 }

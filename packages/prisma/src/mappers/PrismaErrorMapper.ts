@@ -7,7 +7,7 @@ export class PrismaErrorMapper {
    * @param error The error to map.
    * @returns An instance of HTTPException.
    */
-  static toHTTPException(error: AnyPrismaError): Exception | null {
+  static prismaErrorToException(error: AnyPrismaError): Exception | null {
     // 2. Handle known Prisma request errors (P-codes)
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       switch (error.code) {

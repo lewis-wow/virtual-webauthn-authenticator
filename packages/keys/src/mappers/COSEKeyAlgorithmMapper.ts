@@ -10,14 +10,25 @@ import { KeyRsaAlgorithm } from '../enums/KeyRsaAlgorithm';
 import { KeyType } from '../enums/KeyType';
 
 export class COSEKeyAlgorithmMapper {
-  static toKeyAlgorithm(value: COSEKeyAlgorithm): KeyAlgorithm {
-    const COSE_TO_JWK_ALG = swapKeysAndValues(COSEKeyAlgorithm);
-
-    return COSE_TO_JWK_ALG[value];
+  static keyAlgorithmToCOSEKeyAlgorithm(
+    keyAlgorithm: KeyAlgorithm,
+  ): COSEKeyAlgorithm {
+    return COSEKeyAlgorithm[keyAlgorithm];
   }
 
-  static toCurve(value: COSEKeyAlgorithm): KeyCurveName {
-    const keyAlgorithm = COSEKeyAlgorithmMapper.toKeyAlgorithm(value);
+  static COSEKeyAlgorithmToKeyAlgorithm(
+    coseKeyAlgorithm: COSEKeyAlgorithm,
+  ): KeyAlgorithm {
+    const COSE_TO_JWK_ALG = swapKeysAndValues(COSEKeyAlgorithm);
+
+    return COSE_TO_JWK_ALG[coseKeyAlgorithm];
+  }
+
+  static COSEKeyAlgorithmToKeyCurveName(
+    coseKeyAlgorithm: COSEKeyAlgorithm,
+  ): KeyCurveName {
+    const keyAlgorithm =
+      COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyAlgorithm(coseKeyAlgorithm);
 
     assert(
       keyAlgorithm,
@@ -34,8 +45,11 @@ export class COSEKeyAlgorithmMapper {
     }
   }
 
-  static toKeyType(value: COSEKeyAlgorithm): KeyType {
-    const keyAlgorithm = COSEKeyAlgorithmMapper.toKeyAlgorithm(value);
+  static COSEKeyAlgorithmToKeyType(
+    coseKeyAlgorithm: COSEKeyAlgorithm,
+  ): KeyType {
+    const keyAlgorithm =
+      COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyAlgorithm(coseKeyAlgorithm);
 
     return match(keyAlgorithm)
       .when(isEnum(KeyCurveAlgorithm), () => KeyType.EC)

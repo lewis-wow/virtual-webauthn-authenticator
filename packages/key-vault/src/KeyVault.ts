@@ -76,10 +76,14 @@ export class KeyVault {
     const keyVaultKey = await this.keyClient
       .createKey(
         keyName,
-        COSEKeyAlgorithmMapper.toKeyType(supportedPubKeyCredParam.alg),
+        COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyType(
+          supportedPubKeyCredParam.alg,
+        ),
         {
           keyOps: [KeyOperation.SIGN],
-          curve: COSEKeyAlgorithmMapper.toCurve(supportedPubKeyCredParam.alg),
+          curve: COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyCurveName(
+            supportedPubKeyCredParam.alg,
+          ),
         },
       )
       .catch((error) => {

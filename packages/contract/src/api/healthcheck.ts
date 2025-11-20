@@ -1,6 +1,7 @@
-import { JwtPayloadSchema } from '@repo/auth/validation';
 import { initContract } from '@ts-rest/core';
 import { Schema } from 'effect';
+
+import { GetHealthcheckResponseSchema } from '../validation/healthcheck/get/GetHealthcheckResponseSchema';
 
 const c = initContract();
 
@@ -9,12 +10,7 @@ export const healthcheckRouter = c.router({
     method: 'GET',
     path: '/healthcheck',
     responses: {
-      200: Schema.standardSchemaV1(
-        Schema.Struct({
-          healthy: Schema.Literal(true),
-          jwtPayload: Schema.NullOr(JwtPayloadSchema),
-        }),
-      ),
+      200: Schema.standardSchemaV1(GetHealthcheckResponseSchema),
     },
   },
 });

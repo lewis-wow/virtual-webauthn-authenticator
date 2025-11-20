@@ -45,10 +45,13 @@ import type { PublicKeyCredentialCreationOptions } from './validation/PublicKeyC
 import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 
-export type WebAuthnCredentialWithMeta = WebAuthnCredential & {
+export type WebAuthnCredentialMeta = {
   webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
   webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMeta;
 };
+
+export type WebAuthnCredentialWithMeta = WebAuthnCredential &
+  WebAuthnCredentialMeta;
 
 export type GenerateKeyPair = (args: {
   webAuthnCredentialId: string;
@@ -56,14 +59,13 @@ export type GenerateKeyPair = (args: {
 }) => MaybePromise<
   {
     COSEPublicKey: Uint8Array;
-  } & {
-    webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
-    webAuthnCredentialKeyVaultKeyMeta: {
-      keyVaultKeyId: string | null | undefined;
-      keyVaultKeyName: string;
-      hsm: boolean | undefined;
-    };
-  }
+  } & PickDeep<
+    WebAuthnCredentialMeta,
+    | 'webAuthnCredentialKeyMetaType'
+    | 'webAuthnCredentialKeyVaultKeyMeta.keyVaultKeyId'
+    | 'webAuthnCredentialKeyVaultKeyMeta.keyVaultKeyName'
+    | 'webAuthnCredentialKeyVaultKeyMeta.hsm'
+  >
 >;
 
 export type SignatureFactory = (args: {

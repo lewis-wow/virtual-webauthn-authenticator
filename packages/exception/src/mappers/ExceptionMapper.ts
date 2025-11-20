@@ -1,7 +1,7 @@
 import type { Exception } from '../Exception';
 
 export class ExceptionMapper {
-  static toResponse(exception: Exception): Response {
+  static exceptionToResponse(exception: Exception): Response {
     return Response.json(
       {
         message: exception.message,
