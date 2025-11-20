@@ -3,8 +3,8 @@ import { Exception } from '../Exception';
 export const UNSUPPORTED_MEDIA_TYPE = 'UNSUPPORTED_MEDIA_TYPE';
 
 export class UnsupportedMediaType extends Exception {
-  status = 415;
-  code = UNSUPPORTED_MEDIA_TYPE;
+  static status = 415;
+  static code = UNSUPPORTED_MEDIA_TYPE;
 
   constructor(message = 'Unsupported Media Type.') {
     super({
