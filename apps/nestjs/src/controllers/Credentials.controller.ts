@@ -119,7 +119,7 @@ export class CredentialsController {
             };
           },
           meta: {
-            origin: meta.origin.toString(),
+            origin: meta.origin,
             userId: user.id,
           },
         });
@@ -181,7 +181,7 @@ export class CredentialsController {
             };
           },
           meta: {
-            origin: meta.origin.toString(),
+            origin: meta.origin,
             userId: user.id,
           },
         },

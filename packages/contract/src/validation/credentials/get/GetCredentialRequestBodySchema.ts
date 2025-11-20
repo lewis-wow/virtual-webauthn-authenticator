@@ -9,6 +9,6 @@ export const GetCredentialRequestBodySchema = Schema.Struct({
     }),
   ),
   meta: Schema.Struct({
-    origin: Schema.URL,
+    origin: Schema.String,
   }),
 });

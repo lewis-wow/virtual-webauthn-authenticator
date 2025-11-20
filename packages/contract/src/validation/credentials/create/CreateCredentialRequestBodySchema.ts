@@ -10,7 +10,7 @@ export const CreateCredentialRequestBodySchema = Schema.Struct({
       'user',
     ),
   meta: Schema.Struct({
-    origin: Schema.URL,
+    origin: Schema.String,
   }),
 }).annotations({
   identifier: 'CreateCredentialRequestBody',
