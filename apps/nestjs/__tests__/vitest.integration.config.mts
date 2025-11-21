@@ -1,7 +1,8 @@
 import { config } from '@dotenvx/dotenvx';
 import { integrationConfig } from '@repo/vitest-config/integration';
 import { join } from 'node:path';
-import { defineConfig, mergeConfig } from 'vitest/config';
+import swc from 'unplugin-swc';
+import { defineConfig, mergeConfig, Plugin } from 'vitest/config';
 
 import pkg from '../package.json';
 
@@ -20,5 +21,6 @@ export default mergeConfig(
       env,
       root: projectRoot,
     },
+    plugins: [swc.vite() as Plugin],
   }),
 );
