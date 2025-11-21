@@ -8,7 +8,7 @@ import {
   type WebAuthnCredentialKeyVaultKeyMeta,
 } from '@repo/prisma';
 import { bytesNotEmpty, hasMinBytes } from '@repo/utils';
-import * as cbor from 'cbor';
+import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import {
   applyCascade,
