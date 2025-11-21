@@ -10,7 +10,7 @@
   "scripts": {
     "build": "run-p barrel:* && pnpm generate:spec",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "test": "vitest run --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
     "generate:spec": "scripts/generate-spec.ts"

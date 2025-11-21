@@ -18,6 +18,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/vitest-config": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",

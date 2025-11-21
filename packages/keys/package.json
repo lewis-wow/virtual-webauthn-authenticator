@@ -13,12 +13,13 @@
   "scripts": {
     "build": "run-p barrel:*",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
+    "test": "vitest run --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/vitest-config": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",

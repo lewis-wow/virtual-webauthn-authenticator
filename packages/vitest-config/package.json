@@ -1,28 +1,21 @@
 {
-  "name": "@repo/utils",
+  "name": "@repo/vitest-config",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    "./unit": "./src/unit.ts",
+    "./integration": "./src/integration.ts"
   },
   "scripts": {
-    "test": "vitest run --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/vitest-config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "typanion": "^3.14.0"
   }
 }

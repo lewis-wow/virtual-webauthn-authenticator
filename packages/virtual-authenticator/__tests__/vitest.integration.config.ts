@@ -1,6 +1,7 @@
 import { config } from '@dotenvx/dotenvx';
+import { integrationConfig } from '@repo/vitest-config/integration';
 import { join } from 'node:path';
-import { defineConfig } from 'vitest/config';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
 import pkg from '../package.json';
 
@@ -11,19 +12,13 @@ const env = config({
 
 const projectRoot = join(import.meta.dirname, '..');
 
-export default defineConfig({
-  test: {
-    name: pkg.name,
-    env,
-    root: projectRoot,
-    include: ['__tests__/integration/**/*.{test,spec}.{ts,mts}'],
-
-    coverage: {
-      provider: 'v8',
-      exclude: ['__mocks__', '__tests__', 'src/index.ts'],
-      include: ['src'],
+export default mergeConfig(
+  integrationConfig,
+  defineConfig({
+    test: {
+      name: pkg.name,
+      env,
+      root: projectRoot,
     },
-
-    fileParallelism: false,
-  },
-});
+  }),
+);
