@@ -27,12 +27,8 @@ export class StandardImplMapper {
   }
 
   static responseToStandardImpl(
-    response:
-      | AuthenticatorAttestationResponse
-      | AuthenticatorAssertionResponse,
-  ):
-    | AuthenticatorAttestationResponseImpl
-    | AuthenticatorAssertionResponseImpl {
+    response: AuthenticatorAttestationResponse | AuthenticatorAssertionResponse,
+  ): AuthenticatorAttestationResponseImpl | AuthenticatorAssertionResponseImpl {
     if ('attestationObject' in response) {
       return new AuthenticatorAttestationResponseImpl({
         attestationObject: response.attestationObject.slice().buffer,

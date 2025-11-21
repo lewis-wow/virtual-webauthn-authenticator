@@ -1,4 +1,3 @@
-
 export class PublicKeyCredentialDescriptorImpl
   implements PublicKeyCredentialDescriptor
 {

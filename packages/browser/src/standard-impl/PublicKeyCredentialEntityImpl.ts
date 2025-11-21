@@ -1,4 +1,3 @@
-
 export class PublicKeyCredentialEntityImpl {
   name: string;
 

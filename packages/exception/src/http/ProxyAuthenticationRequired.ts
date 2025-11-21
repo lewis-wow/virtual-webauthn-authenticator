@@ -1,7 +1,6 @@
 import { Exception } from '../Exception';
 
-export const PROXY_AUTHENTICATION_REQUIRED =
-  'PROXY_AUTHENTICATION_REQUIRED';
+export const PROXY_AUTHENTICATION_REQUIRED = 'PROXY_AUTHENTICATION_REQUIRED';
 
 export class ProxyAuthenticationRequired extends Exception {
   static status = 407;
