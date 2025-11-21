@@ -3,23 +3,15 @@ import { TextField } from '@repo/ui/components/TextField';
 import { useForm } from 'react-hook-form';
 
 function Settings() {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({});
+  const form = useForm<{ apiKey: string }>({});
 
   const onSubmit = (data: unknown) => {
     console.log(data);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <TextField
-        label="API Key"
-        {...register('apiKey')}
-        error={errors.apiKey?.message}
-      />
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <TextField label="API Key" form={form as unknown as any} name="apiKey" />
       <Button type="submit" style={{ marginTop: 16 }}>
         Save
       </Button>
