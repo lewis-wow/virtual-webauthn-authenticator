@@ -1280,6 +1280,9 @@ importers:
       ts-pattern:
         specifier: ^5.8.0
         version: 5.8.0
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1287,15 +1290,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
-      '@repo/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
       '@types/react':
         specifier: ^19
         version: 19.2.2
@@ -1305,15 +1302,9 @@ importers:
       tailwindcss:
         specifier: ^4.1.14
         version: 4.1.14
-      tw-animate-css:
-        specifier: ^1.4.0
-        version: 1.4.0
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@24.9.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.1)(sass@1.93.2)(terser@5.44.0)
 
   packages/utils:
     dependencies:
