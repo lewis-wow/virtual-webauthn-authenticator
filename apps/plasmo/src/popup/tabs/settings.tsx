@@ -1,15 +1,14 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-
-import { Button } from '@repo/ui/components/Button'
-import { TextField } from '@repo/ui/components/TextField'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@repo/ui/components/Button';
+import { TextField } from '@repo/ui/components/TextField';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const schema = z.object({
   apiKey: z.string().min(1, 'API key is required'),
-})
+});
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<typeof schema>;
 
 function Settings() {
   const {
@@ -18,11 +17,11 @@ function Settings() {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-  })
+  });
 
   const onSubmit = (data: FormValues) => {
-    console.log(data)
-  }
+    console.log(data);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -35,7 +34,7 @@ function Settings() {
         Save
       </Button>
     </form>
-  )
+  );
 }
 
-export default Settings
+export default Settings;
