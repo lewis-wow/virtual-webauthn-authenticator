@@ -1,6 +1,6 @@
 import { Providers } from '@/Providers';
 import { Toaster } from '@repo/ui/components/ui/sonner';
-import '@repo/ui/globals.css';
+import '@repo/ui/styles/globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
