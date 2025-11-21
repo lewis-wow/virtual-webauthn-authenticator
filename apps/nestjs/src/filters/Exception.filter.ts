@@ -33,6 +33,8 @@ export class ExceptionFilter implements NestjsExceptionFilter {
       exception = new InternalServerError();
     }
 
+    console.log('error', exception, error);
+
     const webResponse = ExceptionMapper.exceptionToResponse(exception);
 
     const status = webResponse.status;

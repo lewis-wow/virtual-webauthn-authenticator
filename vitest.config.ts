@@ -5,11 +5,9 @@ export default defineConfig({
     projects: [
       'packages/**/__tests__/vitest.config.{ts,mts}',
       'apps/**/__tests__/vitest.config.{ts,mts}',
+
+      'packages/**/__tests__/vitest.integration.config.{ts,mts}',
+      'apps/**/__tests__/vitest.integration.config.{ts,mts}',
     ],
-    globals: true,
-    coverage: {
-      provider: 'v8',
-    },
-    fileParallelism: true,
   },
 });

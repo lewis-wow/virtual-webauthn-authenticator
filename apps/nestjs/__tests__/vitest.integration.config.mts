@@ -18,6 +18,7 @@ export default defineConfig({
       provider: 'v8',
     },
     fileParallelism: false,
+    include: ['__tests__/integration/**/*.test.ts'],
   },
   plugins: [swc.vite() as Plugin],
 });

@@ -1,14 +1,17 @@
-export type ExceptionOptions = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ExceptionMessage<T = any> = string | ((data: T) => string);
+
+export type ExceptionOptions<T> = {
   status?: number;
   code?: string;
-  message?: string;
+  message?: ExceptionMessage<T>;
   cause?: unknown;
-};
+} & (T extends undefined ? { data?: T } : { data: T });
 
-export class Exception extends Error {
+export class Exception<T = undefined> extends Error {
   static status?: number;
   static code?: string;
-  static message?: string;
+  static message?: ExceptionMessage;
   static cause?: unknown;
 
   status?: number;
@@ -16,20 +19,21 @@ export class Exception extends Error {
   message!: string;
   cause?: unknown;
 
-  constructor(opts?: ExceptionOptions) {
-    super(opts?.message);
+  constructor(opts?: ExceptionOptions<T>) {
+    super();
 
     const status =
-      opts?.status ??
-      ((this.constructor as typeof Exception)?.status as number | undefined);
+      opts?.status ?? (this.constructor as typeof Exception)?.status;
 
+    const messageFactory =
+      opts?.message ?? (this.constructor as typeof Exception)?.message;
     const message =
-      opts?.message ??
-      ((this.constructor as typeof Exception)?.message as string | undefined);
+      typeof messageFactory === 'function'
+        ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          messageFactory(opts?.data as any)
+        : messageFactory;
 
-    const code =
-      opts?.code ??
-      ((this.constructor as typeof Exception)?.code as string | undefined);
+    const code = opts?.code ?? (this.constructor as typeof Exception)?.code;
 
     Object.assign(this, {
       message,

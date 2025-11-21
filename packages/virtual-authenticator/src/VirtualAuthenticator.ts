@@ -7,7 +7,6 @@ import {
   type WebAuthnCredential,
   type WebAuthnCredentialKeyVaultKeyMeta,
 } from '@repo/prisma';
-import type { MaybePromise } from '@repo/types';
 import { bytesNotEmpty, hasMinBytes } from '@repo/utils';
 import * as cbor from 'cbor';
 import { randomUUID } from 'node:crypto';
@@ -35,7 +34,9 @@ import { UserVerificationRequirement } from './enums/UserVerificationRequirement
 import type { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialNotFound } from './exceptions/CredentialNotFound';
+import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
+import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { CollectedClientData } from './validation/CollectedClientDataSchema';
 import type {
   PubKeyCredParamLoose,
@@ -56,7 +57,7 @@ export type WebAuthnCredentialWithMeta = WebAuthnCredential &
 export type GenerateKeyPair = (args: {
   webAuthnCredentialId: string;
   pubKeyCredParams: PubKeyCredParamStrict;
-}) => MaybePromise<
+}) => Promise<
   {
     COSEPublicKey: Uint8Array;
   } & PickDeep<
@@ -71,7 +72,7 @@ export type GenerateKeyPair = (args: {
 export type SignatureFactory = (args: {
   data: Uint8Array;
   webAuthnCredential: WebAuthnCredentialWithMeta;
-}) => MaybePromise<{ signature: Uint8Array; alg: COSEKeyAlgorithm }>;
+}) => Promise<{ signature: Uint8Array; alg: COSEKeyAlgorithm }>;
 
 export type VirtualAuthenticatorCredentialMetaArgs = {
   userId: string;
@@ -340,8 +341,10 @@ export class VirtualAuthenticator {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new CredentialNotFound({
-            publicKeyCredentialRequestOptions,
-            userId,
+            data: {
+              publicKeyCredentialRequestOptions,
+              userId,
+            },
           });
         }
       }
@@ -429,6 +432,10 @@ export class VirtualAuthenticator {
     const { signature, alg } = await signatureFactory({
       data: dataToSign,
       webAuthnCredential,
+    }).catch((error) => {
+      throw new SignatureFailed({
+        cause: error,
+      });
     });
 
     // https://www.w3.org/TR/webauthn-2/#attestation-statement
@@ -495,7 +502,9 @@ export class VirtualAuthenticator {
       case Attestation.ENTERPRISE:
       case Attestation.INDIRECT:
         throw new AttestationNotSupported({
-          attestation: publicKeyCredentialCreationOptions.attestation,
+          data: {
+            attestation: publicKeyCredentialCreationOptions.attestation,
+          },
         });
     }
 
@@ -509,6 +518,10 @@ export class VirtualAuthenticator {
     const webAuthnCredentialPublicKey = await generateKeyPair({
       webAuthnCredentialId,
       pubKeyCredParams,
+    }).catch((error) => {
+      throw new GenerateKeyPairFailed({
+        cause: error,
+      });
     });
 
     const webAuthnCredential =
@@ -645,6 +658,10 @@ export class VirtualAuthenticator {
     const { signature } = await signatureFactory({
       data: dataToSign,
       webAuthnCredential,
+    }).catch((error) => {
+      throw new SignatureFailed({
+        cause: error,
+      });
     });
 
     return {
