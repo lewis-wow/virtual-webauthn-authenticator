@@ -1,5 +1,5 @@
-import '@/assets/tailwindcss.css';
 import Settings from '@/components/settings';
+import '@repo/ui/globals.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
@@ -13,6 +13,7 @@ function Popup() {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
+    <div>hello</div>
     <Popup />
   </React.StrictMode>,
 );

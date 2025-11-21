@@ -1,5 +1,6 @@
 import { Button } from '@repo/ui/components/Button';
 import { TextField } from '@repo/ui/components/TextField';
+import { Form } from '@repo/ui/components/ui/form';
 import { useForm } from 'react-hook-form';
 
 function Settings() {
@@ -10,12 +11,18 @@ function Settings() {
   };
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)}>
-      <TextField label="API Key" form={form as unknown as any} name="apiKey" />
-      <Button type="submit" style={{ marginTop: 16 }}>
-        Save
-      </Button>
-    </form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <TextField
+          label="API Key"
+          form={form as unknown as any}
+          name="apiKey"
+        />
+        <Button type="submit" style={{ marginTop: 16 }}>
+          Save
+        </Button>
+      </form>
+    </Form>
   );
 }
 
