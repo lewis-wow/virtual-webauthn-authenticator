@@ -50,7 +50,9 @@ apiKey.on(
       tokenType: TokenType.API_KEY,
     });
 
-    return ctx.json(Schema.encode(GetTokenApiKeysResponseSchema)({ token }));
+    return ctx.json(
+      Schema.encodeSync(GetTokenApiKeysResponseSchema)({ token }),
+    );
   },
 );
 
@@ -69,7 +71,7 @@ apiKey.post(
       expiresAt: json.expiresAt,
     });
 
-    return ctx.json(Schema.encode(CreateApiKeyResponseSchema)(apiKey));
+    return ctx.json(Schema.encodeSync(CreateApiKeyResponseSchema)(apiKey));
   },
 );
 
@@ -81,7 +83,7 @@ apiKey.get(
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(Schema.encode(ListApiKeysResponseSchema)(apiKeys));
+    return ctx.json(Schema.encodeSync(ListApiKeysResponseSchema)(apiKeys));
   },
 );
 
@@ -97,7 +99,7 @@ apiKey.get(
       id: param.id,
     });
 
-    return ctx.json(Schema.encode(GetApiKeyResponseSchema)(apiKey));
+    return ctx.json(Schema.encodeSync(GetApiKeyResponseSchema)(apiKey));
   },
 );
 
@@ -122,7 +124,7 @@ apiKey.put(
       },
     });
 
-    return ctx.json(Schema.encode(UpdateApiKeyResponseSchema)(apiKey));
+    return ctx.json(Schema.encodeSync(UpdateApiKeyResponseSchema)(apiKey));
   },
 );
 
@@ -138,6 +140,6 @@ apiKey.delete(
       id: param.id,
     });
 
-    return ctx.json(Schema.encode(DeleteApiKeyResponseSchema)(apiKey));
+    return ctx.json(Schema.encodeSync(DeleteApiKeyResponseSchema)(apiKey));
   },
 );

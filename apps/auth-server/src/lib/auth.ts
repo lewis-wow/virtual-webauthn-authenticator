@@ -54,7 +54,9 @@ export const auth = betterAuth({
   ],
   trustedOrigins: env.TRUSTED_ORIGINS,
   advanced: {
-    generateId: false,
+    database: {
+      generateId: false,
+    },
     cookies: {
       session_token: {
         name: 'session_token',
