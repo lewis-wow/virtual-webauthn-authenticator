@@ -10,6 +10,7 @@
     "./nestjs.json": "./nestjs.json",
     "./nextjs.json": "./nextjs.json",
     "./base.json": "./base.json",
-    "./plasmo.json": "./plasmo.json"
+    "./plasmo.json": "./plasmo.json",
+    "./react-library.json": "./react-library.json"
   }
 }

@@ -1,9 +1,8 @@
 'use client';
 
+import { Stack } from '@repo/ui/components/Stack';
+import { TypographyH1 } from '@repo/ui/components/Typography';
 import type { ReactNode } from 'react';
-
-import { Stack } from './Stack';
-import { TypographyH1 } from './Typography';
 
 export type PageProps = {
   children?: ReactNode;

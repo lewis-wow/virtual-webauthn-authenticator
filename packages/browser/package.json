@@ -17,7 +17,6 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/cbor": "^6.0.4",
     "typescript": "^5.5.4",
     "@repo/keys": "workspace:*"
   },
@@ -25,8 +24,6 @@
     "@repo/core": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
-    "cbor": "^10.0.11",
-    "cbor-x": "^1.6.0",
     "cbor2": "^2.0.1",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"

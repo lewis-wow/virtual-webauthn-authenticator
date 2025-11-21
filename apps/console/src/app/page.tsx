@@ -1,10 +1,10 @@
 'use client';
 
 import { GithubSigninButton } from '@/components/GithubSigninButton';
-import { Guard } from '@/components/Guard/Guard';
 import { Page } from '@/components/Page';
 import { authClient } from '@/lib/authClient';
 import { tsr } from '@/lib/tsr';
+import { Guard } from '@repo/ui/components/Guard/Guard';
 
 const Index = () => {
   const { data: session } = authClient.useSession();

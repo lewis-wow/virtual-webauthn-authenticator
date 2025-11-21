@@ -1,10 +1,9 @@
 import { tsr } from '@/lib/tsr';
-import { cn } from '@/lib/utils';
+import { Button } from '@repo/ui/components/Button';
+import { cn } from '@repo/ui/lib/utils';
 import { CopyIcon, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-import { Button } from './Button';
 
 export type ApiKeyProps = {
   id: string;
