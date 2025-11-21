@@ -12,7 +12,7 @@ export type PageProps = {
 
 export const Page = ({ children, title, description }: PageProps) => {
   return (
-    <div className="container min-h-screen bg-background p-8 mx-auto">
+    <div className="container min-h-screen bg-background p-4 mx-auto">
       <div className="mx-auto max-w-4xl space-y-8">
         <header>
           <TypographyH1>{title}</TypographyH1>

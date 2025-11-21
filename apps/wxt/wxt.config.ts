@@ -14,6 +14,7 @@ export default defineConfig({
     action: {
       default_popup: 'popup.html',
     },
+    permissions: ['storage'],
     host_permissions: ['https://*/*', 'http://*/*'],
     web_accessible_resources: [
       {

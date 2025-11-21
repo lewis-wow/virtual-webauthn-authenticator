@@ -21,7 +21,14 @@
     "@webext-core/proxy-service": "^1.2.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-hook-form": "^7.66.0"
+    "react-hook-form": "^7.66.0",
+    "react-use-promise": "^0.5.0",
+    "@repo/virtual-authenticator": "workspace:*",
+    "effect": "^3.19.4",
+    "@repo/auth": "workspace:*",
+    "@repo/browser": "workspace:*",
+    "@repo/contract": "workspace:*",
+    "@repo/core": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.17",

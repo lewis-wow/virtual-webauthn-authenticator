@@ -12,17 +12,21 @@ export type GuardProps = {
 };
 
 export const Guard = (props: GuardProps) => {
-  return (
-    <div className="flex h-full w-full flex-1 items-center justify-center">
-      {match(props)
-        .returnType<ReactNode>()
-        .with({ isLoading: true }, () => <Spinner />)
-        .when(
-          ({ error }) => error !== undefined && error !== null,
-          () => <ErrorAlert />,
-        )
-        .with({ isEmpty: true }, () => <NoContentAlert />)
-        .otherwise(({ children }) => children)}
-    </div>
-  );
+  return match(props)
+    .returnType<ReactNode>()
+    .with({ isLoading: true }, () => (
+      <div className="flex h-full w-full flex-1 items-center justify-center">
+        <Spinner />
+      </div>
+    ))
+    .when(
+      ({ error }) => error !== undefined && error !== null,
+      () => (
+        <div className="flex h-full w-full flex-1 items-center justify-center">
+          <ErrorAlert />
+        </div>
+      ),
+    )
+    .with({ isEmpty: true }, () => <NoContentAlert />)
+    .otherwise(({ children }) => children);
 };
