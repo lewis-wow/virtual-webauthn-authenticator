@@ -54,7 +54,7 @@ const performAndVerifyAuth = async (opts: {
 
   const publicKeyCredential = await authenticator.getCredential({
     publicKeyCredentialRequestOptions: requestOptions,
-    signatureFactory: ({ data }) => credentialSigner.sign(data),
+    signatureFactory: async ({ data }) => credentialSigner.sign(data),
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
@@ -126,7 +126,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           hsm: false,
         },
       }),
-      signatureFactory: ({ data }) => credentialSigner.sign(data),
+      signatureFactory: async ({ data }) => credentialSigner.sign(data),
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
@@ -224,7 +224,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
+        signatureFactory: async ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
@@ -232,8 +232,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
-        userId: USER_ID,
-        publicKeyCredentialRequestOptions,
+        data: {
+          userId: USER_ID,
+          publicKeyCredentialRequestOptions,
+        },
       }),
     );
   });
@@ -247,7 +249,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
+        signatureFactory: async ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: 'WRONG_USER_ID',
           origin: RP_ORIGIN,
@@ -255,8 +257,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
-        userId: 'WRONG_USER_ID',
-        publicKeyCredentialRequestOptions,
+        data: {
+          userId: 'WRONG_USER_ID',
+          publicKeyCredentialRequestOptions,
+        },
       }),
     );
   });
@@ -277,7 +281,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
+        signatureFactory: async ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
@@ -285,8 +289,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
-        userId: USER_ID,
-        publicKeyCredentialRequestOptions,
+        data: {
+          userId: USER_ID,
+          publicKeyCredentialRequestOptions,
+        },
       }),
     );
   });

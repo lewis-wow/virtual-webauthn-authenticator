@@ -5,7 +5,6 @@
       "mode": "auto"
     }
   ],
-  "vitest.configFiles": ["vitest.config.ts", "vitest.integration.config.ts"],
   "terminal.integrated.env.linux": {
     "ENVIRONMENT": "development"
   },

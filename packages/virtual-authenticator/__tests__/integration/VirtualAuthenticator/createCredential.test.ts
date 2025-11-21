@@ -55,7 +55,7 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
         hsm: false,
       },
     }),
-    signatureFactory: ({ data }) => credentialSigner.sign(data),
+    signatureFactory: async ({ data }) => credentialSigner.sign(data),
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
@@ -207,7 +207,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
               () => attestation,
             ),
           }),
-        ).rejects.toThrowError(new AttestationNotSupported({ attestation }));
+        ).rejects.toThrowError(
+          new AttestationNotSupported({ data: { attestation } }),
+        );
       },
     );
 
@@ -301,7 +303,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
               hsm: false,
             },
           }),
-          signatureFactory: ({ data }) => credentialSigner.sign(data),
+          signatureFactory: async ({ data }) => credentialSigner.sign(data),
           meta: {
             userId: 'INVALID_USER_ID',
             origin: RP_ORIGIN,

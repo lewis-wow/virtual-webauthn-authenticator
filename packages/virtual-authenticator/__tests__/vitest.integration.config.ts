@@ -9,16 +9,21 @@ const env = config({
   override: true,
 }).parsed;
 
+const projectRoot = join(import.meta.dirname, '..');
+
 export default defineConfig({
   test: {
     name: pkg.name,
     env,
-    include: ['__tests__/integration/**'],
+    root: projectRoot,
+    include: ['__tests__/integration/**/*.{test,spec}.{ts,mts}'],
+
     coverage: {
       provider: 'v8',
       exclude: ['__mocks__', '__tests__', 'src/index.ts'],
       include: ['src'],
     },
+
     fileParallelism: false,
   },
 });
