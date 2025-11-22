@@ -1,7 +1,10 @@
-import { KeyAlgorithm, KeyCurveName, KeyOperation, KeyType } from '@repo/enums';
 import { describe, expect, test } from 'vitest';
 
 import { JsonWebKey, type JsonWebKeyOptions } from '../../src/JsonWebKey';
+import { KeyAlgorithm } from '../../src/enums/KeyAlgorithm';
+import { KeyCurveName } from '../../src/enums/KeyCurveName';
+import { KeyOperation } from '../../src/enums/KeyOperation';
+import { KeyType } from '../../src/enums/KeyType';
 
 // --- Test Data ---
 

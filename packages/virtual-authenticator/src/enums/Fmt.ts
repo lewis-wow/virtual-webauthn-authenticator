@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 /**
  * The attestation statement format, which identifies the type of
@@ -51,18 +50,3 @@ export const Fmt = {
 } as const;
 
 export type Fmt = ValueOfEnum<typeof Fmt>;
-
-export const FmtSchema = z
-  .enum([
-    Fmt.NONE,
-    Fmt.PACKED,
-    Fmt.TPM,
-    Fmt.ANDROID_KEY,
-    Fmt.ANDROID_SAFETYNET,
-    Fmt.FIDO_U2F,
-    Fmt.APPLE_ANONYMOUS,
-  ])
-  .meta({
-    description: 'Attestation Statement Format',
-    examples: [Fmt.NONE, Fmt.PACKED],
-  });

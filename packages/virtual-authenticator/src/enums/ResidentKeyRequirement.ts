@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-residentKeyRequirement
@@ -11,10 +10,3 @@ export const ResidentKeyRequirement = {
 } as const;
 
 export type ResidentKeyRequirement = ValueOfEnum<typeof ResidentKeyRequirement>;
-
-export const ResidentKeyRequirementSchema = z
-  .enum(ResidentKeyRequirement)
-  .meta({
-    description: 'Resident key requirement',
-    examples: [ResidentKeyRequirement.REQUIRED],
-  });

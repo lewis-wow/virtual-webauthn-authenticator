@@ -1,7 +1,7 @@
 'use client';
 
-import { Button } from '@/components/Button';
 import { authClient } from '@/lib/authClient';
+import { Button } from '@repo/ui/components/Button';
 import { FaGithub } from 'react-icons/fa';
 
 export const GithubSigninButton = () => {

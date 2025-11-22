@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./mappers": "./src/mappers/index.ts",
+    "./standard-impl": "./src/standard-impl/index.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -15,11 +18,13 @@
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "typescript": "^5.5.4",
-    "vitest": "^3.2.4"
+    "@repo/keys": "workspace:*"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
-    "@repo/validation": "workspace:*",
+    "@repo/core": "workspace:*",
+    "@repo/exception": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
+    "cbor2": "^2.0.1",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }

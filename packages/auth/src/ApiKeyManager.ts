@@ -1,14 +1,13 @@
-import {
-  ApiKeyDeleteEnabledFailed,
-  ApiKeyDeleteFailed,
-  ApiKeyNotFound,
-  ApiKeyRevokeFailed,
-} from '@repo/exception';
 import { Logger } from '@repo/logger';
 import { Prisma, type PrismaClient } from '@repo/prisma';
-import { type ApiKey } from '@repo/validation';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
+
+import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
+import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
+import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
+import { ApiKeyRevokeFailed } from './exceptions/ApiKeyRevokeFailed';
+import type { ApiKey } from './validation/ApiKeySchema';
 
 const LOG_PREFIX = 'API_KEY';
 const log = new Logger({
@@ -283,7 +282,7 @@ export class ApiKeyManager {
    * Deletes a key by its 'id' (cuid).
    * This is a hard-delete. Use with caution.
    */
-  async delete(opts: { userId: string; id: string }): Promise<ApiKey | null> {
+  async delete(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
     const apiKey = await this.prisma.apikey

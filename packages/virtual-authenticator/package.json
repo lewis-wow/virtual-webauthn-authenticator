@@ -4,40 +4,43 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts",
+    "./exception": "./src/exception/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./mappers": "./src/mappers/index.ts",
+    "./types": "./src/types/index.ts",
+    "./__test__/helpers": "./__test__/helpers/index.ts"
   },
   "scripts": {
-    "build": "pnpm barrel",
-    "barrel": "../../scripts/barrel.ts",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
     "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/vitest-config": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/test-helpers": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
-    "prisma-mock": "^0.12.2",
-    "prismock": "^1.35.4",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4",
     "vitest-mock-extended": "^3.1.0"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*",
-    "cbor": "^10.0.11",
+    "cbor2": "^2.0.1",
     "class-transformer": "^0.5.1",
+    "effect": "^3.19.4",
     "reflect-metadata": "^0.2.2",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"

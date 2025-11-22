@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-attestation-conveyance-preference
@@ -34,8 +33,3 @@ export const Attestation = {
 } as const;
 
 export type Attestation = ValueOfEnum<typeof Attestation>;
-
-export const AttestationSchema = z.enum(Attestation).meta({
-  description: 'Attestation',
-  examples: [Attestation.NONE],
-});

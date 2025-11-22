@@ -1,35 +1,14 @@
-import {
-  Attestation,
-  AuthenticatorTransport,
-  Fmt,
-  COSEKeyAlgorithm,
-  PublicKeyCredentialType,
-  UserVerificationRequirement,
-  WebAuthnCredentialKeyMetaType,
-} from '@repo/enums';
+import { UUIDMapper } from '@repo/core/mappers';
+import { Hash } from '@repo/crypto';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   Prisma,
   type PrismaClient,
   type WebAuthnCredential,
   type WebAuthnCredentialKeyVaultKeyMeta,
 } from '@repo/prisma';
-import type { MaybePromise } from '@repo/types';
-import {
-  bytesToUuid,
-  uuidToBytes,
-  bytesNotEmpty,
-  hasMinBytes,
-} from '@repo/utils';
-import { sha256 } from '@repo/utils';
-import {
-  type CollectedClientData,
-  type PublicKeyCredentialCreationOptions,
-  type PublicKeyCredentialRequestOptions,
-  type PublicKeyCredential,
-  type PubKeyCredParamLoose,
-  type PubKeyCredParamStrict,
-} from '@repo/validation';
-import * as cbor from 'cbor';
+import { bytesNotEmpty, hasMinBytes } from '@repo/utils';
+import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import {
   applyCascade,
@@ -47,35 +26,27 @@ import {
 } from 'typanion';
 import type { PickDeep } from 'type-fest';
 
+import { Attestation } from './enums/Attestation';
+import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
+import { Fmt } from './enums/Fmt';
+import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
+import type { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialNotFound } from './exceptions/CredentialNotFound';
+import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
-
-export type WebAuthnCredentialWithMeta = WebAuthnCredential & {
-  webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
-  webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMeta;
-};
-
-export type GenerateKeyPair = (args: {
-  webAuthnCredentialId: string;
-  pubKeyCredParams: PubKeyCredParamStrict;
-}) => MaybePromise<
-  {
-    COSEPublicKey: Uint8Array;
-  } & {
-    webAuthnCredentialKeyMetaType: typeof WebAuthnCredentialKeyMetaType.KEY_VAULT;
-    webAuthnCredentialKeyVaultKeyMeta: {
-      keyVaultKeyId: string | null | undefined;
-      keyVaultKeyName: string;
-      hsm: boolean | undefined;
-    };
-  }
->;
-
-export type SignatureFactory = (args: {
-  data: Uint8Array;
-  webAuthnCredential: WebAuthnCredentialWithMeta;
-}) => MaybePromise<{ signature: Uint8Array; alg: COSEKeyAlgorithm }>;
+import { SignatureFailed } from './exceptions/SignatureFailed';
+import type { IKeyProvider } from './types/IKeyProvider';
+import type { WebAuthnCredentialWithMeta } from './types/WebAuthnCredentialWithMeta';
+import type { CollectedClientData } from './validation/CollectedClientDataSchema';
+import type {
+  PubKeyCredParamLoose,
+  PubKeyCredParamStrict,
+} from './validation/PubKeyCredParamSchema';
+import type { PublicKeyCredentialCreationOptions } from './validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorCredentialMetaArgs = {
   userId: string;
@@ -84,32 +55,40 @@ export type VirtualAuthenticatorCredentialMetaArgs = {
 
 export type VirtualAuthenticatorCreateCredentialArgs = {
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
-  generateKeyPair: GenerateKeyPair;
-  signatureFactory: SignatureFactory;
   meta: VirtualAuthenticatorCredentialMetaArgs;
 };
 
 export type VirtualAuthenticatorGetCredentialArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
-  signatureFactory: SignatureFactory;
   meta: VirtualAuthenticatorCredentialMetaArgs;
 };
 
 export type VirtualAuthenticatorOptions = {
   prisma: PrismaClient;
+  keyProvider: IKeyProvider;
 };
 
 export class VirtualAuthenticator {
   private readonly prisma: PrismaClient;
+  private readonly keyProvider: IKeyProvider;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.prisma = opts.prisma;
+    this.keyProvider = opts.keyProvider;
   }
 
   // The AAGUID of the authenticator.
   // Length (in bytes): 16
   // Zeroed-out AAGUID
-  static readonly AAGUID = Buffer.alloc(16);
+  static readonly AAGUID = new Uint8Array(Buffer.alloc(16));
+
+  private _ensureBytes(data: Uint8Array | Buffer) {
+    if (data instanceof Uint8Array) {
+      return data;
+    }
+
+    return new Uint8Array(data);
+  }
 
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
@@ -186,7 +165,7 @@ export class VirtualAuthenticator {
       COSEPublicKey,
     ]);
 
-    return attestedCredentialData;
+    return new Uint8Array(attestedCredentialData);
   }
 
   /**
@@ -203,7 +182,7 @@ export class VirtualAuthenticator {
 
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
-    const rpIdHash = sha256(Buffer.from(rpId));
+    const rpIdHash = Hash.sha256(Buffer.from(rpId));
 
     // Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
     // Bit 1 (RFU1): Reserved for future use.
@@ -240,7 +219,7 @@ export class VirtualAuthenticator {
       ].filter((value) => value !== undefined),
     );
 
-    return authenticatorData;
+    return new Uint8Array(authenticatorData);
   }
 
   private async _findFirstAndIncrementCounterAtomically(
@@ -309,7 +288,7 @@ export class VirtualAuthenticator {
     ) {
       const allowedIDs = publicKeyCredentialRequestOptions.allowCredentials.map(
         (publicKeyCredentialDescriptor) =>
-          bytesToUuid(publicKeyCredentialDescriptor.id),
+          UUIDMapper.bytesToUUID(publicKeyCredentialDescriptor.id),
       );
 
       where.id = {
@@ -344,8 +323,10 @@ export class VirtualAuthenticator {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new CredentialNotFound({
-            publicKeyCredentialRequestOptions,
-            userId,
+            data: {
+              publicKeyCredentialRequestOptions,
+              userId,
+            },
           });
         }
       }
@@ -392,11 +373,11 @@ export class VirtualAuthenticator {
     authData: Uint8Array;
   }): Uint8Array {
     const { clientDataJSON, authData } = opts;
-    const clientDataHash = sha256(clientDataJSON);
+    const clientDataHash = Hash.sha256(clientDataJSON);
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
 
-    return dataToSign;
+    return new Uint8Array(dataToSign);
   }
 
   private _handleAttestationNone(): {
@@ -416,29 +397,34 @@ export class VirtualAuthenticator {
   }
 
   private async _handleAttestationDirect(opts: {
-    signatureFactory: SignatureFactory;
     webAuthnCredential: WebAuthnCredentialWithMeta;
     data: {
       clientDataJSON: Uint8Array;
       authData: Uint8Array;
     };
   }): Promise<{ fmt: Fmt; attStmt: Map<string, Uint8Array | number> }> {
-    const { signatureFactory, webAuthnCredential, data } = opts;
+    const { webAuthnCredential, data } = opts;
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
     const fmt = Fmt.PACKED;
 
     const dataToSign = this._createDataToSign(data);
 
-    const { signature, alg } = await signatureFactory({
-      data: dataToSign,
-      webAuthnCredential,
-    });
+    const { signature, alg } = await this.keyProvider
+      .sign({
+        data: dataToSign,
+        webAuthnCredential,
+      })
+      .catch((error) => {
+        throw new SignatureFailed({
+          cause: error,
+        });
+      });
 
     // https://www.w3.org/TR/webauthn-2/#attestation-statement
     const attStmt = new Map<string, Uint8Array | number>([
       ['alg', alg],
-      ['sig', signature],
+      ['sig', new Uint8Array(signature)],
     ]);
 
     return {
@@ -454,12 +440,7 @@ export class VirtualAuthenticator {
   public async createCredential(
     opts: VirtualAuthenticatorCreateCredentialArgs,
   ): Promise<PublicKeyCredential> {
-    const {
-      publicKeyCredentialCreationOptions,
-      generateKeyPair,
-      signatureFactory,
-      meta,
-    } = opts;
+    const { publicKeyCredentialCreationOptions, meta } = opts;
 
     assert(publicKeyCredentialCreationOptions.rp.id, isString());
     assert(
@@ -479,7 +460,7 @@ export class VirtualAuthenticator {
       applyCascade(isInstanceOf(Uint8Array), bytesNotEmpty()),
     );
     assert(
-      bytesToUuid(publicKeyCredentialCreationOptions.user.id),
+      UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
       isLiteral(meta.userId),
     );
     assert(
@@ -499,7 +480,9 @@ export class VirtualAuthenticator {
       case Attestation.ENTERPRISE:
       case Attestation.INDIRECT:
         throw new AttestationNotSupported({
-          attestation: publicKeyCredentialCreationOptions.attestation,
+          data: {
+            attestation: publicKeyCredentialCreationOptions.attestation,
+          },
         });
     }
 
@@ -508,12 +491,18 @@ export class VirtualAuthenticator {
     );
 
     const webAuthnCredentialId = randomUUID();
-    const rawCredentialID = uuidToBytes(webAuthnCredentialId);
+    const rawCredentialID = UUIDMapper.UUIDtoBytes(webAuthnCredentialId);
 
-    const webAuthnCredentialPublicKey = await generateKeyPair({
-      webAuthnCredentialId,
-      pubKeyCredParams,
-    });
+    const webAuthnCredentialPublicKey = await this.keyProvider
+      .generateKeyPair({
+        webAuthnCredentialId,
+        pubKeyCredParams,
+      })
+      .catch((error) => {
+        throw new GenerateKeyPairFailed({
+          cause: error,
+        });
+      });
 
     const webAuthnCredential =
       await this._createWebauthnCredentialDatabaseRecord({
@@ -544,9 +533,9 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
-    console.log({ clientData: JSON.stringify(clientData) });
-
-    const clientDataJSON = Buffer.from(JSON.stringify(clientData));
+    const clientDataJSON = new Uint8Array(
+      Buffer.from(JSON.stringify(clientData)),
+    );
 
     // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
     let fmt: Fmt;
@@ -561,7 +550,6 @@ export class VirtualAuthenticator {
       case Attestation.DIRECT:
         ({ fmt, attStmt } = await this._handleAttestationDirect({
           webAuthnCredential,
-          signatureFactory,
           data: {
             clientDataJSON,
             authData,
@@ -576,13 +564,15 @@ export class VirtualAuthenticator {
       ['authData', authData],
     ]);
 
+    const attestationObjectCborEncoded = cbor.encode(attestationObject);
+
     return {
       id: Buffer.from(rawCredentialID).toString('base64url'),
       rawId: rawCredentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
-        clientDataJSON,
-        attestationObject: Buffer.from(cbor.encode(attestationObject)),
+        clientDataJSON: clientDataJSON,
+        attestationObject: attestationObjectCborEncoded,
       },
       clientExtensionResults: {},
     };
@@ -594,7 +584,7 @@ export class VirtualAuthenticator {
   public async getCredential(
     opts: VirtualAuthenticatorGetCredentialArgs,
   ): Promise<PublicKeyCredential> {
-    const { publicKeyCredentialRequestOptions, signatureFactory, meta } = opts;
+    const { publicKeyCredentialRequestOptions, meta } = opts;
 
     assert(publicKeyCredentialRequestOptions.rpId, isString());
     assert(
@@ -624,7 +614,7 @@ export class VirtualAuthenticator {
         userId: meta.userId,
       });
 
-    const credentialID = uuidToBytes(webAuthnCredential.id);
+    const credentialID = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
 
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
@@ -635,7 +625,9 @@ export class VirtualAuthenticator {
       crossOrigin: false,
     };
 
-    const clientDataJSON = Buffer.from(JSON.stringify(clientData));
+    const clientDataJSON = new Uint8Array(
+      Buffer.from(JSON.stringify(clientData)),
+    );
 
     const authData = await this._createAuthenticatorData({
       rpId: publicKeyCredentialRequestOptions.rpId,
@@ -648,19 +640,25 @@ export class VirtualAuthenticator {
       authData,
     });
 
-    const { signature } = await signatureFactory({
-      data: dataToSign,
-      webAuthnCredential,
-    });
+    const { signature } = await this.keyProvider
+      .sign({
+        data: dataToSign,
+        webAuthnCredential,
+      })
+      .catch((error) => {
+        throw new SignatureFailed({
+          cause: error,
+        });
+      });
 
     return {
       id: Buffer.from(credentialID).toString('base64url'),
       rawId: credentialID,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
-        clientDataJSON,
+        clientDataJSON: clientDataJSON,
         authenticatorData: authData,
-        signature,
+        signature: new Uint8Array(signature),
         userHandle: null,
       },
       clientExtensionResults: {},

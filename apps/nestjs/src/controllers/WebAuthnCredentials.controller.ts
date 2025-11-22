@@ -1,10 +1,17 @@
+import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
+import type { JwtPayload } from '@repo/auth/validation';
 import { contract } from '@repo/contract';
-import { KeyVault } from '@repo/key-vault';
+import {
+  DeleteWebAuthnCredentialResponseSchema,
+  GetWebAuthnCredentialResponseSchema,
+  ListWebAuthnCredentialsResponseSchema,
+} from '@repo/contract/validation';
 import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
-import { WebAuthnCredential, type JwtPayload } from '@repo/validation';
+import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
+import { Schema } from 'effect';
 
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
@@ -16,7 +23,7 @@ import { PrismaService } from '../services/Prisma.service';
 export class WebAuthnCredentialsController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly keyVault: KeyVault,
+    private readonly keyClient: KeyClient,
     private readonly logger: Logger,
   ) {}
 
@@ -41,7 +48,7 @@ export class WebAuthnCredentialsController {
 
       return {
         status: 200,
-        body: contract.api.webAuthnCredentials.list.responses[200].encode(
+        body: Schema.encodeSync(ListWebAuthnCredentialsResponseSchema)(
           webAuthnCredentials as WebAuthnCredential[],
         ),
       };
@@ -69,7 +76,7 @@ export class WebAuthnCredentialsController {
 
         return {
           status: 200,
-          body: contract.api.webAuthnCredentials.get.responses[200].encode(
+          body: Schema.encodeSync(GetWebAuthnCredentialResponseSchema)(
             webAuthnCredential as WebAuthnCredential,
           ),
         };
@@ -97,25 +104,26 @@ export class WebAuthnCredentialsController {
 
         this.logger.debug('Removing WebAuthnCredential.', {
           webAuthnCredential,
-          userId: jwtPayload.id,
+          userId: user.id,
         });
 
         if (
           webAuthnCredential.webAuthnCredentialKeyMetaType ===
           WebAuthnCredentialKeyMetaType.KEY_VAULT
         ) {
-          await this.keyVault.deleteKey({
-            keyName:
-              webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
-                .keyVaultKeyName,
-          });
+          const pollOperation = await this.keyClient.beginDeleteKey(
+            webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
+              .keyVaultKeyName,
+          );
+
+          await pollOperation.pollUntilDone();
         }
 
         return {
           status: 200,
-          body: contract.api.webAuthnCredentials.delete.responses[200].encode({
-            success: true,
-          }),
+          body: Schema.encodeSync(DeleteWebAuthnCredentialResponseSchema)(
+            webAuthnCredential as WebAuthnCredential,
+          ),
         };
       },
     );

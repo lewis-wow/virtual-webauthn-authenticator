@@ -1,32 +1,29 @@
-import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
-import { PrismaClient } from '@repo/prisma';
 import {
   CHALLENGE_BASE64URL,
-  createPublicKeyCredentialRequestOptions,
-  KEY_VAULT_KEY_ID,
-  KEY_VAULT_KEY_NAME,
   RP_ORIGIN,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
-  upsertTestingUser,
   USER_ID,
-} from '@repo/test-helpers';
-import {
-  PublicKeyCredentialDtoSchema,
-  PublicKeyCredentialRequestOptions,
-} from '@repo/validation';
+} from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+
+import { PrismaClient } from '@repo/prisma';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
-  type AuthenticationResponseJSON,
   type RegistrationResponseJSON,
+  type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
+import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
-import { credentialSigner } from '../../helpers/credentialSigner';
-import { COSEPublicKey } from '../../helpers/key';
+import { IKeyProvider } from '../../../src/types/IKeyProvider';
+import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
+import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
+import { MockKeyProvider } from '../../helpers';
+import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
 
 const prisma = new PrismaClient();
 
@@ -53,7 +50,6 @@ const performAndVerifyAuth = async (opts: {
 
   const publicKeyCredential = await authenticator.getCredential({
     publicKeyCredentialRequestOptions: requestOptions,
-    signatureFactory: ({ data }) => credentialSigner.sign(data),
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
@@ -61,7 +57,7 @@ const performAndVerifyAuth = async (opts: {
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialDtoSchema.encode(
+    response: Schema.encodeSync(PublicKeyCredentialSchema)(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
@@ -93,6 +89,7 @@ const cleanup = async () => {
 };
 
 describe('VirtualAuthenticator.getCredential()', () => {
+  let keyProvider: IKeyProvider;
   let authenticator: VirtualAuthenticator;
 
   let credentialID: string;
@@ -106,9 +103,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
 
+    keyProvider = new MockKeyProvider();
+
     // Initialize the VirtualAuthenticator instance, passing in the Prisma client
     // for database interactions.
-    authenticator = new VirtualAuthenticator({ prisma });
+    authenticator = new VirtualAuthenticator({ prisma, keyProvider });
 
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
@@ -116,26 +115,18 @@ describe('VirtualAuthenticator.getCredential()', () => {
     const publicKeyCredential = await authenticator.createCredential({
       publicKeyCredentialCreationOptions:
         PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-      generateKeyPair: async () => ({
-        COSEPublicKey: COSEPublicKey.toBuffer(),
-        webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-        webAuthnCredentialKeyVaultKeyMeta: {
-          keyVaultKeyId: KEY_VAULT_KEY_ID,
-          keyVaultKeyName: KEY_VAULT_KEY_NAME,
-          hsm: false,
-        },
-      }),
-      signatureFactory: ({ data }) => credentialSigner.sign(data),
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
       },
     });
 
+    const encodedPublicKeyCredential = Schema.encodeSync(
+      PublicKeyCredentialSchema,
+    )(publicKeyCredential);
+
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialDtoSchema.encode(
-        publicKeyCredential,
-      ) as RegistrationResponseJSON,
+      response: encodedPublicKeyCredential as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
       expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
@@ -221,7 +212,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
@@ -229,8 +219,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
-        userId: USER_ID,
-        publicKeyCredentialRequestOptions,
+        data: {
+          userId: USER_ID,
+          publicKeyCredentialRequestOptions,
+        },
       }),
     );
   });
@@ -244,7 +236,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: 'WRONG_USER_ID',
           origin: RP_ORIGIN,
@@ -252,8 +243,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
-        userId: 'WRONG_USER_ID',
-        publicKeyCredentialRequestOptions,
+        data: {
+          userId: 'WRONG_USER_ID',
+          publicKeyCredentialRequestOptions,
+        },
       }),
     );
   });
@@ -274,7 +267,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
@@ -282,8 +274,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
-        userId: USER_ID,
-        publicKeyCredentialRequestOptions,
+        data: {
+          userId: USER_ID,
+          publicKeyCredentialRequestOptions,
+        },
       }),
     );
   });

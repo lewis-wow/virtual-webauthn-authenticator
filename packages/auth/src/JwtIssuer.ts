@@ -1,7 +1,7 @@
 import { Encryption } from '@repo/crypto';
 import { Logger } from '@repo/logger';
 import type { Jwks, PrismaClient } from '@repo/prisma';
-import { JwtPayloadSchema, type JwtPayload } from '@repo/validation';
+import { Schema } from 'effect';
 import {
   exportJWK,
   generateKeyPair,
@@ -13,6 +13,10 @@ import {
 
 import { JwtUtils } from './JwtUtils';
 import { JWT_ALG, JWT_CRV } from './consts';
+import {
+  JwtPayloadSchema,
+  type JwtPayload,
+} from './validation/JwtPayloadSchema';
 
 const LOG_PREFIX = 'JWT_ISSUER';
 
@@ -127,7 +131,8 @@ export class JwtIssuer {
 
     const privateKey = await importJWK(privateWebKey, JWT_ALG);
 
-    const jwt = new SignJWT(JwtPayloadSchema.encode(payload))
+    const encodedPayload = Schema.encodeSync(JwtPayloadSchema)(payload);
+    const jwt = new SignJWT(encodedPayload)
       .setProtectedHeader({
         alg: JWT_ALG,
         kid: latestKey.id,

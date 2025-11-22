@@ -1,30 +1,35 @@
 import { Exception } from '@repo/exception';
-import type { PublicKeyCredentialRequestOptions } from '@repo/validation';
 import type { PickDeep } from 'type-fest';
 
-export class CredentialNotFound extends Exception {
-  constructor(opts: {
-    publicKeyCredentialRequestOptions: PickDeep<
-      PublicKeyCredentialRequestOptions,
-      `allowCredentials.${number}.id` | 'rpId'
-    >;
-    userId: string;
-  }) {
-    const { publicKeyCredentialRequestOptions, userId } = opts;
+import type { PublicKeyCredentialRequestOptions } from '../validation/PublicKeyCredentialRequestOptionsSchema';
 
-    super({
-      code: 'CREDENTIAL_NOT_FOUND',
-      message: `Credential not found for user (${userId}) with request options ${JSON.stringify(
-        {
-          allowCredentials:
-            publicKeyCredentialRequestOptions.allowCredentials?.map(
-              (allowCredential) => ({
-                id: allowCredential.id,
-              }),
-            ),
-          rpId: publicKeyCredentialRequestOptions.rpId,
-        },
-      )}`,
-    });
+export const CREDENTIAL_NOT_FOUND = 'CREDENTIAL_NOT_FOUND';
+
+export type CredentialNotFoundData = {
+  publicKeyCredentialRequestOptions: PickDeep<
+    PublicKeyCredentialRequestOptions,
+    `allowCredentials.${number}.id` | 'rpId'
+  >;
+  userId: string;
+};
+
+export class CredentialNotFound extends Exception<CredentialNotFoundData> {
+  static code = CREDENTIAL_NOT_FOUND;
+  static status = 404;
+  static message({
+    userId,
+    publicKeyCredentialRequestOptions,
+  }: CredentialNotFoundData) {
+    return `Credential not found for user (${userId}) with request options ${JSON.stringify(
+      {
+        allowCredentials:
+          publicKeyCredentialRequestOptions.allowCredentials?.map(
+            (allowCredential) => ({
+              id: allowCredential.id,
+            }),
+          ),
+        rpId: publicKeyCredentialRequestOptions.rpId,
+      },
+    )}`;
   }
 }

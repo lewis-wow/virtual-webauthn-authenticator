@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import z from 'zod';
 
 /**
  * @see https://w3c.github.io/webauthn/#enum-userVerificationRequirement
@@ -13,10 +12,3 @@ export const UserVerificationRequirement = {
 export type UserVerificationRequirement = ValueOfEnum<
   typeof UserVerificationRequirement
 >;
-
-export const UserVerificationRequirementSchema = z
-  .enum(UserVerificationRequirement)
-  .meta({
-    description: 'User verification requirement',
-    examples: [UserVerificationRequirement.REQUIRED],
-  });

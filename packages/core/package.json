@@ -1,0 +1,31 @@
+{
+  "name": "@repo/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./mappers": "./src/mappers/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^22.5.2",
+    "jose": "^6.1.0",
+    "lodash-es": "^4.17.21",
+    "type-fest": "^5.0.1",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "effect": "^3.19.4"
+  }
+}

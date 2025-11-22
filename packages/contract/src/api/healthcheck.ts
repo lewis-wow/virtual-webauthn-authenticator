@@ -1,6 +1,7 @@
-import { JwtPayloadDtoSchema } from '@repo/validation';
 import { initContract } from '@ts-rest/core';
-import { z } from 'zod';
+import { Schema } from 'effect';
+
+import { GetHealthcheckResponseSchema } from '../validation/healthcheck/get/GetHealthcheckResponseSchema';
 
 const c = initContract();
 
@@ -9,10 +10,7 @@ export const healthcheckRouter = c.router({
     method: 'GET',
     path: '/healthcheck',
     responses: {
-      200: z.object({
-        healthy: z.literal(true),
-        jwtPayload: JwtPayloadDtoSchema.nullable(),
-      }),
+      200: Schema.standardSchemaV1(GetHealthcheckResponseSchema),
     },
   },
 });

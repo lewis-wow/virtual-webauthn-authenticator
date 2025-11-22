@@ -1,8 +1,7 @@
 import { Providers } from '@/Providers';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from '@repo/ui/components/ui/sonner';
+import '@repo/ui/globals.css';
 import type { Metadata } from 'next';
-
-import './globals.css';
 
 export const metadata: Metadata = {
   title: 'Create Next App',

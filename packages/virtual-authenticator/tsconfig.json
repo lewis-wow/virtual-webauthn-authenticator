@@ -4,7 +4,8 @@
     "src",
     "../key-vault/src/types",
     "../key-vault/src/CredentialSignerFactory.ts",
-    "../types/src/CredentialSigner.ts"
+    "../types/src/CredentialSigner.ts",
+    "../core/src/mappers"
   ],
   "exclude": ["node_modules"]
 }

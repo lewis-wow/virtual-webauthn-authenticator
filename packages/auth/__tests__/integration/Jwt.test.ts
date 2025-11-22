@@ -1,18 +1,18 @@
 import { MockJwtAudience } from '../../__mocks__/MockJwtAudience.mock';
-
-import { PrismaClient } from '@repo/prisma';
 import {
   API_KEY_ID,
   MOCK_API_KEY_JWT_PAYLOAD,
   MOCK_PERSONAL_JWT_PAYLOAD,
-  upsertTestingUser,
   USER_ID,
-} from '@repo/test-helpers';
-import { ApiKeyJwtPayload } from '@repo/validation';
+} from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+
+import { PrismaClient } from '@repo/prisma';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { JwtIssuer } from '../../src/JwtIssuer';
 import { JwtUtils } from '../../src/JwtUtils';
+import { ApiKeyJwtPayload } from '../../src/validation/ApiKeyJwtPayloadSchema';
 
 const prisma = new PrismaClient();
 

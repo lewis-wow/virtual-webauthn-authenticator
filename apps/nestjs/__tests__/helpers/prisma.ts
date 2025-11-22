@@ -1,3 +1,3 @@
-import { initializePrismaClient } from '@repo/prisma';
+import { PrismaClientExtended } from '@repo/prisma';
 
-export const prisma = initializePrismaClient();
+export const prisma = PrismaClientExtended.createInstance();

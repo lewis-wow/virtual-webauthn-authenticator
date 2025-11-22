@@ -1,0 +1,5 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "include": ["src", "__tests__", "../auth/src/validation/JwtSchema.ts"],
+  "exclude": ["node_modules"]
+}
