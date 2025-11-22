@@ -5,16 +5,15 @@ import {
   WEBAUTHN_CREDENTIAL_ID,
   WRONG_UUID,
 } from '@repo/core/__tests__/helpers';
-import { MockKeyVault } from '@repo/key-vault/__mocks__';
 import {
   upsertTestingUser,
   upsertTestingWebAuthnCredential,
 } from '@repo/prisma/__tests__/helpers';
 
+import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
-import { KeyVault } from '@repo/key-vault';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
@@ -55,8 +54,8 @@ describe('WebAuthnCredentialsController', () => {
       )
       .overrideProvider(PrismaService)
       .useValue(prisma)
-      .overrideProvider(KeyVault)
-      .useClass(MockKeyVault)
+      .overrideProvider(KeyClient)
+      .useValue({ beginDeleteKey: () => ({ pollUntilDone: () => null }) })
       .compile();
 
     app = appRef.createNestApplication();
