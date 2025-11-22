@@ -9,6 +9,7 @@
     "./exception": "./src/exception/index.ts",
     "./validation": "./src/validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
+    "./types": "./src/types/index.ts",
     "./__test__/helpers": "./__test__/helpers/index.ts"
   },
   "scripts": {

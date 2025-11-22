@@ -1,7 +1,5 @@
 import {
   CHALLENGE_BASE64URL,
-  KEY_VAULT_KEY_ID,
-  KEY_VAULT_KEY_NAME,
   RP_ORIGIN,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
@@ -9,7 +7,6 @@ import {
 } from '@repo/core/__tests__/helpers';
 import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
 
-import { COSEKeyMapper } from '@repo/keys/mappers';
 import { PrismaClient } from '@repo/prisma';
 import {
   verifyAuthenticationResponse,
@@ -21,13 +18,12 @@ import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
-import { WebAuthnCredentialKeyMetaType } from '../../../src/enums/WebAuthnCredentialKeyMetaType';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
+import { IKeyProvider } from '../../../src/types/IKeyProvider';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
 import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
+import { MockKeyProvider } from '../../helpers';
 import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
-import { credentialSigner } from '../../helpers/credentialSigner';
-import { COSEPublicKey } from '../../helpers/key';
 
 const prisma = new PrismaClient();
 
@@ -54,7 +50,6 @@ const performAndVerifyAuth = async (opts: {
 
   const publicKeyCredential = await authenticator.getCredential({
     publicKeyCredentialRequestOptions: requestOptions,
-    signatureFactory: async ({ data }) => credentialSigner.sign(data),
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
@@ -94,6 +89,7 @@ const cleanup = async () => {
 };
 
 describe('VirtualAuthenticator.getCredential()', () => {
+  let keyProvider: IKeyProvider;
   let authenticator: VirtualAuthenticator;
 
   let credentialID: string;
@@ -107,9 +103,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
 
+    keyProvider = new MockKeyProvider();
+
     // Initialize the VirtualAuthenticator instance, passing in the Prisma client
     // for database interactions.
-    authenticator = new VirtualAuthenticator({ prisma });
+    authenticator = new VirtualAuthenticator({ prisma, keyProvider });
 
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
@@ -117,16 +115,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     const publicKeyCredential = await authenticator.createCredential({
       publicKeyCredentialCreationOptions:
         PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-      generateKeyPair: async () => ({
-        COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-        webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-        webAuthnCredentialKeyVaultKeyMeta: {
-          keyVaultKeyId: KEY_VAULT_KEY_ID,
-          keyVaultKeyName: KEY_VAULT_KEY_NAME,
-          hsm: false,
-        },
-      }),
-      signatureFactory: async ({ data }) => credentialSigner.sign(data),
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
@@ -224,7 +212,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: async ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,
@@ -249,7 +236,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: async ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: 'WRONG_USER_ID',
           origin: RP_ORIGIN,
@@ -281,7 +267,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
-        signatureFactory: async ({ data }) => credentialSigner.sign(data),
         meta: {
           userId: USER_ID,
           origin: RP_ORIGIN,

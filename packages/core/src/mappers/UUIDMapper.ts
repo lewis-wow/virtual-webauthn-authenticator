@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
 
 export class UUIDMapper {
-  static UUIDtoBytes(uuid: string) {
-    return Buffer.from(uuid.replace(/-/g, ''), 'hex');
+  static UUIDtoBytes(uuid: string): Uint8Array {
+    return new Uint8Array(Buffer.from(uuid.replace(/-/g, ''), 'hex'));
   }
 
   static bytesToUUID(bytes: Uint8Array) {

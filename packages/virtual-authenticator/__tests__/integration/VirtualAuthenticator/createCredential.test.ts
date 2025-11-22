@@ -10,6 +10,7 @@ import {
 } from '@repo/core/__tests__/helpers';
 import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
 
+import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { COSEKeyMapper } from '@repo/keys/mappers';
 import { PrismaClient } from '@repo/prisma';
@@ -21,17 +22,14 @@ import {
 import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
-import { UUIDMapper } from '../../../../core/src/mappers';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { WebAuthnCredentialKeyMetaType } from '../../../src/enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/PublicKeyCredentialCreationOptionsSchema';
 import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
-import { credentialSigner } from '../../helpers/credentialSigner';
-import { COSEPublicKey, keyPair } from '../../helpers/key';
+import { MockKeyProvider } from '../../helpers';
 
 const prisma = new PrismaClient();
 
@@ -46,21 +44,13 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
   // specified options, public key, and key vault metadata.
   const publicKeyCredential = await authenticator.createCredential({
     publicKeyCredentialCreationOptions,
-    generateKeyPair: async () => ({
-      COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-      webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-      webAuthnCredentialKeyVaultKeyMeta: {
-        keyVaultKeyId: KEY_VAULT_KEY_ID,
-        keyVaultKeyName: KEY_VAULT_KEY_NAME,
-        hsm: false,
-      },
-    }),
-    signatureFactory: async ({ data }) => credentialSigner.sign(data),
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
     },
   });
+
+  console.log(publicKeyCredential);
 
   console.log(
     Schema.encodeSync(PublicKeyCredentialSchema)(publicKeyCredential),
@@ -100,7 +90,11 @@ const cleanup = async () => {
 };
 
 describe('VirtualAuthenticator.createCredential()', () => {
-  const authenticator = new VirtualAuthenticator({ prisma });
+  const keyProvider = new MockKeyProvider();
+  const authenticator = new VirtualAuthenticator({
+    prisma,
+    keyProvider,
+  });
 
   describe('PublicKeyCredentialCreationOptions.attestation', () => {
     describe.each([
@@ -153,7 +147,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
             registrationVerification.registrationInfo!.credential.publicKey,
           ),
         );
-        expect(jwk).toMatchObject(keyPair.publicKey.export({ format: 'jwk' }));
+
+        expect(jwk).toMatchObject(
+          keyProvider
+            .getKeyPairStore()
+            [webAuthnCredentialId].publicKey.export({ format: 'jwk' }),
+        );
       });
 
       test('Should save the WebAuthnCredential to the database', async () => {
@@ -293,17 +292,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
         authenticator.createCredential({
           publicKeyCredentialCreationOptions:
             PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-          generateKeyPair: async () => ({
-            COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-            webAuthnCredentialKeyMetaType:
-              WebAuthnCredentialKeyMetaType.KEY_VAULT,
-            webAuthnCredentialKeyVaultKeyMeta: {
-              keyVaultKeyId: KEY_VAULT_KEY_ID,
-              keyVaultKeyName: KEY_VAULT_KEY_NAME,
-              hsm: false,
-            },
-          }),
-          signatureFactory: async ({ data }) => credentialSigner.sign(data),
           meta: {
             userId: 'INVALID_USER_ID',
             origin: RP_ORIGIN,
