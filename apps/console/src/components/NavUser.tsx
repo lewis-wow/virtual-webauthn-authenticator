@@ -1,5 +1,6 @@
 'use client';
 
+import { authClient } from '@/lib/authClient';
 import { tsr } from '@/lib/tsr';
 import { getInitials } from '@/lib/utils/getInitials';
 import { Guard } from '@repo/ui/components/Guard/Guard';
@@ -11,7 +12,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -23,15 +23,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@repo/ui/components/ui/sidebar';
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-} from 'lucide-react';
+import { ChevronsUpDown, LogOut } from 'lucide-react';
 
-export function NavUser() {
+export const NavUser = () => {
   const { isMobile } = useSidebar();
 
   const profileGetQuery = tsr.api.profile.get.useQuery({
@@ -48,7 +42,7 @@ export function NavUser() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <Avatar className="h-8 w-8 rounded-lg grayscale">
                   <AvatarImage
@@ -95,22 +89,10 @@ export function NavUser() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem>
-                  <BadgeCheck />
-                  Account
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <CreditCard />
-                  Billing
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Bell />
-                  Notifications
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => authClient.signOut()}
+              >
                 <LogOut />
                 Log out
               </DropdownMenuItem>
@@ -120,4 +102,4 @@ export function NavUser() {
       </SidebarMenu>
     </Guard>
   );
-}
+};

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   // This tells Next.js to bundle `@prisma/client` and its runtime
   // instead of trying to treat it as an external dependency.
   serverExternalPackages: [],
+  devIndicators: false,
 };
 
 export default nextConfig;
