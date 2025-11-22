@@ -1,5 +1,6 @@
 import { tsr } from '@/lib/tsr';
 import { Button } from '@repo/ui/components/Button';
+import { DeleteConfirmDialog } from '@repo/ui/components/DeleteConfirmDialog';
 import { cn } from '@repo/ui/lib/utils';
 import { CopyIcon, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
@@ -65,6 +66,24 @@ export const ApiKey = ({
       onDelete?.();
     },
   });
+  const isRevoked = revokedAt !== null;
+
+  const handleDeleteOrRevoke = () => {
+    if (!isRevoked) {
+      authApiKeyRevokeMutation.mutate({
+        params: { id },
+        body: { revokedAt: new Date().toISOString(), enabled: false },
+      });
+    } else {
+      authApiKeyDeleteMutation.mutate({ params: { id } });
+    }
+  };
+
+  const dialogTitle = isRevoked ? 'Delete API Key?' : 'Revoke API Key?';
+  const dialogDescription = isRevoked
+    ? 'This will permanently remove the key history. This action cannot be undone.'
+    : 'The key will stop working immediately. You can still see it in the history until you delete it.';
+  const dialogButtonText = isRevoked ? 'Delete' : 'Revoke';
 
   return (
     <div className="flex items-center gap-2 p-4 border rounded-lg">
@@ -115,25 +134,25 @@ export const ApiKey = ({
         </p>
       </div>
       <div className="flex gap-2">
-        <Button
-          variant="destructive"
-          size="sm"
-          className="mt-1"
-          onClick={() => {
-            if (revokedAt === null) {
-              authApiKeyRevokeMutation.mutate({
-                params: { id },
-                body: { revokedAt: new Date().toISOString(), enabled: false },
-              });
-
-              return;
-            }
-
-            authApiKeyDeleteMutation.mutate({ params: { id } });
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <DeleteConfirmDialog
+          title={dialogTitle}
+          description={dialogDescription}
+          confirmText={dialogButtonText}
+          onConfirm={handleDeleteOrRevoke}
+          trigger={
+            <Button
+              variant="destructive"
+              size="sm"
+              className="mt-1"
+              disabled={
+                authApiKeyRevokeMutation.isPending ||
+                authApiKeyDeleteMutation.isPending
+              }
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          }
+        />
       </div>
     </div>
   );
