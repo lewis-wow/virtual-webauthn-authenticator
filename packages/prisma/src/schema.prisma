@@ -84,6 +84,7 @@ model Apikey {
   lookupKey   String    @unique
   name        String?
   prefix      String?
+  start       String?
   hashedKey   String
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)

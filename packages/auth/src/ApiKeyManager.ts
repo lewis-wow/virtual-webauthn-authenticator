@@ -29,6 +29,7 @@ export const PUBLIC_API_KEY_SELECT = {
   metadata: true,
   permissions: true,
   enabled: true,
+  start: true,
 } satisfies Prisma.ApikeySelect;
 
 export type ApiKeyManagerOptions = {
@@ -49,6 +50,8 @@ export class ApiKeyManager {
    * Byte length for the 'lookupKey' part. 16 bytes = 22 base64url chars.
    */
   private readonly LOOKUP_BYTE_LENGTH = 16;
+
+  private readonly SECRET_START_LENGTH = 8;
   /**
    * Prefix for all live keys.
    */
@@ -102,9 +105,12 @@ export class ApiKeyManager {
   }): Promise<{ plaintextKey: string; apiKey: ApiKey }> {
     const { userId, name, expiresAt, permissions, metadata } = opts;
 
-    const lookupKey =
-      ApiKeyManager.KEY_PREFIX +
-      this._generateRandomString(this.LOOKUP_BYTE_LENGTH);
+    const internalLookupKey = this._generateRandomString(
+      this.LOOKUP_BYTE_LENGTH,
+    );
+    const start = internalLookupKey.substring(0, this.SECRET_START_LENGTH);
+
+    const lookupKey = `${ApiKeyManager.KEY_PREFIX}${internalLookupKey}`;
 
     const secret = this._generateRandomString(this.SECRET_BYTE_LENGTH);
 
@@ -121,6 +127,7 @@ export class ApiKeyManager {
         expiresAt,
         lookupKey,
         name,
+        start,
         prefix: ApiKeyManager.KEY_PREFIX,
         permissions: this._stringifyNonNullish(permissions),
         metadata: this._stringifyNonNullish(metadata),

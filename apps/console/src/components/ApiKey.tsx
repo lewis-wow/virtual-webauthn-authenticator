@@ -9,6 +9,7 @@ export type ApiKeyProps = {
   id: string;
   plaintextKey?: string;
   name: string | null;
+  start: string | null;
   prefix: string | null;
   createdAt: Date;
   revokedAt?: Date | null;
@@ -21,6 +22,7 @@ export const ApiKey = ({
   plaintextKey,
   name,
   prefix,
+  start,
   createdAt,
   revokedAt,
   onDelete,
@@ -89,7 +91,7 @@ export const ApiKey = ({
         {prefix !== null && (
           <div className="flex items-center gap-2">
             <code className="text-sm text-muted-foreground font-mono">
-              {`${prefix}_`}
+              {`${prefix}${isVisible ? start : ''}`}
             </code>
             <Button
               variant="ghost"

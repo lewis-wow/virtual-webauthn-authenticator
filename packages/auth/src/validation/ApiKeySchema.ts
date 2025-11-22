@@ -20,6 +20,7 @@ export const ApiKeySchema = Schema.Struct({
   prefix: Schema.NullOr(Schema.String),
   userId: Schema.String,
   enabled: Schema.Boolean,
+  start: Schema.NullOr(Schema.String),
 
   // z.date().optional().nullable() -> Optional field that can be null or a Date (ISO String)
   expiresAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
