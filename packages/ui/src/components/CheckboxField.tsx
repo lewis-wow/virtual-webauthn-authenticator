@@ -1,3 +1,5 @@
+import { FormLabel } from '@repo/ui/components/FormLabel';
+import { Checkbox } from '@repo/ui/components/ui/checkbox';
 import {
   FormControl,
   FormDescription,
@@ -6,18 +8,24 @@ import {
   FormMessage,
 } from '@repo/ui/components/ui/form';
 import type { CommonFieldProps } from '@repo/ui/types';
-import type { FieldValues } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
-import { FormLabel } from './FormLabel';
-import { Checkbox } from './ui/checkbox';
+export type CheckboxFieldProps = {
+  // Add an optional value prop to identify this item
+  value?: string | number;
+} & CommonFieldProps;
 
-export type CheckboxFieldProps<TFieldValues extends FieldValues> =
-  {} & CommonFieldProps<TFieldValues>;
+export const CheckboxField = ({ ...commonProps }: CheckboxFieldProps) => {
+  const form = useFormContext();
 
-export const CheckboxField = <TFieldValues extends FieldValues>({
-  ...commonProps
-}: CheckboxFieldProps<TFieldValues>) => {
-  const { form, name, label, hint, description, required } = commonProps;
+  const {
+    name,
+    label,
+    hint,
+    description,
+    required,
+    value: itemValue,
+  } = commonProps;
 
   return (
     <FormField
@@ -37,12 +45,38 @@ export const CheckboxField = <TFieldValues extends FieldValues>({
             <FormControl>
               <Checkbox
                 required={required}
-                checked={field.value}
-                onCheckedChange={field.onChange}
+                className="cursor-pointer"
                 aria-describedby={
                   description ? `${String(name)}-description` : undefined
                 }
-                className="cursor-pointer"
+                // 1. Determine Checked State
+                checked={
+                  itemValue
+                    ? field.value?.includes(itemValue) // Array Mode: Is item in array?
+                    : field.value // Boolean Mode: Is true?
+                }
+                // 2. Handle Push/Pop Logic
+                onCheckedChange={(checked) => {
+                  if (itemValue) {
+                    // --- ARRAY MODE ---
+                    const currentValues = Array.isArray(field.value)
+                      ? field.value
+                      : [];
+
+                    if (checked) {
+                      // Push
+                      field.onChange([...currentValues, itemValue]);
+                    } else {
+                      // Pop (Filter)
+                      field.onChange(
+                        currentValues.filter((v) => v !== itemValue),
+                      );
+                    }
+                  } else {
+                    // --- BOOLEAN MODE ---
+                    field.onChange(checked);
+                  }
+                }}
               />
             </FormControl>
             {description && <FormDescription>{description}</FormDescription>}

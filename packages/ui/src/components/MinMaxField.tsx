@@ -3,25 +3,21 @@ import { FormDescription, FormItem } from '@repo/ui/components/ui/form';
 import { cn } from '@repo/ui/lib/utils';
 import type { CommonFieldProps } from '@repo/ui/types';
 import type { ComponentType, ReactNode } from 'react';
-import type { FieldValues, Path } from 'react-hook-form';
+import { useFormContext, type FieldValues, type Path } from 'react-hook-form';
 
 /**
  * Props for the FieldComponent that MinMaxField will render.
  * It's essentially the CommonFieldProps but allows for any additional props.
  */
-type MinMaxChildFieldProps<TFieldValues extends FieldValues> =
-  CommonFieldProps<TFieldValues>;
+type MinMaxChildFieldProps = CommonFieldProps;
 
 /**
  * Props for the MinMaxField component.
  * It omits the standard 'placeholder' in favor of 'minPlaceholder' and 'maxPlaceholder'.
  */
-export type MinMaxFieldProps<TFieldValues extends FieldValues> = Omit<
-  CommonFieldProps<TFieldValues>,
-  'placeholder'
-> & {
+export type MinMaxFieldProps = Omit<CommonFieldProps, 'placeholder'> & {
   /** The field component to render for the min and max inputs (e.g., NumericField). */
-  FieldComponent: ComponentType<MinMaxChildFieldProps<TFieldValues>>;
+  FieldComponent: ComponentType<MinMaxChildFieldProps>;
   placeholder?: {
     min?: string;
     max?: string;
@@ -37,7 +33,6 @@ export type MinMaxFieldProps<TFieldValues extends FieldValues> = Omit<
  */
 export const MinMaxField = <TFieldValues extends FieldValues>({
   // Destructure the known props from CommonFieldProps
-  form,
   name,
   label,
   hint,
@@ -51,7 +46,8 @@ export const MinMaxField = <TFieldValues extends FieldValues>({
   suffix,
   // Capture any other props to pass down to the child component
   ...rest
-}: MinMaxFieldProps<TFieldValues>) => {
+}: MinMaxFieldProps) => {
+  const form = useFormContext();
   // Automatically generate the names for the min and max fields
   const minName = `${name}.min` as Path<TFieldValues>;
   const maxName = `${name}.max` as Path<TFieldValues>;

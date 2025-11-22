@@ -16,6 +16,7 @@ import {
   UpdateApiKeyResponseSchema,
 } from '@repo/contract/validation';
 import { Unauthorized } from '@repo/exception/http';
+import { add } from 'date-fns';
 import { Schema } from 'effect';
 
 export const apiKey = factory.createApp();
@@ -63,12 +64,14 @@ apiKey.post(
   async (ctx) => {
     const json = ctx.req.valid('json');
 
+    const expiresAt = json.expiresAt ? add(new Date(), json.expiresAt) : null;
+
     const apiKey = await apiKeyManager.generate({
       userId: ctx.var.user!.id,
       name: json.name,
       permissions: json.permissions,
       metadata: json.metadata,
-      expiresAt: json.expiresAt,
+      expiresAt,
     });
 
     return ctx.json(Schema.encodeSync(CreateApiKeyResponseSchema)(apiKey));

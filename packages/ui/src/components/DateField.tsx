@@ -17,18 +17,16 @@ import type { CommonFieldProps } from '@repo/ui/types';
 import { format, isBefore, startOfToday } from 'date-fns';
 import { cs } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
-import type { FieldValues } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 
-export type DateFieldProps<TFieldValues extends FieldValues> =
-  {} & CommonFieldProps<TFieldValues>;
+export type DateFieldProps = {} & CommonFieldProps;
 
-export const DateField = <TFieldValues extends FieldValues>({
-  ...commonProps
-}: DateFieldProps<TFieldValues>) => {
-  const { form, name, label, hint, placeholder, description, required } =
-    commonProps;
+export const DateField = ({ ...commonProps }: DateFieldProps) => {
+  const form = useFormContext();
+
+  const { name, label, hint, placeholder, description, required } = commonProps;
 
   return (
     <FormField

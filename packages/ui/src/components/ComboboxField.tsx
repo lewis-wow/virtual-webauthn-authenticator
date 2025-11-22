@@ -8,7 +8,7 @@ import {
 import { cn } from '@repo/ui/lib/utils';
 import type { CommonFieldProps } from '@repo/ui/types';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import type { FieldValues, Path, PathValue } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 import { Button } from './ui/button';
@@ -27,10 +27,10 @@ export type ComboboxFieldItem = {
   label: string;
 };
 
-export type ComboboxFieldProps<TFieldValues extends FieldValues> = {
+export type ComboboxFieldProps = {
   items: ComboboxFieldItem[];
   triggerLabel?: string;
-} & CommonFieldProps<TFieldValues>;
+} & CommonFieldProps;
 
 const customFilter = (value: string, search: string) => {
   // Normalize both strings to remove diacritics and convert to lower case
@@ -47,13 +47,14 @@ const customFilter = (value: string, search: string) => {
   return normalizedValue.includes(normalizedSearch) ? 1 : 0;
 };
 
-export const ComboboxField = <TFieldValues extends FieldValues>({
+export const ComboboxField = ({
   items,
   triggerLabel,
   ...commonProps
-}: ComboboxFieldProps<TFieldValues>) => {
-  const { form, name, label, hint, placeholder, description, required } =
-    commonProps;
+}: ComboboxFieldProps) => {
+  const form = useFormContext();
+
+  const { name, label, hint, placeholder, description, required } = commonProps;
 
   return (
     <FormField
@@ -94,13 +95,7 @@ export const ComboboxField = <TFieldValues extends FieldValues>({
                         value={item.label}
                         key={item.value}
                         onSelect={() => {
-                          form.setValue(
-                            name,
-                            item.value as PathValue<
-                              TFieldValues,
-                              Path<TFieldValues>
-                            >,
-                          );
+                          form.setValue(name, item.value);
                         }}
                       >
                         {item.label}

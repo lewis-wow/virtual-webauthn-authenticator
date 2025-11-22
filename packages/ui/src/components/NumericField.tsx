@@ -7,18 +7,16 @@ import {
 } from '@repo/ui/components/ui/form';
 import { Input } from '@repo/ui/components/ui/input';
 import type { CommonFieldProps } from '@repo/ui/types';
-import type { FieldValues } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 
-export type NumericFieldProps<TFieldValues extends FieldValues> =
-  {} & CommonFieldProps<TFieldValues>;
+export type NumericFieldProps = {} & CommonFieldProps;
 
-export const NumericField = <TFieldValues extends FieldValues>({
-  ...commonProps
-}: NumericFieldProps<TFieldValues>) => {
-  const { form, name, label, hint, placeholder, description, required } =
-    commonProps;
+export const NumericField = ({ ...commonProps }: NumericFieldProps) => {
+  const form = useFormContext();
+
+  const { name, label, hint, placeholder, description, required } = commonProps;
 
   return (
     <FormField

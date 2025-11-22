@@ -6,19 +6,17 @@ import {
   FormMessage,
 } from '@repo/ui/components/ui/form';
 import type { CommonFieldProps } from '@repo/ui/types';
-import type { FieldValues } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 import { Textarea } from './ui/textarea';
 
-export type TextareaFieldProps<TFieldValues extends FieldValues> =
-  {} & CommonFieldProps<TFieldValues>;
+export type TextareaFieldProps = {} & CommonFieldProps;
 
-export const TextareaField = <TFieldValues extends FieldValues>({
-  ...commonProps
-}: TextareaFieldProps<TFieldValues>) => {
-  const { form, name, label, hint, placeholder, description, required } =
-    commonProps;
+export const TextareaField = ({ ...commonProps }: TextareaFieldProps) => {
+  const form = useFormContext();
+
+  const { name, label, hint, placeholder, description, required } = commonProps;
 
   return (
     <FormField

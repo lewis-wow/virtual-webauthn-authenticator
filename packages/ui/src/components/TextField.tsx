@@ -10,28 +10,22 @@ import { Input } from '@repo/ui/components/ui/input';
 import { cn } from '@repo/ui/lib/utils';
 import type { CommonFieldProps } from '@repo/ui/types';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
-import type { FieldValues } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
-export type TextFieldProps<TFieldValues extends FieldValues> = {
+export type TextFieldProps = {
   type?: 'text' | 'email' | 'password';
   autoComplete?: HTMLInputAutoCompleteAttribute;
-} & CommonFieldProps<TFieldValues>;
+} & CommonFieldProps;
 
-export const TextField = <TFieldValues extends FieldValues>({
+export const TextField = ({
   type = 'text',
   autoComplete,
   ...commonProps
-}: TextFieldProps<TFieldValues>) => {
-  const {
-    form,
-    name,
-    label,
-    hint,
-    placeholder,
-    description,
-    required,
-    className,
-  } = commonProps;
+}: TextFieldProps) => {
+  const form = useFormContext();
+
+  const { name, label, hint, placeholder, description, required, className } =
+    commonProps;
 
   return (
     <FormField

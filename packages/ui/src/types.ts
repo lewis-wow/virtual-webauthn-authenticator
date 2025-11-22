@@ -1,10 +1,7 @@
 import type { ReactNode } from 'react';
-import type { FieldValues, Path, UseFormReturn } from 'react-hook-form';
 
-export type CommonFieldProps<TFieldValues extends FieldValues> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  form: UseFormReturn<TFieldValues, any, any>;
-  name: Path<TFieldValues>;
+export type CommonFieldProps = {
+  name: string;
   label?: ReactNode;
   hint?: ReactNode;
   placeholder?: string;

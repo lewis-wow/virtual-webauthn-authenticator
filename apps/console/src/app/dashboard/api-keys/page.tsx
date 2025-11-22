@@ -4,9 +4,13 @@ import { ApiKey } from '@/components/ApiKey';
 import { Page } from '@/components/Page';
 import { tsr } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
+import { ApiKeyPermissionCredentials } from '@repo/auth/enums';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
+import type { Duration } from '@repo/core/validation';
 import { Button } from '@repo/ui/components/Button';
+import { CheckboxField } from '@repo/ui/components/CheckboxField';
 import { Guard } from '@repo/ui/components/Guard/Guard';
+import { SelectField } from '@repo/ui/components/SelectField';
 import { Stack } from '@repo/ui/components/Stack';
 import { TextField } from '@repo/ui/components/TextField';
 import {
@@ -16,11 +20,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
-import { Form } from '@repo/ui/components/ui/form';
+import { Checkbox } from '@repo/ui/components/ui/checkbox';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@repo/ui/components/ui/form';
 import { Schema } from 'effect';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+
+const EXPIRATION_OPTIONS = [
+  { label: 'Never', value: null },
+  { label: '30 Days', value: { days: 30 } },
+  { label: '60 Days', value: { days: 60 } },
+  { label: '90 Days', value: { days: 90 } },
+  { label: '1 Year', value: { years: 1 } },
+] as { label: string; value: Duration | null }[];
 
 const ApiKeysPage = () => {
   const queryClient = tsr.useQueryClient();
@@ -31,7 +52,12 @@ const ApiKeysPage = () => {
 
   const authApiKeyCreateMutation = tsr.api.auth.apiKeys.create.useMutation({
     onSuccess: () => {
-      form.reset();
+      form.reset({
+        name: '',
+        enabled: true,
+        expiresAt: null,
+        permissions: {},
+      });
 
       toast('API key has been created.');
 
@@ -46,8 +72,14 @@ const ApiKeysPage = () => {
     defaultValues: {
       name: '',
       enabled: true,
+      expiresAt: null,
+      permissions: {
+        credentials: [],
+      },
     },
   });
+
+  console.log(form.watch());
 
   return (
     <Page pageTitle="API keys">
@@ -55,7 +87,7 @@ const ApiKeysPage = () => {
         <CardHeader>
           <CardTitle>Create New API Key</CardTitle>
           <CardDescription>
-            Generate a new API key for your application
+            Generate a new API key with specific permissions and expiration.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -65,25 +97,62 @@ const ApiKeysPage = () => {
                 const encodedValues = Schema.encodeSync(
                   CreateApiKeyRequestBodySchema,
                 )(values);
-
-                authApiKeyCreateMutation.mutate({
-                  body: encodedValues,
-                });
+                authApiKeyCreateMutation.mutate({ body: encodedValues });
               })}
-              className="flex items-start gap-4"
             >
-              <Stack direction="row" gap="1rem" className="items-end">
-                <TextField
-                  form={form}
-                  name="name"
-                  label="Key Name"
-                  placeholder="e.g., Production API Key"
-                  required
+              <Stack direction="column" gap="1.5rem" className="w-full">
+                {/* Top Row: Name & Expiration - Added w-full here */}
+                <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-start">
+                  <div className="flex-1">
+                    <TextField
+                      name="name"
+                      label="Key Name"
+                      placeholder="e.g., Production API Key"
+                      required
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div className="w-full sm:w-[180px]">
+                    <SelectField name="expiresAt" items={EXPIRATION_OPTIONS} />
+                  </div>
+                </div>
+
+                {/* Permissions Section */}
+                <FormField
+                  control={form.control}
+                  name="permissions"
+                  render={() => (
+                    <FormItem>
+                      <div>
+                        <FormLabel className="text-base">Permissions</FormLabel>
+                        <FormDescription>
+                          Select what credentials this API key can access.
+                        </FormDescription>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+                        {Object.values(ApiKeyPermissionCredentials).map(
+                          (permission) => (
+                            <CheckboxField
+                              label={permission}
+                              key={permission}
+                              name="permissions.credentials"
+                              value={permission}
+                            />
+                          ),
+                        )}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                <Button type="submit">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create Key
-                </Button>
+
+                <div className="flex justify-end">
+                  <Button type="submit">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Key
+                  </Button>
+                </div>
               </Stack>
             </form>
           </Form>

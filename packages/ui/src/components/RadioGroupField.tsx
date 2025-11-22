@@ -10,7 +10,7 @@ import {
 } from '@repo/ui/components/ui/form';
 import { RadioGroup, RadioGroupItem } from '@repo/ui/components/ui/radio-group';
 import type { CommonFieldProps } from '@repo/ui/types';
-import type { FieldValues } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 
@@ -19,15 +19,16 @@ export type RadioGroupFieldItem = {
   label: string;
 };
 
-export type RadioGroupFieldProps<TFieldValues extends FieldValues> = {
+export type RadioGroupFieldProps = {
   items: RadioGroupFieldItem[];
-} & CommonFieldProps<TFieldValues>;
+} & CommonFieldProps;
 
-export const RadioGroupField = <TFieldValues extends FieldValues>({
+export const RadioGroupField = ({
   items,
   ...commonProps
-}: RadioGroupFieldProps<TFieldValues>) => {
-  const { form, name, label, hint, description, required } = commonProps;
+}: RadioGroupFieldProps) => {
+  const form = useFormContext();
+  const { name, label, hint, description, required } = commonProps;
 
   return (
     <FormField
