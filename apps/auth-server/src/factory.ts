@@ -1,5 +1,7 @@
 import type { auth } from '@/lib/auth';
-import { HTTPException, InternalServerError } from '@repo/exception';
+import { Exception } from '@repo/exception';
+import { InternalServerError } from '@repo/exception/http';
+import { ExceptionMapper } from '@repo/exception/mappers';
 import { createFactory } from 'hono/factory';
 
 export const factory = createFactory<{
@@ -10,11 +12,10 @@ export const factory = createFactory<{
 }>({
   initApp: (app) => {
     app.onError((error) => {
-      if (error instanceof HTTPException) {
-        return error.toResponse();
-      }
+      const exception =
+        error instanceof Exception ? error : new InternalServerError();
 
-      return new InternalServerError().toResponse();
+      return ExceptionMapper.toResponse(exception);
     });
   },
 });

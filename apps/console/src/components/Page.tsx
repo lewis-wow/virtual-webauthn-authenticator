@@ -1,28 +1,35 @@
-'use client';
+import { SidebarProvider, SidebarInset } from '@repo/ui/components/ui/sidebar';
+import type { CSSProperties, ReactNode } from 'react';
 
-import type { ReactNode } from 'react';
-
-import { Stack } from './Stack';
-import { TypographyH1 } from './Typography';
+import { AppSidebar } from './AppSidebar';
+import { Header } from './Header';
 
 export type PageProps = {
+  pageTitle: string;
   children?: ReactNode;
-  title?: string;
-  description?: string;
 };
 
-export const Page = ({ children, title, description }: PageProps) => {
+export const Page = ({ pageTitle, children }: PageProps) => {
   return (
-    <div className="container min-h-screen bg-background p-8 mx-auto">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <header>
-          <TypographyH1>{title}</TypographyH1>
-          <p className="text-muted-foreground mt-2">{description}</p>
-        </header>
-        <Stack direction="column" gap="1rem" asChild>
-          <main>{children}</main>
-        </Stack>
-      </div>
-    </div>
+    <SidebarProvider
+      style={
+        {
+          '--sidebar-width': 'calc(var(--spacing) * 72)',
+          '--header-height': 'calc(var(--spacing) * 12)',
+        } as CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <Header pageTitle={pageTitle} />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
+              {children}
+            </div>
+          </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };

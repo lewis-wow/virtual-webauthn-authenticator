@@ -1,16 +1,17 @@
-import { defineConfig } from 'vitest/config';
+import { unitConfig } from '@repo/vitest-config/unit';
+import { join } from 'node:path';
+import { defineConfig, mergeConfig } from 'vitest/config';
 
 import pkg from '../package.json';
 
-export default defineConfig({
-  test: {
-    name: pkg.name,
-    globals: true,
-    coverage: {
-      provider: 'v8',
-      exclude: ['__tests__', '__mocks__', 'src/index.ts'],
-      include: ['src'],
+const projectRoot = join(import.meta.dirname, '..');
+
+export default mergeConfig(
+  unitConfig,
+  defineConfig({
+    test: {
+      name: pkg.name,
+      root: projectRoot,
     },
-    fileParallelism: true,
-  },
-});
+  }),
+);

@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./http": "./src/http/index.ts",
+    "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
-    "build": "../../scripts/barrel.ts",
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
@@ -17,7 +17,6 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/validation": "workspace:*",
     "@standard-schema/spec": "^1.0.0",
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
@@ -25,7 +24,6 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
     "typanion": "^3.14.0"
   }
 }

@@ -1,20 +1,20 @@
 #!/usr/bin/env tsx
 import { generateOpenApi, SchemaTransformerSync } from '@ts-rest/open-api';
+import { JSONSchema, Schema } from 'effect';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { stringify } from 'yaml';
-import z from 'zod';
 
 import { contract } from '../src';
 
-export const ZOD_4_ASYNC: SchemaTransformerSync = ({ schema }) => {
-  if (schema instanceof z.ZodType) {
+export const EFFECT_ASYNC: SchemaTransformerSync = ({ schema }) => {
+  if (Schema.isSchema(schema)) {
     try {
-      const jsonSchema = z.toJSONSchema(schema, {
-        io: 'input',
-      });
+      const jsonSchema = JSONSchema.make(schema);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+      const { $schema: _, ...rest } = jsonSchema as any;
 
-      return jsonSchema as object;
+      return rest as object;
     } catch (error) {
       console.error(error, schema);
     }
@@ -32,7 +32,7 @@ const openApiDocument = generateOpenApi(
     },
   },
   {
-    schemaTransformer: ZOD_4_ASYNC,
+    schemaTransformer: EFFECT_ASYNC,
   },
 );
 

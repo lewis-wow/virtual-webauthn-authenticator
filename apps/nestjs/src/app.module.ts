@@ -4,16 +4,16 @@ import { join } from 'node:path';
 
 import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
+import { ProfileController } from './controllers/Profile.controller';
 import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
-import { CredentialSignerFactoryProvider } from './services/CredentialSignerFactoryProvider';
+import { AzureKeyVaultKeyProviderProvider } from './services/AzureKeyVaultKeyProvider.provider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
 import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
-import { KeyVaultProvider } from './services/KeyVault.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
@@ -26,6 +26,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
   ],
   controllers: [
     HealthcheckController,
+    ProfileController,
     CredentialsController,
     WebAuthnCredentialsController,
   ],
@@ -36,10 +37,9 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     EnvProvider,
     JwtAudienceProvider,
     KeyClientProvider,
-    KeyVaultProvider,
+    AzureKeyVaultKeyProviderProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
-    CredentialSignerFactoryProvider,
     JwtMiddleware,
   ],
   exports: [
@@ -49,10 +49,9 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     EnvProvider,
     JwtAudienceProvider,
     KeyClientProvider,
-    KeyVaultProvider,
+    AzureKeyVaultKeyProviderProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
-    CredentialSignerFactoryProvider,
     JwtMiddleware,
   ],
 })

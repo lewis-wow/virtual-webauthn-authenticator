@@ -1,5 +1,6 @@
 import { createSign } from 'node:crypto';
 
+import { COSEKeyAlgorithm } from '../../../keys/src/enums/COSEKeyAlgorithm';
 import { keyPair } from './key';
 
 export const credentialSigner = {
@@ -8,6 +9,6 @@ export const credentialSigner = {
       .update(data)
       .sign(keyPair.privateKey);
 
-    return signature;
+    return { signature, alg: COSEKeyAlgorithm.ES256 };
   },
 };

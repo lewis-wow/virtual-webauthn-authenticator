@@ -1,6 +1,4 @@
 {
-  "directory": "./src",
-  "output": "./src/index.ts",
   "recursive": true,
   "delete": true,
   "mode": "wild",

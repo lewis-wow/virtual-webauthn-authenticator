@@ -1,14 +1,13 @@
-import {
-  ApiKeyDeleteEnabledFailed,
-  ApiKeyDeleteFailed,
-  ApiKeyNotFound,
-  ApiKeyRevokeFailed,
-} from '@repo/exception';
 import { Logger } from '@repo/logger';
 import { Prisma, type PrismaClient } from '@repo/prisma';
-import { type ApiKey } from '@repo/validation';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
+
+import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
+import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
+import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
+import { ApiKeyRevokeFailed } from './exceptions/ApiKeyRevokeFailed';
+import type { ApiKey } from './validation/ApiKeySchema';
 
 const LOG_PREFIX = 'API_KEY';
 const log = new Logger({
@@ -30,6 +29,7 @@ export const PUBLIC_API_KEY_SELECT = {
   metadata: true,
   permissions: true,
   enabled: true,
+  start: true,
 } satisfies Prisma.ApikeySelect;
 
 export type ApiKeyManagerOptions = {
@@ -50,6 +50,8 @@ export class ApiKeyManager {
    * Byte length for the 'lookupKey' part. 16 bytes = 22 base64url chars.
    */
   private readonly LOOKUP_BYTE_LENGTH = 16;
+
+  private readonly SECRET_START_LENGTH = 8;
   /**
    * Prefix for all live keys.
    */
@@ -103,9 +105,12 @@ export class ApiKeyManager {
   }): Promise<{ plaintextKey: string; apiKey: ApiKey }> {
     const { userId, name, expiresAt, permissions, metadata } = opts;
 
-    const lookupKey =
-      ApiKeyManager.KEY_PREFIX +
-      this._generateRandomString(this.LOOKUP_BYTE_LENGTH);
+    const internalLookupKey = this._generateRandomString(
+      this.LOOKUP_BYTE_LENGTH,
+    );
+    const start = internalLookupKey.substring(0, this.SECRET_START_LENGTH);
+
+    const lookupKey = `${ApiKeyManager.KEY_PREFIX}${internalLookupKey}`;
 
     const secret = this._generateRandomString(this.SECRET_BYTE_LENGTH);
 
@@ -122,6 +127,7 @@ export class ApiKeyManager {
         expiresAt,
         lookupKey,
         name,
+        start,
         prefix: ApiKeyManager.KEY_PREFIX,
         permissions: this._stringifyNonNullish(permissions),
         metadata: this._stringifyNonNullish(metadata),
@@ -283,7 +289,7 @@ export class ApiKeyManager {
    * Deletes a key by its 'id' (cuid).
    * This is a hard-delete. Use with caution.
    */
-  async delete(opts: { userId: string; id: string }): Promise<ApiKey | null> {
+  async delete(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
     const apiKey = await this.prisma.apikey

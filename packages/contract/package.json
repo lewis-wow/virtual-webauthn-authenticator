@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./validation": "./src/validation/index.ts"
   },
   "scripts": {
-    "build": "pnpm generate:spec",
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
+    "build": "run-p barrel:* && pnpm generate:spec",
+    "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
+    "test": "vitest run --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
     "generate:spec": "scripts/generate-spec.ts"
@@ -17,16 +19,19 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@standard-schema/spec": "^1.0.0",
     "@types/node": "^22.5.2",
     "typescript": "^5.5.4",
     "yaml": "^2.8.1"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
+    "@repo/auth": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*",
+    "@repo/core": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",
+    "effect": "^3.19.4",
     "zod": "^4.1.12"
   }
 }

@@ -1,20 +1,18 @@
 import { Controller } from '@nestjs/common';
 import { contract } from '@repo/contract';
-import type { JwtPayload } from '@repo/validation';
+import { GetHealthcheckResponseSchema } from '@repo/contract/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-
-import { Jwt } from '../decorators/Jwt.decorator';
+import { Schema } from 'effect';
 
 @Controller()
 export class HealthcheckController {
   @TsRestHandler(contract.api.healthcheck.get)
-  async healthcheck(@Jwt() jwtPayload?: JwtPayload | null) {
+  async healthcheck() {
     return tsRestHandler(contract.api.healthcheck.get, async () => {
       return {
         status: 200,
-        body: contract.api.healthcheck.get.responses[200].encode({
+        body: Schema.encodeSync(GetHealthcheckResponseSchema)({
           healthy: true,
-          jwtPayload: jwtPayload ?? null,
         }),
       };
     });

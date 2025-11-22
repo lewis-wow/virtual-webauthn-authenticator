@@ -1,15 +1,16 @@
 import { tsr } from '@/lib/tsr';
-import { cn } from '@/lib/utils';
+import { Button } from '@repo/ui/components/Button';
+import { DeleteConfirmDialog } from '@repo/ui/components/DeleteConfirmDialog';
+import { cn } from '@repo/ui/lib/utils';
 import { CopyIcon, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
-
-import { Button } from './Button';
 
 export type ApiKeyProps = {
   id: string;
   plaintextKey?: string;
   name: string | null;
+  start: string | null;
   prefix: string | null;
   createdAt: Date;
   revokedAt?: Date | null;
@@ -22,6 +23,7 @@ export const ApiKey = ({
   plaintextKey,
   name,
   prefix,
+  start,
   createdAt,
   revokedAt,
   onDelete,
@@ -64,9 +66,27 @@ export const ApiKey = ({
       onDelete?.();
     },
   });
+  const isRevoked = revokedAt !== null;
+
+  const handleDeleteOrRevoke = () => {
+    if (!isRevoked) {
+      authApiKeyRevokeMutation.mutate({
+        params: { id },
+        body: { revokedAt: new Date().toISOString(), enabled: false },
+      });
+    } else {
+      authApiKeyDeleteMutation.mutate({ params: { id } });
+    }
+  };
+
+  const dialogTitle = isRevoked ? 'Delete API Key?' : 'Revoke API Key?';
+  const dialogDescription = isRevoked
+    ? 'This will permanently remove the key history. This action cannot be undone.'
+    : 'The key will stop working immediately. You can still see it in the history until you delete it.';
+  const dialogButtonText = isRevoked ? 'Delete' : 'Revoke';
 
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg">
+    <div className="flex items-center gap-2 p-4 border rounded-lg">
       <div className="flex-1 space-y-1">
         <p className="font-medium">
           <span
@@ -77,20 +97,24 @@ export const ApiKey = ({
             {name}
           </span>
         </p>
-        {plaintextKey !== undefined && (
+        {plaintextKey !== undefined ? (
           <div className="flex items-center gap-2">
-            <code className="text-sm text-muted-foreground font-mono">
+            <code className="text-sm text-muted-foreground font-mono break-all">
               {plaintextKey}
             </code>
-            <Button variant="ghost" size="sm" onClick={() => handleCopyKey()}>
+            <Button
+              className="shrink-0"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopyKey()}
+            >
               <CopyIcon />
             </Button>
           </div>
-        )}
-        {prefix !== null && (
+        ) : (
           <div className="flex items-center gap-2">
-            <code className="text-sm text-muted-foreground font-mono">
-              {`${prefix}_`}
+            <code className="text-sm text-muted-foreground font-mono overflow-x-scroll">
+              {`${prefix ?? ''}${isVisible && start ? `${start}...` : ''}`}
             </code>
             <Button
               variant="ghost"
@@ -110,24 +134,25 @@ export const ApiKey = ({
         </p>
       </div>
       <div className="flex gap-2">
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={() => {
-            if (revokedAt === null) {
-              authApiKeyRevokeMutation.mutate({
-                params: { id },
-                body: { revokedAt: new Date().toISOString(), enabled: false },
-              });
-
-              return;
-            }
-
-            authApiKeyDeleteMutation.mutate({ params: { id } });
-          }}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <DeleteConfirmDialog
+          title={dialogTitle}
+          description={dialogDescription}
+          confirmText={dialogButtonText}
+          onConfirm={handleDeleteOrRevoke}
+          trigger={
+            <Button
+              variant="destructive"
+              size="sm"
+              className="mt-1"
+              disabled={
+                authApiKeyRevokeMutation.isPending ||
+                authApiKeyDeleteMutation.isPending
+              }
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          }
+        />
       </div>
     </div>
   );

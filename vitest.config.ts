@@ -6,10 +6,5 @@ export default defineConfig({
       'packages/**/__tests__/vitest.config.{ts,mts}',
       'apps/**/__tests__/vitest.config.{ts,mts}',
     ],
-    globals: true,
-    coverage: {
-      provider: 'v8',
-    },
-    fileParallelism: true,
   },
 });

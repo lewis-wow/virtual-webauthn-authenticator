@@ -1,11 +1,13 @@
-import { AuthType } from '@repo/enums';
+import { AuthType } from '@repo/auth/enums';
 import { Proxy } from '@repo/proxy';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
+import { nextCookies } from 'better-auth/next-js';
 import { handle } from 'hono/vercel';
 
 const authClient = createAuthClient({
-  plugins: [jwtClient()],
+  plugins: [jwtClient(), nextCookies()],
+  baseURL: process.env.AUTH_BASE_URL,
 });
 
 const proxy = new Proxy({
@@ -13,8 +15,6 @@ const proxy = new Proxy({
   targetBaseURL: 'http://localhost:3001',
   authorization: async ({ req }) => {
     const xAuthTypeHeader = req.headers.get('X-Auth-Type');
-
-    console.log('xAuthTypeHeader', xAuthTypeHeader);
 
     if (xAuthTypeHeader === AuthType.API_KEY) {
       const response = await fetch(
@@ -25,14 +25,11 @@ const proxy = new Proxy({
         },
       );
 
-      console.log('response', response);
-
       if (!response.ok) {
         return undefined;
       }
 
       const { token } = await response.json();
-      console.log('jwt', token);
 
       return `Bearer ${token}`;
     }
@@ -42,6 +39,8 @@ const proxy = new Proxy({
         headers: req.headers,
       },
     });
+
+    console.log({ data, headers: req.headers, xAuthTypeHeader });
 
     if (!data) {
       return undefined;

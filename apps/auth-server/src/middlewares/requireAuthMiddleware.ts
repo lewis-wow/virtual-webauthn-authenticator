@@ -1,5 +1,5 @@
 import { factory } from '@/factory';
-import { Unauthorized } from '@repo/exception';
+import { Unauthorized } from '@repo/exception/http';
 
 export const requireAuthMiddleware = factory.createMiddleware((ctx, next) => {
   if (ctx.var.session === null || ctx.var.user === null) {

@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Unauthorized } from '@repo/exception';
+import { Unauthorized } from '@repo/exception/http';
 import { Observable } from 'rxjs';
 
 @Injectable()

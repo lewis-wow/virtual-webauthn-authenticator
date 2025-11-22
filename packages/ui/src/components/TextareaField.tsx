@@ -1,0 +1,44 @@
+import {
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage,
+} from '@repo/ui/components/ui/form';
+import type { CommonFieldProps } from '@repo/ui/types';
+import { useFormContext } from 'react-hook-form';
+
+import { FormLabel } from './FormLabel';
+import { Textarea } from './ui/textarea';
+
+export type TextareaFieldProps = {} & CommonFieldProps;
+
+export const TextareaField = ({ ...commonProps }: TextareaFieldProps) => {
+  const form = useFormContext();
+
+  const { name, label, hint, placeholder, description, required } = commonProps;
+
+  return (
+    <FormField
+      control={form.control}
+      name={name}
+      render={({ field }) => (
+        <FormItem className="w-full">
+          {(!!label || !!hint || !!required) && (
+            <FormLabel label={label} hint={hint} required={required} />
+          )}
+          <FormControl>
+            <Textarea
+              required={required}
+              placeholder={placeholder}
+              className="resize-none"
+              {...field}
+            />
+          </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+};
