@@ -9,7 +9,7 @@ export const ApiKeyJwtPayloadSchema = Schema.extend(
   JwtRegisteredClaimsSchema,
   Schema.Struct({
     apiKey: ApiKeySchema.pick('id', 'enabled', 'permissions', 'metadata'),
-    user: UserSchema.pick('id', 'email', 'name'),
+    user: UserSchema.pick('id', 'email', 'name', 'image'),
     tokenType: Schema.Literal(TokenType.API_KEY),
   }),
 ).annotations({

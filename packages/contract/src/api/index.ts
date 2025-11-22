@@ -13,8 +13,8 @@ export const apiRouter = c.router(
     healthcheck: healthcheckRouter,
     credentials: credentialsRouter,
     webAuthnCredentials: webAuthnCredentialsRouter,
-    profile: profileRouter,
     auth: authRouter,
+    profile: profileRouter,
   },
   {
     pathPrefix: '/api',

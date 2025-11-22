@@ -3,8 +3,10 @@ import { contract } from '@repo/contract';
 import { initClient } from '@ts-rest/core';
 import { initTsrReactQuery } from '@ts-rest/react-query/v5';
 
+import { getBaseUrl } from './getBaseUrl';
+
 export const tsr = initTsrReactQuery(contract, {
-  baseUrl: '/',
+  baseUrl: getBaseUrl(),
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
   },
@@ -12,8 +14,11 @@ export const tsr = initTsrReactQuery(contract, {
 });
 
 export const $api = initClient(contract, {
-  baseUrl: '/',
+  baseUrl: getBaseUrl(),
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
   },
+  credentials: 'same-origin',
 });
+
+$api.api.profile.get({});

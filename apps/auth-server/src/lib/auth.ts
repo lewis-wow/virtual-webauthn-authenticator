@@ -43,6 +43,7 @@ export const auth = betterAuth({
               id: payload.id as string,
               name: payload.name as string,
               email: payload.email as string,
+              image: payload.image as string | null,
             },
             tokenType: TokenType.PERSONAL,
           };

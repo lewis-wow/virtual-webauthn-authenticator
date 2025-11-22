@@ -7,7 +7,7 @@ import { UserSchema } from './UserSchema';
 export const PersonalJwtPayloadSchema = Schema.extend(
   JwtRegisteredClaimsSchema,
   Schema.Struct({
-    user: UserSchema.pick('id', 'email', 'name'),
+    user: UserSchema.pick('id', 'email', 'name', 'image'),
     tokenType: Schema.Literal(TokenType.PERSONAL),
   }),
 ).annotations({
