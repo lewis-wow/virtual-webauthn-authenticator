@@ -67,7 +67,7 @@ export const ApiKey = ({
   });
 
   return (
-    <div className="flex items-center justify-between p-4 border rounded-lg">
+    <div className="flex items-center gap-2 p-4 border rounded-lg">
       <div className="flex-1 space-y-1">
         <p className="font-medium">
           <span
@@ -78,20 +78,24 @@ export const ApiKey = ({
             {name}
           </span>
         </p>
-        {plaintextKey !== undefined && (
+        {plaintextKey !== undefined ? (
           <div className="flex items-center gap-2">
-            <code className="text-sm text-muted-foreground font-mono">
+            <code className="text-sm text-muted-foreground font-mono break-all">
               {plaintextKey}
             </code>
-            <Button variant="ghost" size="sm" onClick={() => handleCopyKey()}>
+            <Button
+              className="shrink-0"
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopyKey()}
+            >
               <CopyIcon />
             </Button>
           </div>
-        )}
-        {prefix !== null && (
+        ) : (
           <div className="flex items-center gap-2">
-            <code className="text-sm text-muted-foreground font-mono">
-              {`${prefix}${isVisible ? start : ''}`}
+            <code className="text-sm text-muted-foreground font-mono overflow-x-scroll">
+              {`${prefix ?? ''}${isVisible && start ? `${start}...` : ''}`}
             </code>
             <Button
               variant="ghost"
@@ -114,6 +118,7 @@ export const ApiKey = ({
         <Button
           variant="destructive"
           size="sm"
+          className="mt-1"
           onClick={() => {
             if (revokedAt === null) {
               authApiKeyRevokeMutation.mutate({
