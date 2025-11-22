@@ -31,12 +31,12 @@ const data = {
     },
     {
       title: 'API keys',
-      url: '/api-keys',
+      url: '/dashboard/api-keys',
       icon: Key,
     },
     {
       title: 'Credentials',
-      url: '/credentials',
+      url: '/dashboard/credentials',
       icon: Fingerprint,
     },
   ],
@@ -62,7 +62,9 @@ export const AppSidebar = ({
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
               <Link href="/">
-                <span className="text-base font-semibold">Keyless</span>
+                <span className="text-base font-semibold">
+                  {process.env.NEXT_PUBLIC_APP_NAME}
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

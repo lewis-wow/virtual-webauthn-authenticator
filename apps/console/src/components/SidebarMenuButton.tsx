@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 export type SidebarMenuButtonProps = {
   title: string;
   url: string;
+  match?: string | RegExp;
   icon?: LucideIcon;
   tooltip?: string;
 };
@@ -14,11 +15,15 @@ export type SidebarMenuButtonProps = {
 export const SidebarMenuButton = ({
   title,
   url,
+  match,
   icon: Icon,
   tooltip,
 }: SidebarMenuButtonProps) => {
   const pathname = usePathname();
-  const isActive = pathname === url || pathname.startsWith(`${url}/`);
+  const matcher = match ?? url;
+
+  const isActive =
+    matcher instanceof RegExp ? matcher.test(pathname) : pathname === matcher;
 
   return (
     <SidebarMenuButtonUI

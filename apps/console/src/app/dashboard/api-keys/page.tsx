@@ -1,12 +1,12 @@
 'use client';
 
 import { ApiKey } from '@/components/ApiKey';
+import { Page } from '@/components/Page';
 import { tsr } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import { Button } from '@repo/ui/components/Button';
 import { Guard } from '@repo/ui/components/Guard/Guard';
-import { Page } from '@repo/ui/components/Page';
 import { Stack } from '@repo/ui/components/Stack';
 import { TextField } from '@repo/ui/components/TextField';
 import {
@@ -22,7 +22,7 @@ import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
-const ApiKeys = () => {
+const ApiKeysPage = () => {
   const queryClient = tsr.useQueryClient();
 
   const authApiKeysListQuery = tsr.api.auth.apiKeys.list.useQuery({
@@ -50,10 +50,7 @@ const ApiKeys = () => {
   });
 
   return (
-    <Page
-      title="API Key Management"
-      description="Create and manage your API keys"
-    >
+    <Page pageTitle="API keys">
       <Card>
         <CardHeader>
           <CardTitle>Create New API Key</CardTitle>
@@ -129,4 +126,4 @@ const ApiKeys = () => {
   );
 };
 
-export default ApiKeys;
+export default ApiKeysPage;

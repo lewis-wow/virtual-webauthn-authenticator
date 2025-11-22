@@ -1,7 +1,7 @@
 import { Page } from '@/components/Page';
 
 const DashboardPage = () => {
-  return <Page pageTitle="API keys"></Page>;
+  return <Page pageTitle="Dashboard"></Page>;
 };
 
 export default DashboardPage;
