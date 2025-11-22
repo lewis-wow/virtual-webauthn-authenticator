@@ -1,3 +1,4 @@
+import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import type { JwtPayload } from '@repo/auth/validation';
 import { contract } from '@repo/contract';
@@ -6,7 +7,6 @@ import {
   GetWebAuthnCredentialResponseSchema,
   ListWebAuthnCredentialsResponseSchema,
 } from '@repo/contract/validation';
-import { KeyVault } from '@repo/key-vault';
 import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
@@ -23,7 +23,7 @@ import { PrismaService } from '../services/Prisma.service';
 export class WebAuthnCredentialsController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly keyVault: KeyVault,
+    private readonly keyClient: KeyClient,
     private readonly logger: Logger,
   ) {}
 
@@ -111,11 +111,12 @@ export class WebAuthnCredentialsController {
           webAuthnCredential.webAuthnCredentialKeyMetaType ===
           WebAuthnCredentialKeyMetaType.KEY_VAULT
         ) {
-          await this.keyVault.deleteKey({
-            keyName:
-              webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
-                .keyVaultKeyName,
-          });
+          const pollOperation = await this.keyClient.beginDeleteKey(
+            webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
+              .keyVaultKeyName,
+          );
+
+          await pollOperation.pollUntilDone();
         }
 
         return {

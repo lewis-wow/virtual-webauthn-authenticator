@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./expcetions": "./src/expcetions/index.ts",
     "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {
@@ -28,6 +29,7 @@
     "zod": "^4.1.12"
   },
   "dependencies": {
+    "@repo/exception": "workspace:*",
     "@azure/identity": "^4.13.0",
     "@azure/keyvault-keys": "^4.10.0",
     "@repo/keys": "workspace:*",

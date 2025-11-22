@@ -985,6 +985,9 @@ importers:
       '@azure/keyvault-keys':
         specifier: ^4.10.0
         version: 4.10.0
+      '@repo/exception':
+        specifier: workspace:*
+        version: link:../exception
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys

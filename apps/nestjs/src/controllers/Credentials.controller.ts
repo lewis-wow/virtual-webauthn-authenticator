@@ -6,11 +6,7 @@ import {
   GetCredentialResponseSchema,
 } from '@repo/contract/validation';
 import { UUIDMapper } from '@repo/core/mappers';
-import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
-import { KeyAlgorithm } from '@repo/keys/enums';
-import { COSEKeyAlgorithmMapper, COSEKeyMapper } from '@repo/keys/mappers';
 import { Logger } from '@repo/logger';
-import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
@@ -27,9 +23,7 @@ import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 @UseFilters(new ExceptionFilter())
 export class CredentialsController {
   constructor(
-    private readonly keyVault: KeyVault,
     private readonly virtualAuthenticator: VirtualAuthenticator,
-    private readonly credentialSignerFactory: CredentialSignerFactory,
     private readonly logger: Logger,
   ) {}
 
@@ -60,64 +54,6 @@ export class CredentialsController {
         await this.virtualAuthenticator.createCredential({
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptionsWithUser,
-          generateKeyPair: async ({
-            webAuthnCredentialId,
-            pubKeyCredParams,
-          }) => {
-            const {
-              jwk,
-              meta: { keyVaultKey },
-            } = await this.keyVault.createKey({
-              keyName: webAuthnCredentialId,
-              supportedPubKeyCredParam: pubKeyCredParams,
-            });
-
-            const COSEPublicKey = COSEKeyMapper.jwkToCOSEKey(jwk);
-
-            return {
-              COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-              webAuthnCredentialKeyMetaType:
-                WebAuthnCredentialKeyMetaType.KEY_VAULT,
-              webAuthnCredentialKeyVaultKeyMeta: {
-                keyVaultKeyId: keyVaultKey.id ?? null,
-                keyVaultKeyName: keyVaultKey.name,
-                hsm: false,
-              },
-            };
-          },
-          signatureFactory: async ({ data, webAuthnCredential }) => {
-            if (
-              webAuthnCredential.webAuthnCredentialKeyMetaType !==
-              WebAuthnCredentialKeyMetaType.KEY_VAULT
-            ) {
-              throw new Error('Unexpected WebAuthnCredentialKeyMetaType.');
-            }
-
-            const {
-              meta: { keyVaultKey },
-            } = await this.keyVault.getKey({
-              keyName:
-                webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta
-                  .keyVaultKeyName,
-            });
-
-            const keyAlgorithm = KeyAlgorithm.ES256;
-
-            const credentialSigner =
-              this.credentialSignerFactory.createCredentialSigner({
-                algorithm: keyAlgorithm,
-                keyVaultKey,
-              });
-
-            const signature = await credentialSigner.sign(data);
-
-            return {
-              signature,
-              alg: COSEKeyAlgorithmMapper.keyAlgorithmToCOSEKeyAlgorithm(
-                keyAlgorithm,
-              ),
-            };
-          },
           meta: {
             origin: meta.origin,
             userId: user.id,
@@ -147,39 +83,6 @@ export class CredentialsController {
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
         {
           publicKeyCredentialRequestOptions,
-          signatureFactory: async ({ data, webAuthnCredential }) => {
-            if (
-              webAuthnCredential.webAuthnCredentialKeyMetaType !==
-              WebAuthnCredentialKeyMetaType.KEY_VAULT
-            ) {
-              throw new Error('Unexpected WebAuthnCredentialKeyMetaType.');
-            }
-
-            const {
-              meta: { keyVaultKey },
-            } = await this.keyVault.getKey({
-              keyName:
-                webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta
-                  .keyVaultKeyName,
-            });
-
-            const keyAlgorithm = KeyAlgorithm.ES256;
-
-            const credentialSigner =
-              this.credentialSignerFactory.createCredentialSigner({
-                algorithm: keyAlgorithm,
-                keyVaultKey,
-              });
-
-            const signature = await credentialSigner.sign(data);
-
-            return {
-              signature,
-              alg: COSEKeyAlgorithmMapper.keyAlgorithmToCOSEKeyAlgorithm(
-                keyAlgorithm,
-              ),
-            };
-          },
           meta: {
             origin: meta.origin,
             userId: user.id,
