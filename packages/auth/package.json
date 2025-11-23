@@ -8,6 +8,7 @@
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
+    "./abilities": "./src/abilities/index.ts",
     "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {
@@ -29,6 +30,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@casl/ability": "^6.7.3",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",

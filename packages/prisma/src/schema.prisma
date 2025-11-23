@@ -22,7 +22,6 @@ model User {
   accounts            Account[]
   apiKeys             Apikey[]
   webAuthnCredentials WebAuthnCredential[]
-  permissions         String[]             @default(["credentials.create", "credentials.get"])
   eventLogs           EventLog[]
 
   createdAt DateTime @default(now())
@@ -81,20 +80,21 @@ model Verification {
 }
 
 model Apikey {
-  id          String     @id @default(uuid())
-  lookupKey   String     @unique
-  name        String?
-  prefix      String?
-  start       String?
-  hashedKey   String
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled     Boolean    @default(true)
-  expiresAt   DateTime?
-  revokedAt   DateTime?
-  lastUsedAt  DateTime?
+  id         String     @id @default(uuid())
+  lookupKey  String     @unique
+  name       String?
+  prefix     String?
+  start      String?
+  hashedKey  String
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled    Boolean    @default(true)
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+  eventLogs  EventLog[]
+
   permissions String[]
-  eventLogs   EventLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
