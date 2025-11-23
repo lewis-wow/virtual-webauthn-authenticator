@@ -1,4 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { JwtPayload } from '@repo/auth/validation';
 import { Unauthorized } from '@repo/exception/http';
 import { Observable } from 'rxjs';
 
@@ -9,9 +10,9 @@ export class AuthenticatedGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    const user = request.user;
+    const jwtPayload = request.user as JwtPayload;
 
-    if (!user) {
+    if (!jwtPayload) {
       throw new Unauthorized();
     }
 

@@ -20,9 +20,10 @@ model User {
   image               String?
   sessions            Session[]
   accounts            Account[]
-  permissions         Permission[]
   apiKeys             Apikey[]
   webAuthnCredentials WebAuthnCredential[]
+  permissions         String[]             @default(["credentials.create", "credentials.get"])
+  eventLogs           EventLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -80,20 +81,21 @@ model Verification {
 }
 
 model Apikey {
-  id          String       @id @default(uuid())
-  lookupKey   String       @unique
+  id          String     @id @default(uuid())
+  lookupKey   String     @unique
   name        String?
   prefix      String?
   start       String?
   hashedKey   String
   userId      String
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled     Boolean      @default(true)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled     Boolean    @default(true)
   expiresAt   DateTime?
   revokedAt   DateTime?
   lastUsedAt  DateTime?
-  permissions Permission[]
+  permissions String[]
   metadata    String?
+  eventLogs   EventLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -111,32 +113,6 @@ model Jwks {
   updatedAt DateTime @default(now()) @updatedAt
 
   @@map("jwks")
-}
-
-model Permission {
-  id String @id @default(uuid())
-
-  action       String // e.g., READ, CREATE
-  resourceType String // e.g., API_KEYS, PRODUCTS
-
-  // Optionally, specify a single resource ID this permission applies to.
-  // If null, it applies to all resources of the given type.
-  resourceId String?
-
-  permissionSubject PermissionSubject
-
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  apiKeyId String?
-  apiKey   Apikey? @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([apiKeyId, action, resourceType, resourceId])
-  @@unique([userId, action, resourceType, resourceId])
-  @@map("permission")
 }
 
 model WebAuthnCredential {
@@ -180,6 +156,46 @@ model WebAuthnCredentialKeyVaultKeyMeta {
   updatedAt DateTime @updatedAt
 
   @@map("webAuthnCredentialKeyVaultKeyMeta")
+}
+
+model EventLog {
+  id String @id @default(uuid())
+
+  // 1. Categorization
+  action   EventAction
+  entity   String
+  entityId String?
+
+  // 2. The "Who" (Dual Authentication Support)
+  // If done via UI -> userId is set, apiKeyId is null
+  // If done via API -> apiKeyId is set, userId is set (to the key owner)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  apiKeyId String?
+  apiKey   Apikey? @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  // 3. Context & Payload
+  // Recommendation: Use Json instead of String if using Postgres/MySQL
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 4. Performance Indexes
+  @@index([createdAt])
+  @@index([entity, entityId])
+  // Index both columns to allow filtering by User OR by specific Key
+  @@index([userId])
+  @@index([apiKeyId])
+}
+
+// Define your strict actions to avoid typos in your code
+enum EventAction {
+  CREATE
+  READ
+  WRITE
+  DELETE
 }
 
 enum ApiKeyType {

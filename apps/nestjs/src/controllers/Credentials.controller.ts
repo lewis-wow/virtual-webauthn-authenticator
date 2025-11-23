@@ -1,4 +1,5 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
+import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 import { contract } from '@repo/contract';
 import {
@@ -6,7 +7,10 @@ import {
   GetCredentialResponseSchema,
 } from '@repo/contract/validation';
 import { UUIDMapper } from '@repo/core/mappers';
+import { EventLog } from '@repo/event-log';
+import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
+import { EventAction } from '@repo/prisma';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
@@ -18,26 +22,46 @@ import { Schema } from 'effect';
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
+import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
 @UseFilters(new ExceptionFilter())
 export class CredentialsController {
   constructor(
     private readonly virtualAuthenticator: VirtualAuthenticator,
+    private readonly prisma: PrismaService,
+
     private readonly logger: Logger,
+    private readonly eventLog: EventLog,
   ) {}
 
   @TsRestHandler(contract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
-      const { user } = jwtPayload;
+      if (!jwtPayload.permissions?.includes(Permission['credential.create'])) {
+        throw new Forbidden();
+      }
+
+      if (jwtPayload.tokenType === TokenType.API_KEY) {
+        const eventAlreadyOccured = await this.eventLog.hasOccurred({
+          action: EventAction.CREATE,
+          entity: 'WebAuthnCredential',
+          apiKeyId: jwtPayload.apiKeyId,
+        });
+
+        if (eventAlreadyOccured) {
+          throw new Forbidden();
+        }
+      }
+
+      const { userId, name } = jwtPayload;
       const { publicKeyCredentialCreationOptions, meta } = body;
 
       const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-        id: UUIDMapper.UUIDtoBytes(user.id),
-        name: user.name,
-        displayName: user.name,
+        id: UUIDMapper.UUIDtoBytes(userId),
+        name: name,
+        displayName: name,
       };
 
       const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
@@ -47,7 +71,7 @@ export class CredentialsController {
         };
 
       this.logger.debug('Creating credential', {
-        userId: user.id,
+        userId: userId,
       });
 
       const publicKeyCredential =
@@ -56,9 +80,20 @@ export class CredentialsController {
             publicKeyCredentialCreationOptionsWithUser,
           meta: {
             origin: meta.origin,
-            userId: user.id,
+            userId: userId,
           },
         });
+
+      await this.eventLog.log({
+        action: EventAction.CREATE,
+        entity: 'WebAuthnCredential',
+        entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+        apiKeyId:
+          jwtPayload.tokenType === TokenType.API_KEY
+            ? jwtPayload.apiKeyId
+            : undefined,
+        userId: jwtPayload.userId,
+      });
 
       return {
         status: 200,
@@ -73,11 +108,42 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async getCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.get, async ({ body }) => {
-      const { user } = jwtPayload;
       const { publicKeyCredentialRequestOptions, meta } = body;
+      const { userId } = jwtPayload;
+
+      if (!jwtPayload.permissions?.includes(Permission['credential.get'])) {
+        throw new Forbidden();
+      }
+
+      if (jwtPayload.tokenType === TokenType.API_KEY) {
+        const where =
+          VirtualAuthenticator.createFindFirstMatchingCredentialWhereInput({
+            publicKeyCredentialRequestOptions,
+            userId,
+          });
+
+        const webAuthnCredential =
+          await this.prisma.webAuthnCredential.findFirstOrThrow({
+            where: {
+              ...where,
+            },
+          });
+
+        const apiKeyCretedThisWebAuthnCredential =
+          await this.eventLog.hasOccurred({
+            action: EventAction.CREATE,
+            apiKeyId: jwtPayload.apiKeyId,
+            entity: 'WebAuthnCredential',
+            entityId: webAuthnCredential.id,
+          });
+
+        if (!apiKeyCretedThisWebAuthnCredential) {
+          throw new Forbidden();
+        }
+      }
 
       this.logger.debug('Getting credential', {
-        userId: user.id,
+        userId: userId,
       });
 
       const publicKeyCredential = await this.virtualAuthenticator.getCredential(
@@ -85,10 +151,21 @@ export class CredentialsController {
           publicKeyCredentialRequestOptions,
           meta: {
             origin: meta.origin,
-            userId: user.id,
+            userId: userId,
           },
         },
       );
+
+      await this.eventLog.log({
+        action: EventAction.READ,
+        apiKeyId:
+          jwtPayload.tokenType === TokenType.API_KEY
+            ? jwtPayload.apiKeyId
+            : undefined,
+        userId: jwtPayload.userId,
+        entity: 'WebAuthnCredential',
+        entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+      });
 
       return {
         status: 200,

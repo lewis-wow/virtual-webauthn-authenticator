@@ -12,10 +12,12 @@ import { AzureCredentialProvider } from './services/AzureCredential.provider';
 import { AzureKeyVaultKeyProviderProvider } from './services/AzureKeyVaultKeyProvider.provider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
+import { EventLogProvider } from './services/EventLog.provider';
 import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
+import { ProfileManagerProvider } from './services/ProfileManager.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 
 @Module({
@@ -41,6 +43,8 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     LoggerProvider,
     VirtualAuthenticatorProvider,
     JwtMiddleware,
+    EventLogProvider,
+    ProfileManagerProvider,
   ],
   exports: [
     PrismaService,
@@ -53,6 +57,8 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     LoggerProvider,
     VirtualAuthenticatorProvider,
     JwtMiddleware,
+    EventLogProvider,
+    ProfileManagerProvider,
   ],
 })
 export class AppModule implements NestModule {

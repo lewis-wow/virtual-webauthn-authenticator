@@ -1,18 +1,6 @@
 import { Schema } from 'effect';
 
-export const ApiKeyPermissionsSchema = Schema.mutable(
-  Schema.Record({
-    key: Schema.String,
-    value: Schema.mutable(Schema.Array(Schema.String)),
-  }),
-);
-
-export const ApiKeyMetadataSchema = Schema.mutable(
-  Schema.Record({
-    key: Schema.String,
-    value: Schema.Unknown,
-  }),
-);
+import { PermissionSchema } from './enums/PermissionSchema';
 
 export const ApiKeySchema = Schema.Struct({
   id: Schema.UUID,
@@ -26,9 +14,9 @@ export const ApiKeySchema = Schema.Struct({
   expiresAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
   revokedAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
 
-  // z.nullish() -> Optional field that can be null or the type
-  permissions: Schema.optional(Schema.NullOr(ApiKeyPermissionsSchema)),
-  metadata: Schema.optional(Schema.NullOr(ApiKeyMetadataSchema)),
+  permissions: Schema.optional(
+    Schema.NullOr(Schema.mutable(Schema.Array(PermissionSchema))),
+  ),
 
   // Internal fields
   // lookupKey: Schema.String,

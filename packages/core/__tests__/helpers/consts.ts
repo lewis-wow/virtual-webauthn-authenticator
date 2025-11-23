@@ -21,6 +21,7 @@ export const MOCK_PERSONAL_JWT_PAYLOAD = {
     id: USER_ID,
     name: USER_NAME,
     email: USER_EMAIL,
+    image: 'image',
   },
   tokenType: 'PERSONAL',
 } as const;
@@ -30,8 +31,7 @@ export const MOCK_API_KEY_JWT_PAYLOAD = {
   apiKey: {
     id: API_KEY_ID,
     enabled: true,
-    permissions: {},
-    metadata: undefined,
+    permissions: [],
   },
   tokenType: 'API_KEY',
 } as const;

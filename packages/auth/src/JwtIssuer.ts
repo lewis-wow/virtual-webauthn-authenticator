@@ -11,8 +11,8 @@ import {
   type JWK,
 } from 'jose';
 
-import { JwtUtils } from './JwtUtils';
 import { JWT_ALG, JWT_CRV } from './consts';
+import { TokenType } from './enums';
 import {
   JwtPayloadSchema,
   type JwtPayload,
@@ -144,12 +144,12 @@ export class JwtIssuer {
       .setAudience(this.config.aud);
 
     let sub = payload.sub;
-    if (sub === undefined && JwtUtils.isPersonalJwtPayload(payload)) {
-      sub = payload.user.id;
+    if (sub === undefined && payload.tokenType === TokenType.USER) {
+      sub = payload.userId;
     }
 
-    if (sub === undefined && JwtUtils.isApiKeyJwtPayload(payload)) {
-      sub = payload.apiKey.id;
+    if (sub === undefined && payload.tokenType === TokenType.API_KEY) {
+      sub = payload.apiKeyId;
     }
 
     if (sub) jwt.setSubject(sub);

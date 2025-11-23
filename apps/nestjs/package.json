@@ -24,6 +24,7 @@
     "@nestjs/serve-static": "^5.0.4",
     "@repo/auth": "workspace:*",
     "@repo/contract": "workspace:*",
+    "@repo/event-log": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",

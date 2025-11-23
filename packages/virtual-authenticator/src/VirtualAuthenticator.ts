@@ -49,8 +49,8 @@ import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCr
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorCredentialMetaArgs = {
-  userId: string;
   origin: string;
+  userId: string;
 };
 
 export type VirtualAuthenticatorCreateCredentialArgs = {
@@ -81,14 +81,6 @@ export class VirtualAuthenticator {
   // Length (in bytes): 16
   // Zeroed-out AAGUID
   static readonly AAGUID = new Uint8Array(Buffer.alloc(16));
-
-  private _ensureBytes(data: Uint8Array | Buffer) {
-    if (data instanceof Uint8Array) {
-      return data;
-    }
-
-    return new Uint8Array(data);
-  }
 
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
@@ -475,6 +467,8 @@ export class VirtualAuthenticator {
         hasMinLength(1),
       ),
     );
+    assert(meta.userId, isString());
+    assert(meta.origin, isString());
 
     switch (publicKeyCredentialCreationOptions.attestation) {
       case Attestation.ENTERPRISE:

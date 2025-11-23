@@ -3,6 +3,7 @@ import { Prisma, type PrismaClient } from '@repo/prisma';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
 
+import { Permission } from './enums/Permission';
 import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
 import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
@@ -26,7 +27,6 @@ export const PUBLIC_API_KEY_SELECT = {
   lastUsedAt: true,
   createdAt: true,
   updatedAt: true,
-  metadata: true,
   permissions: true,
   enabled: true,
   start: true,
@@ -100,10 +100,9 @@ export class ApiKeyManager {
     userId: string;
     name?: string | null;
     expiresAt?: Date | null;
-    permissions?: Record<string, string[]> | null;
-    metadata?: Record<string, unknown> | null;
+    permissions?: Permission[] | null;
   }): Promise<{ plaintextKey: string; apiKey: ApiKey }> {
-    const { userId, name, expiresAt, permissions, metadata } = opts;
+    const { userId, name, expiresAt, permissions } = opts;
 
     const internalLookupKey = this._generateRandomString(
       this.LOOKUP_BYTE_LENGTH,
@@ -129,8 +128,7 @@ export class ApiKeyManager {
         name,
         start,
         prefix: ApiKeyManager.KEY_PREFIX,
-        permissions: this._stringifyNonNullish(permissions),
-        metadata: this._stringifyNonNullish(metadata),
+        permissions: permissions ?? undefined,
       },
     });
 
@@ -141,11 +139,7 @@ export class ApiKeyManager {
 
     return {
       plaintextKey,
-      apiKey: {
-        ...apiKey,
-        metadata: this._parseNonNullish(apiKey.metadata),
-        permissions: this._parseNonNullish(apiKey.permissions),
-      },
+      apiKey: apiKey as ApiKey,
     };
   }
 
@@ -227,11 +221,7 @@ export class ApiKeyManager {
 
     log.info('API key validated', { keyId: apiKey.id });
 
-    return {
-      ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+    return apiKey as ApiKey;
   }
 
   /**
@@ -248,11 +238,7 @@ export class ApiKeyManager {
       });
 
       log.info('API key revoked', { keyId: id });
-      return {
-        ...apiKey,
-        metadata: this._parseNonNullish(apiKey.metadata),
-        permissions: this._parseNonNullish(apiKey.permissions),
-      };
+      return apiKey as ApiKey;
     } catch {
       throw new ApiKeyRevokeFailed();
     }
@@ -261,9 +247,7 @@ export class ApiKeyManager {
   async update(opts: {
     userId: string;
     id: string;
-    data: Partial<
-      Pick<ApiKey, 'enabled' | 'name' | 'metadata' | 'expiresAt' | 'revokedAt'>
-    >;
+    data: Partial<Pick<ApiKey, 'enabled' | 'name' | 'expiresAt' | 'revokedAt'>>;
   }): Promise<ApiKey> {
     const { userId, id, data } = opts;
 
@@ -274,15 +258,10 @@ export class ApiKeyManager {
         name: data.name,
         expiresAt: data.expiresAt,
         revokedAt: data.revokedAt,
-        metadata: this._stringifyNonNullish(data.metadata),
       },
     });
 
-    return {
-      ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+    return apiKey as ApiKey;
   }
 
   /**
@@ -305,11 +284,7 @@ export class ApiKeyManager {
     }
 
     log.info('API key deleted', { keyId: id });
-    return {
-      ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+    return apiKey as ApiKey;
   }
 
   /**
@@ -327,11 +302,7 @@ export class ApiKeyManager {
       throw new ApiKeyNotFound();
     }
 
-    return {
-      ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+    return apiKey as ApiKey;
   }
 
   /**
@@ -346,10 +317,6 @@ export class ApiKeyManager {
       orderBy: { createdAt: 'desc' },
     });
 
-    return apiKeys.map((apiKey) => ({
-      ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    }));
+    return apiKeys as ApiKey[];
   }
 }

@@ -1,7 +1,7 @@
 import type { ValueOfEnum } from '@repo/types';
 
 export const TokenType = {
-  PERSONAL: 'PERSONAL',
+  USER: 'USER',
   API_KEY: 'API_KEY',
 } as const;
 
