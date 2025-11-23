@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm dotenvx next dev --turbopack",
+    "copy-deps": "copyfiles -f ../wxt/dist/Keyless.* public/generated/",
+    "prebuild": "pnpm copy-deps",
     "build": "next build --turbopack",
     "start": "pnpm dotenvx next start",
     "lint": "eslint",
@@ -59,6 +61,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@repo/typescript-config": "workspace:*",
+    "@repo/wxt": "workspace:*",
     "@tailwindcss/postcss": "^4",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.9.1",

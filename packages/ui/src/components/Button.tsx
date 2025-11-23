@@ -10,7 +10,6 @@ import { match } from 'ts-pattern';
 
 export type ButtonProps = {
   isLoading?: boolean;
-  href?: string;
   asChild?: boolean;
 } & ComponentProps<'button'> &
   VariantProps<typeof buttonVariants>;
@@ -19,19 +18,16 @@ export const Button = ({
   isLoading,
   children,
   className,
-  href,
   asChild,
   ...restProps
 }: ButtonProps) => {
-  const _asChild = asChild ?? !!href;
-
   return (
     <ButtonUI
       {...restProps}
-      asChild={_asChild}
+      asChild={!isLoading && asChild}
       className={cn('cursor-pointer', className)}
     >
-      {match({ isLoading, href })
+      {match({ isLoading })
         .with({ isLoading: true }, () => <Spinner />)
         .otherwise(() => children)}
     </ButtonUI>

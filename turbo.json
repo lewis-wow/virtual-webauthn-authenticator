@@ -12,42 +12,12 @@
     "@repo/console#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**"]
-    },
-    "@repo/plasmo#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["build/**"]
+      "outputs": [".next/**", "public/generated/**"]
     },
     "@repo/prisma#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["src/generated/client/**"]
-    },
-    "@repo/types#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": []
-    },
-    "@repo/validation#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["src/index.ts"]
-    },
-    "@repo/enums#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["src/index.ts"]
-    },
-    "@repo/exception#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["src/index.ts"]
-    },
-    "@repo/utils#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["src/index.ts"]
     },
     "lint": {
       "dependsOn": ["^lint"]

@@ -11,7 +11,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@repo/ui/components/ui/sidebar';
-import { LayoutDashboard, Settings2, Key, Fingerprint } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Settings2,
+  Key,
+  Fingerprint,
+  Blocks,
+} from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import * as React from 'react';
@@ -38,6 +44,11 @@ const data = {
       title: 'Credentials',
       url: '/dashboard/credentials',
       icon: Fingerprint,
+    },
+    {
+      title: 'Browser extension',
+      url: '/dashboard/browser-extension',
+      icon: Blocks,
     },
   ],
   navSecondary: [
