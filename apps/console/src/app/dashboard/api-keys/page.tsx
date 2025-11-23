@@ -114,7 +114,11 @@ const ApiKeysPage = () => {
                   </div>
 
                   <div className="w-full sm:w-[180px]">
-                    <SelectField name="expiresAt" items={EXPIRATION_OPTIONS} />
+                    <SelectField
+                      name="expiresAt"
+                      label="Expires at"
+                      items={EXPIRATION_OPTIONS}
+                    />
                   </div>
                 </div>
 

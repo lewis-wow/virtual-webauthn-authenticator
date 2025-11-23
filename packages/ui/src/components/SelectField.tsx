@@ -13,18 +13,17 @@ import {
   SelectValue,
 } from '@repo/ui/components/ui/select';
 import type { CommonFieldProps } from '@repo/ui/types';
+import { isEqual } from 'lodash-es';
 import { useFormContext } from 'react-hook-form';
 
 import { FormLabel } from './FormLabel';
 
-export type SelectFieldItem<T> = {
-  value: T;
+export type SelectFieldItem<TValue> = {
+  value: TValue;
   label: string;
 };
 
-export type SelectFieldProps<
-  TValue, // The generic type for your complex value
-> = {
+export type SelectFieldProps<TValue> = {
   items: SelectFieldItem<TValue>[];
 } & CommonFieldProps;
 
@@ -44,8 +43,8 @@ export const SelectField = <TValue,>({
         // 1. THE BRIDGE (Value -> UI)
         // Find the index of the item that matches the current field value.
         // We use reference equality (===) by default, which works perfectly for class instances.
-        const selectedIndex = items.findIndex(
-          (item) => item.value === field.value,
+        const selectedIndex = items.findIndex((item) =>
+          isEqual(item.value, field.value),
         );
 
         // Convert that index to a string for Shadcn/Radix ("0", "1", etc.)
@@ -75,7 +74,7 @@ export const SelectField = <TValue,>({
               required={required}
             >
               <FormControl>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full cursor-pointer">
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
               </FormControl>
@@ -83,7 +82,11 @@ export const SelectField = <TValue,>({
                 {items.map((item, index) => (
                   // 3. DUMMY VALUES
                   // We simply use the array index as the unique identifier for the UI.
-                  <SelectItem key={index} value={index.toString()}>
+                  <SelectItem
+                    key={index}
+                    value={index.toString()}
+                    className="cursor-pointer"
+                  >
                     {item.label}
                   </SelectItem>
                 ))}
