@@ -23,7 +23,10 @@ export const TreeViewField = ({
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItemContainer {...formItemContainerProps}>
+        <FormItemContainer
+          {...formItemContainerProps}
+          descriptionPosition="top"
+        >
           <FormControl>
             <TreeView
               data={nodes}

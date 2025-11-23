@@ -13,6 +13,7 @@ export type FormItemContainerProps = {
   hint?: ReactNode;
   required?: boolean;
   description?: ReactNode;
+  descriptionPosition?: 'top' | 'bottom';
   className?: string;
   children?: ReactNode;
 };
@@ -22,6 +23,7 @@ export const FormItemContainer = ({
   hint,
   required,
   description,
+  descriptionPosition = 'bottom',
   className,
   children,
 }: FormItemContainerProps) => {
@@ -35,8 +37,13 @@ export const FormItemContainer = ({
           required={required}
         />
       )}
+      {descriptionPosition === 'top' && description && (
+        <FormDescription>{description}</FormDescription>
+      )}
       {children}
-      {description && <FormDescription>{description}</FormDescription>}
+      {descriptionPosition === 'bottom' && description && (
+        <FormDescription>{description}</FormDescription>
+      )}
       <FormMessage />
     </FormItemUI>
   );
