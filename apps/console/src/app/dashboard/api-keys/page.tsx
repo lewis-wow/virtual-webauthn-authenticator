@@ -4,15 +4,15 @@ import { ApiKey } from '@/components/ApiKey';
 import { Page } from '@/components/Page';
 import { tsr } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
-import { ApiKeyPermissionCredentials } from '@repo/auth/enums';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
 import { Button } from '@repo/ui/components/Button';
-import { CheckboxField } from '@repo/ui/components/CheckboxField';
 import { Guard } from '@repo/ui/components/Guard/Guard';
 import { SelectField } from '@repo/ui/components/SelectField';
 import { Stack } from '@repo/ui/components/Stack';
 import { TextField } from '@repo/ui/components/TextField';
+import { type TreeNode } from '@repo/ui/components/TreeView';
+import { TreeViewField } from '@repo/ui/components/TreeViewField';
 import {
   Card,
   CardContent,
@@ -20,16 +20,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
-import { Checkbox } from '@repo/ui/components/ui/checkbox';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@repo/ui/components/ui/form';
+import { Form } from '@repo/ui/components/ui/form';
 import { Schema } from 'effect';
 import { Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -42,6 +33,26 @@ const EXPIRATION_OPTIONS = [
   { label: '90 Days', value: { days: 90 } },
   { label: '1 Year', value: { years: 1 } },
 ] as { label: string; value: Duration | null }[];
+
+const permissionsTree: TreeNode[] = [
+  {
+    id: 'users',
+    label: 'Users Resource',
+    children: [
+      { id: 'users.read', label: 'Read Users' },
+      { id: 'users.write', label: 'Write Users' },
+      { id: 'users.delete', label: 'Delete Users' },
+    ],
+  },
+  {
+    id: 'billing',
+    label: 'Billing Resource',
+    children: [
+      { id: 'billing.read', label: 'View Invoices' },
+      { id: 'billing.write', label: 'Edit Payment Methods' },
+    ],
+  },
+];
 
 const ApiKeysPage = () => {
   const queryClient = tsr.useQueryClient();
@@ -73,9 +84,7 @@ const ApiKeysPage = () => {
       name: '',
       enabled: true,
       expiresAt: null,
-      permissions: {
-        credentials: [],
-      },
+      permissions: undefined,
     },
   });
 
@@ -122,33 +131,12 @@ const ApiKeysPage = () => {
                   </div>
                 </div>
 
-                {/* Permissions Section */}
-                <FormField
-                  control={form.control}
+                <TreeViewField
+                  nodes={permissionsTree}
                   name="permissions"
-                  render={() => (
-                    <FormItem>
-                      <div>
-                        <FormLabel className="text-base">Permissions</FormLabel>
-                        <FormDescription>
-                          Select what credentials this API key can access.
-                        </FormDescription>
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
-                        {Object.values(ApiKeyPermissionCredentials).map(
-                          (permission) => (
-                            <CheckboxField
-                              label={permission}
-                              key={permission}
-                              name="permissions.credentials"
-                              value={permission}
-                            />
-                          ),
-                        )}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  label="Permissions"
+                  required
+                  description="Select what credentials this API key can access."
                 />
 
                 <div className="flex justify-end">

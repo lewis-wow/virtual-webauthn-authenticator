@@ -1,12 +1,6 @@
 import { Button } from '@repo/ui/components/ui/button';
 import { Calendar } from '@repo/ui/components/ui/calendar';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@repo/ui/components/ui/form';
+import { FormControl, FormField } from '@repo/ui/components/ui/form';
 import {
   Popover,
   PopoverContent,
@@ -19,24 +13,21 @@ import { cs } from 'date-fns/locale';
 import { CalendarIcon } from 'lucide-react';
 import { useFormContext } from 'react-hook-form';
 
-import { FormLabel } from './FormLabel';
+import { FormItemContainer } from './FormItemContainer';
 
 export type DateFieldProps = {} & CommonFieldProps;
 
 export const DateField = ({ ...commonProps }: DateFieldProps) => {
   const form = useFormContext();
 
-  const { name, label, hint, placeholder, description, required } = commonProps;
+  const { name, placeholder, ...formItemContainerProps } = commonProps;
 
   return (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex w-full flex-col">
-          {(!!label || !!hint || !!required) && (
-            <FormLabel label={label} hint={hint} required={required} />
-          )}
+        <FormItemContainer {...formItemContainerProps}>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -70,9 +61,7 @@ export const DateField = ({ ...commonProps }: DateFieldProps) => {
               />
             </PopoverContent>
           </Popover>
-          {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
-        </FormItem>
+        </FormItemContainer>
       )}
     />
   );

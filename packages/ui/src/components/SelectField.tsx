@@ -1,10 +1,4 @@
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@repo/ui/components/ui/form';
+import { FormControl, FormField } from '@repo/ui/components/ui/form';
 import {
   Select,
   SelectContent,
@@ -16,7 +10,7 @@ import type { CommonFieldProps } from '@repo/ui/types';
 import { isEqual } from 'lodash-es';
 import { useFormContext } from 'react-hook-form';
 
-import { FormLabel } from './FormLabel';
+import { FormItemContainer } from './FormItemContainer';
 
 export type SelectFieldItem<TValue> = {
   value: TValue;
@@ -33,7 +27,7 @@ export const SelectField = <TValue,>({
 }: SelectFieldProps<TValue>) => {
   const form = useFormContext();
 
-  const { name, label, hint, placeholder, description, required } = commonProps;
+  const { name, placeholder, ...formItemContainerProps } = commonProps;
 
   return (
     <FormField
@@ -53,10 +47,7 @@ export const SelectField = <TValue,>({
           selectedIndex !== -1 ? selectedIndex.toString() : undefined;
 
         return (
-          <FormItem className="w-full">
-            {(!!label || !!hint || !!required) && (
-              <FormLabel label={label} hint={hint} required={required} />
-            )}
+          <FormItemContainer {...formItemContainerProps}>
             <Select
               // 2. THE BRIDGE (UI -> Value)
               // When UI changes, we get the string index ("0").
@@ -71,7 +62,6 @@ export const SelectField = <TValue,>({
               }}
               value={uiValue}
               defaultValue={uiValue}
-              required={required}
             >
               <FormControl>
                 <SelectTrigger className="w-full cursor-pointer">
@@ -92,9 +82,7 @@ export const SelectField = <TValue,>({
                 ))}
               </SelectContent>
             </Select>
-            {description && <FormDescription>{description}</FormDescription>}
-            <FormMessage />
-          </FormItem>
+          </FormItemContainer>
         );
       }}
     />

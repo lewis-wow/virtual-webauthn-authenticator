@@ -1,16 +1,10 @@
-import { FormLabel } from '@repo/ui/components/FormLabel';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@repo/ui/components/ui/form';
+import { FormControl, FormField } from '@repo/ui/components/ui/form';
 import { Input } from '@repo/ui/components/ui/input';
-import { cn } from '@repo/ui/lib/utils';
 import type { CommonFieldProps } from '@repo/ui/types';
 import type { HTMLInputAutoCompleteAttribute } from 'react';
 import { useFormContext } from 'react-hook-form';
+
+import { FormItemContainer } from './FormItemContainer';
 
 export type TextFieldProps = {
   type?: 'text' | 'email' | 'password';
@@ -24,7 +18,7 @@ export const TextField = ({
 }: TextFieldProps) => {
   const form = useFormContext();
 
-  const { name, label, hint, placeholder, description, required, className } =
+  const { name, placeholder, required, ...formItemContainerProps } =
     commonProps;
 
   return (
@@ -32,10 +26,7 @@ export const TextField = ({
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn('w-full', className)}>
-          {(!!label || !!hint || !!required) && (
-            <FormLabel label={label} hint={hint} required={required} />
-          )}
+        <FormItemContainer {...formItemContainerProps}>
           <FormControl>
             <Input
               autoComplete={autoComplete}
@@ -45,9 +36,7 @@ export const TextField = ({
               {...field}
             />
           </FormControl>
-          {description && <FormDescription>{description}</FormDescription>}
-          <FormMessage />
-        </FormItem>
+        </FormItemContainer>
       )}
     />
   );
