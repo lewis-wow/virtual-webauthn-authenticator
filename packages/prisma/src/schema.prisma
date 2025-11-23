@@ -80,19 +80,19 @@ model Verification {
 }
 
 model Apikey {
-  id          String    @id @default(uuid())
-  lookupKey   String    @unique
+  id          String       @id @default(uuid())
+  lookupKey   String       @unique
   name        String?
   prefix      String?
   start       String?
   hashedKey   String
   userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled     Boolean   @default(true)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled     Boolean      @default(true)
   expiresAt   DateTime?
   revokedAt   DateTime?
   lastUsedAt  DateTime?
-  permissions String?
+  permissions Permission[]
   metadata    String?
 
   createdAt DateTime @default(now())
@@ -116,20 +116,25 @@ model Jwks {
 model Permission {
   id String @id @default(uuid())
 
-  action       PermissionAction // e.g., READ, CREATE
-  resourceType ResourceType // e.g., API_KEYS, PRODUCTS
+  action       String // e.g., READ, CREATE
+  resourceType String // e.g., API_KEYS, PRODUCTS
 
   // Optionally, specify a single resource ID this permission applies to.
   // If null, it applies to all resources of the given type.
   resourceId String?
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissionSubject PermissionSubject
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  apiKeyId String?
+  apiKey   Apikey? @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // A user can only have one type of action for a specific resource type/ID combination.
+  @@unique([apiKeyId, action, resourceType, resourceId])
   @@unique([userId, action, resourceType, resourceId])
   @@map("permission")
 }
@@ -177,21 +182,14 @@ model WebAuthnCredentialKeyVaultKeyMeta {
   @@map("webAuthnCredentialKeyVaultKeyMeta")
 }
 
-enum ResourceType {
-  API_KEYS
-  CREDENTIALS
-}
-
-enum PermissionAction {
-  CREATE
-  READ
-  UPDATE
-  DELETE
-}
-
 enum ApiKeyType {
   INTERNAL_API_KEY
   EXTERNAL_API_KEY
+}
+
+enum PermissionSubject {
+  API_KEY
+  USER
 }
 
 enum WebAuthnCredentialKeyMetaType {

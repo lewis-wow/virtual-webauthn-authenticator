@@ -4,41 +4,22 @@ import {
   USER_NAME,
 } from '../../../core/__tests__/helpers/consts';
 
-import { Prisma, PrismaClient } from '@repo/prisma';
+import { PrismaClient } from '@repo/prisma';
 
 export const upsertTestingUser = async (opts: { prisma: PrismaClient }) => {
   const { prisma } = opts;
 
-  try {
-    // Try the upsert
-    const user = await prisma.user.upsert({
-      where: { id: USER_ID },
-      update: {},
-      create: {
-        id: USER_ID,
-        name: USER_NAME,
-        email: USER_EMAIL,
-        createdAt: new Date(0),
-        updatedAt: new Date(0),
-      },
-    });
-    return user;
-  } catch (e) {
-    // Check if the error is the expected race condition error
-    if (
-      e instanceof Prisma.PrismaClientKnownRequestError &&
-      e.code === 'P2002'
-    ) {
-      // The user was created by a parallel process.
-      // We can now safely fetch the user.
-      console.warn(`Prisma upsert race condition handled for user: ${USER_ID}`);
-      // Use findUniqueOrThrow to ensure the user exists and return it
-      return await prisma.user.findUniqueOrThrow({
-        where: { id: USER_ID },
-      });
-    }
+  const user = await prisma.user.upsert({
+    where: { id: USER_ID },
+    update: {},
+    create: {
+      id: USER_ID,
+      name: USER_NAME,
+      email: USER_EMAIL,
+      createdAt: new Date(0),
+      updatedAt: new Date(0),
+    },
+  });
 
-    // If it's any other error, re-throw it
-    throw e;
-  }
+  return user;
 };
