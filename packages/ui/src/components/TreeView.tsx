@@ -62,19 +62,26 @@ export const TreeItem = ({
   selectedIds,
   onSelectChange,
 }: TreeItemProps) => {
-  const [isOpen, setIsOpen] = React.useState(false);
+  // 1. Calculate Selection Logic FIRST (before initializing state)
   const hasChildren = node.children && node.children.length > 0;
 
-  // 1. Determine State
   const leafIds = getLeafIds(node);
   const selectedLeafIds = leafIds.filter((id) => selectedIds.includes(id));
 
+  // Check if this branch has any selected items (either fully checked or indeterminate)
+  const hasSelection = selectedLeafIds.length > 0;
+
+  // 2. Initialize State based on selection
+  // If it has selection, default to true (open), otherwise false (closed)
+  const [isOpen, setIsOpen] = React.useState(hasSelection);
+
+  // 3. Derived values for the checkbox UI
   const isChecked =
     leafIds.length > 0 && selectedLeafIds.length === leafIds.length;
   const isIndeterminate =
     selectedLeafIds.length > 0 && selectedLeafIds.length < leafIds.length;
 
-  // 2. Handle Checkbox Click
+  // 4. Handle Checkbox Click
   const handleCheckedChange = (checked: boolean) => {
     let newSelectedIds = [...selectedIds];
 
@@ -96,15 +103,13 @@ export const TreeItem = ({
     >
       <div
         // ROW CLICK: Toggles the folder (Collapsible)
-        // We use 'flex' to stretch across the width
         onClick={() => hasChildren && setIsOpen((prev) => !prev)}
         className={cn(
           'flex items-center rounded-md p-1 hover:bg-muted/50 w-full',
-          // Cursor logic: If it's a folder, the empty space is a pointer (to expand)
           hasChildren ? 'cursor-pointer' : 'cursor-default',
         )}
       >
-        {/* Chevron: Visual indicator only */}
+        {/* Chevron */}
         {hasChildren ? (
           <div
             className={cn(
@@ -118,11 +123,7 @@ export const TreeItem = ({
           <span className="h-4 w-4 shrink-0" />
         )}
 
-        {/* CHECKBOX + LABEL GROUP */}
-        {/* 1. We wrap this in a div with stopPropagation.
-               This ensures clicking the box/text DOES NOT trigger the row click (expand).
-            2. We use the Label component so clicking the text ticks the box.
-         */}
+        {/* CHECKBOX + LABEL */}
         <div
           onClick={(e) => e.stopPropagation()}
           className="flex items-center ml-2"

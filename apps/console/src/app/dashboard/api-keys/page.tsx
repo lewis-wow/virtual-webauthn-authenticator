@@ -36,20 +36,17 @@ const EXPIRATION_OPTIONS = [
 
 const permissionsTree: TreeNode[] = [
   {
-    id: 'users',
-    label: 'Users Resource',
+    id: 'credentials',
+    label: 'Credentials Resource',
     children: [
-      { id: 'users.read', label: 'Read Users' },
-      { id: 'users.write', label: 'Write Users' },
-      { id: 'users.delete', label: 'Delete Users' },
-    ],
-  },
-  {
-    id: 'billing',
-    label: 'Billing Resource',
-    children: [
-      { id: 'billing.read', label: 'View Invoices' },
-      { id: 'billing.write', label: 'Edit Payment Methods' },
+      {
+        id: 'credentials.getOnlyCreatedBySelf',
+        label: 'Get Only Created Creadentails By Self',
+      },
+      { id: 'credentials.createOnce', label: 'Create Credential Once' },
+      { id: 'credentials.get', label: 'Get Credentails' },
+      { id: 'credentials.create', label: 'Create Credentails' },
+      { id: 'credentials.delete', label: 'Delete Credentials' },
     ],
   },
 ];
@@ -67,7 +64,9 @@ const ApiKeysPage = () => {
         name: '',
         enabled: true,
         expiresAt: null,
-        permissions: {},
+        permissions: {
+          credentials: ['getOnlyCreatedBySelf', 'createOnce'],
+        },
       });
 
       toast('API key has been created.');
@@ -84,7 +83,9 @@ const ApiKeysPage = () => {
       name: '',
       enabled: true,
       expiresAt: null,
-      permissions: undefined,
+      permissions: {
+        credentials: ['getOnlyCreatedBySelf', 'createOnce'],
+      },
     },
   });
 
