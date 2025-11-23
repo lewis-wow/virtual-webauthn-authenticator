@@ -18,8 +18,7 @@ export const TextField = ({
 }: TextFieldProps) => {
   const form = useFormContext();
 
-  const { name, placeholder, required, ...formItemContainerProps } =
-    commonProps;
+  const { name, placeholder, ...formItemContainerProps } = commonProps;
 
   return (
     <FormField
@@ -32,7 +31,6 @@ export const TextField = ({
               autoComplete={autoComplete}
               placeholder={placeholder}
               type={type}
-              required={required}
               {...field}
             />
           </FormControl>

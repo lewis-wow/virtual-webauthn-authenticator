@@ -30,7 +30,6 @@ export const TreeViewField = ({
               selectedIds={PermissionMapper.toTreeIds(field.value || {})}
               onSelectChange={(ids) => {
                 const value = PermissionMapper.fromTreeIds(ids);
-                console.log({ ids, value });
                 field.onChange(value);
               }}
             />
