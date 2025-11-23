@@ -46,8 +46,12 @@ apiKey.on(
 
     const token = await jwtIssuer.sign({
       sub: apiKey.id,
-      apiKey,
-      user,
+      apiKeyId: apiKey.id,
+      userId: user.id,
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      permissions: apiKey.permissions,
       tokenType: TokenType.API_KEY,
     });
 
@@ -70,7 +74,6 @@ apiKey.post(
       userId: ctx.var.user!.id,
       name: json.name,
       permissions: json.permissions,
-      metadata: json.metadata,
       expiresAt,
     });
 
@@ -121,7 +124,6 @@ apiKey.put(
       data: {
         name: json.name,
         enabled: json.enabled,
-        metadata: json.metadata,
         expiresAt: json.expiresAt,
         revokedAt: json.revokedAt,
       },

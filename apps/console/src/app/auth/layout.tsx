@@ -17,9 +17,7 @@ export default async function AuthLayout({
     },
   });
 
-  console.log({ profileGetQuery });
-
-  if (profileGetQuery.body.jwtPayload?.user !== undefined) {
+  if (profileGetQuery.body.jwtPayload?.userId !== undefined) {
     redirect('/dashboard');
   }
 

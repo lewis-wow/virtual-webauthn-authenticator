@@ -31,12 +31,12 @@ export class WebAuthnCredentialsController {
   @UseGuards(AuthenticatedGuard)
   async listWebAuthnCredentials(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.webAuthnCredentials.list, async () => {
-      const { user } = jwtPayload;
+      const { userId } = jwtPayload;
 
       const webAuthnCredentials = await this.prisma.webAuthnCredential.findMany(
         {
           where: {
-            userId: user.id,
+            userId: userId,
             webAuthnCredentialKeyMetaType:
               WebAuthnCredentialKeyMetaType.KEY_VAULT,
           },
@@ -61,13 +61,13 @@ export class WebAuthnCredentialsController {
     return tsRestHandler(
       contract.api.webAuthnCredentials.get,
       async ({ params }) => {
-        const { user } = jwtPayload;
+        const { userId } = jwtPayload;
 
         const webAuthnCredential =
           await this.prisma.webAuthnCredential.findUniqueOrThrow({
             where: {
               id: params.id,
-              userId: user.id,
+              userId: userId,
             },
             include: {
               webAuthnCredentialKeyVaultKeyMeta: true,
@@ -90,12 +90,12 @@ export class WebAuthnCredentialsController {
     return tsRestHandler(
       contract.api.webAuthnCredentials.delete,
       async ({ params }) => {
-        const { user } = jwtPayload;
+        const { userId } = jwtPayload;
 
         const webAuthnCredential = await this.prisma.webAuthnCredential.delete({
           where: {
             id: params.id,
-            userId: user.id,
+            userId: userId,
           },
           include: {
             webAuthnCredentialKeyVaultKeyMeta: true,
@@ -104,7 +104,7 @@ export class WebAuthnCredentialsController {
 
         this.logger.debug('Removing WebAuthnCredential.', {
           webAuthnCredential,
-          userId: user.id,
+          userId: userId,
         });
 
         if (

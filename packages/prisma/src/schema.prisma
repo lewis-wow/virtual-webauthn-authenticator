@@ -94,7 +94,6 @@ model Apikey {
   revokedAt   DateTime?
   lastUsedAt  DateTime?
   permissions String[]
-  metadata    String?
   eventLogs   EventLog[]
 
   createdAt DateTime @default(now())

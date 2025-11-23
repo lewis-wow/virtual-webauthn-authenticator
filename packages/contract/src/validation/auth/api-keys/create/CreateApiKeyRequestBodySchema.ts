@@ -3,7 +3,7 @@ import { DurationSchema } from '@repo/core/validation';
 import { Schema } from 'effect';
 
 export const CreateApiKeyRequestBodySchema = Schema.extend(
-  ApiKeySchema.pick('name', 'permissions', 'metadata', 'enabled'),
+  ApiKeySchema.pick('name', 'permissions', 'enabled'),
   Schema.Struct({
     expiresAt: Schema.optional(Schema.NullOr(DurationSchema)),
   }),

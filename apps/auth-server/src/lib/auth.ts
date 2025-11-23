@@ -39,13 +39,11 @@ export const auth = betterAuth({
             jti: payload.jti,
             nbf: payload.nbf,
             sub: payload.sub,
-            user: {
-              id: payload.id as string,
-              name: payload.name as string,
-              email: payload.email as string,
-              image: payload.image as string | null,
-            },
-            tokenType: TokenType.PERSONAL,
+            userId: payload.id as string,
+            name: payload.name as string,
+            email: payload.email as string,
+            image: payload.image as string | null,
+            tokenType: TokenType.USER,
           };
 
           return await jwtIssuer.sign(jwtPayload);

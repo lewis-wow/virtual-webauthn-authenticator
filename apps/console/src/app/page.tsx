@@ -13,7 +13,7 @@ const IndexPage = async () => {
     },
   });
 
-  if (profileGetQuery.body.jwtPayload?.user === undefined) {
+  if (profileGetQuery.body.jwtPayload?.userId === undefined) {
     redirect('/auth/signin');
   }
 
