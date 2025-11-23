@@ -2,7 +2,6 @@ import { Checkbox } from '@repo/ui/components/ui/checkbox';
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from '@repo/ui/components/ui/collapsible';
 import { cn } from '@repo/ui/lib/utils';
 import { ChevronRight } from 'lucide-react';
@@ -23,7 +22,7 @@ export type TreeViewProps = {
   onSelectChange: (ids: string[]) => void;
 };
 
-// --- Helper: Get all leaf IDs (nodes without children) recursively ---
+// --- Helper: Get all leaf IDs ---
 const getLeafIds = (node: TreeNode): string[] => {
   if (!node.children || node.children.length === 0) {
     return [node.id];
@@ -66,7 +65,7 @@ export const TreeItem = ({
   const [isOpen, setIsOpen] = React.useState(false);
   const hasChildren = node.children && node.children.length > 0;
 
-  // 1. Determine State based on Leaf IDs only
+  // 1. Determine State
   const leafIds = getLeafIds(node);
   const selectedLeafIds = leafIds.filter((id) => selectedIds.includes(id));
 
@@ -75,16 +74,14 @@ export const TreeItem = ({
   const isIndeterminate =
     selectedLeafIds.length > 0 && selectedLeafIds.length < leafIds.length;
 
-  // 2. Handle Click
+  // 2. Handle Checkbox Click
   const handleCheckedChange = (checked: boolean) => {
     let newSelectedIds = [...selectedIds];
 
     if (checked) {
-      // Add all missing leaf IDs from this branch
       const idsToAdd = leafIds.filter((id) => !selectedIds.includes(id));
       newSelectedIds = [...newSelectedIds, ...idsToAdd];
     } else {
-      // Remove all leaf IDs from this branch
       newSelectedIds = newSelectedIds.filter((id) => !leafIds.includes(id));
     }
 
@@ -97,36 +94,51 @@ export const TreeItem = ({
       onOpenChange={setIsOpen}
       className="w-full space-y-1"
     >
-      <div className="flex items-center space-x-2 rounded-md p-1 hover:bg-muted/50">
-        {/* Collapsible Trigger */}
+      <div
+        // ROW CLICK: Toggles the folder (Collapsible)
+        // We use 'flex' to stretch across the width
+        onClick={() => hasChildren && setIsOpen((prev) => !prev)}
+        className={cn(
+          'flex items-center rounded-md p-1 hover:bg-muted/50 w-full',
+          // Cursor logic: If it's a folder, the empty space is a pointer (to expand)
+          hasChildren ? 'cursor-pointer' : 'cursor-default',
+        )}
+      >
+        {/* Chevron: Visual indicator only */}
         {hasChildren ? (
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                'h-4 w-4 shrink-0 transition-transform duration-200',
-                isOpen && 'rotate-90',
-              )}
-            >
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </button>
-          </CollapsibleTrigger>
+          <div
+            className={cn(
+              'flex h-4 w-4 shrink-0 items-center justify-center transition-transform duration-200 text-muted-foreground',
+              isOpen && 'rotate-90',
+            )}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </div>
         ) : (
-          <span className="h-4 w-4" />
+          <span className="h-4 w-4 shrink-0" />
         )}
 
-        {/* Checkbox */}
-        <Label className="cursor-pointer">
-          <Checkbox
-            checked={
-              isChecked ? true : isIndeterminate ? 'indeterminate' : false
-            }
-            onCheckedChange={handleCheckedChange}
-          />
-          <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer select-none">
-            {node.label}
-          </span>
-        </Label>
+        {/* CHECKBOX + LABEL GROUP */}
+        {/* 1. We wrap this in a div with stopPropagation.
+               This ensures clicking the box/text DOES NOT trigger the row click (expand).
+            2. We use the Label component so clicking the text ticks the box.
+         */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center ml-2"
+        >
+          <Label className="flex items-center gap-2 cursor-pointer">
+            <Checkbox
+              checked={
+                isChecked ? true : isIndeterminate ? 'indeterminate' : false
+              }
+              onCheckedChange={handleCheckedChange}
+            />
+            <span className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 select-none">
+              {node.label}
+            </span>
+          </Label>
+        </div>
       </div>
 
       {/* Children Render */}
