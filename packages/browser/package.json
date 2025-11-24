@@ -10,6 +10,8 @@
     "./standard-impl": "./src/standard-impl/index.ts"
   },
   "scripts": {
+    "build": "run-p barrel:*",
+    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
