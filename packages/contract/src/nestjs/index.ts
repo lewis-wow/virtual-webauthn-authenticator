@@ -9,10 +9,12 @@ const c = initContract();
 
 export const nestjsContract = c.router(
   {
-    healthcheck: healthcheckRouter,
-    credentials: credentialsRouter,
-    webAuthnCredentials: webAuthnCredentialsRouter,
-    profile: profileRouter,
+    api: c.router({
+      healthcheck: healthcheckRouter,
+      credentials: credentialsRouter,
+      webAuthnCredentials: webAuthnCredentialsRouter,
+      profile: profileRouter,
+    }),
   },
   {
     pathPrefix: '/api',

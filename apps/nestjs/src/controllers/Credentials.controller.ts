@@ -1,7 +1,7 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
-import { contract } from '@repo/contract';
+import { nestjsContract } from '@repo/contract/nestjs';
 import {
   CreateCredentialResponseSchema,
   GetCredentialResponseSchema,
@@ -32,117 +32,122 @@ export class CredentialsController {
     private readonly eventLog: EventLog,
   ) {}
 
-  @TsRestHandler(contract.api.credentials.create)
+  @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
-      const { userId, apiKeyId, permissions, name } = jwtPayload;
-      const { publicKeyCredentialCreationOptions, meta } = body;
+    return tsRestHandler(
+      nestjsContract.api.credentials.create,
+      async ({ body }) => {
+        const { userId, apiKeyId, permissions, name } = jwtPayload;
+        const { publicKeyCredentialCreationOptions, meta } = body;
 
-      if (
-        !permissions.includes(Permission['Credential.create']) ||
-        !permissions.includes(Permission['WebAuthnCredential.create'])
-      ) {
-        throw new Forbidden();
-      }
+        if (
+          !permissions.includes(Permission['Credential.create']) ||
+          !permissions.includes(Permission['WebAuthnCredential.create'])
+        ) {
+          throw new Forbidden();
+        }
 
-      const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-        id: UUIDMapper.UUIDtoBytes(userId),
-        name: name,
-        displayName: name,
-      };
-
-      const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
-        {
-          ...publicKeyCredentialCreationOptions,
-          user: publicKeyCredentialUserEntity,
+        const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
+          id: UUIDMapper.UUIDtoBytes(userId),
+          name: name,
+          displayName: name,
         };
 
-      this.logger.debug('Creating credential', {
-        userId: userId,
-      });
+        const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
+          {
+            ...publicKeyCredentialCreationOptions,
+            user: publicKeyCredentialUserEntity,
+          };
 
-      const publicKeyCredential =
-        await this.virtualAuthenticator.createCredential({
-          publicKeyCredentialCreationOptions:
-            publicKeyCredentialCreationOptionsWithUser,
-          meta: {
-            origin: meta.origin,
-            userId: userId,
-          },
-          context: {
-            apiKeyId: apiKeyId,
-          },
+        this.logger.debug('Creating credential', {
+          userId: userId,
         });
 
-      await this.eventLog.log({
-        action: EventLogAction.CREATE,
-        entity: EventLogEntity.CREDENTIAL,
-        entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+        const publicKeyCredential =
+          await this.virtualAuthenticator.createCredential({
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptionsWithUser,
+            meta: {
+              origin: meta.origin,
+              userId: userId,
+            },
+            context: {
+              apiKeyId: apiKeyId,
+            },
+          });
 
-        apiKeyId:
-          jwtPayload.tokenType === TokenType.API_KEY
-            ? jwtPayload.apiKeyId
-            : undefined,
-        userId: jwtPayload.userId,
-      });
+        await this.eventLog.log({
+          action: EventLogAction.CREATE,
+          entity: EventLogEntity.CREDENTIAL,
+          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
-      return {
-        status: 200,
-        body: Schema.encodeSync(CreateCredentialResponseSchema)(
-          publicKeyCredential,
-        ),
-      };
-    });
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
+
+        return {
+          status: 200,
+          body: Schema.encodeSync(CreateCredentialResponseSchema)(
+            publicKeyCredential,
+          ),
+        };
+      },
+    );
   }
 
-  @TsRestHandler(contract.api.credentials.get)
+  @TsRestHandler(nestjsContract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
   async getCredential(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(contract.api.credentials.get, async ({ body }) => {
-      const { publicKeyCredentialRequestOptions, meta } = body;
-      const { userId, apiKeyId, permissions } = jwtPayload;
+    return tsRestHandler(
+      nestjsContract.api.credentials.get,
+      async ({ body }) => {
+        const { publicKeyCredentialRequestOptions, meta } = body;
+        const { userId, apiKeyId, permissions } = jwtPayload;
 
-      if (
-        !permissions.includes(Permission['Credential.get']) ||
-        !permissions.includes(Permission['WebAuthnCredential.read'])
-      ) {
-        throw new Forbidden();
-      }
+        if (
+          !permissions.includes(Permission['Credential.get']) ||
+          !permissions.includes(Permission['WebAuthnCredential.read'])
+        ) {
+          throw new Forbidden();
+        }
 
-      this.logger.debug('Getting credential', {
-        userId: userId,
-      });
+        this.logger.debug('Getting credential', {
+          userId: userId,
+        });
 
-      const publicKeyCredential = await this.virtualAuthenticator.getCredential(
-        {
-          publicKeyCredentialRequestOptions,
-          meta: {
-            origin: meta.origin,
-            userId: userId,
-          },
-          context: { apiKeyId },
-        },
-      );
+        const publicKeyCredential =
+          await this.virtualAuthenticator.getCredential({
+            publicKeyCredentialRequestOptions,
+            meta: {
+              origin: meta.origin,
+              userId: userId,
+            },
+            context: { apiKeyId },
+          });
 
-      await this.eventLog.log({
-        action: EventLogAction.GET,
-        entity: EventLogEntity.CREDENTIAL,
-        entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+        await this.eventLog.log({
+          action: EventLogAction.GET,
+          entity: EventLogEntity.CREDENTIAL,
+          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
-        apiKeyId:
-          jwtPayload.tokenType === TokenType.API_KEY
-            ? jwtPayload.apiKeyId
-            : undefined,
-        userId: jwtPayload.userId,
-      });
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
 
-      return {
-        status: 200,
-        body: Schema.encodeSync(GetCredentialResponseSchema)(
-          publicKeyCredential,
-        ),
-      };
-    });
+        return {
+          status: 200,
+          body: Schema.encodeSync(GetCredentialResponseSchema)(
+            publicKeyCredential,
+          ),
+        };
+      },
+    );
   }
 }

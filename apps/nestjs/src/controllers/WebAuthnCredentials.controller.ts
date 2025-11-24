@@ -2,7 +2,7 @@ import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
-import { contract } from '@repo/contract';
+import { nestjsContract } from '@repo/contract/nestjs';
 import {
   DeleteWebAuthnCredentialResponseSchema,
   GetWebAuthnCredentialResponseSchema,
@@ -32,54 +32,56 @@ export class WebAuthnCredentialsController {
     private readonly eventLog: EventLog,
   ) {}
 
-  @TsRestHandler(contract.api.webAuthnCredentials.list)
+  @TsRestHandler(nestjsContract.api.webAuthnCredentials.list)
   @UseGuards(AuthenticatedGuard)
   async listWebAuthnCredentials(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(contract.api.webAuthnCredentials.list, async () => {
-      const { userId, permissions } = jwtPayload;
+    return tsRestHandler(
+      nestjsContract.api.webAuthnCredentials.list,
+      async () => {
+        const { userId, permissions } = jwtPayload;
 
-      if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
-        throw new Forbidden();
-      }
+        if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
+          throw new Forbidden();
+        }
 
-      const webAuthnCredentials = await this.prisma.webAuthnCredential.findMany(
-        {
-          where: {
-            userId: userId,
-            webAuthnCredentialKeyMetaType:
-              WebAuthnCredentialKeyMetaType.KEY_VAULT,
-          },
-          include: {
-            webAuthnCredentialKeyVaultKeyMeta: true,
-          },
-        },
-      );
+        const webAuthnCredentials =
+          await this.prisma.webAuthnCredential.findMany({
+            where: {
+              userId: userId,
+              webAuthnCredentialKeyMetaType:
+                WebAuthnCredentialKeyMetaType.KEY_VAULT,
+            },
+            include: {
+              webAuthnCredentialKeyVaultKeyMeta: true,
+            },
+          });
 
-      await this.eventLog.log({
-        action: EventLogAction.LIST,
-        entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
+        await this.eventLog.log({
+          action: EventLogAction.LIST,
+          entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
 
-        apiKeyId:
-          jwtPayload.tokenType === TokenType.API_KEY
-            ? jwtPayload.apiKeyId
-            : undefined,
-        userId: jwtPayload.userId,
-      });
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
 
-      return {
-        status: 200,
-        body: Schema.encodeSync(ListWebAuthnCredentialsResponseSchema)(
-          webAuthnCredentials as WebAuthnCredential[],
-        ),
-      };
-    });
+        return {
+          status: 200,
+          body: Schema.encodeSync(ListWebAuthnCredentialsResponseSchema)(
+            webAuthnCredentials as WebAuthnCredential[],
+          ),
+        };
+      },
+    );
   }
 
-  @TsRestHandler(contract.api.webAuthnCredentials.get)
+  @TsRestHandler(nestjsContract.api.webAuthnCredentials.get)
   @UseGuards(AuthenticatedGuard)
   async getWebAuthnCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      contract.api.webAuthnCredentials.get,
+      nestjsContract.api.webAuthnCredentials.get,
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
@@ -119,11 +121,11 @@ export class WebAuthnCredentialsController {
     );
   }
 
-  @TsRestHandler(contract.api.webAuthnCredentials.delete)
+  @TsRestHandler(nestjsContract.api.webAuthnCredentials.delete)
   @UseGuards(AuthenticatedGuard)
   async deleteWebAuthnCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      contract.api.webAuthnCredentials.delete,
+      nestjsContract.api.webAuthnCredentials.delete,
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 

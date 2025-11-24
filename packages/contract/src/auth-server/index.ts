@@ -6,7 +6,11 @@ const c = initContract();
 
 export const authServerContract = c.router(
   {
-    apiKeys: apiKeysRouter,
+    api: c.router({
+      auth: c.router({
+        apiKeys: apiKeysRouter,
+      }),
+    }),
   },
   {
     pathPrefix: '/api/auth',
