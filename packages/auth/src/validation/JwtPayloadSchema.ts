@@ -14,17 +14,17 @@ export const JwtPayloadSchema = Schema.extend(
       name: UserSchema.fields.name,
       email: UserSchema.fields.email,
       image: UserSchema.fields.image,
-      permissions: Schema.optional(
-        Schema.NullOr(Schema.mutable(Schema.Array(PermissionSchema))),
-      ),
+      permissions: Schema.mutable(Schema.Array(PermissionSchema)),
     }),
     Schema.Union(
       Schema.Struct({
         tokenType: Schema.Literal(TokenType.USER),
+        apiKeyId: Schema.Null,
       }),
       Schema.Struct({
         tokenType: Schema.Literal(TokenType.API_KEY),
         apiKeyId: ApiKeySchema.fields.id,
+        createdWebAuthnCredentialCount: Schema.Number,
       }),
     ),
   ),

@@ -9,6 +9,7 @@
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
     "./abilities": "./src/abilities/index.ts",
+    "./repositories": "./src/repositories/index.ts",
     "./__mocks__": "./__mocks__/index.ts"
   },
   "scripts": {

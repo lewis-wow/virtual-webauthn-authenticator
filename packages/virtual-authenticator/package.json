@@ -10,6 +10,7 @@
     "./validation": "./src/validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
     "./types": "./src/types/index.ts",
+    "./repositories": "./src/repositories/index.ts",
     "./__test__/helpers": "./__test__/helpers/index.ts"
   },
   "scripts": {
@@ -19,11 +20,11 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/vitest-config": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
@@ -42,6 +43,7 @@
     "class-transformer": "^0.5.1",
     "effect": "^3.19.4",
     "reflect-metadata": "^0.2.2",
+    "ts-pattern": "^5.8.0",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }

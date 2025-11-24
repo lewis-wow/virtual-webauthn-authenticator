@@ -1,5 +1,6 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
-import { Permission, TokenType } from '@repo/auth/enums';
+import { Ability } from '@repo/auth/abilities';
+import { Permission, PermissionEntity, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 import { contract } from '@repo/contract';
 import {
@@ -8,7 +9,7 @@ import {
 } from '@repo/contract/validation';
 import { UUIDMapper } from '@repo/core/mappers';
 import { EventLog } from '@repo/event-log';
-import { Forbidden } from '@repo/exception/http';
+import { Forbidden, Unauthorized } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { EventAction } from '@repo/prisma';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
@@ -39,20 +40,13 @@ export class CredentialsController {
   @UseGuards(AuthenticatedGuard)
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
-      if (!jwtPayload.permissions?.includes(Permission['credential.create'])) {
+      const ability = Ability.forJwt(jwtPayload);
+
+      if (
+        ability.cannot('create', PermissionEntity.Credential) ||
+        ability.cannot('create', PermissionEntity.WebAuthnCredential)
+      ) {
         throw new Forbidden();
-      }
-
-      if (jwtPayload.tokenType === TokenType.API_KEY) {
-        const eventAlreadyOccured = await this.eventLog.hasOccurred({
-          action: EventAction.CREATE,
-          entity: 'WebAuthnCredential',
-          apiKeyId: jwtPayload.apiKeyId,
-        });
-
-        if (eventAlreadyOccured) {
-          throw new Forbidden();
-        }
       }
 
       const { userId, name } = jwtPayload;
@@ -111,7 +105,27 @@ export class CredentialsController {
       const { publicKeyCredentialRequestOptions, meta } = body;
       const { userId } = jwtPayload;
 
-      if (!jwtPayload.permissions?.includes(Permission['credential.get'])) {
+      const ability = Ability.forJwt(jwtPayload);
+      const webAuthnCredential =
+        await this.prisma.webAuthnCredential.findFirstOrThrow({
+          where:
+            VirtualAuthenticator.createFindFirstMatchingCredentialWhereInput({
+              publicKeyCredentialRequestOptions,
+              userId,
+            }),
+          select: {
+            apiKeyId: true,
+          },
+        });
+
+      if (
+        ability.cannot('get', PermissionEntity.Credential) ||
+        ability.cannot(
+          'read',
+          PermissionEntity.WebAuthnCredential,
+          webAuthnCredential,
+        )
+      ) {
         throw new Forbidden();
       }
 

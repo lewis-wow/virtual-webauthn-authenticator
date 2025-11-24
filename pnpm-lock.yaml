@@ -1496,6 +1496,9 @@ importers:
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
+      ts-pattern:
+        specifier: ^5.8.0
+        version: 5.8.0
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
