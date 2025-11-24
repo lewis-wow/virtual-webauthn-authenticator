@@ -13,6 +13,7 @@ export const UserSchema = Schema.Struct({
   updatedAt: Schema.DateFromString,
 }).annotations({
   identifier: 'User',
+  title: 'User',
 });
 
 export type User = Schema.Schema.Type<typeof UserSchema>;

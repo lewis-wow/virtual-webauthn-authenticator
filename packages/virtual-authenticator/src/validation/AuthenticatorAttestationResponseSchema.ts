@@ -21,6 +21,7 @@ export const AuthenticatorAttestationResponseSchema = Schema.extend(
   }),
 ).annotations({
   identifier: 'AuthenticatorAttestationResponse',
+  title: 'AuthenticatorAttestationResponse',
   ref: 'AuthenticatorAttestationResponse',
   description: `The JSON payload for a registration verification. ${see(
     'https://www.w3.org/TR/webauthn/#authenticatorattestationresponse',

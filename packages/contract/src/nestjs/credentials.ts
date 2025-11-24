@@ -16,6 +16,7 @@ export const credentialsRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(CreateCredentialResponseSchema),
     },
+    summary: 'Create a new credential',
   },
   get: {
     method: 'POST',
@@ -24,5 +25,6 @@ export const credentialsRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(GetCredentialResponseSchema),
     },
+    summary: 'Get a credential',
   },
 });

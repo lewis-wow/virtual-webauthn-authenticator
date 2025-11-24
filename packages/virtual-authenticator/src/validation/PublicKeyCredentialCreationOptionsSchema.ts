@@ -33,6 +33,7 @@ export const PublicKeyCredentialCreationOptionsSchema = Schema.Struct({
   extensions: Schema.optional(AuthenticationExtensionsClientInputsSchema),
 }).annotations({
   identifier: 'PublicKeyCredentialCreationOptions',
+  title: 'PublicKeyCredentialCreationOptions',
   ref: 'PublicKeyCredentialCreationOptions',
   description: `Options for creating a new public key credential. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialcreationoptions',

@@ -12,5 +12,6 @@ export const profileRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(GetProfileResponseSchema),
     },
+    summary: "Get the user's profile",
   },
 });

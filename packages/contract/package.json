@@ -26,9 +26,10 @@
     "yaml": "^2.8.1"
   },
   "dependencies": {
+    "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.0",
     "@repo/auth": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@repo/core": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",

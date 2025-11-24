@@ -5,4 +5,6 @@ export const GetProfileResponseSchema = Schema.Struct({
   jwtPayload: Schema.NullOr(JwtPayloadSchema),
 }).annotations({
   identifier: 'GetProfileResponse',
+  title: 'GetProfileResponse',
+  description: "Response for a user's profile, including their JWT payload.",
 });

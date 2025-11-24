@@ -16,6 +16,7 @@ export const webAuthnCredentialsRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(ListWebAuthnCredentialsResponseSchema),
     },
+    summary: 'List all WebAuthn credentials',
   },
   get: {
     method: 'GET',
@@ -26,6 +27,7 @@ export const webAuthnCredentialsRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(GetWebAuthnCredentialResponseSchema),
     },
+    summary: 'Get a single WebAuthn credential',
   },
   delete: {
     method: 'DELETE',
@@ -36,5 +38,6 @@ export const webAuthnCredentialsRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(DeleteWebAuthnCredentialResponseSchema),
     },
+    summary: 'Delete a WebAuthn credential',
   },
 });

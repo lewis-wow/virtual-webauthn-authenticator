@@ -7,6 +7,7 @@ export const PublicKeyCredentialTypeSchema = Schema.Enums(
 ).pipe(
   Schema.annotations({
     identifier: 'PublicKeyCredentialType',
+    title: 'PublicKeyCredentialType',
     examples: [PublicKeyCredentialType.PUBLIC_KEY],
   }),
 );

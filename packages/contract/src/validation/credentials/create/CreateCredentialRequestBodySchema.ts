@@ -15,4 +15,6 @@ export const CreateCredentialRequestBodySchema = Schema.Struct({
   }),
 }).annotations({
   identifier: 'CreateCredentialRequestBody',
+  title: 'CreateCredentialRequestBody',
+  description: 'Request body for creating a new credential.',
 });

@@ -12,5 +12,6 @@ export const healthcheckRouter = c.router({
     responses: {
       200: Schema.standardSchemaV1(GetHealthcheckResponseSchema),
     },
+    summary: 'Check the health of the service',
   },
 });

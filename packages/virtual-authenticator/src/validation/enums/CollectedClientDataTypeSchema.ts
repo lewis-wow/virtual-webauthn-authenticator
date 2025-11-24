@@ -7,6 +7,7 @@ export const CollectedClientDataTypeSchema = Schema.Enums(
 ).pipe(
   Schema.annotations({
     identifier: 'CollectedClientDataType',
+    title: 'CollectedClientDataType',
     examples: [
       CollectedClientDataType.WEBAUTHN_CREATE,
       CollectedClientDataType.WEBAUTHN_GET,

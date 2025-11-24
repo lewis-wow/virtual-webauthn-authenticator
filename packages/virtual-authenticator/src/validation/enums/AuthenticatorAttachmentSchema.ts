@@ -7,6 +7,7 @@ export const AuthenticatorAttachmentSchema = Schema.Enums(
 ).pipe(
   Schema.annotations({
     identifier: 'AuthenticatorAttachment',
+    title: 'AuthenticatorAttachment',
     examples: [AuthenticatorAttachment.PLATFORM],
   }),
 );

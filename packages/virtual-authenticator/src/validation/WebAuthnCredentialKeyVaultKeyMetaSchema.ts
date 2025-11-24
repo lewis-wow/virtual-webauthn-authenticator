@@ -9,6 +9,7 @@ export const WebAuthnCredentialKeyVaultKeyMetaSchema = Schema.Struct({
   updatedAt: Schema.DateFromString,
 }).annotations({
   identifier: 'WebAuthnCredentialKeyVaultKeyMeta',
+  title: 'WebAuthnCredentialKeyVaultKeyMeta',
   ref: 'WebAuthnCredentialKeyVaultKeyMeta',
 });
 

@@ -24,6 +24,7 @@ export const PublicKeyCredentialDescriptorSchema = Schema.Struct({
   ),
 }).annotations({
   identifier: 'PublicKeyCredentialDescriptor',
+  title: 'PublicKeyCredentialDescriptor',
   ref: 'PublicKeyCredentialDescriptor',
   description: `Used to exclude existing credentials for a user. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor',

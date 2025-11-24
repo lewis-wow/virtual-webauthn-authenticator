@@ -10,6 +10,7 @@ export const AuthenticationExtensionsClientInputsSchema = Schema.Record({
   value: Schema.Unknown,
 }).annotations({
   identifier: 'AuthenticationExtensionsClientInputs',
+  title: 'AuthenticationExtensionsClientInputs',
   ref: 'AuthenticationExtensionsClientInputs',
   description: `The client extensions passed to the authenticator. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientinputs',

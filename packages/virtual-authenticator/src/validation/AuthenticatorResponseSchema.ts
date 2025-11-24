@@ -20,6 +20,7 @@ export const AuthenticatorResponseSchema = Schema.Struct({
   }),
 }).annotations({
   identifier: 'AuthenticatorResponse',
+  title: 'AuthenticatorResponse',
   ref: 'AuthenticatorResponse',
   description:
     'The response from an authenticator. For more information, see https://www.w3.org/TR/webauthn/#authenticatorresponse.',

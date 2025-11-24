@@ -20,6 +20,7 @@ export const PublicKeyCredentialUserEntitySchema = Schema.extend(
   }),
 ).annotations({
   identifier: 'PublicKeyCredentialUserEntity',
+  title: 'PublicKeyCredentialUserEntity',
   ref: 'PublicKeyCredentialUserEntity',
   description: `Represents the user creating the credential. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity',

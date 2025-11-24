@@ -7,6 +7,7 @@ export const ResidentKeyRequirementSchema = Schema.Enums(
 ).pipe(
   Schema.annotations({
     identifier: 'ResidentKeyRequirement',
+    title: 'ResidentKeyRequirement',
     examples: [ResidentKeyRequirement.REQUIRED],
   }),
 );

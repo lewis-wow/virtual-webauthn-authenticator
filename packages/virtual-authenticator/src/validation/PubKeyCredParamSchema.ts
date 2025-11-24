@@ -6,6 +6,7 @@ import { PublicKeyCredentialTypeSchema } from './enums/PublicKeyCredentialTypeSc
 
 const annotations = (identifier: string) => ({
   identifier,
+  title: identifier,
   description: `Describes the cryptographic algorithms to be supported. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters',
   )}`,

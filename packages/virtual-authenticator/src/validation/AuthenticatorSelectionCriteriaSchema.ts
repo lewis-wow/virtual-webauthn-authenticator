@@ -42,6 +42,7 @@ export const AuthenticatorSelectionCriteriaSchema = Schema.Struct({
   userVerification: Schema.optional(UserVerificationRequirementSchema),
 }).annotations({
   identifier: 'AuthenticatorSelectionCriteria',
+  title: 'AuthenticatorSelectionCriteria',
   description: `Specifies requirements for the authenticator. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria',
   )}`,

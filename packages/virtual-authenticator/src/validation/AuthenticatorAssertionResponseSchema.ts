@@ -39,6 +39,7 @@ export const AuthenticatorAssertionResponseSchema = Schema.extend(
   }),
 ).annotations({
   identifier: 'AuthenticatorAssertionResponse',
+  title: 'AuthenticatorAssertionResponse',
   ref: 'AuthenticatorAssertionResponse',
   description: `The authenticator's response to a client’s request for generation of a new authentication assertion given the WebAuthn Relying Party's challenge and OPTIONAL list of credentials it is aware of. This response contains a cryptographic signature proving possession of the credential private key, and optionally evidence of user consent to a specific transaction. ${see(
     'https://www.w3.org/TR/webauthn/#authenticatorassertionresponse',

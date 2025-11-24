@@ -10,6 +10,7 @@ export const AuthenticationExtensionsClientOutputsSchema = Schema.Record({
   value: Schema.Unknown,
 }).annotations({
   identifier: 'AuthenticationExtensionsClientOutputs',
+  title: 'AuthenticationExtensionsClientOutputs',
   ref: 'AuthenticationExtensionsClientOutputs',
   description: `A generic dictionary representing the client extension results. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs',

@@ -7,6 +7,7 @@ export const WebAuthnCredentialKeyMetaTypeSchema = Schema.Enums(
 ).pipe(
   Schema.annotations({
     identifier: 'WebAuthnCredentialKeyMetaType',
+    title: 'WebAuthnCredentialKeyMetaType',
     examples: [WebAuthnCredentialKeyMetaType.KEY_VAULT],
   }),
 );

@@ -5,4 +5,5 @@ export const GetTokenApiKeysResponseSchema = Schema.Struct({
   token: JwtSchema,
 }).annotations({
   identifier: 'GetTokenApiKeysResponse',
+  title: 'GetTokenApiKeysResponse',
 });

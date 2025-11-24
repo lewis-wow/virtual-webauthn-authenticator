@@ -7,6 +7,7 @@ export const AuthenticatorTransportSchema = Schema.Enums(
 ).pipe(
   Schema.annotations({
     identifier: 'AuthenticatorTransport',
+    title: 'AuthenticatorTransport',
     examples: [AuthenticatorTransport.USB],
   }),
 );

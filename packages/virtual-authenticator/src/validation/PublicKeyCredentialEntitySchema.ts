@@ -7,6 +7,7 @@ export const PublicKeyCredentialEntitySchema = Schema.Struct({
   }),
 }).annotations({
   identifier: 'PublicKeyCredentialEntity',
+  title: 'PublicKeyCredentialEntity',
   ref: 'PublicKeyCredentialEntity',
 });
 

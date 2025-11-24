@@ -22,6 +22,7 @@ export const UserHandleSchema = BytesSchema.pipe(
   }),
   Schema.annotations({
     identifier: 'UserHandle',
+    title: 'UserHandle',
     description: `The user handle for the assertion (max 64 bytes). ${see(
       'https://www.w3.org/TR/webauthn/#user-handle',
     )}`,

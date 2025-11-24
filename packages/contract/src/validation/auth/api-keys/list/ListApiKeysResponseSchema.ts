@@ -5,4 +5,5 @@ export const ListApiKeysResponseSchema = Schema.mutable(
   Schema.Array(ApiKeySchema),
 ).annotations({
   identifier: 'ListApiKeysResponse',
+  title: 'ListApiKeysResponse',
 });

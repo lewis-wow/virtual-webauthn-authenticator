@@ -9,4 +9,5 @@ export const CreateApiKeyRequestBodySchema = Schema.extend(
   }),
 ).annotations({
   identifier: 'CreateApiKeyRequestBody',
+  title: 'CreateApiKeyRequestBody',
 });

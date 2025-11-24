@@ -19,6 +19,7 @@ export const PublicKeyCredentialRpEntitySchema = Schema.extend(
   }),
 ).annotations({
   identifier: 'PublicKeyCredentialRpEntity',
+  title: 'PublicKeyCredentialRpEntity',
   ref: 'PublicKeyCredentialRpEntity',
   description: `Represents the Relying Party. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrpentity',

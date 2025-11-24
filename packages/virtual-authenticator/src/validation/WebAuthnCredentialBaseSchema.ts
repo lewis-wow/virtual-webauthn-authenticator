@@ -15,6 +15,7 @@ export const WebAuthnCredentialBaseSchema = Schema.Struct({
   rpId: Schema.String,
 }).annotations({
   identifier: 'WebAuthnCredential',
+  title: 'WebAuthnCredential',
 });
 
 export type WebAuthnCredentialBase = Schema.Schema.Type<

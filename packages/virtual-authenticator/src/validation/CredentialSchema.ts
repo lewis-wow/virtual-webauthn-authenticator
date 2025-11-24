@@ -19,6 +19,7 @@ export const CredentialSchema = Schema.Struct({
   type: PublicKeyCredentialTypeSchema,
 }).annotations({
   identifier: 'CredentialSchema',
+  title: 'CredentialSchema',
   description: `${see(
     'https://w3c.github.io/webappsec-credential-management/#credential',
   )}`,

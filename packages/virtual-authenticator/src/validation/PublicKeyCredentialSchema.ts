@@ -28,6 +28,7 @@ export const PublicKeyCredentialSchema = Schema.extend(
   }),
 ).annotations({
   identifier: 'PublicKeyCredential',
+  title: 'PublicKeyCredential',
   ref: 'PublicKeyCredential',
   description: `The primary schema for validating the incoming credential object from the client during registration or authentication verification. ${see(
     'https://www.w3.org/TR/webauthn/#iface-publickeycredential',

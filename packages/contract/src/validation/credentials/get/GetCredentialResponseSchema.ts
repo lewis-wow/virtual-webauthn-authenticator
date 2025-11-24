@@ -3,4 +3,6 @@ import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/validatio
 export const GetCredentialResponseSchema =
   PublicKeyCredentialSchema.annotations({
     identifier: 'GetCredentialResponse',
+    title: 'GetCredentialResponse',
+    description: 'Response after getting a credential.',
   });

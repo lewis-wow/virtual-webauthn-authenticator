@@ -67,6 +67,7 @@ export const JwtRegisteredClaimsSchema = Schema.Struct({
   }),
 }).annotations({
   identifier: 'JwtRegisteredClaims',
+  title: 'JwtRegisteredClaims',
 });
 
 export type JwtRegisteredClaims = Schema.Schema.Type<

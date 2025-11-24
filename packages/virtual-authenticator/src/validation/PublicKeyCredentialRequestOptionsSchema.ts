@@ -48,6 +48,7 @@ export const PublicKeyCredentialRequestOptionsSchema = Schema.Struct({
   extensions: Schema.optional(AuthenticationExtensionsClientInputsSchema),
 }).annotations({
   identifier: 'PublicKeyCredentialRequestOptions',
+  title: 'PublicKeyCredentialRequestOptions',
   ref: 'PublicKeyCredentialRequestOptions',
   description: `Options for requesting a public key credential. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialrequestoptions',

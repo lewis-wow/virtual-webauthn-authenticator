@@ -4,4 +4,5 @@ export const DeleteApiKeyRequestParamSchema = ApiKeySchema.pick(
   'id',
 ).annotations({
   identifier: 'DeleteApiKeyRequestParam',
+  title: 'DeleteApiKeyRequestParam',
 });

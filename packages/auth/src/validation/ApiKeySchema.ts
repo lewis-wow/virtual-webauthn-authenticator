@@ -26,6 +26,7 @@ export const ApiKeySchema = Schema.Struct({
   updatedAt: Schema.DateFromString,
 }).annotations({
   identifier: 'ApiKey',
+  title: 'ApiKey',
 });
 
 export type ApiKey = Schema.Schema.Type<typeof ApiKeySchema>;

@@ -12,4 +12,8 @@ export const GetCredentialRequestBodySchema = Schema.Struct({
   meta: Schema.Struct({
     origin: OriginSchema,
   }),
+}).annotations({
+  identifier: 'GetCredentialRequestBody',
+  title: 'GetCredentialRequestBody',
+  description: 'Request body for getting a credential.',
 });

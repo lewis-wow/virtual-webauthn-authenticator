@@ -6,4 +6,5 @@ export const JwtSchema = Schema.String.pipe(
   }),
 ).annotations({
   identifier: 'JWT',
+  title: 'JWT',
 });

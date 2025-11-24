@@ -5,6 +5,7 @@ export const OriginSchema = Schema.String.pipe(
   Schema.pattern(/^https?:\/\/[^/?#\s]+$/),
   Schema.annotations({
     identifier: 'Origin',
+    title: 'Origin',
     description: 'A valid protocol, host, and optional port without paths.',
   }),
 );

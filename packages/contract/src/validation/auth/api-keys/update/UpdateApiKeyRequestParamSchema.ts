@@ -4,4 +4,5 @@ export const UpdateApiKeyRequestParamSchema = ApiKeySchema.pick(
   'id',
 ).annotations({
   identifier: 'UpdateApiKeyRequestParam',
+  title: 'UpdateApiKeyRequestParam',
 });

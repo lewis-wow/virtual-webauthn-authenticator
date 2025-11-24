@@ -9,6 +9,7 @@ export const EmailSchema = Schema.String.pipe(
   }),
 ).annotations({
   identifier: 'Email',
+  title: 'Email',
   description: 'A valid email address',
   jsonSchema: { format: 'email' },
 });
