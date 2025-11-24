@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { stringify } from 'yaml';
 
-import { contract } from '../src';
+import { nestjsContract } from '../src/nestjs/index';
 
 export const EFFECT_ASYNC: SchemaTransformerSync = ({ schema }) => {
   if (Schema.isSchema(schema)) {
@@ -24,7 +24,7 @@ export const EFFECT_ASYNC: SchemaTransformerSync = ({ schema }) => {
 };
 
 const openApiDocument = generateOpenApi(
-  contract,
+  nestjsContract,
   {
     info: {
       title: 'API',

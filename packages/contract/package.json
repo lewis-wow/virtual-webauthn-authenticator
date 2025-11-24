@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
+    "./nestjs": "./src/nestjs/index.ts",
+    "./auth-server": "./src/auth-server/index.ts",
     "./validation": "./src/validation/index.ts"
   },
   "scripts": {

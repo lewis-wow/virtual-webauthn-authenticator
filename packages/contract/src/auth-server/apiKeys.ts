@@ -2,17 +2,17 @@ import '@standard-schema/spec';
 import { initContract } from '@ts-rest/core';
 import { Schema } from 'effect';
 
-import { CreateApiKeyRequestBodySchema } from '../../validation/auth/api-keys/create/CreateApiKeyRequestBodySchema';
-import { CreateApiKeyResponseSchema } from '../../validation/auth/api-keys/create/CreateApiKeyResponseSchema';
-import { DeleteApiKeyRequestParamSchema } from '../../validation/auth/api-keys/delete/DeleteApiKeyRequestParamSchema';
-import { DeleteApiKeyResponseSchema } from '../../validation/auth/api-keys/delete/DeleteApiKeyResponseSchema';
-import { GetTokenApiKeysResponseSchema } from '../../validation/auth/api-keys/get-token/GetTokenApiKeysResponseSchema';
-import { GetApiKeyRequestParamSchema } from '../../validation/auth/api-keys/get/GetApiKeyRequestParamSchema';
-import { GetApiKeyResponseSchema } from '../../validation/auth/api-keys/get/GetApiKeyResponseSchema';
-import { ListApiKeysResponseSchema } from '../../validation/auth/api-keys/list/ListApiKeysResponseSchema';
-import { UpdateApiKeyRequestBodySchema } from '../../validation/auth/api-keys/update/UpdateApiKeyRequestBodySchema';
-import { UpdateApiKeyRequestParamSchema } from '../../validation/auth/api-keys/update/UpdateApiKeyRequestParamSchema';
-import { UpdateApiKeyResponseSchema } from '../../validation/auth/api-keys/update/UpdateApiKeyResponseSchema';
+import { CreateApiKeyRequestBodySchema } from '../validation/auth/api-keys/create/CreateApiKeyRequestBodySchema';
+import { CreateApiKeyResponseSchema } from '../validation/auth/api-keys/create/CreateApiKeyResponseSchema';
+import { DeleteApiKeyRequestParamSchema } from '../validation/auth/api-keys/delete/DeleteApiKeyRequestParamSchema';
+import { DeleteApiKeyResponseSchema } from '../validation/auth/api-keys/delete/DeleteApiKeyResponseSchema';
+import { GetTokenApiKeysResponseSchema } from '../validation/auth/api-keys/get-token/GetTokenApiKeysResponseSchema';
+import { GetApiKeyRequestParamSchema } from '../validation/auth/api-keys/get/GetApiKeyRequestParamSchema';
+import { GetApiKeyResponseSchema } from '../validation/auth/api-keys/get/GetApiKeyResponseSchema';
+import { ListApiKeysResponseSchema } from '../validation/auth/api-keys/list/ListApiKeysResponseSchema';
+import { UpdateApiKeyRequestBodySchema } from '../validation/auth/api-keys/update/UpdateApiKeyRequestBodySchema';
+import { UpdateApiKeyRequestParamSchema } from '../validation/auth/api-keys/update/UpdateApiKeyRequestParamSchema';
+import { UpdateApiKeyResponseSchema } from '../validation/auth/api-keys/update/UpdateApiKeyResponseSchema';
 
 const c = initContract();
 

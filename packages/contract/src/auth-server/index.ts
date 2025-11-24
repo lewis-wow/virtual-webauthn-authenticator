@@ -4,11 +4,11 @@ import { apiKeysRouter } from './apiKeys';
 
 const c = initContract();
 
-export const authRouter = c.router(
+export const authServerContract = c.router(
   {
     apiKeys: apiKeysRouter,
   },
   {
-    pathPrefix: '/auth',
+    pathPrefix: '/api/auth',
   },
 );
