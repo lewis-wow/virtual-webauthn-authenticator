@@ -13,13 +13,17 @@ import { cn } from '@repo/ui/lib/utils';
 import type { ReactNode } from 'react';
 
 export type DeleteConfirmDialogProps = {
-  trigger: ReactNode;
+  trigger?: ReactNode; // Made optional for controlled mode
   title?: string;
   description?: string;
   confirmText?: string;
   cancelText?: string;
   onConfirm: () => void;
   isDestructive?: boolean;
+  isPending?: boolean; // Good to have for loading states
+  // Add these two:
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 export const DeleteConfirmDialog = ({
@@ -29,11 +33,16 @@ export const DeleteConfirmDialog = ({
   confirmText = 'Delete',
   cancelText = 'Cancel',
   onConfirm,
-  isDestructive = true, // Defaults to red button
+  isDestructive = true,
+  isPending = false,
+  open,
+  onOpenChange,
 }: DeleteConfirmDialogProps) => {
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {/* Only render trigger if provided */}
+      {trigger && <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>}
+
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -44,9 +53,14 @@ export const DeleteConfirmDialog = ({
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => {
-              // Prevent the dialog from closing immediately if you want to handle async logic manually,
-              // but usually, we just fire the function.
+            disabled={isPending}
+            onClick={(e) => {
+              // Prevent default closing if you want to wait for a promise
+              // But simpler here is to just fire the function
+              if (isPending) {
+                e.preventDefault();
+                return;
+              }
               onConfirm();
             }}
             className={cn('cursor-pointer', {
@@ -54,7 +68,7 @@ export const DeleteConfirmDialog = ({
                 isDestructive,
             })}
           >
-            {confirmText}
+            {isPending ? 'Processing...' : confirmText}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
