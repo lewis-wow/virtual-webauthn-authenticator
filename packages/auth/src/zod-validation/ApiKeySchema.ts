@@ -24,8 +24,7 @@ export const ApiKeySchema = z
     updatedAt: z.date(),
   })
   .meta({
-    identifier: 'ApiKey',
-    title: 'ApiKey',
+    id: 'ApiKey',
   });
 
 export type ApiKey = z.infer<typeof ApiKeySchema>;

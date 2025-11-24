@@ -13,8 +13,7 @@ export const UserSchema = z
     updatedAt: z.date(),
   })
   .meta({
-    identifier: 'User',
-    title: 'User',
+    id: 'User',
   });
 
 export type User = z.infer<typeof UserSchema>;
