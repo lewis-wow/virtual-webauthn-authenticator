@@ -7,6 +7,7 @@ import { NewApiKey } from '@/components/NewApiKey';
 import { Page } from '@/components/Page';
 import { $authServer } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
+import { Permission } from '@repo/auth/enums';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
 // The new standalone table
@@ -37,23 +38,6 @@ const EXPIRATION_OPTIONS = [
   { label: '90 Days', value: { days: 90 } },
   { label: '1 Year', value: { years: 1 } },
 ] as { label: string; value: Duration | null }[];
-
-const permissionsTree: TreeNode[] = [
-  {
-    id: 'credentials',
-    label: 'Credentials Resource',
-    children: [
-      {
-        id: 'credentials.getOnlyCreatedBySelf',
-        label: 'Get Only Created Credentials By Self',
-      },
-      { id: 'credentials.createOnce', label: 'Create Credential Once' },
-      { id: 'credentials.get', label: 'Get Credentials' },
-      { id: 'credentials.create', label: 'Create Credentials' },
-      { id: 'credentials.delete', label: 'Delete Credentials' },
-    ],
-  },
-];
 
 const ApiKeysPage = () => {
   const queryClient = $authServer.useQueryClient();
@@ -134,14 +118,6 @@ const ApiKeysPage = () => {
                     />
                   </div>
                 </div>
-
-                <TreeViewField
-                  nodes={permissionsTree}
-                  name="permissions"
-                  label="Permissions"
-                  required
-                  description="Select what credentials this API key can access."
-                />
 
                 <div className="flex justify-end">
                   <Button

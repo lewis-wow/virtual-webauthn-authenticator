@@ -41,10 +41,7 @@ export class CredentialsController {
         const { userId, apiKeyId, permissions, name } = jwtPayload;
         const { publicKeyCredentialCreationOptions, meta } = body;
 
-        if (
-          !permissions.includes(Permission['Credential.create']) ||
-          !permissions.includes(Permission['WebAuthnCredential.create'])
-        ) {
+        if (!permissions.includes(Permission['Credential.create'])) {
           throw new Forbidden();
         }
 
@@ -108,10 +105,7 @@ export class CredentialsController {
         const { publicKeyCredentialRequestOptions, meta } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
-        if (
-          !permissions.includes(Permission['Credential.get']) ||
-          !permissions.includes(Permission['WebAuthnCredential.read'])
-        ) {
+        if (!permissions.includes(Permission['Credential.get'])) {
           throw new Forbidden();
         }
 

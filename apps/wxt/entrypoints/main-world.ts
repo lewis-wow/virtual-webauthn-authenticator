@@ -7,8 +7,8 @@ import {
 import {
   CreateCredentialRequestBodySchema,
   GetCredentialRequestBodySchema,
+  PublicKeyCredentialDtoSchema,
 } from '@repo/contract/zod-validation';
-import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/zod-validation';
 
 const LOG_PREFIX = 'MAIN';
 
@@ -46,11 +46,16 @@ export default defineUnlistedScript(() => {
       return fallbackNavigatorCredentialsCreate(opts);
     }
 
-    const parsedData = PublicKeyCredentialSchema.parse(response.data);
+    const parsedData = PublicKeyCredentialDtoSchema.parse(response.data);
     // const parsedDataBrowser =
     //   PublicKeyCredentialBrowserSchema.encode(parsedData);
 
-    return StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
+    const publicKeyCredentialStandardImpl =
+      StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
+
+    console.error(`[${LOG_PREFIX}]`, publicKeyCredentialStandardImpl);
+
+    return publicKeyCredentialStandardImpl;
   };
 
   const fallbackNavigatorCredentialsGet = navigator.credentials.get;
@@ -84,10 +89,15 @@ export default defineUnlistedScript(() => {
       return fallbackNavigatorCredentialsGet(opts);
     }
 
-    const parsedData = PublicKeyCredentialSchema.parse(response.data);
+    const parsedData = PublicKeyCredentialDtoSchema.parse(response.data);
     // const parsedDataBrowser =
     //   PublicKeyCredentialBrowserSchema.encode(parsedData);
 
-    return StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
+    const publicKeyCredentialStandardImpl =
+      StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
+
+    console.error(`[${LOG_PREFIX}]`, publicKeyCredentialStandardImpl);
+
+    return publicKeyCredentialStandardImpl;
   };
 });

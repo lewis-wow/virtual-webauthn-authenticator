@@ -3,8 +3,6 @@ import { AzureKeyVaultKeyProvider } from '@repo/key-vault';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { PrismaWebAuthnRepository } from '@repo/virtual-authenticator/repositories';
 
-import { PrismaService } from './Prisma.service';
-
 export const VirtualAuthenticatorProvider: Provider = {
   provide: VirtualAuthenticator,
   useFactory: (
@@ -18,5 +16,5 @@ export const VirtualAuthenticatorProvider: Provider = {
 
     return virtualAuthenticator;
   },
-  inject: [PrismaService, AzureKeyVaultKeyProvider],
+  inject: [PrismaWebAuthnRepository, AzureKeyVaultKeyProvider],
 };
