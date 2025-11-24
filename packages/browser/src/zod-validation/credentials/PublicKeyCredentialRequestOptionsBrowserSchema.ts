@@ -10,4 +10,5 @@ export const PublicKeyCredentialRequestOptionsBrowserSchema =
     allowCredentials: z
       .array(PublicKeyCredentialDescriptorBrowserSchema)
       .optional(),
+    rpId: z.string(),
   });

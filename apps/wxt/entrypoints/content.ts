@@ -8,6 +8,12 @@ export default defineContentScript({
   async main() {
     console.log(`[${LOG_PREFIX}]`, 'Injecting script...');
 
+    await injectScript('/main-world.js', {
+      keepInDom: true,
+    });
+
+    console.log(`[${LOG_PREFIX}]`, 'Injected.');
+
     mainWorldMessaging.onMessage('credentials.create', async (req) => {
       console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
 
@@ -33,11 +39,5 @@ export default defineContentScript({
 
       return response;
     });
-
-    await injectScript('/main-world.js', {
-      keepInDom: true,
-    });
-
-    console.log(`[${LOG_PREFIX}]`, 'Injected.');
   },
 });

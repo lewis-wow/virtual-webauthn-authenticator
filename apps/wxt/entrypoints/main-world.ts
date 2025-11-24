@@ -1,11 +1,14 @@
 import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
 import { StandardImplMapper } from '@repo/browser/mappers';
 import {
+  PublicKeyCredentialCreationOptionsBrowserSchema,
+  PublicKeyCredentialRequestOptionsBrowserSchema,
+} from '@repo/browser/zod-validation';
+import {
   CreateCredentialRequestBodySchema,
   GetCredentialRequestBodySchema,
-} from '@repo/contract/validation';
-import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/validation';
-import { Schema } from 'effect';
+} from '@repo/contract/zod-validation';
+import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/zod-validation';
 
 const LOG_PREFIX = 'MAIN';
 
@@ -19,14 +22,17 @@ export default defineUnlistedScript(() => {
       opts?.publicKey,
     );
 
-    const publicKeyCredentialCreationOptions = Schema.encodeUnknownSync(
-      CreateCredentialRequestBodySchema,
-    )({
-      publicKeyCredentialCreationOptions: opts?.publicKey,
-      meta: {
-        origin: window.location.origin,
-      },
-    });
+    const publicKeyCredentialCreationOptionsBrowser =
+      PublicKeyCredentialCreationOptionsBrowserSchema.parse(opts?.publicKey);
+
+    const publicKeyCredentialCreationOptions =
+      CreateCredentialRequestBodySchema.encode({
+        publicKeyCredentialCreationOptions:
+          publicKeyCredentialCreationOptionsBrowser,
+        meta: {
+          origin: window.location.origin,
+        },
+      });
 
     const response = await mainWorldMessaging.sendMessage(
       'credentials.create',
@@ -40,9 +46,9 @@ export default defineUnlistedScript(() => {
       return fallbackNavigatorCredentialsCreate(opts);
     }
 
-    const parsedData = Schema.decodeUnknownSync(PublicKeyCredentialSchema)(
-      response.data,
-    );
+    const parsedData = PublicKeyCredentialSchema.parse(response.data);
+    // const parsedDataBrowser =
+    //   PublicKeyCredentialBrowserSchema.encode(parsedData);
 
     return StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
   };
@@ -54,14 +60,17 @@ export default defineUnlistedScript(() => {
       opts?.publicKey,
     );
 
-    const publicKeyCredentialRequestOptions = Schema.encodeUnknownSync(
-      GetCredentialRequestBodySchema,
-    )({
-      publicKeyCredentialRequestOptions: opts?.publicKey,
-      meta: {
-        origin: window.location.origin,
-      },
-    });
+    const publicKeyCredentialRequestOptionsBrowser =
+      PublicKeyCredentialRequestOptionsBrowserSchema.parse(opts?.publicKey);
+
+    const publicKeyCredentialRequestOptions =
+      GetCredentialRequestBodySchema.encode({
+        publicKeyCredentialRequestOptions:
+          publicKeyCredentialRequestOptionsBrowser,
+        meta: {
+          origin: window.location.origin,
+        },
+      });
 
     const response = await mainWorldMessaging.sendMessage(
       'credentials.get',
@@ -75,9 +84,9 @@ export default defineUnlistedScript(() => {
       return fallbackNavigatorCredentialsGet(opts);
     }
 
-    const parsedData = Schema.decodeUnknownSync(PublicKeyCredentialSchema)(
-      response.data,
-    );
+    const parsedData = PublicKeyCredentialSchema.parse(response.data);
+    // const parsedDataBrowser =
+    //   PublicKeyCredentialBrowserSchema.encode(parsedData);
 
     return StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
   };

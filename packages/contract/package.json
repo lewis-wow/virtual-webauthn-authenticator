@@ -6,7 +6,8 @@
   "exports": {
     "./nestjs": "./src/nestjs/index.ts",
     "./auth-server": "./src/auth-server/index.ts",
-    "./validation": "./src/validation/index.ts"
+    "./validation": "./src/validation/index.ts",
+    "./zod-validation": "./src/zod-validation/index.ts"
   },
   "scripts": {
     "build": "run-p barrel:* && pnpm generate:spec",

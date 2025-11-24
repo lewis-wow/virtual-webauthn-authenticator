@@ -31,6 +31,8 @@ const proxy = new Proxy({
 
       const { token } = await response.json();
 
+      console.log('TOKEN', token);
+
       return `Bearer ${token}`;
     }
 
@@ -39,8 +41,6 @@ const proxy = new Proxy({
         headers: req.headers,
       },
     });
-
-    console.log({ data, headers: req.headers, xAuthTypeHeader });
 
     if (!data) {
       return undefined;

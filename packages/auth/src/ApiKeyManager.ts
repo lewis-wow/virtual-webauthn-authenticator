@@ -61,26 +61,6 @@ export class ApiKeyManager {
     this.prisma = opts.prisma;
   }
 
-  private _stringifyNonNullish(
-    value: object | null | undefined,
-  ): string | null | undefined {
-    if (value === null || value === undefined) {
-      return value;
-    }
-
-    return JSON.stringify(value);
-  }
-
-  private _parseNonNullish<T>(
-    value: string | null | undefined,
-  ): T | null | undefined {
-    if (value === null || value === undefined) {
-      return value;
-    }
-
-    return JSON.parse(value);
-  }
-
   /**
    * Generates a new, secure random string.
    * @param length Number of random bytes to generate.
@@ -88,6 +68,40 @@ export class ApiKeyManager {
    */
   private _generateRandomString(length: number): string {
     return randomBytes(length).toString('base64url');
+  }
+
+  /**
+   * Safely parses a provided key string into lookupKey and secret
+   * based on fixed byte length, ignoring delimiter ambiguity.
+   */
+  private _parseKey(
+    providedKey: string,
+  ): { lookupKey: string; secret: string } | null {
+    // Calculate expected char length of the secret in base64url
+    // Formula: ceil((bytes * 8) / 6)
+    // For 32 bytes, this is 43 characters.
+    const secretCharLength = Math.ceil((this.SECRET_BYTE_LENGTH * 8) / 6);
+
+    // Key must be longer than just the secret part + separator
+    if (providedKey.length <= secretCharLength) {
+      return null;
+    }
+
+    // Extract the secret from the END of the string
+    const secret = providedKey.slice(-secretCharLength);
+
+    // The remainder is the lookupKey + separator
+    const remainder = providedKey.slice(0, -secretCharLength);
+
+    // Validate that the separator exists exactly where we expect it
+    if (!remainder.endsWith('_')) {
+      return null;
+    }
+
+    // Extract lookup key by removing the trailing separator
+    const lookupKey = remainder.slice(0, -1);
+
+    return { lookupKey, secret };
   }
 
   /**
@@ -154,30 +168,15 @@ export class ApiKeyManager {
    * @returns The ApiKey record if valid, otherwise null.
    */
   async verify(providedKey: string): Promise<ApiKey | null> {
-    // Find the last underscore, which separates the lookupKey from the secret
-    const lastUnderscoreIndex = providedKey.lastIndexOf('_');
+    // Use fixed-length parsing to handle secrets containing underscores
+    const parsed = this._parseKey(providedKey);
 
-    // Check for invalid format (no underscore, or key starts/ends with it)
-    if (
-      lastUnderscoreIndex <= 0 ||
-      lastUnderscoreIndex === providedKey.length - 1
-    ) {
-      log.warn('Invalid key format provided. No delimiter found.');
+    if (!parsed) {
+      log.warn('Invalid key format provided. Length or separator mismatch.');
       return null;
     }
 
-    // Split the key into its two parts
-    const lookupKey = providedKey.substring(0, lastUnderscoreIndex);
-    const secret = providedKey.substring(lastUnderscoreIndex + 1);
-
-    if (!secret) {
-      // This should be caught by the index check, but good for safety
-      log.warn('Invalid key format provided, no secret part found.', {
-        lookupKey,
-      });
-
-      return null;
-    }
+    const { lookupKey, secret } = parsed;
 
     // O(1) Lookup
     const apiKey = await this.prisma.apiKey.findUnique({
