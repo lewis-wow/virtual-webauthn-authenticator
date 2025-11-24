@@ -8,6 +8,7 @@
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
+    "./zod-validation": "./src/zod-validation/index.ts",
     "./abilities": "./src/abilities/index.ts",
     "./repositories": "./src/repositories/index.ts",
     "./__mocks__": "./__mocks__/index.ts"
