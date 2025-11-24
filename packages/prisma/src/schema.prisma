@@ -166,7 +166,7 @@ model EventLog {
   id String @id @default(uuid())
 
   // 1. Categorization
-  action   EventAction
+  action   String
   entity   String
   entityId String?
 
@@ -192,14 +192,6 @@ model EventLog {
   // Index both columns to allow filtering by User OR by specific Key
   @@index([userId])
   @@index([apiKeyId])
-}
-
-// Define your strict actions to avoid typos in your code
-enum EventAction {
-  CREATE
-  READ
-  WRITE
-  DELETE
 }
 
 enum ApiKeyType {

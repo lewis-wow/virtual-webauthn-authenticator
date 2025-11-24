@@ -1,8 +1,11 @@
-import { PrismaClient, EventAction, Prisma } from '@repo/prisma';
+import { PrismaClient, Prisma } from '@repo/prisma';
+
+import type { EventLogAction } from './enums/EventLogAction';
+import type { EventLogEntity } from './enums/EventLogEntity';
 
 export type Event = {
-  action: EventAction;
-  entity: string;
+  action: EventLogAction;
+  entity: EventLogEntity;
   entityId: string | null;
 
   // Actor details
@@ -21,8 +24,8 @@ export type Event = {
 };
 
 export type LogArgs = {
-  action: EventAction;
-  entity: string;
+  action: EventLogAction;
+  entity: EventLogEntity;
   entityId?: string;
 
   // Actor details
@@ -34,8 +37,8 @@ export type LogArgs = {
 };
 
 export type HasOccuredArgs = {
-  action?: EventAction;
-  entity?: string;
+  action?: EventLogAction;
+  entity?: EventLogEntity;
   entityId?: string;
   userId?: string;
   apiKeyId?: string;
@@ -114,7 +117,7 @@ export class EventLog {
    * e.g. "Show me history for Order #123"
    */
   async getEntityHistory(opts: {
-    entity: string;
+    entity: EventLogEntity;
     entityId: string;
     limit?: number;
   }): Promise<Event[]> {
@@ -139,9 +142,6 @@ export class EventLog {
       take: limit,
     });
 
-    return events.map((event) => ({
-      ...event,
-      metadata: event.metadata as Record<string, unknown> | null,
-    }));
+    return events as Event[];
   }
 }

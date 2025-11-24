@@ -116,7 +116,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // Initialize the VirtualAuthenticator instance, passing in the Prisma client
     // for database interactions.
     authenticator = new VirtualAuthenticator({
-      repository: webAuthnCredentialRepository,
+      webAuthnRepository: webAuthnCredentialRepository,
       keyProvider,
     });
 

@@ -17,6 +17,7 @@ import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
+import { PrismaWebAuthnRepositoryProvider } from './services/PrismaWebAuthnRepository.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 
 @Module({
@@ -43,6 +44,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     VirtualAuthenticatorProvider,
     JwtMiddleware,
     EventLogProvider,
+    PrismaWebAuthnRepositoryProvider,
   ],
   exports: [
     PrismaService,
@@ -56,6 +58,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     VirtualAuthenticatorProvider,
     JwtMiddleware,
     EventLogProvider,
+    PrismaWebAuthnRepositoryProvider,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,5 +1,6 @@
 import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
+import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 import { contract } from '@repo/contract';
 import {
@@ -7,6 +8,9 @@ import {
   GetWebAuthnCredentialResponseSchema,
   ListWebAuthnCredentialsResponseSchema,
 } from '@repo/contract/validation';
+import { EventLog } from '@repo/event-log';
+import { EventLogAction, EventLogEntity } from '@repo/event-log/enums';
+import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
@@ -25,13 +29,18 @@ export class WebAuthnCredentialsController {
     private readonly prisma: PrismaService,
     private readonly keyClient: KeyClient,
     private readonly logger: Logger,
+    private readonly eventLog: EventLog,
   ) {}
 
   @TsRestHandler(contract.api.webAuthnCredentials.list)
   @UseGuards(AuthenticatedGuard)
   async listWebAuthnCredentials(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(contract.api.webAuthnCredentials.list, async () => {
-      const { userId } = jwtPayload;
+      const { userId, permissions } = jwtPayload;
+
+      if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
+        throw new Forbidden();
+      }
 
       const webAuthnCredentials = await this.prisma.webAuthnCredential.findMany(
         {
@@ -45,6 +54,17 @@ export class WebAuthnCredentialsController {
           },
         },
       );
+
+      await this.eventLog.log({
+        action: EventLogAction.LIST,
+        entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
+
+        apiKeyId:
+          jwtPayload.tokenType === TokenType.API_KEY
+            ? jwtPayload.apiKeyId
+            : undefined,
+        userId: jwtPayload.userId,
+      });
 
       return {
         status: 200,
@@ -61,7 +81,11 @@ export class WebAuthnCredentialsController {
     return tsRestHandler(
       contract.api.webAuthnCredentials.get,
       async ({ params }) => {
-        const { userId } = jwtPayload;
+        const { userId, permissions } = jwtPayload;
+
+        if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
+          throw new Forbidden();
+        }
 
         const webAuthnCredential =
           await this.prisma.webAuthnCredential.findUniqueOrThrow({
@@ -73,6 +97,17 @@ export class WebAuthnCredentialsController {
               webAuthnCredentialKeyVaultKeyMeta: true,
             },
           });
+
+        await this.eventLog.log({
+          action: EventLogAction.GET,
+          entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
+
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
 
         return {
           status: 200,
@@ -90,7 +125,11 @@ export class WebAuthnCredentialsController {
     return tsRestHandler(
       contract.api.webAuthnCredentials.delete,
       async ({ params }) => {
-        const { userId } = jwtPayload;
+        const { userId, permissions } = jwtPayload;
+
+        if (!permissions.includes(Permission['WebAuthnCredential.delete'])) {
+          throw new Forbidden();
+        }
 
         const webAuthnCredential = await this.prisma.webAuthnCredential.delete({
           where: {
@@ -118,6 +157,17 @@ export class WebAuthnCredentialsController {
 
           await pollOperation.pollUntilDone();
         }
+
+        await this.eventLog.log({
+          action: EventLogAction.DELETE,
+          entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
+
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
 
         return {
           status: 200,

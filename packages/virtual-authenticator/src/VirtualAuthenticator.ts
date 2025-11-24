@@ -63,16 +63,16 @@ export type VirtualAuthenticatorGetCredentialArgs = {
 };
 
 export type VirtualAuthenticatorOptions = {
-  repository: IWebAuthnRepository;
+  webAuthnRepository: IWebAuthnRepository;
   keyProvider: IKeyProvider;
 };
 
 export class VirtualAuthenticator {
-  private readonly repository: IWebAuthnRepository;
+  private readonly webAuthnRepository: IWebAuthnRepository;
   private readonly keyProvider: IKeyProvider;
 
   constructor(opts: VirtualAuthenticatorOptions) {
-    this.repository = opts.repository;
+    this.webAuthnRepository = opts.webAuthnRepository;
     this.keyProvider = opts.keyProvider;
   }
 
@@ -368,7 +368,7 @@ export class VirtualAuthenticator {
         },
         async () => {
           const webAuthnCredentialWithKeyVaultMeta =
-            await this.repository.createKeyVaultWebAuthnCredential({
+            await this.webAuthnRepository.createKeyVaultWebAuthnCredential({
               id: webAuthnCredentialId,
               webAuthnCredentialKeyVaultKeyMeta:
                 webAuthnCredentialPublicKey.webAuthnCredentialKeyVaultKeyMeta,
@@ -476,15 +476,17 @@ export class VirtualAuthenticator {
     );
 
     const webAuthnCredential =
-      await this.repository.findFirstAndIncrementCounterAtomicallyOrThrow({
-        rpId: publicKeyCredentialRequestOptions.rpId,
-        userId: meta.userId,
-        apiKeyId: context.apiKeyId,
-        allowCredentialIds:
-          publicKeyCredentialRequestOptions.allowCredentials?.map(
-            (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
-          ),
-      });
+      await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
+        {
+          rpId: publicKeyCredentialRequestOptions.rpId,
+          userId: meta.userId,
+          apiKeyId: context.apiKeyId,
+          allowCredentialIds:
+            publicKeyCredentialRequestOptions.allowCredentials?.map(
+              (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
+            ),
+        },
+      );
 
     console.log({ webAuthnCredential });
 

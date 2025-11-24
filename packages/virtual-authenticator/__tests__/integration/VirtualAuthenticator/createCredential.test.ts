@@ -93,7 +93,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
     prisma,
   });
   const authenticator = new VirtualAuthenticator({
-    repository: webAuthnCredentialRepository,
+    webAuthnRepository: webAuthnCredentialRepository,
     keyProvider,
   });
 
