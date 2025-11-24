@@ -13,21 +13,8 @@
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
-  "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/types": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.5.2",
-    "barrelsby": "^2.8.1",
-    "npm-run-all": "^4.1.5",
-    "type-fest": "^5.0.1",
-    "typescript": "^5.5.4",
-    "vitest": "^3.2.4",
-    "zod-openapi": "^5.4.3"
-  },
+  "devDependencies": {},
   "dependencies": {
-    "@repo/transformers": "workspace:*",
-    "@repo/enums": "workspace:*",
     "zod": "^4.1.12"
   }
 }
