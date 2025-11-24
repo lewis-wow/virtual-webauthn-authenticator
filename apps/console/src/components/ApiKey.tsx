@@ -1,4 +1,4 @@
-import { tsr } from '@/lib/tsr';
+import { $authServer } from '@/lib/tsr';
 import { Button } from '@repo/ui/components/Button';
 import { DeleteConfirmDialog } from '@repo/ui/components/DeleteConfirmDialog';
 import { cn } from '@repo/ui/lib/utils';
@@ -29,7 +29,7 @@ export const ApiKey = ({
   onDelete,
   onRevoke,
 }: ApiKeyProps) => {
-  const queryClient = tsr.useQueryClient();
+  const queryClient = $authServer.useQueryClient();
 
   const [isVisible, setIsVisible] = useState(false);
 
@@ -43,29 +43,31 @@ export const ApiKey = ({
     toast('API key has been copied to clipboard.');
   };
 
-  const authApiKeyRevokeMutation = tsr.api.auth.apiKeys.update.useMutation({
-    onSuccess: () => {
-      toast('API key has been revoked.');
+  const authApiKeyRevokeMutation =
+    $authServer.api.auth.apiKeys.update.useMutation({
+      onSuccess: () => {
+        toast('API key has been revoked.');
 
-      queryClient.invalidateQueries({
-        queryKey: ['api', 'auth', 'apiKeys', 'list'],
-      });
+        queryClient.invalidateQueries({
+          queryKey: [...'api.auth.apiKeys.list'.split('.')],
+        });
 
-      onRevoke?.();
-    },
-  });
+        onRevoke?.();
+      },
+    });
 
-  const authApiKeyDeleteMutation = tsr.api.auth.apiKeys.delete.useMutation({
-    onSuccess: () => {
-      toast('API key has been deleted.');
+  const authApiKeyDeleteMutation =
+    $authServer.api.auth.apiKeys.delete.useMutation({
+      onSuccess: () => {
+        toast('API key has been deleted.');
 
-      queryClient.invalidateQueries({
-        queryKey: ['api', 'auth', 'apiKeys', 'list'],
-      });
+        queryClient.invalidateQueries({
+          queryKey: [...'api.auth.apiKeys.list'.split('.')],
+        });
 
-      onDelete?.();
-    },
-  });
+        onDelete?.();
+      },
+    });
   const isRevoked = revokedAt !== null;
 
   const handleDeleteOrRevoke = () => {

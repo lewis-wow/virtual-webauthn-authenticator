@@ -1,5 +1,6 @@
 #!/usr/bin/env tsx
-import { generateOpenApi, SchemaTransformerAsync } from '@ts-rest/open-api';
+import { convertSync } from '@openapi-contrib/json-schema-to-openapi-schema';
+import { generateOpenApi, SchemaTransformerSync } from '@ts-rest/open-api';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { stringify } from 'yaml';
@@ -7,15 +8,16 @@ import { z } from 'zod';
 
 import { nestjsContract } from '../src/zod-nestjs/index';
 
-export const ZOD_4_ASYNC: SchemaTransformerAsync = async ({ schema }) => {
+export const ZOD_4_ASYNC: SchemaTransformerSync = ({ schema }) => {
   if (schema instanceof z.core.$ZodObject) {
     const jsonSchema = z.toJSONSchema(schema, {
       io: 'input',
+      reused: 'ref',
     });
 
-    console.log(jsonSchema);
+    const openApiSchema = convertSync(jsonSchema);
 
-    return jsonSchema as object;
+    return openApiSchema;
   }
 
   return null;

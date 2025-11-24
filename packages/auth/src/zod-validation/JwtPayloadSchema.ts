@@ -21,7 +21,7 @@ export const JwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
     z.object({
       tokenType: z.literal(TokenType.API_KEY),
       apiKeyId: ApiKeySchema.shape.id,
-      createdWebAuthnCredentialCount: z.number(),
+      metadata: ApiKeySchema.shape.metadata,
     }),
   ]),
 );

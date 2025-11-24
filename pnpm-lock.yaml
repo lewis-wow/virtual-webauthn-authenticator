@@ -319,6 +319,9 @@ importers:
       '@repo/wxt':
         specifier: workspace:*
         version: link:../wxt
+      '@standard-schema/spec':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.14

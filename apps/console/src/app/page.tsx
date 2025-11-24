@@ -1,11 +1,11 @@
 import { getQueryClient } from '@/lib/getQueryClient';
-import { tsr } from '@/lib/tsr';
+import { $api } from '@/lib/tsr';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 const IndexPage = async () => {
   const queryClient = getQueryClient();
-  const tsrQueryClient = tsr.initQueryClient(queryClient);
+  const tsrQueryClient = $api.initQueryClient(queryClient);
   const profileGetQuery = await tsrQueryClient.api.profile.get.fetchQuery({
     queryKey: [...'api.profile.get'.split('.')],
     queryData: {

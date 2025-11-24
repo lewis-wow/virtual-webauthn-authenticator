@@ -2,7 +2,7 @@
 
 import { ApiKey } from '@/components/ApiKey';
 import { Page } from '@/components/Page';
-import { tsr } from '@/lib/tsr';
+import { $authServer } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
@@ -52,30 +52,29 @@ const permissionsTree: TreeNode[] = [
 ];
 
 const ApiKeysPage = () => {
-  const queryClient = tsr.useQueryClient();
+  const queryClient = $authServer.useQueryClient();
 
-  const authApiKeysListQuery = tsr.api.auth.apiKeys.list.useQuery({
-    queryKey: ['api', 'auth', 'apiKeys', 'list'],
+  const authApiKeysListQuery = $authServer.api.auth.apiKeys.list.useQuery({
+    queryKey: [...'api.auth.apiKeys.list'.split('.')],
   });
 
-  const authApiKeyCreateMutation = tsr.api.auth.apiKeys.create.useMutation({
-    onSuccess: () => {
-      form.reset({
-        name: '',
-        enabled: true,
-        expiresAt: null,
-        permissions: {
-          credentials: ['getOnlyCreatedBySelf', 'createOnce'],
-        },
-      });
+  const authApiKeyCreateMutation =
+    $authServer.api.auth.apiKeys.create.useMutation({
+      onSuccess: () => {
+        form.reset({
+          name: '',
+          enabled: true,
+          expiresAt: null,
+          permissions: [],
+        });
 
-      toast('API key has been created.');
+        toast('API key has been created.');
 
-      queryClient.invalidateQueries({
-        queryKey: ['api', 'auth', 'apiKeys', 'list'],
-      });
-    },
-  });
+        queryClient.invalidateQueries({
+          queryKey: ['api', 'auth', 'apiKeys', 'list'],
+        });
+      },
+    });
 
   const form = useForm({
     resolver: effectTsResolver(CreateApiKeyRequestBodySchema),
@@ -83,9 +82,7 @@ const ApiKeysPage = () => {
       name: '',
       enabled: true,
       expiresAt: null,
-      permissions: {
-        credentials: ['getOnlyCreatedBySelf', 'createOnce'],
-      },
+      permissions: [],
     },
   });
 

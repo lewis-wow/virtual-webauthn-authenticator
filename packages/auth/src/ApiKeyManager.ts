@@ -8,7 +8,7 @@ import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFaile
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
 import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
 import { ApiKeyRevokeFailed } from './exceptions/ApiKeyRevokeFailed';
-import type { ApiKey } from './validation/ApiKeySchema';
+import type { ApiKey } from './zod-validation/ApiKeySchema';
 
 const LOG_PREFIX = 'API_KEY';
 const log = new Logger({
@@ -30,7 +30,7 @@ export const PUBLIC_API_KEY_SELECT = {
   permissions: true,
   enabled: true,
   start: true,
-} satisfies Prisma.ApikeySelect;
+} satisfies Prisma.ApiKeySelect;
 
 export type ApiKeyManagerOptions = {
   prisma: PrismaClient;
@@ -119,7 +119,7 @@ export class ApiKeyManager {
     // This is what you store in the database.
     const hashedKey = await hash(secret, this.BCRYPT_ROUNDS);
 
-    const apiKey = await this.prisma.apikey.create({
+    const apiKey = await this.prisma.apiKey.create({
       data: {
         hashedKey,
         userId,
@@ -139,7 +139,10 @@ export class ApiKeyManager {
 
     return {
       plaintextKey,
-      apiKey: apiKey as ApiKey,
+      apiKey: {
+        ...apiKey,
+        metadata: { createdWebAuthnCredentialCount: 0 },
+      } as ApiKey,
     };
   }
 
@@ -177,8 +180,15 @@ export class ApiKeyManager {
     }
 
     // O(1) Lookup
-    const apiKey = await this.prisma.apikey.findUnique({
+    const apiKey = await this.prisma.apiKey.findUnique({
       where: { lookupKey },
+      include: {
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
+      },
     });
 
     if (!apiKey) {
@@ -207,7 +217,7 @@ export class ApiKeyManager {
 
     // Update last used time.
     // We do this after returning, so we don't slow down the request.
-    void this.prisma.apikey
+    void this.prisma.apiKey
       .update({
         where: { id: apiKey.id },
         data: { lastUsedAt: new Date() },
@@ -221,7 +231,12 @@ export class ApiKeyManager {
 
     log.info('API key validated', { keyId: apiKey.id });
 
-    return apiKey as ApiKey;
+    return {
+      ...apiKey,
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
@@ -232,13 +247,25 @@ export class ApiKeyManager {
     const { userId, id } = opts;
 
     try {
-      const apiKey = await this.prisma.apikey.update({
+      const apiKey = await this.prisma.apiKey.update({
         where: { userId, id },
         data: { revokedAt: new Date() },
+        include: {
+          _count: {
+            select: {
+              webAuthnCredentials: true,
+            },
+          },
+        },
       });
 
       log.info('API key revoked', { keyId: id });
-      return apiKey as ApiKey;
+      return {
+        ...apiKey,
+        metadata: {
+          createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        },
+      } as ApiKey;
     } catch {
       throw new ApiKeyRevokeFailed();
     }
@@ -251,7 +278,7 @@ export class ApiKeyManager {
   }): Promise<ApiKey> {
     const { userId, id, data } = opts;
 
-    const apiKey = await this.prisma.apikey.update({
+    const apiKey = await this.prisma.apiKey.update({
       where: { userId, id },
       data: {
         enabled: data.enabled,
@@ -259,9 +286,21 @@ export class ApiKeyManager {
         expiresAt: data.expiresAt,
         revokedAt: data.revokedAt,
       },
+      include: {
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
+      },
     });
 
-    return apiKey as ApiKey;
+    return {
+      ...apiKey,
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
@@ -271,9 +310,16 @@ export class ApiKeyManager {
   async delete(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
-    const apiKey = await this.prisma.apikey
+    const apiKey = await this.prisma.apiKey
       .delete({
         where: { userId, id },
+        include: {
+          _count: {
+            select: {
+              webAuthnCredentials: true,
+            },
+          },
+        },
       })
       .catch(() => {
         throw new ApiKeyDeleteFailed();
@@ -284,7 +330,12 @@ export class ApiKeyManager {
     }
 
     log.info('API key deleted', { keyId: id });
-    return apiKey as ApiKey;
+    return {
+      ...apiKey,
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
@@ -293,16 +344,28 @@ export class ApiKeyManager {
   async get(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
-    const apiKey = await this.prisma.apikey.findUnique({
+    const apiKey = await this.prisma.apiKey.findUnique({
       where: { userId, id },
-      select: PUBLIC_API_KEY_SELECT,
+      select: {
+        ...PUBLIC_API_KEY_SELECT,
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
+      },
     });
 
     if (!apiKey) {
       throw new ApiKeyNotFound();
     }
 
-    return apiKey as ApiKey;
+    return {
+      ...apiKey,
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
@@ -311,12 +374,24 @@ export class ApiKeyManager {
   async list(opts: { userId: string }): Promise<ApiKey[]> {
     const { userId } = opts;
 
-    const apiKeys = await this.prisma.apikey.findMany({
+    const apiKeys = await this.prisma.apiKey.findMany({
       where: { userId },
-      select: PUBLIC_API_KEY_SELECT,
+      select: {
+        ...PUBLIC_API_KEY_SELECT,
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
 
-    return apiKeys as ApiKey[];
+    return apiKeys.map((apiKey) => ({
+      ...apiKey,
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    })) as ApiKey[];
   }
 }

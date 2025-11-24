@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
 import { TokenType } from '@repo/auth/enums';
-import { contract } from '@repo/contract';
+import { authServerContract } from '@repo/contract/auth-server';
 import {
   CreateApiKeyResponseSchema,
   DeleteApiKeyResponseSchema,
@@ -22,8 +22,8 @@ import { Schema } from 'effect';
 export const apiKey = factory.createApp();
 
 apiKey.on(
-  [contract.api.auth.apiKeys.getToken.method],
-  contract.api.auth.apiKeys.getToken.path,
+  [authServerContract.api.auth.apiKeys.getToken.method],
+  authServerContract.api.auth.apiKeys.getToken.path,
   async (ctx) => {
     const bearerToken = ctx.req.header('Authorization');
     const plaintextKey = bearerToken?.replace('Bearer ', '');
@@ -45,7 +45,6 @@ apiKey.on(
     });
 
     const token = await jwtIssuer.sign({
-      sub: apiKey.id,
       apiKeyId: apiKey.id,
       userId: user.id,
       name: user.name,
@@ -53,6 +52,7 @@ apiKey.on(
       image: user.image,
       permissions: apiKey.permissions,
       tokenType: TokenType.API_KEY,
+      metadata: apiKey.metadata,
     });
 
     return ctx.json(
@@ -62,9 +62,9 @@ apiKey.on(
 );
 
 apiKey.post(
-  contract.api.auth.apiKeys.create.path,
+  authServerContract.api.auth.apiKeys.create.path,
   requireAuthMiddleware,
-  sValidator('json', contract.api.auth.apiKeys.create.body),
+  sValidator('json', authServerContract.api.auth.apiKeys.create.body),
   async (ctx) => {
     const json = ctx.req.valid('json');
 
@@ -82,7 +82,7 @@ apiKey.post(
 );
 
 apiKey.get(
-  contract.api.auth.apiKeys.list.path,
+  authServerContract.api.auth.apiKeys.list.path,
   requireAuthMiddleware,
   async (ctx) => {
     const apiKeys = await apiKeyManager.list({
@@ -94,9 +94,9 @@ apiKey.get(
 );
 
 apiKey.get(
-  contract.api.auth.apiKeys.get.path,
+  authServerContract.api.auth.apiKeys.get.path,
   requireAuthMiddleware,
-  sValidator('param', contract.api.auth.apiKeys.get.pathParams),
+  sValidator('param', authServerContract.api.auth.apiKeys.get.pathParams),
   async (ctx) => {
     const param = ctx.req.valid('param');
 
@@ -110,10 +110,10 @@ apiKey.get(
 );
 
 apiKey.put(
-  contract.api.auth.apiKeys.update.path,
+  authServerContract.api.auth.apiKeys.update.path,
   requireAuthMiddleware,
-  sValidator('param', contract.api.auth.apiKeys.update.pathParams),
-  sValidator('json', contract.api.auth.apiKeys.update.body),
+  sValidator('param', authServerContract.api.auth.apiKeys.update.pathParams),
+  sValidator('json', authServerContract.api.auth.apiKeys.update.body),
   async (ctx) => {
     const param = ctx.req.valid('param');
     const json = ctx.req.valid('json');
@@ -134,9 +134,9 @@ apiKey.put(
 );
 
 apiKey.delete(
-  contract.api.auth.apiKeys.delete.path,
+  authServerContract.api.auth.apiKeys.delete.path,
   requireAuthMiddleware,
-  sValidator('param', contract.api.auth.apiKeys.delete.pathParams),
+  sValidator('param', authServerContract.api.auth.apiKeys.delete.pathParams),
   async (ctx) => {
     const param = ctx.req.valid('param');
 

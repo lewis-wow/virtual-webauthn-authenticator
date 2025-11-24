@@ -1,11 +1,11 @@
 import { AuthType } from '@repo/auth/enums';
-import { contract } from '@repo/contract';
-import { initClient } from '@ts-rest/core';
+import { authServerContract } from '@repo/contract/auth-server';
+import { nestjsContract } from '@repo/contract/nestjs';
 import { initTsrReactQuery } from '@ts-rest/react-query/v5';
 
 import { getBaseUrl } from './getBaseUrl';
 
-export const tsr = initTsrReactQuery(contract, {
+export const $api = initTsrReactQuery(nestjsContract, {
   baseUrl: getBaseUrl(),
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
@@ -13,12 +13,10 @@ export const tsr = initTsrReactQuery(contract, {
   validateResponse: true,
 });
 
-export const $api = initClient(contract, {
+export const $authServer = initTsrReactQuery(authServerContract, {
   baseUrl: getBaseUrl(),
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
   },
-  credentials: 'same-origin',
+  validateResponse: true,
 });
-
-$api.api.profile.get({});
