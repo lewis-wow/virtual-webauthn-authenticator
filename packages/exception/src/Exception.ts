@@ -19,7 +19,11 @@ export class Exception<T = undefined> extends Error {
   message!: string;
   cause?: unknown;
 
-  constructor(opts?: ExceptionOptions<T>) {
+  constructor(
+    opts: T extends undefined
+      ? ExceptionOptions<T> | void
+      : ExceptionOptions<T>,
+  ) {
     super();
 
     const status =

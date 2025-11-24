@@ -25,7 +25,6 @@ import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
 import { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
-import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
@@ -59,7 +58,7 @@ export type VirtualAuthenticatorGetCredentialArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   meta: VirtualAuthenticatorCredentialMetaArgs;
   context: {
-    apiKeyId: string | null;
+    apiKeyId: string | null | undefined;
   };
 };
 
@@ -477,19 +476,17 @@ export class VirtualAuthenticator {
     );
 
     const webAuthnCredential =
-      await this.repository.findFirstAndIncrementCounterAtomically({
+      await this.repository.findFirstAndIncrementCounterAtomicallyOrThrow({
         rpId: publicKeyCredentialRequestOptions.rpId,
         userId: meta.userId,
         apiKeyId: context.apiKeyId,
-        allowCredentials:
+        allowCredentialIds:
           publicKeyCredentialRequestOptions.allowCredentials?.map(
             (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
           ),
       });
 
-    if (webAuthnCredential === null) {
-      throw new CredentialNotFound();
-    }
+    console.log({ webAuthnCredential });
 
     const credentialID = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
 

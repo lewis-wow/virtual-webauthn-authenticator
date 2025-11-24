@@ -7,6 +7,7 @@ import {
 } from '@repo/core/__tests__/helpers';
 import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
 
+import { UUIDMapper } from '@repo/core/mappers';
 import { PrismaClient } from '@repo/prisma';
 import {
   verifyAuthenticationResponse,
@@ -19,6 +20,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { IKeyProvider } from '../../../src/types/IKeyProvider';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
 import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
@@ -53,6 +55,9 @@ const performAndVerifyAuth = async (opts: {
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
+    },
+    context: {
+      apiKeyId: undefined,
     },
   });
 
@@ -91,6 +96,9 @@ const cleanup = async () => {
 describe('VirtualAuthenticator.getCredential()', () => {
   let keyProvider: IKeyProvider;
   let authenticator: VirtualAuthenticator;
+  const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
+    prisma,
+  });
 
   let credentialID: string;
   let credentialRawID: Uint8Array;
@@ -107,7 +115,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     // Initialize the VirtualAuthenticator instance, passing in the Prisma client
     // for database interactions.
-    authenticator = new VirtualAuthenticator({ prisma, keyProvider });
+    authenticator = new VirtualAuthenticator({
+      repository: webAuthnCredentialRepository,
+      keyProvider,
+    });
 
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
@@ -118,6 +129,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
+      },
+      context: {
+        apiKeyId: null,
       },
     });
 
@@ -203,10 +217,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
+    const rpId = 'WRONG_RP_ID';
+
     const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
       {
         ...requestOptions,
-        rpId: 'WRONG_RP_ID',
+        rpId,
       };
 
     await expect(() =>
@@ -216,12 +232,18 @@ describe('VirtualAuthenticator.getCredential()', () => {
           userId: USER_ID,
           origin: RP_ORIGIN,
         },
+        context: {
+          apiKeyId: undefined,
+        },
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
         data: {
           userId: USER_ID,
-          publicKeyCredentialRequestOptions,
+          rpId,
+          allowCredentialIds: requestOptions.allowCredentials.map(
+            (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
+          ),
         },
       }),
     );
@@ -233,19 +255,28 @@ describe('VirtualAuthenticator.getCredential()', () => {
         credentialID: credentialRawID,
       });
 
+    const userId = 'WRONG_USER_ID';
+
     await expect(() =>
       authenticator.getCredential({
         publicKeyCredentialRequestOptions,
         meta: {
-          userId: 'WRONG_USER_ID',
+          userId,
           origin: RP_ORIGIN,
+        },
+        context: {
+          apiKeyId: undefined,
         },
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
         data: {
-          userId: 'WRONG_USER_ID',
-          publicKeyCredentialRequestOptions,
+          userId,
+          rpId: RP_ID,
+          allowCredentialIds:
+            publicKeyCredentialRequestOptions.allowCredentials.map(
+              (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
+            ),
         },
       }),
     );
@@ -271,12 +302,18 @@ describe('VirtualAuthenticator.getCredential()', () => {
           userId: USER_ID,
           origin: RP_ORIGIN,
         },
+        context: {
+          apiKeyId: undefined,
+        },
       }),
     ).to.rejects.toThrowError(
       new CredentialNotFound({
         data: {
           userId: USER_ID,
-          publicKeyCredentialRequestOptions,
+          rpId: RP_ID,
+          allowCredentialIds: [
+            UUIDMapper.bytesToUUID(Buffer.from('WRONG_CREDENTIAL_ID')),
+          ],
         },
       }),
     );

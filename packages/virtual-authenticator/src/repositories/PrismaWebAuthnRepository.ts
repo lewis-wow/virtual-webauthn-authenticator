@@ -2,6 +2,7 @@ import { Prisma, PrismaClient } from '@repo/prisma';
 import { assert, isArray, isNullable, isOptional, isString } from 'typanion';
 
 import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
+import { CredentialNotFound } from '../exceptions';
 import type { WebAuthnCredentialWithMeta } from '../types';
 import type {
   CreateKeyVaultDataArgs,
@@ -47,18 +48,18 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     return createdWebAuthnCredentialWithMeta as WebAuthnCredentialWithMeta;
   }
 
-  async findFirstAndIncrementCounterAtomically(opts: {
+  async findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;
     userId: string;
-    apiKeyId: string | null;
-    allowCredentials?: string[];
-  }): Promise<WebAuthnCredentialWithMeta | null> {
-    const { rpId, userId, allowCredentials, apiKeyId } = opts;
+    apiKeyId: string | null | undefined;
+    allowCredentialIds?: string[];
+  }): Promise<WebAuthnCredentialWithMeta> {
+    const { rpId, userId, allowCredentialIds, apiKeyId } = opts;
 
     assert(rpId, isString());
     assert(userId, isString());
-    assert(apiKeyId, isNullable(isString()));
-    assert(allowCredentials, isOptional(isArray(isString())));
+    assert(apiKeyId, isOptional(isNullable(isString())));
+    assert(allowCredentialIds, isOptional(isArray(isString())));
 
     const where: Prisma.WebAuthnCredentialWhereInput = {
       rpId,
@@ -66,9 +67,9 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       apiKeyId,
     };
 
-    if (allowCredentials && allowCredentials.length > 0) {
+    if (allowCredentialIds && allowCredentialIds.length > 0) {
       where.id = {
-        in: allowCredentials,
+        in: allowCredentialIds,
       };
     }
 
@@ -79,7 +80,13 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         });
 
         if (webAuthnCredential === null) {
-          return null;
+          throw new CredentialNotFound({
+            data: {
+              userId,
+              allowCredentialIds,
+              rpId,
+            },
+          });
         }
 
         return await tx.webAuthnCredential.update({
@@ -98,6 +105,6 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       },
     );
 
-    return updatedWebAuthnCredential as WebAuthnCredentialWithMeta | null;
+    return updatedWebAuthnCredential as WebAuthnCredentialWithMeta;
   }
 }

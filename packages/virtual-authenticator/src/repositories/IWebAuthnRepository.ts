@@ -19,10 +19,10 @@ export interface IWebAuthnRepository {
     data: CreateKeyVaultDataArgs,
   ): Promise<WebAuthnCredentialWithMeta>;
 
-  findFirstAndIncrementCounterAtomically(opts: {
+  findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;
     userId: string;
-    apiKeyId: string | null;
-    allowCredentials?: string[];
-  }): Promise<WebAuthnCredentialWithMeta | null>;
+    apiKeyId: string | null | undefined;
+    allowCredentialIds?: string[];
+  }): Promise<WebAuthnCredentialWithMeta>;
 }
