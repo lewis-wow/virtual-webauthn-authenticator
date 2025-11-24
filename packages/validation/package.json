@@ -6,13 +6,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "scripts": {
-    "build": "pnpm barrel",
-    "barrel": "../../scripts/barrel.ts",
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
-    "lint": "eslint .",
-    "check-types": "tsc --noEmit"
-  },
+  "scripts": {},
   "devDependencies": {},
   "dependencies": {
     "zod": "^4.1.12"

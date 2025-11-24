@@ -10,8 +10,8 @@
   },
   "scripts": {
     "build": "run-p barrel:* && pnpm generate:spec",
-    "barrel:validation": "../../scripts/barrel.ts ./src/validation ./src/validation/index.ts",
-    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation ./src/zod-validation/index.ts",
+    "barrel:validation": "../../scripts/barrel.ts ./src/validation",
+    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation",
     "test": "vitest run --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",
