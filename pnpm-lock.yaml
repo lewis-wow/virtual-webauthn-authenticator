@@ -240,6 +240,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.90.5
         version: 5.90.5(react@19.1.0)
+      '@tanstack/react-table':
+        specifier: ^8.21.3
+        version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@ts-rest/core':
         specifier: ^3.53.0-rc.1
         version: 3.53.0-rc.1(@types/node@24.10.1)

@@ -1,10 +1,15 @@
+// ApiKey.tsx
 import { $authServer } from '@/lib/tsr';
 import { Button } from '@repo/ui/components/Button';
+import { ClipboardCopyButton } from '@repo/ui/components/ClipboardCopyButton';
 import { DeleteConfirmDialog } from '@repo/ui/components/DeleteConfirmDialog';
 import { cn } from '@repo/ui/lib/utils';
-import { CopyIcon, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Trash2 } from 'lucide-react';
+// Removed CopyIcon
 import { useState } from 'react';
 import { toast } from 'sonner';
+
+// Import the new component
 
 export type ApiKeyProps = {
   id: string;
@@ -30,28 +35,15 @@ export const ApiKey = ({
   onRevoke,
 }: ApiKeyProps) => {
   const queryClient = $authServer.useQueryClient();
-
   const [isVisible, setIsVisible] = useState(false);
-
-  const handleCopyKey = () => {
-    if (!plaintextKey) {
-      return;
-    }
-
-    navigator.clipboard.writeText(plaintextKey);
-
-    toast('API key has been copied to clipboard.');
-  };
 
   const authApiKeyRevokeMutation =
     $authServer.api.auth.apiKeys.update.useMutation({
       onSuccess: () => {
         toast('API key has been revoked.');
-
         queryClient.invalidateQueries({
           queryKey: [...'api.auth.apiKeys.list'.split('.')],
         });
-
         onRevoke?.();
       },
     });
@@ -60,14 +52,13 @@ export const ApiKey = ({
     $authServer.api.auth.apiKeys.delete.useMutation({
       onSuccess: () => {
         toast('API key has been deleted.');
-
         queryClient.invalidateQueries({
           queryKey: [...'api.auth.apiKeys.list'.split('.')],
         });
-
         onDelete?.();
       },
     });
+
   const isRevoked = revokedAt !== null;
 
   const handleDeleteOrRevoke = () => {
@@ -99,19 +90,14 @@ export const ApiKey = ({
             {name}
           </span>
         </p>
+
+        {/* Logic adjusted here */}
         {plaintextKey !== undefined ? (
           <div className="flex items-center gap-2">
             <code className="text-sm text-muted-foreground font-mono break-all">
               {plaintextKey}
             </code>
-            <Button
-              className="shrink-0"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleCopyKey()}
-            >
-              <CopyIcon />
-            </Button>
+            <ClipboardCopyButton text={plaintextKey} />
           </div>
         ) : (
           <div className="flex items-center gap-2">
@@ -131,6 +117,7 @@ export const ApiKey = ({
             </Button>
           </div>
         )}
+
         <p className="text-xs text-muted-foreground">
           Created on {createdAt.toISOString()}
         </p>

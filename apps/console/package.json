@@ -34,6 +34,7 @@
     "@repo/proxy": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.90.5",
+    "@tanstack/react-table": "^8.21.3",
     "@ts-rest/core": "^3.53.0-rc.1",
     "@ts-rest/react-query": "^3.52.1",
     "better-auth": "^1.3.27",

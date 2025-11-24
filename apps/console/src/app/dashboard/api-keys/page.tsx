@@ -1,11 +1,15 @@
 'use client';
 
 import { ApiKey } from '@/components/ApiKey';
+// The "New Key" display component
+import { ApiKeysTable } from '@/components/ApiKeysTable';
+// Components
 import { Page } from '@/components/Page';
 import { $authServer } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
+// The new standalone table
 import { Button } from '@repo/ui/components/Button';
 import { Guard } from '@repo/ui/components/Guard/Guard';
 import { SelectField } from '@repo/ui/components/SelectField';
@@ -41,11 +45,11 @@ const permissionsTree: TreeNode[] = [
     children: [
       {
         id: 'credentials.getOnlyCreatedBySelf',
-        label: 'Get Only Created Creadentails By Self',
+        label: 'Get Only Created Credentials By Self',
       },
       { id: 'credentials.createOnce', label: 'Create Credential Once' },
-      { id: 'credentials.get', label: 'Get Credentails' },
-      { id: 'credentials.create', label: 'Create Credentails' },
+      { id: 'credentials.get', label: 'Get Credentials' },
+      { id: 'credentials.create', label: 'Create Credentials' },
       { id: 'credentials.delete', label: 'Delete Credentials' },
     ],
   },
@@ -54,6 +58,7 @@ const permissionsTree: TreeNode[] = [
 const ApiKeysPage = () => {
   const queryClient = $authServer.useQueryClient();
 
+  // --- Queries & Mutations ---
   const authApiKeysListQuery = $authServer.api.auth.apiKeys.list.useQuery({
     queryKey: [...'api.auth.apiKeys.list'.split('.')],
   });
@@ -67,15 +72,14 @@ const ApiKeysPage = () => {
           expiresAt: null,
           permissions: [],
         });
-
         toast('API key has been created.');
-
         queryClient.invalidateQueries({
           queryKey: ['api', 'auth', 'apiKeys', 'list'],
         });
       },
     });
 
+  // --- Form ---
   const form = useForm({
     resolver: effectTsResolver(CreateApiKeyRequestBodySchema),
     defaultValues: {
@@ -86,10 +90,14 @@ const ApiKeysPage = () => {
     },
   });
 
-  console.log(form.watch());
+  // --- Data Processing ---
+  const allKeys = authApiKeysListQuery.data?.body || [];
+  // REMOVED: The logic that filtered newKeyId out.
+  // We now want the new key to appear in the table immediately.
 
   return (
     <Page pageTitle="API keys">
+      {/* --- Create Key Section --- */}
       <Card>
         <CardHeader>
           <CardTitle>Create New API Key</CardTitle>
@@ -108,7 +116,6 @@ const ApiKeysPage = () => {
               })}
             >
               <Stack direction="column" gap="1.5rem" className="w-full">
-                {/* Top Row: Name & Expiration - Added w-full here */}
                 <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-start">
                   <div className="flex-1">
                     <TextField
@@ -119,7 +126,6 @@ const ApiKeysPage = () => {
                       className="w-full"
                     />
                   </div>
-
                   <div className="w-full sm:w-[180px]">
                     <SelectField
                       name="expiresAt"
@@ -138,7 +144,10 @@ const ApiKeysPage = () => {
                 />
 
                 <div className="flex justify-end">
-                  <Button type="submit">
+                  <Button
+                    type="submit"
+                    disabled={authApiKeyCreateMutation.isPending}
+                  >
                     <Plus className="mr-2 h-4 w-4" />
                     Create Key
                   </Button>
@@ -149,35 +158,49 @@ const ApiKeysPage = () => {
         </CardContent>
       </Card>
 
+      {/* --- Success: New Key Display --- */}
+      {/* We keep this because it is the ONLY time the user can copy the plaintextKey */}
+      {authApiKeyCreateMutation.data?.body && (
+        <div className="mb-6">
+          <Card className="border-green-500/50 bg-green-500/5">
+            <CardHeader>
+              <CardTitle className="text-green-700">
+                New API Key Created
+              </CardTitle>
+              <CardDescription>
+                Please copy this key now. You will not be able to see it again.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ApiKey
+                {...authApiKeyCreateMutation.data.body.apiKey}
+                plaintextKey={authApiKeyCreateMutation.data.body.plaintextKey}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* --- Existing Keys Table --- */}
       <Card>
         <CardHeader>
           <CardTitle>Your API Keys</CardTitle>
+          <CardDescription>Manage your existing access keys.</CardDescription>
         </CardHeader>
         <CardContent>
+          {/* REMOVED: isEmpty prop. The table will now render even if allKeys is empty */}
           <Guard
             isLoading={authApiKeysListQuery.isLoading}
             error={authApiKeysListQuery.error}
-            isEmpty={authApiKeysListQuery.data?.body.length === 0}
           >
-            <Stack direction="column" gap="1rem">
-              {authApiKeyCreateMutation.data?.body && (
-                <ApiKey
-                  {...authApiKeyCreateMutation.data?.body.apiKey}
-                  plaintextKey={
-                    authApiKeyCreateMutation.data?.body.plaintextKey
-                  }
-                  key={authApiKeyCreateMutation.data?.body.apiKey.id}
-                />
-              )}
-              {authApiKeysListQuery.data?.body
-                .filter(
-                  (apiKey) =>
-                    apiKey.id !== authApiKeyCreateMutation.data?.body.apiKey.id,
-                )
-                .map((apiKey) => (
-                  <ApiKey {...apiKey} key={apiKey.id} />
-                ))}
-            </Stack>
+            <ApiKeysTable
+              data={allKeys}
+              onDelete={(id) => {
+                toast.error('Delete logic not implemented in this demo', {
+                  description: `ID: ${id}`,
+                });
+              }}
+            />
           </Guard>
         </CardContent>
       </Card>

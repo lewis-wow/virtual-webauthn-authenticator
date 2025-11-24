@@ -1,6 +1,6 @@
 import { env } from '@/env';
 import { JWT_ALG } from '@repo/auth';
-import { TokenType } from '@repo/auth/enums';
+import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
@@ -39,6 +39,8 @@ export const auth = betterAuth({
             jti: payload.jti,
             nbf: payload.nbf,
             sub: payload.sub,
+            apiKeyId: null,
+            permissions: Object.values(Permission),
             userId: payload.id as string,
             name: payload.name as string,
             email: payload.email as string,
