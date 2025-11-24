@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { see } from '../../../validation/src/meta/see';
+import { see } from '../meta/see';
 import { CollectedClientDataTypeSchema } from './enums/CollectedClientDataTypeSchema';
 import { TokenBindingStatusSchema } from './enums/TokenBindingStatusSchema';
 

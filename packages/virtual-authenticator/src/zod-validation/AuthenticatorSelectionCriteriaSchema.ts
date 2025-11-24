@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { see } from '../../../validation/src/meta/see';
+import { see } from '../meta/see';
 import { AuthenticatorAttachmentSchema } from './enums/AuthenticatorAttachmentSchema';
 import { ResidentKeyRequirementSchema } from './enums/ResidentKeyRequirementSchema';
 import { UserVerificationRequirementSchema } from './enums/UserVerificationRequirementSchema';

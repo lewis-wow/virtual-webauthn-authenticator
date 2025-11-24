@@ -1,4 +1,4 @@
-import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
+import { COSEKeyAlgorithmSchema } from '@repo/keys/zod-validation';
 import z from 'zod';
 
 import { see } from '../meta/see';
