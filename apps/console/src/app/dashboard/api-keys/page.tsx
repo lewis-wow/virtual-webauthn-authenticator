@@ -1,8 +1,8 @@
 'use client';
 
-import { ApiKey } from '@/components/ApiKey';
 // The "New Key" display component
 import { ApiKeysTable } from '@/components/ApiKeysTable';
+import { NewApiKey } from '@/components/NewApiKey';
 // Components
 import { Page } from '@/components/Page';
 import { $authServer } from '@/lib/tsr';
@@ -172,7 +172,7 @@ const ApiKeysPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ApiKey
+              <NewApiKey
                 {...authApiKeyCreateMutation.data.body.apiKey}
                 plaintextKey={authApiKeyCreateMutation.data.body.plaintextKey}
               />
