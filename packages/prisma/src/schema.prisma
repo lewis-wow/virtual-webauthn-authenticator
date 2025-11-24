@@ -22,7 +22,7 @@ model User {
   accounts            Account[]
   apiKeys             ApiKey[]
   webAuthnCredentials WebAuthnCredential[]
-  eventLogs           EventLog[]
+  auditLogs           AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -92,7 +92,7 @@ model ApiKey {
   expiresAt  DateTime?
   revokedAt  DateTime?
   lastUsedAt DateTime?
-  eventLogs  EventLog[]
+  auditLogs  AuditLog[]
 
   permissions String[]
 
@@ -162,36 +162,29 @@ model WebAuthnCredentialKeyVaultKeyMeta {
   @@map("webAuthnCredentialKeyVaultKeyMeta")
 }
 
-model EventLog {
+model AuditLog {
   id String @id @default(uuid())
 
-  // 1. Categorization
+  // Categorization
   action   String
   entity   String
   entityId String?
 
-  // 2. The "Who" (Dual Authentication Support)
-  // If done via UI -> userId is set, apiKeyId is null
-  // If done via API -> apiKeyId is set, userId is set (to the key owner)
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   apiKeyId String?
   apiKey   ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
 
-  // 3. Context & Payload
-  // Recommendation: Use Json instead of String if using Postgres/MySQL
   metadata Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // 4. Performance Indexes
   @@index([createdAt])
   @@index([entity, entityId])
-  // Index both columns to allow filtering by User OR by specific Key
   @@index([userId])
   @@index([apiKeyId])
+  @@map("auditLog")
 }
 
 enum ApiKeyType {

@@ -21,6 +21,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
+    "@repo/audit-log": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@standard-schema/spec": "^1.0.0",
     "@types/node": "^22.5.2",

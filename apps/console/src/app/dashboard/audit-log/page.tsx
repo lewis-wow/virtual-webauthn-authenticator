@@ -1,8 +1,8 @@
 'use client';
 
-import { EventLogTable } from '@/components/EventLogTable';
+import { AuditLogsTable } from '@/components/AuditLogsTable';
 import { Page } from '@/components/Page';
-import { $authServer } from '@/lib/tsr';
+import { $api } from '@/lib/tsr';
 import { Guard } from '@repo/ui/components/Guard/Guard';
 import {
   Card,
@@ -15,7 +15,7 @@ import { Activity } from 'lucide-react';
 
 const EventLogPage = () => {
   // Assuming a standard list endpoint exists
-  const logsQuery = $authServer.api.eventLog.list.useQuery({
+  const logsQuery = $api.api.auditLogs.list.useQuery({
     queryKey: ['api', 'eventLog', 'list'],
   });
 
@@ -36,7 +36,7 @@ const EventLogPage = () => {
         </CardHeader>
         <CardContent>
           <Guard isLoading={logsQuery.isLoading} error={logsQuery.error}>
-            <EventLogTable data={logs} />
+            <AuditLogsTable data={logs} />
           </Guard>
         </CardContent>
       </Card>

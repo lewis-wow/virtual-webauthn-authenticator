@@ -1,5 +1,6 @@
 import { initContract } from '@ts-rest/core';
 
+import { auditLogsRouter } from './auditLogs';
 import { credentialsRouter } from './credentials';
 import { healthcheckRouter } from './healthcheck';
 import { profileRouter } from './profile';
@@ -14,6 +15,7 @@ export const nestjsContract = c.router(
       credentials: credentialsRouter,
       webAuthnCredentials: webAuthnCredentialsRouter,
       profile: profileRouter,
+      auditLogs: auditLogsRouter,
     }),
   },
   {

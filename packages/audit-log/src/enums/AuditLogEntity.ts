@@ -1,8 +1,8 @@
 import type { ValueOfEnum } from '@repo/types';
 
-export const EventLogEntity = {
+export const AuditLogEntity = {
   CREDENTIAL: 'CREDENTIAL',
   WEBAUTHN_CREDENTIAL: 'WEBAUTHN_CREDENTIAL',
 } as const;
 
-export type EventLogEntity = ValueOfEnum<typeof EventLogEntity>;
+export type AuditLogEntity = ValueOfEnum<typeof AuditLogEntity>;

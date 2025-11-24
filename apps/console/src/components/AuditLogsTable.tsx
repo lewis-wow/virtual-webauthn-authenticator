@@ -28,21 +28,20 @@ import {
 import { useMemo, useState } from 'react';
 
 // --- Types ---
-// Ideally imported from your generated types.
-// We include relations (apiKey, user) as they are needed for the "Actor" column.
-interface EventLogEntry {
-  id: string;
-  action: string; // e.g., "CREATE", "DELETE", "LOGIN"
-  entity: string; // e.g., "API_KEY", "WEBAUTHN_CREDENTIAL"
-  entityId: string | null;
-  userId: string | null;
-  apiKeyId: string | null;
-  metadata: any; // JSON
-  createdAt: string | Date;
+// synchronized with your AuditSchema
+export interface EventLogEntry {
+  id: string; // Assumed present on DB record
+  createdAt: string | Date; // Assumed present on DB record
 
-  // Relations (Assumed included in the fetch)
-  user?: { email: string; name?: string | null };
-  apiKey?: { name: string | null; prefix?: string | null };
+  action: string; // AuditLogActionSchema
+  entity: string; // AuditLogEntitySchema
+  entityId: string | null; // Schema.NullOr(Schema.UUID)
+
+  userId: string; // Schema.UUID
+  apiKeyId: string | null; // Schema.NullOr(Schema.UUID)
+
+  // Metadata is now a Record, not just any
+  metadata: Record<string, unknown>;
 }
 
 interface EventLogTableProps {
@@ -93,7 +92,7 @@ const LogDetailsDialog = ({ log }: { log: EventLogEntry }) => {
           <DialogTitle>Event Details</DialogTitle>
           <DialogDescription>
             Raw metadata payload for event ID:{' '}
-            <code className="text-xs">{log.id}</code>
+            <code className="text-xs select-all">{log.id}</code>
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -108,13 +107,26 @@ const LogDetailsDialog = ({ log }: { log: EventLogEntry }) => {
               <span className="font-semibold text-muted-foreground">
                 Entity:
               </span>
-              <p>{log.entity}</p>
+              <p className="flex items-center gap-2">
+                {getEntityIcon(log.entity)}
+                {log.entity}
+              </p>
             </div>
             <div className="col-span-2">
               <span className="font-semibold text-muted-foreground">
                 Entity ID:
               </span>
-              <p className="font-mono text-xs">{log.entityId || 'N/A'}</p>
+              <p className="font-mono text-xs select-all">
+                {log.entityId || 'N/A'}
+              </p>
+            </div>
+            <div>
+              <span className="font-semibold text-muted-foreground">
+                Actor ID:
+              </span>
+              <p className="font-mono text-xs select-all">
+                {log.apiKeyId || log.userId}
+              </p>
             </div>
           </div>
 
@@ -135,13 +147,13 @@ const LogDetailsDialog = ({ log }: { log: EventLogEntry }) => {
 };
 
 // --- Main Table ---
-export function EventLogTable({ data }: EventLogTableProps) {
+export function AuditLogsTable({ data }: EventLogTableProps) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
   const [sorting, setSorting] = useState<SortingState>([
-    { id: 'createdAt', desc: true }, // Default to newest first
+    { id: 'createdAt', desc: true },
   ]);
 
   const columns: ColumnDef<EventLogEntry>[] = useMemo(
@@ -152,7 +164,7 @@ export function EventLogTable({ data }: EventLogTableProps) {
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
             {getActionBadge(row.getValue('action'))}
-            <span className="text-xs text-muted-foreground font-mono uppercase">
+            <span className="text-xs text-muted-foreground font-mono uppercase truncate max-w-[100px]">
               {row.original.entity}
             </span>
           </div>
@@ -162,42 +174,54 @@ export function EventLogTable({ data }: EventLogTableProps) {
         id: 'actor',
         header: 'Initiated By',
         cell: ({ row }) => {
-          const { userId, apiKeyId, user, apiKey } = row.original;
+          const { userId, apiKeyId, metadata } = row.original;
 
-          // Logic: If apiKeyId exists, it was an API call. Otherwise, it was a UI call.
+          // Check metadata for "Snapshot" names (Common pattern in audit logs)
+          // Adjust keys 'actor_email' or 'key_name' based on your actual metadata structure
+          const metaEmail =
+            metadata?.email || metadata?.actor_email || metadata?.user_email;
+          const metaKeyName =
+            metadata?.name || metadata?.key_name || metadata?.api_key_name;
+
+          // 1. API Key Actor
           if (apiKeyId) {
             return (
               <div className="flex items-center gap-2 text-sm">
-                <div className="p-1 rounded bg-orange-500/10 text-orange-600">
-                  <Bot className="h-4 w-4" />
+                <div className="p-1.5 rounded bg-orange-500/10 text-orange-600 shrink-0">
+                  <Bot className="h-3.5 w-3.5" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-medium">API Key</span>
-                  <span className="text-xs text-muted-foreground">
-                    {apiKey?.name || apiKeyId.slice(0, 8) + '...'}
+                <div className="flex flex-col min-w-0">
+                  <span className="font-medium truncate text-xs">
+                    {typeof metaKeyName === 'string' ? metaKeyName : 'API Key'}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[120px]">
+                    {apiKeyId}
                   </span>
                 </div>
               </div>
             );
           }
 
+          // 2. User Actor
           if (userId) {
             return (
               <div className="flex items-center gap-2 text-sm">
-                <div className="p-1 rounded bg-blue-500/10 text-blue-600">
-                  <User className="h-4 w-4" />
+                <div className="p-1.5 rounded bg-blue-500/10 text-blue-600 shrink-0">
+                  <User className="h-3.5 w-3.5" />
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-medium">{user?.name || 'User'}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {user?.email || 'Console'}
+                <div className="flex flex-col min-w-0">
+                  <span className="font-medium truncate text-xs">
+                    {typeof metaEmail === 'string' ? metaEmail : 'User'}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[120px]">
+                    {userId}
                   </span>
                 </div>
               </div>
             );
           }
 
-          return <span className="text-muted-foreground text-sm">System</span>;
+          return <span className="text-muted-foreground text-xs">System</span>;
         },
       },
       {
@@ -206,7 +230,7 @@ export function EventLogTable({ data }: EventLogTableProps) {
         cell: ({ row }) => {
           const date = new Date(row.getValue('createdAt'));
           return (
-            <div className="text-sm">
+            <div className="text-sm whitespace-nowrap">
               <div className="font-medium">{date.toLocaleDateString()}</div>
               <div className="text-xs text-muted-foreground">
                 {date.toLocaleTimeString()}
@@ -219,6 +243,7 @@ export function EventLogTable({ data }: EventLogTableProps) {
         id: 'details',
         header: '',
         cell: ({ row }) => <LogDetailsDialog log={row.original} />,
+        size: 50, // Small fixed width for action column
       },
     ],
     [],

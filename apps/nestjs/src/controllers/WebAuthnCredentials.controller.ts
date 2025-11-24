@@ -8,8 +8,6 @@ import {
   GetWebAuthnCredentialResponseSchema,
   ListWebAuthnCredentialsResponseSchema,
 } from '@repo/contract/validation';
-import { EventLog } from '@repo/event-log';
-import { EventLogAction, EventLogEntity } from '@repo/event-log/enums';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
@@ -17,6 +15,11 @@ import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 import { Schema } from 'effect';
 
+import { EventLog } from '../../../../packages/audit-log/src';
+import {
+  EventLogAction,
+  EventLogEntity,
+} from '../../../../packages/audit-log/src/enums';
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';

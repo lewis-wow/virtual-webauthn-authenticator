@@ -17,6 +17,7 @@ import {
   Key,
   Fingerprint,
   Blocks,
+  Logs,
 } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
@@ -44,6 +45,11 @@ const data = {
       title: 'Credentials',
       url: '/dashboard/webauthn-credentials',
       icon: Fingerprint,
+    },
+    {
+      title: 'Audit logs',
+      url: '/dashboard/audit-logs',
+      icon: Logs,
     },
     {
       title: 'Browser extension',

@@ -2,17 +2,18 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'node:path';
 
+import { AuditLogsController } from './controllers/AuditLogs.controller';
 import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { ProfileController } from './controllers/Profile.controller';
 import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
+import { AuditLogProvider } from './services/AuditLog.provider';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
 import { AzureKeyVaultKeyProviderProvider } from './services/AzureKeyVaultKeyProvider.provider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
-import { EventLogProvider } from './services/EventLog.provider';
 import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
 import { LoggerProvider } from './services/Logger.provider';
@@ -31,6 +32,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     ProfileController,
     CredentialsController,
     WebAuthnCredentialsController,
+    AuditLogsController,
   ],
   providers: [
     PrismaService,
@@ -43,7 +45,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     LoggerProvider,
     VirtualAuthenticatorProvider,
     JwtMiddleware,
-    EventLogProvider,
+    AuditLogProvider,
     PrismaWebAuthnRepositoryProvider,
   ],
   exports: [
@@ -57,7 +59,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     LoggerProvider,
     VirtualAuthenticatorProvider,
     JwtMiddleware,
-    EventLogProvider,
+    AuditLogProvider,
     PrismaWebAuthnRepositoryProvider,
   ],
 })

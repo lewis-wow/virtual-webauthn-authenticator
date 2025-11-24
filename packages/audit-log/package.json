@@ -1,11 +1,12 @@
 {
-  "name": "@repo/event-log",
+  "name": "@repo/audit-log",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./enums": "./src/enums/index.ts"
+    "./enums": "./src/enums/index.ts",
+    "./validation": "./src/validation/index.ts"
   },
   "scripts": {
     "test": "vitest run --config __tests__/vitest.config.ts",
@@ -14,10 +15,10 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/vitest-config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
@@ -25,6 +26,8 @@
   },
   "dependencies": {
     "@repo/prisma": "workspace:*",
-    "typanion": "^3.14.0"
+    "effect": "^3.19.4",
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   }
 }
