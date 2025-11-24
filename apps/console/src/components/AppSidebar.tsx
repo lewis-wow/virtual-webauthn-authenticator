@@ -42,7 +42,7 @@ const data = {
     },
     {
       title: 'Credentials',
-      url: '/dashboard/credentials',
+      url: '/dashboard/webauthn-credentials',
       icon: Fingerprint,
     },
     {
