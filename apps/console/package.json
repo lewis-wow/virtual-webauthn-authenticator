@@ -63,6 +63,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@repo/typescript-config": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
     "@repo/wxt": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@standard-schema/spec": "^1.0.0",

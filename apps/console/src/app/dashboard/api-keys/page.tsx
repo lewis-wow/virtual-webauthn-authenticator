@@ -88,7 +88,7 @@ const ApiKeysPage = () => {
 
       toast('API key has been created.');
       // Invalidate the list to refetch the current page
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['api', 'auth', 'apiKeys', 'list'],
       });
     },

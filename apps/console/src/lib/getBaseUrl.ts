@@ -4,5 +4,6 @@ export const getBaseUrl = () => {
     return '';
   }
 
+  // eslint-disable-next-line turbo/no-undeclared-env-vars
   return `http://localhost:${process.env.PORT ?? 3000}`;
 };

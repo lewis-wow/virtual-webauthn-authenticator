@@ -7,6 +7,7 @@ import { handle } from 'hono/vercel';
 
 const authClient = createAuthClient({
   plugins: [jwtClient(), nextCookies()],
+  // eslint-disable-next-line turbo/no-undeclared-env-vars
   baseURL: process.env.AUTH_BASE_URL,
 });
 

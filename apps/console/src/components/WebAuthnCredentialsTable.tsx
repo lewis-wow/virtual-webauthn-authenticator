@@ -48,7 +48,7 @@ const WebAuthnRowActions = ({
   const deleteMutation = $api.api.webAuthnCredentials.delete.useMutation({
     onSuccess: () => {
       toast.success('Credential deleted successfully.');
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['api', 'webAuthnCredentials', 'list'],
       });
       setShowDeleteDialog(false);
@@ -75,7 +75,7 @@ const WebAuthnRowActions = ({
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => {
-              navigator.clipboard.writeText(credential.id);
+              void navigator.clipboard.writeText(credential.id);
               toast('Credential ID copied to clipboard');
             }}
           >

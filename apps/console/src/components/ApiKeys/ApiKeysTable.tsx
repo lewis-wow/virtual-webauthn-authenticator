@@ -41,7 +41,7 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   const authApiKeyRevokeMutation = $api.api.auth.apiKeys.update.useMutation({
     onSuccess: () => {
       toast.success('API key has been revoked.');
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['api', 'auth', 'apiKeys', 'list'],
       });
       setShowRevokeDialog(false);
@@ -52,7 +52,7 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   const authApiKeyDeleteMutation = $api.api.auth.apiKeys.delete.useMutation({
     onSuccess: () => {
       toast.success('API key has been deleted.');
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['api', 'auth', 'apiKeys', 'list'],
       });
       setShowDeleteDialog(false);
@@ -87,7 +87,7 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => {
-              navigator.clipboard.writeText(apiKey.id);
+              void navigator.clipboard.writeText(apiKey.id);
               toast('API Key ID copied to clipboard');
             }}
           >

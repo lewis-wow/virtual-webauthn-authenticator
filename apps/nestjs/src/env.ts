@@ -40,5 +40,6 @@ export const env = createEnv({
    * explicitly specify this option as true.
    */
   emptyStringAsUndefined: true,
+  // eslint-disable-next-line turbo/no-undeclared-env-vars
   skipValidation: process.env.SKIP_ENV_VALIDATION === 'true',
 });
