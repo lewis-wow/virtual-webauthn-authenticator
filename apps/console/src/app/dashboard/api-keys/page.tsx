@@ -5,7 +5,7 @@ import { ApiKeysTable } from '@/components/ApiKeys/ApiKeysTable';
 import { NewApiKey } from '@/components/ApiKeys/NewApiKey';
 // Components
 import { Page } from '@/components/Page/Page';
-import { $authServer } from '@/lib/tsr';
+import { $api } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
@@ -15,8 +15,6 @@ import { Guard } from '@repo/ui/components/Guard/Guard';
 import { SelectField } from '@repo/ui/components/SelectField';
 import { Stack } from '@repo/ui/components/Stack';
 import { TextField } from '@repo/ui/components/TextField';
-import { type TreeNode } from '@repo/ui/components/TreeView';
-import { TreeViewField } from '@repo/ui/components/TreeViewField';
 import {
   Card,
   CardContent,
@@ -39,28 +37,31 @@ const EXPIRATION_OPTIONS = [
 ] as { label: string; value: Duration | null }[];
 
 const ApiKeysPage = () => {
-  const queryClient = $authServer.useQueryClient();
+  const queryClient = $api.useQueryClient();
 
   // --- Queries & Mutations ---
-  const authApiKeysListQuery = $authServer.api.auth.apiKeys.list.useQuery({
+  const authApiKeysListQuery = $api.api.auth.apiKeys.list.useQuery({
     queryKey: [...'api.auth.apiKeys.list'.split('.')],
   });
 
-  const authApiKeyCreateMutation =
-    $authServer.api.auth.apiKeys.create.useMutation({
-      onSuccess: () => {
-        form.reset({
-          name: '',
-          enabled: true,
-          expiresAt: null,
-          permissions: [],
-        });
-        toast('API key has been created.');
-        queryClient.invalidateQueries({
-          queryKey: ['api', 'auth', 'apiKeys', 'list'],
-        });
-      },
-    });
+  const authApiKeyCreateMutation = $api.api.auth.apiKeys.create.useMutation({
+    onSuccess: () => {
+      form.reset({
+        name: '',
+        enabled: true,
+        expiresAt: null,
+        permissions: [],
+      });
+
+      toast('API key has been created.');
+      queryClient.invalidateQueries({
+        queryKey: [
+          ...'api.auth.apiKeys.list'.split('.'),
+          ...'api.auditLogs.list'.split('.'),
+        ],
+      });
+    },
+  });
 
   // --- Form ---
   const form = useForm({

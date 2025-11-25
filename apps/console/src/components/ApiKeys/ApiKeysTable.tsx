@@ -1,6 +1,6 @@
 'use client';
 
-import { $authServer } from '@/lib/tsr';
+import { $api } from '@/lib/tsr';
 import type { ApiKey } from '@repo/auth/validation';
 import { Button } from '@repo/ui/components/Button';
 import { DataTable } from '@repo/ui/components/DataTable';
@@ -31,36 +31,34 @@ interface ApiKeysTableProps {
 // --- 1. Dedicated Row Actions Component ---
 // We extract this to use Hooks (mutations/state) safely per row
 const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
-  const queryClient = $authServer.useQueryClient();
+  const queryClient = $api.useQueryClient();
 
   // State to control dialogs creates a smoother UX than nesting Triggers in MenuItems
   const [showRevokeDialog, setShowRevokeDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // --- Mutations ---
-  const authApiKeyRevokeMutation =
-    $authServer.api.auth.apiKeys.update.useMutation({
-      onSuccess: () => {
-        toast.success('API key has been revoked.');
-        queryClient.invalidateQueries({
-          queryKey: ['api', 'auth', 'apiKeys', 'list'],
-        });
-        setShowRevokeDialog(false);
-      },
-      onError: () => toast.error('Failed to revoke key.'),
-    });
+  const authApiKeyRevokeMutation = $api.api.auth.apiKeys.update.useMutation({
+    onSuccess: () => {
+      toast.success('API key has been revoked.');
+      queryClient.invalidateQueries({
+        queryKey: ['api', 'auth', 'apiKeys', 'list'],
+      });
+      setShowRevokeDialog(false);
+    },
+    onError: () => toast.error('Failed to revoke key.'),
+  });
 
-  const authApiKeyDeleteMutation =
-    $authServer.api.auth.apiKeys.delete.useMutation({
-      onSuccess: () => {
-        toast.success('API key has been deleted.');
-        queryClient.invalidateQueries({
-          queryKey: ['api', 'auth', 'apiKeys', 'list'],
-        });
-        setShowDeleteDialog(false);
-      },
-      onError: () => toast.error('Failed to delete key.'),
-    });
+  const authApiKeyDeleteMutation = $api.api.auth.apiKeys.delete.useMutation({
+    onSuccess: () => {
+      toast.success('API key has been deleted.');
+      queryClient.invalidateQueries({
+        queryKey: ['api', 'auth', 'apiKeys', 'list'],
+      });
+      setShowDeleteDialog(false);
+    },
+    onError: () => toast.error('Failed to delete key.'),
+  });
 
   // --- Logic ---
   // Determine if we show Revoke or Delete based on revokedAt
