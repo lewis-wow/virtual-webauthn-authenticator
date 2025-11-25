@@ -9,6 +9,7 @@ import { $api } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
+import { useCursorPagination } from '@repo/pagination/hooks';
 // The new standalone table
 import { Button } from '@repo/ui/components/Button';
 import { Guard } from '@repo/ui/components/Guard/Guard';
@@ -23,8 +24,11 @@ import {
   CardTitle,
 } from '@repo/ui/components/ui/card';
 import { Form } from '@repo/ui/components/ui/form';
+import { keepPreviousData } from '@tanstack/react-query';
 import { Schema } from 'effect';
-import { Plus } from 'lucide-react';
+import { Key, Plus } from 'lucide-react';
+// Added 'Key' import
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -39,9 +43,38 @@ const EXPIRATION_OPTIONS = [
 const ApiKeysPage = () => {
   const queryClient = $api.useQueryClient();
 
-  // --- Queries & Mutations ---
+  // --- 1. Pagination State & Hook ---
+  // Break the Cycle: Local state to hold the latest API meta
+  const [latestMeta, setLatestMeta] = useState({
+    hasNext: false,
+    nextCursor: null as string | null,
+  });
+
+  const { pagination, onPaginationChange, cursor, rowCount } =
+    useCursorPagination({
+      defaultPageSize: 5,
+      nextCursor: latestMeta.nextCursor,
+      hasNextPage: latestMeta.hasNext,
+    });
+
+  // --- 2. Queries & Mutations ---
+
   const authApiKeysListQuery = $api.api.auth.apiKeys.list.useQuery({
-    queryKey: [...'api.auth.apiKeys.list'.split('.')],
+    queryKey: [
+      'api',
+      'auth',
+      'apiKeys',
+      'list',
+      pagination.pageIndex,
+      pagination.pageSize,
+    ],
+    queryData: {
+      query: {
+        limit: pagination.pageSize,
+        cursor: cursor,
+      },
+    },
+    placeholderData: keepPreviousData,
   });
 
   const authApiKeyCreateMutation = $api.api.auth.apiKeys.create.useMutation({
@@ -54,13 +87,28 @@ const ApiKeysPage = () => {
       });
 
       toast('API key has been created.');
+      // Invalidate the list to refetch the current page
       queryClient.invalidateQueries({
-        queryKey: [...'api.auth.apiKeys.list'.split('.')],
+        queryKey: ['api', 'auth', 'apiKeys', 'list'],
       });
     },
   });
 
-  // --- Form ---
+  // --- 3. Data Sync ---
+  const apiKeysData = authApiKeysListQuery.data?.body?.data ?? [];
+  const currentMeta = authApiKeysListQuery.data?.body?.meta;
+
+  // Sync Query Result to State for Pagination
+  useEffect(() => {
+    if (currentMeta) {
+      setLatestMeta({
+        hasNext: currentMeta.hasNext,
+        nextCursor: currentMeta.nextCursor,
+      });
+    }
+  }, [currentMeta]);
+
+  // --- 4. Form Setup ---
   const form = useForm({
     resolver: effectTsResolver(CreateApiKeyRequestBodySchema),
     defaultValues: {
@@ -70,11 +118,6 @@ const ApiKeysPage = () => {
       permissions: [],
     },
   });
-
-  // --- Data Processing ---
-  const allKeys = authApiKeysListQuery.data?.body || [];
-  // REMOVED: The logic that filtered newKeyId out.
-  // We now want the new key to appear in the table immediately.
 
   return (
     <Page pageTitle="API keys">
@@ -132,7 +175,6 @@ const ApiKeysPage = () => {
       </Card>
 
       {/* --- Success: New Key Display --- */}
-      {/* We keep this because it is the ONLY time the user can copy the plaintextKey */}
       {authApiKeyCreateMutation.data?.body && (
         <div className="mb-6">
           <Card className="border-green-500/50 bg-green-500/5">
@@ -157,22 +199,23 @@ const ApiKeysPage = () => {
       {/* --- Existing Keys Table --- */}
       <Card>
         <CardHeader>
-          <CardTitle>Your API Keys</CardTitle>
+          {/* UPDATED HEADER STYLE */}
+          <div className="flex items-center gap-2">
+            <Key className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>Your API Keys</CardTitle>
+          </div>
           <CardDescription>Manage your existing access keys.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* REMOVED: isEmpty prop. The table will now render even if allKeys is empty */}
           <Guard
             isLoading={authApiKeysListQuery.isLoading}
             error={authApiKeysListQuery.error}
           >
             <ApiKeysTable
-              data={allKeys}
-              onDelete={(id) => {
-                toast.error('Delete logic not implemented in this demo', {
-                  description: `ID: ${id}`,
-                });
-              }}
+              data={apiKeysData}
+              pagination={pagination}
+              rowCount={rowCount}
+              onPaginationChange={onPaginationChange}
             />
           </Guard>
         </CardContent>

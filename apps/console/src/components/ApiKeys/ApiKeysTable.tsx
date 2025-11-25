@@ -23,17 +23,17 @@ import { Ban, Copy, MoreHorizontal, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-interface ApiKeysTableProps {
-  data: ApiKey[];
-  onDelete?: (id: string) => void; // Optional: if you want parent to know
+export interface ApiKeysTableProps {
+  data: readonly ApiKey[];
+  pagination: PaginationState;
+  rowCount: number;
+  onPaginationChange: (updater: any) => void;
 }
 
 // --- 1. Dedicated Row Actions Component ---
-// We extract this to use Hooks (mutations/state) safely per row
 const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   const queryClient = $api.useQueryClient();
 
-  // State to control dialogs creates a smoother UX than nesting Triggers in MenuItems
   const [showRevokeDialog, setShowRevokeDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -61,7 +61,6 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   });
 
   // --- Logic ---
-  // Determine if we show Revoke or Delete based on revokedAt
   const isRevoked = apiKey.revokedAt !== null;
 
   const handleRevoke = () => {
@@ -98,12 +97,11 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
 
           <DropdownMenuSeparator />
 
-          {/* Conditional Action: Revoke if active, Delete if already revoked */}
           {!isRevoked ? (
             <DropdownMenuItem
               className="text-amber-600 focus:text-amber-600"
               onSelect={(e) => {
-                e.preventDefault(); // Prevent menu from closing immediately
+                e.preventDefault();
                 setShowRevokeDialog(true);
               }}
             >
@@ -125,9 +123,6 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* --- Hidden Dialogs triggered by state --- */}
-
-      {/* Revoke Dialog */}
       <DeleteConfirmDialog
         open={showRevokeDialog}
         onOpenChange={setShowRevokeDialog}
@@ -136,10 +131,8 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
         confirmText="Revoke"
         onConfirm={handleRevoke}
         isPending={authApiKeyRevokeMutation.isPending}
-        // We pass a fragment as trigger because we control open state programmatically via the dropdown
       />
 
-      {/* Delete Dialog */}
       <DeleteConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
@@ -155,15 +148,14 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
 
 // --- 2. Main Table Component ---
 
-export function ApiKeysTable({ data }: ApiKeysTableProps) {
-  // --- Local State for Client-Side Pagination/Sorting ---
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 5,
-  });
+export function ApiKeysTable({
+  data,
+  pagination,
+  rowCount,
+  onPaginationChange,
+}: ApiKeysTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  // --- Columns Definition ---
   const columns: ColumnDef<ApiKey>[] = useMemo(
     () => [
       {
@@ -209,7 +201,6 @@ export function ApiKeysTable({ data }: ApiKeysTableProps) {
         accessorKey: 'enabled',
         header: 'Status',
         cell: ({ row }) => {
-          // Priority: Check revokedAt first, then enabled status
           const isRevoked = row.original.revokedAt !== null;
           const isEnabled = row.getValue('enabled');
 
@@ -226,31 +217,23 @@ export function ApiKeysTable({ data }: ApiKeysTableProps) {
       },
       {
         id: 'actions',
-        // We use the custom component here to handle the logic
         cell: ({ row }) => <ApiKeyRowActions apiKey={row.original} />,
       },
     ],
     [],
   );
 
-  // --- Slicing Logic (Client-Side Pagination) ---
-  const pageData = useMemo(() => {
-    const start = pagination.pageIndex * pagination.pageSize;
-    const end = start + pagination.pageSize;
-    return data.slice(start, end);
-  }, [data, pagination]);
-
   return (
     <DataTable
       columns={columns}
-      data={pageData}
+      data={data}
       pagination={pagination}
-      paginationOptions={{
-        onPaginationChange: setPagination,
-        rowCount: data.length,
-      }}
       sorting={sorting}
       onSortingChange={setSorting}
+      paginationOptions={{
+        onPaginationChange: onPaginationChange,
+        rowCount: rowCount,
+      }}
     />
   );
 }
