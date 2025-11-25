@@ -1,17 +1,23 @@
 #!/usr/bin/env tsx
+import { convertSync } from '@openapi-contrib/json-schema-to-openapi-schema';
 import { generateOpenApi, SchemaTransformerSync } from '@ts-rest/open-api';
-import { JSONSchema, Schema } from 'effect';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { stringify } from 'yaml';
+import { z } from 'zod';
 
-import { nestjsContract } from '../src/nestjs/index';
+import { nestjsContract } from '../src/zod-nestjs/index';
 
-export const EFFECT_SYNC: SchemaTransformerSync = ({ schema }) => {
-  if (Schema.isSchema(schema)) {
-    const jsonSchema = JSONSchema.make(schema);
+export const ZOD_4_ASYNC: SchemaTransformerSync = ({ schema }) => {
+  if (schema instanceof z.core.$ZodObject) {
+    const jsonSchema = z.toJSONSchema(schema, {
+      io: 'input',
+      reused: 'ref',
+    });
 
-    return jsonSchema as object;
+    const openApiSchema = convertSync(jsonSchema);
+
+    return openApiSchema;
   }
 
   return null;
@@ -24,9 +30,10 @@ const openApiDocument = generateOpenApi(
       title: 'API',
       version: '1.0.0',
     },
+    openapi: '3.1.0',
   },
   {
-    schemaTransformer: EFFECT_SYNC,
+    schemaTransformer: ZOD_4_ASYNC,
     setOperationId: 'concatenated-path',
   },
 );
