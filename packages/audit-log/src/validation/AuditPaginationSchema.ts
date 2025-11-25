@@ -1,4 +1,4 @@
-import { PaginationResultSchema } from '@repo/utils/validation';
+import { PaginationResultSchema } from '@repo/pagination/validation';
 import type { Schema } from 'effect';
 
 import { AuditSchema } from './AuditSchema';

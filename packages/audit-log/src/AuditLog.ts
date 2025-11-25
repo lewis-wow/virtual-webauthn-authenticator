@@ -1,6 +1,6 @@
+import { Pagination } from '@repo/pagination';
 import { PrismaClient, Prisma } from '@repo/prisma';
 import type { MakeNullableOptional } from '@repo/types';
-import { Pagination } from '@repo/utils';
 
 import type { AuditLogEntity } from './enums/AuditLogEntity';
 import type { AuditPagination } from './validation/AuditPaginationSchema';
@@ -57,7 +57,7 @@ export class AuditLog {
   }): Promise<AuditPagination> {
     const { entity, entityId, limit = 20, cursor } = opts;
 
-    const pagination = new Pagination(async ({ cursor, limit }) => {
+    const pagination = new Pagination(async ({ pagination }) => {
       const logs = await this.prisma.auditLog.findMany({
         where: {
           entity,
@@ -66,10 +66,7 @@ export class AuditLog {
         orderBy: {
           createdAt: 'desc',
         },
-        cursor: {
-          id: cursor,
-        },
-        take: limit,
+        ...pagination,
       });
 
       return logs as Audit[];
@@ -87,7 +84,7 @@ export class AuditLog {
   }): Promise<AuditPagination> {
     const { userId, limit = 20, cursor } = opts;
 
-    const pagination = new Pagination(async ({ limit, cursor }) => {
+    const pagination = new Pagination(async ({ pagination }) => {
       const logs = await this.prisma.auditLog.findMany({
         where: {
           userId,
@@ -95,10 +92,7 @@ export class AuditLog {
         orderBy: {
           createdAt: 'desc',
         },
-        take: limit,
-        cursor: {
-          id: cursor,
-        },
+        ...pagination,
       });
 
       return logs as Audit[];

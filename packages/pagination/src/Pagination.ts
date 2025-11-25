@@ -1,19 +1,32 @@
 import type { PaginationResult } from './validation/PaginationResultSchema';
 
 export type QueryFn<T extends { id: string }> = (opts: {
-  limit?: number;
-  cursor?: string;
+  pagination: {
+    cursor: undefined | { id: string };
+    take?: number;
+  };
+  orderBy: {
+    id: 'asc';
+  };
 }) => Promise<T[]>;
 
 export class Pagination<T extends { id: string }> {
   constructor(private readonly _queryFn: QueryFn<T>) {}
 
-  async fetch(opts: Parameters<QueryFn<T>>[0]): Promise<PaginationResult<T>> {
+  async fetch(opts: {
+    limit?: number;
+    cursor?: string;
+  }): Promise<PaginationResult<T>> {
     const { limit, cursor } = opts;
 
     const results = await this._queryFn({
-      limit: limit !== undefined ? limit + 1 : undefined,
-      cursor: cursor,
+      pagination: {
+        take: limit !== undefined ? limit + 1 : undefined,
+        cursor: cursor !== undefined ? { id: cursor } : undefined,
+      },
+      orderBy: {
+        id: 'asc',
+      },
     });
 
     let nextCursor: string | null = null;

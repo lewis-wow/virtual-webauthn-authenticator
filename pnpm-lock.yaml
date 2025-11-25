@@ -228,6 +228,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/pagination':
+        specifier: workspace:*
+        version: link:../../packages/pagination
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
@@ -736,6 +739,9 @@ importers:
 
   packages/audit-log:
     dependencies:
+      '@repo/pagination':
+        specifier: workspace:*
+        version: link:../pagination
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
@@ -892,6 +898,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../core
+      '@repo/pagination':
+        specifier: workspace:*
+        version: link:../pagination
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1202,6 +1211,49 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
+
+  packages/pagination:
+    dependencies:
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
+      react:
+        specifier: 19.1.0
+        version: 19.1.0
+      typanion:
+        specifier: ^3.14.0
+        version: 3.14.0
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@tanstack/react-table':
+        specifier: ^8.21.3
+        version: 8.21.3(react-dom@19.2.0(react@19.1.0))(react@19.1.0)
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      '@types/react':
+        specifier: ^19
+        version: 19.2.2
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   packages/prisma:
     dependencies:
@@ -11636,6 +11688,12 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
+  '@tanstack/react-table@8.21.3(react-dom@19.2.0(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/table-core': 8.21.3
+      react: 19.1.0
+      react-dom: 19.2.0(react@19.1.0)
+
   '@tanstack/table-core@8.21.3': {}
 
   '@tokenizer/inflate@0.2.7':
@@ -15761,6 +15819,11 @@ snapshots:
     dependencies:
       react: 19.1.0
       scheduler: 0.26.0
+
+  react-dom@19.2.0(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      scheduler: 0.27.0
 
   react-dom@19.2.0(react@19.2.0):
     dependencies:

@@ -1,3 +1,3 @@
-import { PaginationRequestMetaSchema } from '@repo/utils/validation';
+import { PaginationRequestMetaSchema } from '@repo/pagination/validation';
 
 export const ListAuditLogsRequestQuerySchema = PaginationRequestMetaSchema;
