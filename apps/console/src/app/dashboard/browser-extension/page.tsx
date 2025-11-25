@@ -1,4 +1,4 @@
-import { Page } from '@/components/Page';
+import { Page } from '@/components/Page/Page';
 import { Button } from '@repo/ui/components/Button';
 import { Stack } from '@repo/ui/components/Stack';
 import Link from 'next/link';

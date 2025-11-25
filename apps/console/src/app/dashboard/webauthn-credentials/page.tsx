@@ -1,6 +1,6 @@
 'use client';
 
-import { Page } from '@/components/Page';
+import { Page } from '@/components/Page/Page';
 import { WebAuthnCredentialsTable } from '@/components/WebAuthnCredentialsTable';
 // Assuming you have this from previous context
 import { $api } from '@/lib/tsr';

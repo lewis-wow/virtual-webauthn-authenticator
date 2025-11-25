@@ -1,13 +1,12 @@
 'use client';
 
 // The "New Key" display component
-import { ApiKeysTable } from '@/components/ApiKeysTable';
-import { NewApiKey } from '@/components/NewApiKey';
+import { ApiKeysTable } from '@/components/ApiKeys/ApiKeysTable';
+import { NewApiKey } from '@/components/ApiKeys/NewApiKey';
 // Components
-import { Page } from '@/components/Page';
+import { Page } from '@/components/Page/Page';
 import { $authServer } from '@/lib/tsr';
 import { effectTsResolver } from '@hookform/resolvers/effect-ts';
-import { Permission } from '@repo/auth/enums';
 import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
 import type { Duration } from '@repo/core/validation';
 // The new standalone table

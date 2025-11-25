@@ -12,6 +12,7 @@
     "@hono/node-server": "^1.19.5",
     "@hono/standard-validator": "^0.1.5",
     "@repo/auth": "workspace:*",
+    "@repo/audit-log": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",

@@ -22,7 +22,9 @@ export class AuditLog {
    * Using 'void' return to encourage fire-and-forget usage,
    * though you can await it if strict consistency is required.
    */
-  async audit(data: Omit<MakeNullableOptional<Audit>, 'id'>): Promise<void> {
+  async audit(
+    data: Omit<MakeNullableOptional<Audit>, 'id' | 'createdAt' | 'updatedAt'>,
+  ): Promise<void> {
     const { action, entity, entityId, userId, apiKeyId, metadata } = data;
 
     try {

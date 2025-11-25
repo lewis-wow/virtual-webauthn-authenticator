@@ -65,6 +65,9 @@ importers:
       '@hono/standard-validator':
         specifier: ^0.1.5
         version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)
+      '@repo/audit-log':
+        specifier: workspace:*
+        version: link:../../packages/audit-log
       '@repo/auth':
         specifier: workspace:*
         version: link:../../packages/auth

@@ -1,7 +1,7 @@
 'use client';
 
-import { AuditLogsTable } from '@/components/AuditLogsTable';
-import { Page } from '@/components/Page';
+import { AuditLogsTable } from '@/components/Logs/AuditLogsTable';
+import { Page } from '@/components/Page/Page';
 import { $api } from '@/lib/tsr';
 import { useCursorPagination } from '@repo/pagination/hooks';
 import { Guard } from '@repo/ui/components/Guard/Guard';

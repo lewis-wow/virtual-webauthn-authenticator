@@ -13,6 +13,9 @@ export const AuditSchema = Schema.Struct({
   userId: Schema.UUID,
   apiKeyId: Schema.NullOr(Schema.UUID),
 
+  createdAt: Schema.DateFromString,
+  updatedAt: Schema.DateFromString,
+
   metadata: Schema.NullOr(
     Schema.Record({ key: Schema.String, value: Schema.Unknown }),
   ),

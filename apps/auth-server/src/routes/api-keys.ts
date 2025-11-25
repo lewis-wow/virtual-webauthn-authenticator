@@ -1,10 +1,12 @@
 import { factory } from '@/factory';
 import { apiKeyManager } from '@/lib/apiKeyManager';
+import { auditLog } from '@/lib/auditLog';
 import { auth } from '@/lib/auth';
 import { jwtIssuer } from '@/lib/jwtIssuer';
 import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
+import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
 import { TokenType } from '@repo/auth/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import {
@@ -77,6 +79,21 @@ apiKey.post(
       expiresAt,
     });
 
+    await auditLog.audit({
+      entity: AuditLogEntity.API_KEY,
+      action: AuditLogAction.CREATE,
+      entityId: apiKey.apiKey.id,
+
+      userId: ctx.var.user!.id,
+
+      metadata: {
+        name: apiKey.apiKey.name,
+        permissions: apiKey.apiKey.permissions,
+        expiresAt: apiKey.apiKey.expiresAt,
+        revokedAt: apiKey.apiKey.revokedAt,
+      },
+    });
+
     return ctx.json(Schema.encodeSync(CreateApiKeyResponseSchema)(apiKey));
   },
 );
@@ -129,6 +146,21 @@ apiKey.put(
       },
     });
 
+    await auditLog.audit({
+      entity: AuditLogEntity.API_KEY,
+      action: AuditLogAction.UPDATE,
+      entityId: apiKey.id,
+
+      userId: ctx.var.user!.id,
+
+      metadata: {
+        name: apiKey.name,
+        permissions: apiKey.permissions,
+        expiresAt: apiKey.expiresAt,
+        revokedAt: apiKey.revokedAt,
+      },
+    });
+
     return ctx.json(Schema.encodeSync(UpdateApiKeyResponseSchema)(apiKey));
   },
 );
@@ -143,6 +175,14 @@ apiKey.delete(
     const apiKey = await apiKeyManager.delete({
       userId: ctx.var.user!.id,
       id: param.id,
+    });
+
+    await auditLog.audit({
+      entity: AuditLogEntity.API_KEY,
+      action: AuditLogAction.DELETE,
+      entityId: apiKey.id,
+
+      userId: ctx.var.user!.id,
     });
 
     return ctx.json(Schema.encodeSync(DeleteApiKeyResponseSchema)(apiKey));
