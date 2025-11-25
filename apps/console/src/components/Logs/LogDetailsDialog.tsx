@@ -2,8 +2,6 @@
 
 import type { Audit } from '@repo/audit-log/validation';
 import { Button } from '@repo/ui/components/Button';
-import { DataTable } from '@repo/ui/components/DataTable';
-import { Badge } from '@repo/ui/components/ui/badge';
 import {
   Dialog,
   DialogContent,

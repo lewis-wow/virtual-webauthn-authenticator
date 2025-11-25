@@ -13,7 +13,7 @@ const makeQueryClient = () => {
   // 3. Define the Global Mutation Cache
   const mutationCache = new MutationCache({
     // onSuccess fires after ANY mutation completes successfully
-    onSuccess: (_data, _variables, _context, _mutation) => {
+    onSuccess: () => {
       client.invalidateQueries({
         queryKey: ['api', 'auditLogs', 'list'], // Same as 'api.auditLogs.list'.split('.')
       });
