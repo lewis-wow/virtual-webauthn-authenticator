@@ -316,6 +316,9 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
+      '@repo/audit-log':
+        specifier: workspace:*
+        version: link:../../packages/audit-log
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config

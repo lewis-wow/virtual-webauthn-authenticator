@@ -25,7 +25,7 @@ import { useState } from 'react';
 
 export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  data: readonly TData[];
   // Pagination
   pagination: PaginationState;
   paginationOptions: Pick<PaginationOptions, 'onPaginationChange' | 'rowCount'>;
@@ -49,7 +49,7 @@ export function DataTable<TData, TValue>({
   const onSortingChange = controlledOnSortingChange ?? setLocalSorting;
 
   const table = useReactTable({
-    data,
+    data: data as TData[],
     columns,
     state: {
       pagination,

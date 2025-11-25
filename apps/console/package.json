@@ -67,6 +67,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.9.1",
+    "@repo/audit-log": "workspace:*",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

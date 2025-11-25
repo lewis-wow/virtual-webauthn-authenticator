@@ -1,5 +1,6 @@
 'use client';
 
+import type { Audit } from '@repo/audit-log/validation';
 import { Button } from '@repo/ui/components/Button';
 import { DataTable } from '@repo/ui/components/DataTable';
 import { Badge } from '@repo/ui/components/ui/badge';
@@ -27,25 +28,12 @@ import {
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
-// --- Types ---
-// synchronized with your AuditSchema
-export interface EventLogEntry {
-  id: string; // Assumed present on DB record
-  createdAt: string | Date; // Assumed present on DB record
-
-  action: string; // AuditLogActionSchema
-  entity: string; // AuditLogEntitySchema
-  entityId: string | null; // Schema.NullOr(Schema.UUID)
-
-  userId: string; // Schema.UUID
-  apiKeyId: string | null; // Schema.NullOr(Schema.UUID)
-
-  // Metadata is now a Record, not just any
-  metadata: Record<string, unknown>;
-}
-
 interface EventLogTableProps {
-  data: EventLogEntry[];
+  data: readonly Audit[];
+  pagination: PaginationState;
+  onPaginationChange: (updater: any) => void;
+  rowCount: number;
+  isLoading?: boolean;
 }
 
 // --- Helper: Action Badge Color ---
@@ -78,7 +66,7 @@ const getEntityIcon = (entity: string) => {
 };
 
 // --- Sub-Component: JSON Details Viewer ---
-const LogDetailsDialog = ({ log }: { log: EventLogEntry }) => {
+const LogDetailsDialog = ({ log }: { log: Audit }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -147,16 +135,18 @@ const LogDetailsDialog = ({ log }: { log: EventLogEntry }) => {
 };
 
 // --- Main Table ---
-export function AuditLogsTable({ data }: EventLogTableProps) {
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
+export function AuditLogsTable({
+  data,
+  pagination,
+  onPaginationChange,
+  rowCount,
+  isLoading,
+}: EventLogTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'createdAt', desc: true },
   ]);
 
-  const columns: ColumnDef<EventLogEntry>[] = useMemo(
+  const columns: ColumnDef<Audit>[] = useMemo(
     () => [
       {
         accessorKey: 'action',
@@ -249,23 +239,17 @@ export function AuditLogsTable({ data }: EventLogTableProps) {
     [],
   );
 
-  const pageData = useMemo(() => {
-    const start = pagination.pageIndex * pagination.pageSize;
-    const end = start + pagination.pageSize;
-    return data.slice(start, end);
-  }, [data, pagination]);
-
   return (
     <DataTable
       columns={columns}
-      data={pageData}
+      data={data}
       pagination={pagination}
-      paginationOptions={{
-        onPaginationChange: setPagination,
-        rowCount: data.length,
-      }}
       sorting={sorting}
       onSortingChange={setSorting}
+      paginationOptions={{
+        onPaginationChange: onPaginationChange,
+        rowCount: 20,
+      }}
     />
   );
 }

@@ -14,15 +14,20 @@ export class AuditLogsController {
 
   @TsRestHandler(nestjsContract.api.auditLogs.list)
   async healthcheck(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(nestjsContract.api.auditLogs.list, async () => {
-      const logsPagination = await this.auditLog.getUserHistory({
-        userId: jwtPayload.userId,
-      });
+    return tsRestHandler(
+      nestjsContract.api.auditLogs.list,
+      async ({ query }) => {
+        const logsPagination = await this.auditLog.getUserHistory({
+          userId: jwtPayload.userId,
+          limit: query.limit,
+          cursor: query.cursor,
+        });
 
-      return {
-        status: 200,
-        body: Schema.encodeSync(ListAuditLogsResponseSchema)(logsPagination),
-      };
-    });
+        return {
+          status: 200,
+          body: Schema.encodeSync(ListAuditLogsResponseSchema)(logsPagination),
+        };
+      },
+    );
   }
 }
