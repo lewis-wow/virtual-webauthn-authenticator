@@ -1,4 +1,6 @@
 import { Logger } from '@repo/logger';
+import { Pagination } from '@repo/pagination';
+import type { PaginationResult } from '@repo/pagination/validation';
 import { Prisma, type PrismaClient } from '@repo/prisma';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
@@ -373,27 +375,38 @@ export class ApiKeyManager {
   /**
    * Lists all public-safe key details for a user.
    */
-  async list(opts: { userId: string }): Promise<ApiKey[]> {
-    const { userId } = opts;
+  async list(opts: {
+    userId: string;
+    limit?: number;
+    cursor?: string;
+  }): Promise<PaginationResult<ApiKey>> {
+    const { userId, limit, cursor } = opts;
 
-    const apiKeys = await this.prisma.apiKey.findMany({
-      where: { userId },
-      select: {
-        ...PUBLIC_API_KEY_SELECT,
-        _count: {
-          select: {
-            webAuthnCredentials: true,
+    const pagination = new Pagination(async ({ pagination }) => {
+      const apiKeys = await this.prisma.apiKey.findMany({
+        where: { userId },
+        select: {
+          ...PUBLIC_API_KEY_SELECT,
+          _count: {
+            select: {
+              webAuthnCredentials: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
+        ...pagination,
+      });
+
+      return apiKeys.map((apiKey) => ({
+        ...apiKey,
+        metadata: {
+          createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        },
+      })) as ApiKey[];
     });
 
-    return apiKeys.map((apiKey) => ({
-      ...apiKey,
-      metadata: {
-        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
-      },
-    })) as ApiKey[];
+    const result = await pagination.fetch({ limit, cursor });
+
+    return result;
   }
 }

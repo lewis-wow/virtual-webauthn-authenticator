@@ -1,6 +1,6 @@
 'use client';
 
-import { $api, $authServer } from '@/lib/tsr';
+import { $api } from '@/lib/tsr';
 import { Button } from '@repo/ui/components/Button';
 import { DataTable } from '@repo/ui/components/DataTable';
 import { DeleteConfirmDialog } from '@repo/ui/components/DeleteConfirmDialog';
@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@repo/ui/components/ui/dropdown-menu';
-// Define the type loosely based on your Zod schema, or import from your generated contract types
+import type { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
 import {
   type ColumnDef,
   type PaginationState,
@@ -21,39 +21,26 @@ import {
 } from '@tanstack/react-table';
 import {
   Copy,
+  Fingerprint,
   MoreHorizontal,
   ShieldCheck,
   Trash,
-  Fingerprint,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-// --- Types (Inferring from your schema if not imported) ---
-// If you have a specific generated type for the List response, use that.
-// Below is a safe fallback interface based on the provided Zod schema.
-interface WebAuthnCredentialRow {
-  id: string;
-  name: string | null;
-  rpId: string;
-  counter: number;
-  createdAt: Date | string;
-  transports: string[];
-  webAuthnCredentialKeyVaultKeyMeta?: {
-    hsm: boolean;
-    keyVaultKeyName: string;
-  };
-}
-
-interface WebAuthnTableProps {
-  data: WebAuthnCredentialRow[];
+export interface WebAuthnTableProps {
+  data: readonly WebAuthnCredential[];
+  pagination: PaginationState;
+  rowCount: number;
+  onPaginationChange: (updater: any) => void;
 }
 
 // --- 1. Row Actions Component ---
 const WebAuthnRowActions = ({
   credential,
 }: {
-  credential: WebAuthnCredentialRow;
+  credential: WebAuthnCredential;
 }) => {
   const queryClient = $api.useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -123,14 +110,15 @@ const WebAuthnRowActions = ({
 };
 
 // --- 2. Main Table Component ---
-export function WebAuthnCredentialsTable({ data }: WebAuthnTableProps) {
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  });
+export function WebAuthnCredentialsTable({
+  data,
+  pagination,
+  rowCount,
+  onPaginationChange,
+}: WebAuthnTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const columns: ColumnDef<WebAuthnCredentialRow>[] = useMemo(
+  const columns: ColumnDef<WebAuthnCredential>[] = useMemo(
     () => [
       {
         accessorKey: 'name',
@@ -202,20 +190,14 @@ export function WebAuthnCredentialsTable({ data }: WebAuthnTableProps) {
     [],
   );
 
-  const pageData = useMemo(() => {
-    const start = pagination.pageIndex * pagination.pageSize;
-    const end = start + pagination.pageSize;
-    return data.slice(start, end);
-  }, [data, pagination]);
-
   return (
     <DataTable
       columns={columns}
-      data={pageData}
+      data={data}
       pagination={pagination}
       paginationOptions={{
-        onPaginationChange: setPagination,
-        rowCount: data.length,
+        onPaginationChange,
+        rowCount,
       }}
       sorting={sorting}
       onSortingChange={setSorting}

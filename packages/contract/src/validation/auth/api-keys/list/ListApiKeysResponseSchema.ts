@@ -1,8 +1,8 @@
 import { ApiKeySchema } from '@repo/auth/validation';
-import { Schema } from 'effect';
+import { PaginationResultSchema } from '@repo/pagination/validation';
 
-export const ListApiKeysResponseSchema = Schema.mutable(
-  Schema.Array(ApiKeySchema),
+export const ListApiKeysResponseSchema = PaginationResultSchema(
+  ApiKeySchema,
 ).annotations({
   identifier: 'ListApiKeysResponse',
   title: 'ListApiKeysResponse',

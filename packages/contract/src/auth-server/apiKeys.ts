@@ -9,6 +9,7 @@ import { DeleteApiKeyResponseSchema } from '../validation/auth/api-keys/delete/D
 import { GetTokenApiKeysResponseSchema } from '../validation/auth/api-keys/get-token/GetTokenApiKeysResponseSchema';
 import { GetApiKeyRequestParamSchema } from '../validation/auth/api-keys/get/GetApiKeyRequestParamSchema';
 import { GetApiKeyResponseSchema } from '../validation/auth/api-keys/get/GetApiKeyResponseSchema';
+import { ListApiKeysRequestQuerySchema } from '../validation/auth/api-keys/list/ListApiKeysRequestQuerySchema';
 import { ListApiKeysResponseSchema } from '../validation/auth/api-keys/list/ListApiKeysResponseSchema';
 import { UpdateApiKeyRequestBodySchema } from '../validation/auth/api-keys/update/UpdateApiKeyRequestBodySchema';
 import { UpdateApiKeyRequestParamSchema } from '../validation/auth/api-keys/update/UpdateApiKeyRequestParamSchema';
@@ -28,6 +29,7 @@ export const apiKeysRouter = c.router({
   list: {
     method: 'GET',
     path: '/api-keys',
+    query: Schema.standardSchemaV1(ListApiKeysRequestQuerySchema),
     responses: {
       200: Schema.standardSchemaV1(ListApiKeysResponseSchema),
     },

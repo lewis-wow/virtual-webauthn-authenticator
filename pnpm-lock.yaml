@@ -328,6 +328,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@repo/virtual-authenticator':
+        specifier: workspace:*
+        version: link:../../packages/virtual-authenticator
       '@repo/wxt':
         specifier: workspace:*
         version: link:../wxt
@@ -412,6 +415,9 @@ importers:
       '@repo/logger':
         specifier: workspace:*
         version: link:../../packages/logger
+      '@repo/pagination':
+        specifier: workspace:*
+        version: link:../../packages/pagination
       '@repo/prisma':
         specifier: workspace:*
         version: link:../../packages/prisma
@@ -831,6 +837,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@repo/pagination':
+        specifier: workspace:*
+        version: link:../pagination
       '@repo/types':
         specifier: workspace:*
         version: link:../types

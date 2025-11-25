@@ -25,6 +25,7 @@
     "@repo/auth": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/audit-log": "workspace:*",
+    "@repo/pagination": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",

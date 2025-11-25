@@ -12,7 +12,9 @@ import {
 } from '@repo/contract/validation';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
+import { Pagination } from '@repo/pagination';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
+import { WebAuthnCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 import { Schema } from 'effect';
@@ -37,29 +39,39 @@ export class WebAuthnCredentialsController {
   async listWebAuthnCredentials(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
       nestjsContract.api.webAuthnCredentials.list,
-      async () => {
+      async ({ query }) => {
         const { userId, permissions } = jwtPayload;
 
         if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
           throw new Forbidden();
         }
 
-        const webAuthnCredentials =
-          await this.prisma.webAuthnCredential.findMany({
-            where: {
-              userId: userId,
-              webAuthnCredentialKeyMetaType:
-                WebAuthnCredentialKeyMetaType.KEY_VAULT,
-            },
-            include: {
-              webAuthnCredentialKeyVaultKeyMeta: true,
-            },
-          });
+        const pagination = new Pagination(async ({ pagination }) => {
+          const webAuthnCredentials =
+            await this.prisma.webAuthnCredential.findMany({
+              where: {
+                userId: userId,
+                webAuthnCredentialKeyMetaType:
+                  WebAuthnCredentialKeyMetaType.KEY_VAULT,
+              },
+              include: {
+                webAuthnCredentialKeyVaultKeyMeta: true,
+              },
+              ...pagination,
+            });
+
+          return webAuthnCredentials as WebAuthnCredentialWithMeta[];
+        });
+
+        const result = await pagination.fetch({
+          limit: query.limit,
+          cursor: query.cursor,
+        });
 
         return {
           status: 200,
-          body: Schema.encodeSync(ListWebAuthnCredentialsResponseSchema)(
-            webAuthnCredentials as WebAuthnCredential[],
+          body: Schema.encodeUnknownSync(ListWebAuthnCredentialsResponseSchema)(
+            result,
           ),
         };
       },

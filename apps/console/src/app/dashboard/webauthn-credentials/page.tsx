@@ -2,8 +2,8 @@
 
 import { Page } from '@/components/Page/Page';
 import { WebAuthnCredentialsTable } from '@/components/WebAuthnCredentialsTable';
-// Assuming you have this from previous context
 import { $api } from '@/lib/tsr';
+import { useCursorPagination } from '@repo/pagination/hooks';
 import { Guard } from '@repo/ui/components/Guard/Guard';
 import {
   Card,
@@ -12,20 +12,66 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/ui/components/ui/card';
+import { keepPreviousData } from '@tanstack/react-query';
+import { Fingerprint } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const WebAuthnCredentialsPage = () => {
-  // --- Queries ---
-  const credentialsQuery = $api.api.webAuthnCredentials.list.useQuery({
-    queryKey: ['api', 'webAuthnCredentials', 'list'],
+  // 1. Break the Cycle: Local state to hold the latest API meta
+  const [latestMeta, setLatestMeta] = useState({
+    hasNext: false,
+    nextCursor: null as string | null,
   });
 
-  const credentials = credentialsQuery.data?.body || [];
+  // 2. Initialize the Hook
+  const { pagination, onPaginationChange, cursor, rowCount } =
+    useCursorPagination({
+      defaultPageSize: 10,
+      nextCursor: latestMeta.nextCursor,
+      hasNextPage: latestMeta.hasNext,
+    });
+
+  // 3. Run the Query
+  const credentialsQuery = $api.api.webAuthnCredentials.list.useQuery({
+    queryKey: [
+      'api',
+      'webAuthnCredentials',
+      'list',
+      pagination.pageIndex,
+      pagination.pageSize,
+    ],
+    queryData: {
+      query: {
+        limit: pagination.pageSize,
+        cursor: cursor,
+      },
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  // Handle data extraction (safely defaulting to empty array if data structure varies)
+  // Assumes API returns { body: { data: [], meta: {} } } like the logs API
+  const credentials = credentialsQuery.data?.body?.data ?? [];
+  const currentMeta = credentialsQuery.data?.body?.meta;
+
+  // 4. Sync Query Result to State
+  useEffect(() => {
+    if (currentMeta) {
+      setLatestMeta({
+        hasNext: currentMeta.hasNext,
+        nextCursor: currentMeta.nextCursor,
+      });
+    }
+  }, [currentMeta]);
 
   return (
     <Page pageTitle="WebAuthn Credentials">
       <Card>
         <CardHeader>
-          <CardTitle>Passkeys & Hardware Tokens</CardTitle>
+          <div className="flex items-center gap-2">
+            <Fingerprint className="h-5 w-5 text-muted-foreground" />
+            <CardTitle>Passkeys & Hardware Tokens</CardTitle>
+          </div>
           <CardDescription>
             Manage your hardware-backed credentials (YubiKeys, TouchID, Windows
             Hello) stored in Azure Key Vault.
@@ -36,7 +82,12 @@ const WebAuthnCredentialsPage = () => {
             isLoading={credentialsQuery.isLoading}
             error={credentialsQuery.error}
           >
-            <WebAuthnCredentialsTable data={credentials} />
+            <WebAuthnCredentialsTable
+              data={credentials}
+              pagination={pagination}
+              onPaginationChange={onPaginationChange}
+              rowCount={rowCount}
+            />
           </Guard>
         </CardContent>
       </Card>

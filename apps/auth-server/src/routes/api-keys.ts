@@ -106,7 +106,9 @@ apiKey.get(
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(Schema.encodeSync(ListApiKeysResponseSchema)(apiKeys));
+    return ctx.json(
+      Schema.encodeUnknownSync(ListApiKeysResponseSchema)(apiKeys),
+    );
   },
 );
 

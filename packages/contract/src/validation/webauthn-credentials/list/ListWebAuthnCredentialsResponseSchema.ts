@@ -1,8 +1,8 @@
+import { PaginationResultSchema } from '@repo/pagination/validation';
 import { WebAuthnCredentialSchema } from '@repo/virtual-authenticator/validation';
-import { Schema } from 'effect';
 
-export const ListWebAuthnCredentialsResponseSchema = Schema.mutable(
-  Schema.Array(WebAuthnCredentialSchema),
+export const ListWebAuthnCredentialsResponseSchema = PaginationResultSchema(
+  WebAuthnCredentialSchema,
 ).annotations({
   identifier: 'ListWebAuthnCredentialsResponse',
   title: 'ListWebAuthnCredentialsResponse',

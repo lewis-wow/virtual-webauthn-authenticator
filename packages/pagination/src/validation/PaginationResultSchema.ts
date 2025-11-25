@@ -11,6 +11,6 @@ export const PaginationResultSchema = <A, I, R>(
   });
 
 export type PaginationResult<T> = {
-  data: T[];
+  data: ReadonlyArray<T>;
   meta: Schema.Schema.Type<typeof PaginationResultMetaSchema>;
 };

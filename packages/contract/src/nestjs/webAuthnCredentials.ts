@@ -5,6 +5,7 @@ import { DeleteWebAuthnCredentialRequestPathParamsSchema } from '../validation/w
 import { DeleteWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialResponseSchema';
 import { GetWebAuthnCredentialRequestPathParamsSchema } from '../validation/webauthn-credentials/get/GetWebAuthnCredentialRequestPathParamsSchema';
 import { GetWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/get/GetWebAuthnCredentialResponseSchema';
+import { ListWebAuthnCredentialsRequestQuerySchema } from '../validation/webauthn-credentials/list/ListWebAuthnCredentialsRequestQuerySchema';
 import { ListWebAuthnCredentialsResponseSchema } from '../validation/webauthn-credentials/list/ListWebAuthnCredentialsResponseSchema';
 
 const c = initContract();
@@ -13,6 +14,7 @@ export const webAuthnCredentialsRouter = c.router({
   list: {
     method: 'GET',
     path: '/webauthn-credentials',
+    query: Schema.standardSchemaV1(ListWebAuthnCredentialsRequestQuerySchema),
     responses: {
       200: Schema.standardSchemaV1(ListWebAuthnCredentialsResponseSchema),
     },
