@@ -1,11 +1,33 @@
 import {
   QueryClient,
+  MutationCache,
+  // 1. Import MutationCache
   defaultShouldDehydrateQuery,
   isServer,
 } from '@tanstack/react-query';
 
-function makeQueryClient() {
-  return new QueryClient({
+const makeQueryClient = () => {
+  // 2. Declare client variable first so we can reference it inside the cache callback
+  let client: QueryClient;
+
+  // 3. Define the Global Mutation Cache
+  const mutationCache = new MutationCache({
+    // onSuccess fires after ANY mutation completes successfully
+    onSuccess: (_data, _variables, _context, _mutation) => {
+      client.invalidateQueries({
+        queryKey: ['api', 'auditLogs', 'list'], // Same as 'api.auditLogs.list'.split('.')
+      });
+    },
+
+    // Optional: Use onSettled if you want to invalidate even if the mutation FAILED
+    // onSettled: () => {
+    //   client.invalidateQueries({ queryKey: ['api', 'auditLogs', 'list'] });
+    // }
+  });
+
+  // 4. Instantiate the client with the mutationCache
+  client = new QueryClient({
+    mutationCache, // Pass the cache here
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000,
@@ -18,20 +40,17 @@ function makeQueryClient() {
       },
     },
   });
-}
+
+  return client;
+};
 
 let browserQueryClient: QueryClient | undefined = undefined;
 
-export function getQueryClient() {
+export const getQueryClient = () => {
   if (isServer) {
-    // Server: always make a new query client
     return makeQueryClient();
   } else {
-    // Browser: make a new query client if we don't already have one
-    // This is very important, so we don't re-make a new client if React
-    // suspends during the initial render. This may not be needed if we
-    // have a suspense boundary BELOW the creation of the query client
     if (!browserQueryClient) browserQueryClient = makeQueryClient();
     return browserQueryClient;
   }
-}
+};
