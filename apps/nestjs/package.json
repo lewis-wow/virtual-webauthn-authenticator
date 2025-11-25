@@ -4,16 +4,15 @@
   "type": "commonjs",
   "private": true,
   "scripts": {
-    "build": "run-p build:*",
-    "build:nestjs": "nest build",
-    "build:pull-openapi-spec": "pnpm pull:openapi-spec",
+    "copy-deps": "copyfiles -f ../../packages/contract/generated/openapi.json static",
+    "prebuild": "pnpm copy-deps",
+    "build": "nest build",
     "dev": "pnpm dotenvx nest start --watch",
     "start": "pnpm dotenvx node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.mts",
     "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.mts",
-    "dotenvx": "../../scripts/dotenvx.sh",
-    "pull:openapi-spec": "../../scripts/pull.sh ../../packages/contract/generated/openapi.json static/openapi.json"
+    "dotenvx": "../../scripts/dotenvx.sh"
   },
   "dependencies": {
     "@azure/identity": "^4.13.0",
