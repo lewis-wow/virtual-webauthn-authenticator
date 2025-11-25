@@ -55,10 +55,7 @@ const ApiKeysPage = () => {
 
       toast('API key has been created.');
       queryClient.invalidateQueries({
-        queryKey: [
-          ...'api.auth.apiKeys.list'.split('.'),
-          ...'api.auditLogs.list'.split('.'),
-        ],
+        queryKey: [...'api.auth.apiKeys.list'.split('.')],
       });
     },
   });
