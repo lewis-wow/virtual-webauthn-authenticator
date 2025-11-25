@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 const cleanup = async () => {
   await prisma.$transaction([
     prisma.user.deleteMany(),
-    prisma.apikey.deleteMany(),
+    prisma.apiKey.deleteMany(),
   ]);
 };
 
