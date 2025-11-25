@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@repo/prisma": "workspace:*",
+    "@repo/utils": "workspace:*",
     "effect": "^3.19.4",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"

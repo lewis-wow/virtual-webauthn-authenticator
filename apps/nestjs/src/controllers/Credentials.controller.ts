@@ -1,4 +1,6 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
+import { AuditLog } from '@repo/audit-log';
+import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 import { nestjsContract } from '@repo/contract/nestjs';
@@ -17,11 +19,6 @@ import type {
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 import { Schema } from 'effect';
 
-import { EventLog } from '../../../../packages/audit-log/src';
-import {
-  EventLogAction,
-  EventLogEntity,
-} from '../../../../packages/audit-log/src/enums';
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
@@ -32,7 +29,7 @@ export class CredentialsController {
   constructor(
     private readonly virtualAuthenticator: VirtualAuthenticator,
     private readonly logger: Logger,
-    private readonly eventLog: EventLog,
+    private readonly auditLog: AuditLog,
   ) {}
 
   @TsRestHandler(nestjsContract.api.credentials.create)
@@ -77,9 +74,9 @@ export class CredentialsController {
             },
           });
 
-        await this.eventLog.log({
-          action: EventLogAction.CREATE,
-          entity: EventLogEntity.CREDENTIAL,
+        await this.auditLog.audit({
+          action: AuditLogAction.CREATE,
+          entity: AuditLogEntity.CREDENTIAL,
           entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
           apiKeyId:
@@ -126,9 +123,9 @@ export class CredentialsController {
             context: { apiKeyId },
           });
 
-        await this.eventLog.log({
-          action: EventLogAction.GET,
-          entity: EventLogEntity.CREDENTIAL,
+        await this.auditLog.audit({
+          action: AuditLogAction.GET,
+          entity: AuditLogEntity.CREDENTIAL,
           entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
           apiKeyId:

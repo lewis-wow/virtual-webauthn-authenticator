@@ -736,6 +736,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       effect:
         specifier: ^3.19.4
         version: 3.19.4
@@ -1462,6 +1465,9 @@ importers:
 
   packages/utils:
     dependencies:
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
       typanion:
         specifier: ^3.14.0
         version: 3.14.0

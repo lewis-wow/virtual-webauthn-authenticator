@@ -15,13 +15,13 @@ export class AuditLogsController {
   @TsRestHandler(nestjsContract.api.auditLogs.list)
   async healthcheck(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(nestjsContract.api.auditLogs.list, async () => {
-      const audits = await this.auditLog.getUserHistory({
+      const logsPagination = await this.auditLog.getUserHistory({
         userId: jwtPayload.userId,
       });
 
       return {
         status: 200,
-        body: Schema.encodeSync(ListAuditLogsResponseSchema)(audits),
+        body: Schema.encodeSync(ListAuditLogsResponseSchema)(logsPagination),
       };
     });
   }

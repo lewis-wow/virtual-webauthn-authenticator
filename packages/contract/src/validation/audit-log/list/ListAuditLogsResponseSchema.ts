@@ -1,4 +1,3 @@
-import { AuditSchema } from '@repo/audit-log/validation';
-import { Schema } from 'effect';
+import { AuditPaginationSchema } from '@repo/audit-log/validation';
 
-export const ListAuditLogsResponseSchema = Schema.Array(AuditSchema);
+export const ListAuditLogsResponseSchema = AuditPaginationSchema;

@@ -1,5 +1,7 @@
 import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
+import { AuditLog } from '@repo/audit-log';
+import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 import { nestjsContract } from '@repo/contract/nestjs';
@@ -15,11 +17,6 @@ import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 import { Schema } from 'effect';
 
-import { EventLog } from '../../../../packages/audit-log/src';
-import {
-  EventLogAction,
-  EventLogEntity,
-} from '../../../../packages/audit-log/src/enums';
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
@@ -32,7 +29,7 @@ export class WebAuthnCredentialsController {
     private readonly prisma: PrismaService,
     private readonly keyClient: KeyClient,
     private readonly logger: Logger,
-    private readonly eventLog: EventLog,
+    private readonly auditLog: AuditLog,
   ) {}
 
   @TsRestHandler(nestjsContract.api.webAuthnCredentials.list)
@@ -58,17 +55,6 @@ export class WebAuthnCredentialsController {
               webAuthnCredentialKeyVaultKeyMeta: true,
             },
           });
-
-        await this.eventLog.log({
-          action: EventLogAction.LIST,
-          entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
-        });
 
         return {
           status: 200,
@@ -102,17 +88,6 @@ export class WebAuthnCredentialsController {
               webAuthnCredentialKeyVaultKeyMeta: true,
             },
           });
-
-        await this.eventLog.log({
-          action: EventLogAction.GET,
-          entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
-        });
 
         return {
           status: 200,
@@ -163,9 +138,9 @@ export class WebAuthnCredentialsController {
           await pollOperation.pollUntilDone();
         }
 
-        await this.eventLog.log({
-          action: EventLogAction.DELETE,
-          entity: EventLogEntity.WEBAUTHN_CREDENTIAL,
+        await this.auditLog.audit({
+          action: AuditLogAction.DELETE,
+          entity: AuditLogEntity.WEBAUTHN_CREDENTIAL,
 
           apiKeyId:
             jwtPayload.tokenType === TokenType.API_KEY
