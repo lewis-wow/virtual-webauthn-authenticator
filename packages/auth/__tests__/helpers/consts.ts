@@ -1,3 +1,4 @@
+import { Permission } from '../../src/enums';
 import { TokenType } from '../../src/enums/TokenType';
 import { JwtPayload } from '../../src/zod-validation/JwtPayloadSchema';
 
@@ -5,7 +6,7 @@ export const USER_ID = 'f84468a3-f383-41ce-83e2-5aab4a712c15';
 export const USER_EMAIL = 'john.doe@example.com';
 export const USER_NAME = 'John Doe';
 export const USER_IMAGE = 'IMAGE';
-export const USER_PERMISSIONS = [];
+export const USER_PERMISSIONS = Object.values(Permission);
 
 export const API_KEY_ID = 'f84468a3-f383-41ce-83e2-5aab4a712c16';
 export const API_KEY_METADATA = {

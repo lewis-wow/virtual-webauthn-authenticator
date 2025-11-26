@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { MockJwtAudience } from '@repo/auth/__mocks__';
+import {
+  MockJwtAudience,
+  USER_JWT_PAYLOAD,
+} from '@repo/auth/__tests__/helpers';
+import { setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
+import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
-  MOCK_PERSONAL_JWT_PAYLOAD,
   RP_ID,
   RP_ORIGIN,
-  setDeep,
-  WRONG_UUID,
-} from '@repo/core/__tests__/helpers';
-import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+} from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
@@ -236,7 +237,7 @@ describe('CredentialsController', () => {
   let base64CredentialID: string;
 
   beforeAll(async () => {
-    token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
+    token = await jwtIssuer.sign(USER_JWT_PAYLOAD);
 
     const appRef = await Test.createTestingModule({
       imports: [AppModule],

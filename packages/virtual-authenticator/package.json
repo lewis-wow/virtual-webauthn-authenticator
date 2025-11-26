@@ -12,7 +12,7 @@
     "./mappers": "./src/mappers/index.ts",
     "./types": "./src/types/index.ts",
     "./repositories": "./src/repositories/index.ts",
-    "./__test__/helpers": "./__test__/helpers/index.ts"
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
     "build": "run-p barrel:*",
@@ -24,6 +24,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/auth": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",

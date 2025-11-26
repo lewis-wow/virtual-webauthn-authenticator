@@ -1,3 +1,3 @@
 export * from './createPublicKeyCredentialRequestOptions';
-export * from './credentialSigner';
 export * from './MockKeyProvider';
+export * from './consts';
