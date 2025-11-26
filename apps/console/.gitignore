@@ -39,3 +39,6 @@ next-env.d.ts
 
 # generated openapi client types
 src/lib/api/v1.d.ts
+
+# generated public files
+public/generated

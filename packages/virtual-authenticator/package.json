@@ -4,39 +4,51 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./enums": "./src/enums/index.ts",
+    "./exception": "./src/exception/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./zod-validation": "./src/zod-validation/index.ts",
+    "./mappers": "./src/mappers/index.ts",
+    "./types": "./src/types/index.ts",
+    "./repositories": "./src/repositories/index.ts",
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
-    "test:integration": "vitest run integration --config __tests__/vitest.integration.config.ts",
-    "test:integration:coverage": "vitest run integration --coverage --config __tests__/vitest.integration.config.ts",
+    "build": "run-p barrel:*",
+    "barrel:validation": "../../scripts/barrel.ts ./src/validation",
+    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation",
+    "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/test-helpers": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
     "@simplewebauthn/types": "^12.0.0",
     "@types/node": "^22.5.2",
-    "prisma-mock": "^0.12.2",
-    "prismock": "^1.35.4",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4",
     "vitest-mock-extended": "^3.1.0"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
-    "@repo/validation": "workspace:*",
-    "cbor": "^10.0.11",
+    "cbor2": "^2.0.1",
     "class-transformer": "^0.5.1",
+    "effect": "^3.19.4",
     "reflect-metadata": "^0.2.2",
-    "typanion": "^3.14.0"
+    "ts-pattern": "^5.8.0",
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   }
 }

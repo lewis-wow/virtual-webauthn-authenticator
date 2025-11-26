@@ -1,7 +1,6 @@
 import { Encryption } from '@repo/crypto';
 import { Logger } from '@repo/logger';
 import type { Jwks, PrismaClient } from '@repo/prisma';
-import { JwtPayloadSchema, type JwtPayload } from '@repo/validation';
 import {
   exportJWK,
   generateKeyPair,
@@ -11,8 +10,12 @@ import {
   type JWK,
 } from 'jose';
 
-import { JwtUtils } from './JwtUtils';
 import { JWT_ALG, JWT_CRV } from './consts';
+import { TokenType } from './enums/TokenType';
+import {
+  JwtPayloadSchema,
+  type JwtPayload,
+} from './zod-validation/JwtPayloadSchema';
 
 const LOG_PREFIX = 'JWT_ISSUER';
 
@@ -127,7 +130,8 @@ export class JwtIssuer {
 
     const privateKey = await importJWK(privateWebKey, JWT_ALG);
 
-    const jwt = new SignJWT(JwtPayloadSchema.encode(payload))
+    const encodedPayload = JwtPayloadSchema.encode(payload);
+    const jwt = new SignJWT(encodedPayload)
       .setProtectedHeader({
         alg: JWT_ALG,
         kid: latestKey.id,
@@ -139,12 +143,10 @@ export class JwtIssuer {
       .setAudience(this.config.aud);
 
     let sub = payload.sub;
-    if (sub === undefined && JwtUtils.isPersonalJwtPayload(payload)) {
-      sub = payload.user.id;
-    }
-
-    if (sub === undefined && JwtUtils.isApiKeyJwtPayload(payload)) {
-      sub = payload.apiKey.id;
+    if (sub === undefined && payload.tokenType === TokenType.USER) {
+      sub = payload.userId;
+    } else if (sub === undefined && payload.tokenType === TokenType.API_KEY) {
+      sub = payload.apiKeyId;
     }
 
     if (sub) jwt.setSubject(sub);

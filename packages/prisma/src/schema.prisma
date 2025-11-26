@@ -20,9 +20,9 @@ model User {
   image               String?
   sessions            Session[]
   accounts            Account[]
-  permissions         Permission[]
-  apiKeys             Apikey[]
+  apiKeys             ApiKey[]
   webAuthnCredentials WebAuthnCredential[]
+  auditLogs           AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -79,20 +79,25 @@ model Verification {
   @@map("verification")
 }
 
-model Apikey {
-  id          String    @id @default(uuid())
-  lookupKey   String    @unique
-  name        String?
-  prefix      String?
-  hashedKey   String
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  enabled     Boolean   @default(true)
-  expiresAt   DateTime?
-  revokedAt   DateTime?
-  lastUsedAt  DateTime?
-  permissions String?
-  metadata    String?
+model ApiKey {
+  id         String     @id @default(uuid())
+  lookupKey  String     @unique
+  name       String?
+  prefix     String?
+  start      String?
+  hashedKey  String
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enabled    Boolean    @default(true)
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  lastUsedAt DateTime?
+  auditLogs  AuditLog[]
+
+  permissions String[]
+
+  // Created webAuthnCredentials using this API key
+  webAuthnCredentials WebAuthnCredential[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -112,32 +117,13 @@ model Jwks {
   @@map("jwks")
 }
 
-model Permission {
-  id String @id @default(uuid())
-
-  action       PermissionAction // e.g., READ, CREATE
-  resourceType ResourceType // e.g., API_KEYS, PRODUCTS
-
-  // Optionally, specify a single resource ID this permission applies to.
-  // If null, it applies to all resources of the given type.
-  resourceId String?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // A user can only have one type of action for a specific resource type/ID combination.
-  @@unique([userId, action, resourceType, resourceId])
-  @@map("permission")
-}
-
 model WebAuthnCredential {
   id            String   @id @default(uuid())
   name          String?
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
+  apiKey        ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  apiKeyId      String?
   COSEPublicKey Bytes
   counter       Int      @default(0)
   transports    String[]
@@ -176,21 +162,39 @@ model WebAuthnCredentialKeyVaultKeyMeta {
   @@map("webAuthnCredentialKeyVaultKeyMeta")
 }
 
-enum ResourceType {
-  API_KEYS
-  CREDENTIALS
-}
+model AuditLog {
+  id String @id @default(uuid())
 
-enum PermissionAction {
-  CREATE
-  READ
-  UPDATE
-  DELETE
+  // Categorization
+  action   String
+  entity   String
+  entityId String?
+
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKeyId String?
+  apiKey   ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([apiKeyId])
+  @@map("auditLog")
 }
 
 enum ApiKeyType {
   INTERNAL_API_KEY
   EXTERNAL_API_KEY
+}
+
+enum PermissionSubject {
+  API_KEY
+  USER
 }
 
 enum WebAuthnCredentialKeyMetaType {

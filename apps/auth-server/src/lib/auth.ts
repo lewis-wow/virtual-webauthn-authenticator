@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import { JWT_ALG } from '@repo/auth';
-import { TokenType } from '@repo/enums';
-import { type JwtPayload } from '@repo/validation';
+import { Permission, TokenType } from '@repo/auth/enums';
+import type { JwtPayload } from '@repo/auth/validation';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt as jwtPlugin, bearer } from 'better-auth/plugins';
@@ -39,12 +39,13 @@ export const auth = betterAuth({
             jti: payload.jti,
             nbf: payload.nbf,
             sub: payload.sub,
-            user: {
-              id: payload.id as string,
-              name: payload.name as string,
-              email: payload.email as string,
-            },
-            tokenType: TokenType.PERSONAL,
+            apiKeyId: null,
+            permissions: Object.values(Permission),
+            userId: payload.id as string,
+            name: payload.name as string,
+            email: payload.email as string,
+            image: payload.image as string | null,
+            tokenType: TokenType.USER,
           };
 
           return await jwtIssuer.sign(jwtPayload);
@@ -54,7 +55,9 @@ export const auth = betterAuth({
   ],
   trustedOrigins: env.TRUSTED_ORIGINS,
   advanced: {
-    generateId: false,
+    database: {
+      generateId: false,
+    },
     cookies: {
       session_token: {
         name: 'session_token',

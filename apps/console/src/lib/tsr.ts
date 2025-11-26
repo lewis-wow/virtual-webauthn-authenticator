@@ -1,19 +1,24 @@
-import { contract } from '@repo/contract';
-import { AuthType } from '@repo/enums';
-import { initClient } from '@ts-rest/core';
+import { AuthType } from '@repo/auth/enums';
+import { authServerContract } from '@repo/contract/auth-server';
+import { nestjsContract } from '@repo/contract/nestjs';
+import { initContract } from '@ts-rest/core';
 import { initTsrReactQuery } from '@ts-rest/react-query/v5';
 
-export const tsr = initTsrReactQuery(contract, {
-  baseUrl: '/',
+import { getBaseUrl } from './getBaseUrl';
+
+const c = initContract();
+
+export const $apiContract = c.router({
+  api: {
+    ...nestjsContract.api,
+    ...authServerContract.api,
+  },
+});
+
+export const $api = initTsrReactQuery($apiContract, {
+  baseUrl: getBaseUrl(),
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
   },
   validateResponse: true,
-});
-
-export const $api = initClient(contract, {
-  baseUrl: '/',
-  baseHeaders: {
-    'X-Auth-Type': AuthType.SESSION,
-  },
 });

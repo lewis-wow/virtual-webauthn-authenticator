@@ -1,14 +1,16 @@
-import {
-  ApiKeyDeleteEnabledFailed,
-  ApiKeyDeleteFailed,
-  ApiKeyNotFound,
-  ApiKeyRevokeFailed,
-} from '@repo/exception';
 import { Logger } from '@repo/logger';
+import { Pagination } from '@repo/pagination';
+import type { PaginationResult } from '@repo/pagination/validation';
 import { Prisma, type PrismaClient } from '@repo/prisma';
-import { type ApiKey } from '@repo/validation';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
+
+import { Permission } from './enums/Permission';
+import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
+import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
+import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
+import { ApiKeyRevokeFailed } from './exceptions/ApiKeyRevokeFailed';
+import type { ApiKey } from './zod-validation/ApiKeySchema';
 
 const LOG_PREFIX = 'API_KEY';
 const log = new Logger({
@@ -27,10 +29,10 @@ export const PUBLIC_API_KEY_SELECT = {
   lastUsedAt: true,
   createdAt: true,
   updatedAt: true,
-  metadata: true,
   permissions: true,
   enabled: true,
-} satisfies Prisma.ApikeySelect;
+  start: true,
+} satisfies Prisma.ApiKeySelect;
 
 export type ApiKeyManagerOptions = {
   prisma: PrismaClient;
@@ -50,6 +52,8 @@ export class ApiKeyManager {
    * Byte length for the 'lookupKey' part. 16 bytes = 22 base64url chars.
    */
   private readonly LOOKUP_BYTE_LENGTH = 16;
+
+  private readonly SECRET_START_LENGTH = 8;
   /**
    * Prefix for all live keys.
    */
@@ -57,26 +61,6 @@ export class ApiKeyManager {
 
   constructor(opts: ApiKeyManagerOptions) {
     this.prisma = opts.prisma;
-  }
-
-  private _stringifyNonNullish(
-    value: object | null | undefined,
-  ): string | null | undefined {
-    if (value === null || value === undefined) {
-      return value;
-    }
-
-    return JSON.stringify(value);
-  }
-
-  private _parseNonNullish<T>(
-    value: string | null | undefined,
-  ): T | null | undefined {
-    if (value === null || value === undefined) {
-      return value;
-    }
-
-    return JSON.parse(value);
   }
 
   /**
@@ -89,6 +73,40 @@ export class ApiKeyManager {
   }
 
   /**
+   * Safely parses a provided key string into lookupKey and secret
+   * based on fixed byte length, ignoring delimiter ambiguity.
+   */
+  private _parseKey(
+    providedKey: string,
+  ): { lookupKey: string; secret: string } | null {
+    // Calculate expected char length of the secret in base64url
+    // Formula: ceil((bytes * 8) / 6)
+    // For 32 bytes, this is 43 characters.
+    const secretCharLength = Math.ceil((this.SECRET_BYTE_LENGTH * 8) / 6);
+
+    // Key must be longer than just the secret part + separator
+    if (providedKey.length <= secretCharLength) {
+      return null;
+    }
+
+    // Extract the secret from the END of the string
+    const secret = providedKey.slice(-secretCharLength);
+
+    // The remainder is the lookupKey + separator
+    const remainder = providedKey.slice(0, -secretCharLength);
+
+    // Validate that the separator exists exactly where we expect it
+    if (!remainder.endsWith('_')) {
+      return null;
+    }
+
+    // Extract lookup key by removing the trailing separator
+    const lookupKey = remainder.slice(0, -1);
+
+    return { lookupKey, secret };
+  }
+
+  /**
    * Generates a new API key.
    * This is the only time the plaintext key is available.
    *
@@ -98,14 +116,16 @@ export class ApiKeyManager {
     userId: string;
     name?: string | null;
     expiresAt?: Date | null;
-    permissions?: Record<string, string[]> | null;
-    metadata?: Record<string, unknown> | null;
+    permissions?: Permission[] | null;
   }): Promise<{ plaintextKey: string; apiKey: ApiKey }> {
-    const { userId, name, expiresAt, permissions, metadata } = opts;
+    const { userId, name, expiresAt, permissions: _ } = opts;
 
-    const lookupKey =
-      ApiKeyManager.KEY_PREFIX +
-      this._generateRandomString(this.LOOKUP_BYTE_LENGTH);
+    const internalLookupKey = this._generateRandomString(
+      this.LOOKUP_BYTE_LENGTH,
+    );
+    const start = internalLookupKey.substring(0, this.SECRET_START_LENGTH);
+
+    const lookupKey = `${ApiKeyManager.KEY_PREFIX}${internalLookupKey}`;
 
     const secret = this._generateRandomString(this.SECRET_BYTE_LENGTH);
 
@@ -115,16 +135,19 @@ export class ApiKeyManager {
     // This is what you store in the database.
     const hashedKey = await hash(secret, this.BCRYPT_ROUNDS);
 
-    const apiKey = await this.prisma.apikey.create({
+    const apiKey = await this.prisma.apiKey.create({
       data: {
         hashedKey,
         userId,
         expiresAt,
         lookupKey,
         name,
+        start,
         prefix: ApiKeyManager.KEY_PREFIX,
-        permissions: this._stringifyNonNullish(permissions),
-        metadata: this._stringifyNonNullish(metadata),
+        permissions: [
+          Permission['Credential.create'],
+          Permission['Credential.get'],
+        ],
       },
     });
 
@@ -137,9 +160,8 @@ export class ApiKeyManager {
       plaintextKey,
       apiKey: {
         ...apiKey,
-        metadata: this._parseNonNullish(apiKey.metadata),
-        permissions: this._parseNonNullish(apiKey.permissions),
-      },
+        metadata: { createdWebAuthnCredentialCount: 0 },
+      } as ApiKey,
     };
   }
 
@@ -151,34 +173,26 @@ export class ApiKeyManager {
    * @returns The ApiKey record if valid, otherwise null.
    */
   async verify(providedKey: string): Promise<ApiKey | null> {
-    // Find the last underscore, which separates the lookupKey from the secret
-    const lastUnderscoreIndex = providedKey.lastIndexOf('_');
+    // Use fixed-length parsing to handle secrets containing underscores
+    const parsed = this._parseKey(providedKey);
 
-    // Check for invalid format (no underscore, or key starts/ends with it)
-    if (
-      lastUnderscoreIndex <= 0 ||
-      lastUnderscoreIndex === providedKey.length - 1
-    ) {
-      log.warn('Invalid key format provided. No delimiter found.');
+    if (!parsed) {
+      log.warn('Invalid key format provided. Length or separator mismatch.');
       return null;
     }
 
-    // Split the key into its two parts
-    const lookupKey = providedKey.substring(0, lastUnderscoreIndex);
-    const secret = providedKey.substring(lastUnderscoreIndex + 1);
-
-    if (!secret) {
-      // This should be caught by the index check, but good for safety
-      log.warn('Invalid key format provided, no secret part found.', {
-        lookupKey,
-      });
-
-      return null;
-    }
+    const { lookupKey, secret } = parsed;
 
     // O(1) Lookup
-    const apiKey = await this.prisma.apikey.findUnique({
+    const apiKey = await this.prisma.apiKey.findUnique({
       where: { lookupKey },
+      include: {
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
+      },
     });
 
     if (!apiKey) {
@@ -207,7 +221,7 @@ export class ApiKeyManager {
 
     // Update last used time.
     // We do this after returning, so we don't slow down the request.
-    void this.prisma.apikey
+    void this.prisma.apiKey
       .update({
         where: { id: apiKey.id },
         data: { lastUsedAt: new Date() },
@@ -223,9 +237,10 @@ export class ApiKeyManager {
 
     return {
       ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
@@ -236,17 +251,25 @@ export class ApiKeyManager {
     const { userId, id } = opts;
 
     try {
-      const apiKey = await this.prisma.apikey.update({
+      const apiKey = await this.prisma.apiKey.update({
         where: { userId, id },
         data: { revokedAt: new Date() },
+        include: {
+          _count: {
+            select: {
+              webAuthnCredentials: true,
+            },
+          },
+        },
       });
 
       log.info('API key revoked', { keyId: id });
       return {
         ...apiKey,
-        metadata: this._parseNonNullish(apiKey.metadata),
-        permissions: this._parseNonNullish(apiKey.permissions),
-      };
+        metadata: {
+          createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        },
+      } as ApiKey;
     } catch {
       throw new ApiKeyRevokeFailed();
     }
@@ -255,40 +278,52 @@ export class ApiKeyManager {
   async update(opts: {
     userId: string;
     id: string;
-    data: Partial<
-      Pick<ApiKey, 'enabled' | 'name' | 'metadata' | 'expiresAt' | 'revokedAt'>
-    >;
+    data: Partial<Pick<ApiKey, 'enabled' | 'name' | 'expiresAt' | 'revokedAt'>>;
   }): Promise<ApiKey> {
     const { userId, id, data } = opts;
 
-    const apiKey = await this.prisma.apikey.update({
+    const apiKey = await this.prisma.apiKey.update({
       where: { userId, id },
       data: {
         enabled: data.enabled,
         name: data.name,
         expiresAt: data.expiresAt,
         revokedAt: data.revokedAt,
-        metadata: this._stringifyNonNullish(data.metadata),
+      },
+      include: {
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
       },
     });
 
     return {
       ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
    * Deletes a key by its 'id' (cuid).
    * This is a hard-delete. Use with caution.
    */
-  async delete(opts: { userId: string; id: string }): Promise<ApiKey | null> {
+  async delete(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
-    const apiKey = await this.prisma.apikey
+    const apiKey = await this.prisma.apiKey
       .delete({
         where: { userId, id },
+        include: {
+          _count: {
+            select: {
+              webAuthnCredentials: true,
+            },
+          },
+        },
       })
       .catch(() => {
         throw new ApiKeyDeleteFailed();
@@ -301,9 +336,10 @@ export class ApiKeyManager {
     log.info('API key deleted', { keyId: id });
     return {
       ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
@@ -312,9 +348,16 @@ export class ApiKeyManager {
   async get(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
-    const apiKey = await this.prisma.apikey.findUnique({
+    const apiKey = await this.prisma.apiKey.findUnique({
       where: { userId, id },
-      select: PUBLIC_API_KEY_SELECT,
+      select: {
+        ...PUBLIC_API_KEY_SELECT,
+        _count: {
+          select: {
+            webAuthnCredentials: true,
+          },
+        },
+      },
     });
 
     if (!apiKey) {
@@ -323,27 +366,47 @@ export class ApiKeyManager {
 
     return {
       ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    };
+      metadata: {
+        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+      },
+    } as ApiKey;
   }
 
   /**
    * Lists all public-safe key details for a user.
    */
-  async list(opts: { userId: string }): Promise<ApiKey[]> {
-    const { userId } = opts;
+  async list(opts: {
+    userId: string;
+    limit?: number;
+    cursor?: string;
+  }): Promise<PaginationResult<ApiKey>> {
+    const { userId, limit, cursor } = opts;
 
-    const apiKeys = await this.prisma.apikey.findMany({
-      where: { userId },
-      select: PUBLIC_API_KEY_SELECT,
-      orderBy: { createdAt: 'desc' },
+    const pagination = new Pagination(async ({ pagination }) => {
+      const apiKeys = await this.prisma.apiKey.findMany({
+        where: { userId },
+        select: {
+          ...PUBLIC_API_KEY_SELECT,
+          _count: {
+            select: {
+              webAuthnCredentials: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        ...pagination,
+      });
+
+      return apiKeys.map((apiKey) => ({
+        ...apiKey,
+        metadata: {
+          createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        },
+      })) as ApiKey[];
     });
 
-    return apiKeys.map((apiKey) => ({
-      ...apiKey,
-      metadata: this._parseNonNullish(apiKey.metadata),
-      permissions: this._parseNonNullish(apiKey.permissions),
-    }));
+    const result = await pagination.fetch({ limit, cursor });
+
+    return result;
   }
 }

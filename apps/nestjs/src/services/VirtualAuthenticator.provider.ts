@@ -1,14 +1,20 @@
 import { Provider } from '@nestjs/common';
+import { AzureKeyVaultKeyProvider } from '@repo/key-vault';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
-
-import { PrismaService } from './Prisma.service';
+import { PrismaWebAuthnRepository } from '@repo/virtual-authenticator/repositories';
 
 export const VirtualAuthenticatorProvider: Provider = {
   provide: VirtualAuthenticator,
-  useFactory: (prisma: PrismaService) => {
-    const virtualAuthenticator = new VirtualAuthenticator({ prisma });
+  useFactory: (
+    webAuthnRepository: PrismaWebAuthnRepository,
+    azureKeyVaultKeyProvider: AzureKeyVaultKeyProvider,
+  ) => {
+    const virtualAuthenticator = new VirtualAuthenticator({
+      webAuthnRepository,
+      keyProvider: azureKeyVaultKeyProvider,
+    });
 
     return virtualAuthenticator;
   },
-  inject: [PrismaService],
+  inject: [PrismaWebAuthnRepository, AzureKeyVaultKeyProvider],
 };

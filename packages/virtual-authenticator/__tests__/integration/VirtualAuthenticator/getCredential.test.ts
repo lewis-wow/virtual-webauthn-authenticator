@@ -1,31 +1,30 @@
-import { WebAuthnCredentialKeyMetaType } from '@repo/enums';
+import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
+
+import { UUIDMapper } from '@repo/core/mappers';
 import { PrismaClient } from '@repo/prisma';
-import {
-  CHALLENGE_BASE64URL,
-  createPublicKeyCredentialRequestOptions,
-  KEY_VAULT_KEY_ID,
-  KEY_VAULT_KEY_NAME,
-  RP_ORIGIN,
-  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-  RP_ID,
-  upsertTestingUser,
-  USER_ID,
-} from '@repo/test-helpers';
-import {
-  PublicKeyCredentialDtoSchema,
-  PublicKeyCredentialRequestOptions,
-} from '@repo/validation';
 import {
   verifyAuthenticationResponse,
   verifyRegistrationResponse,
-  type AuthenticationResponseJSON,
   type RegistrationResponseJSON,
+  type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
+import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
-import { credentialSigner } from '../../helpers/credentialSigner';
-import { COSEPublicKey } from '../../helpers/key';
+import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { IKeyProvider } from '../../../src/types/IKeyProvider';
+import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
+import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
+import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import {
+  CHALLENGE_BASE64URL,
+  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+  RP_ID,
+  RP_ORIGIN,
+} from '../../helpers/consts';
+import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
 
 const prisma = new PrismaClient();
 
@@ -52,17 +51,17 @@ const performAndVerifyAuth = async (opts: {
 
   const publicKeyCredential = await authenticator.getCredential({
     publicKeyCredentialRequestOptions: requestOptions,
-    signatureFactory: ({ data }) => credentialSigner.sign(data),
     meta: {
-      user: {
-        id: USER_ID,
-      },
+      userId: USER_ID,
       origin: RP_ORIGIN,
+    },
+    context: {
+      apiKeyId: undefined,
     },
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialDtoSchema.encode(
+    response: Schema.encodeSync(PublicKeyCredentialSchema)(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
@@ -94,7 +93,11 @@ const cleanup = async () => {
 };
 
 describe('VirtualAuthenticator.getCredential()', () => {
+  let keyProvider: IKeyProvider;
   let authenticator: VirtualAuthenticator;
+  const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
+    prisma,
+  });
 
   let credentialID: string;
   let credentialRawID: Uint8Array;
@@ -107,9 +110,14 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
 
+    keyProvider = new MockKeyProvider();
+
     // Initialize the VirtualAuthenticator instance, passing in the Prisma client
     // for database interactions.
-    authenticator = new VirtualAuthenticator({ prisma });
+    authenticator = new VirtualAuthenticator({
+      webAuthnRepository: webAuthnCredentialRepository,
+      keyProvider,
+    });
 
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
@@ -117,30 +125,21 @@ describe('VirtualAuthenticator.getCredential()', () => {
     const publicKeyCredential = await authenticator.createCredential({
       publicKeyCredentialCreationOptions:
         PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-      generateKeyPair: async () => ({
-        COSEPublicKey: COSEPublicKey.toBuffer(),
-        meta: {
-          webAuthnCredentialKeyMetaType:
-            WebAuthnCredentialKeyMetaType.KEY_VAULT,
-          webAuthnCredentialKeyVaultKeyMeta: {
-            keyVaultKeyId: KEY_VAULT_KEY_ID,
-            keyVaultKeyName: KEY_VAULT_KEY_NAME,
-            hsm: false,
-          },
-        },
-      }),
       meta: {
-        user: {
-          id: USER_ID,
-        },
+        userId: USER_ID,
         origin: RP_ORIGIN,
+      },
+      context: {
+        apiKeyId: null,
       },
     });
 
+    const encodedPublicKeyCredential = Schema.encodeSync(
+      PublicKeyCredentialSchema,
+    )(publicKeyCredential);
+
     const registrationVerification = await verifyRegistrationResponse({
-      response: PublicKeyCredentialDtoSchema.encode(
-        publicKeyCredential,
-      ) as RegistrationResponseJSON,
+      response: encodedPublicKeyCredential as RegistrationResponseJSON,
       expectedChallenge: CHALLENGE_BASE64URL,
       expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
@@ -217,40 +216,69 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
+    const rpId = 'WRONG_RP_ID';
+
+    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      {
+        ...requestOptions,
+        rpId,
+      };
+
     await expect(() =>
       authenticator.getCredential({
-        publicKeyCredentialRequestOptions: {
-          ...requestOptions,
-          rpId: 'WRONG_RP_ID',
-        },
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
+        publicKeyCredentialRequestOptions,
         meta: {
-          user: {
-            id: USER_ID,
-          },
+          userId: USER_ID,
           origin: RP_ORIGIN,
         },
+        context: {
+          apiKeyId: undefined,
+        },
       }),
-    ).to.rejects.toThrowError();
+    ).to.rejects.toThrowError(
+      new CredentialNotFound({
+        data: {
+          userId: USER_ID,
+          rpId,
+          allowCredentialIds: requestOptions.allowCredentials.map(
+            (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
+          ),
+        },
+      }),
+    );
   });
 
   test('should fail with different user ID', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
+    const publicKeyCredentialRequestOptions =
+      createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+    const userId = 'WRONG_USER_ID';
 
     await expect(() =>
       authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
+        publicKeyCredentialRequestOptions,
         meta: {
-          user: {
-            id: 'WRONG_USER_ID',
-          },
+          userId,
           origin: RP_ORIGIN,
         },
+        context: {
+          apiKeyId: undefined,
+        },
       }),
-    ).to.rejects.toThrowError();
+    ).to.rejects.toThrowError(
+      new CredentialNotFound({
+        data: {
+          userId,
+          rpId: RP_ID,
+          allowCredentialIds:
+            publicKeyCredentialRequestOptions.allowCredentials.map(
+              (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
+            ),
+        },
+      }),
+    );
   });
 
   test('should fail with wrong allowCredentials', async () => {
@@ -258,22 +286,35 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
+    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      {
+        ...requestOptions,
+        allowCredentials: [
+          { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
+        ],
+      };
+
     await expect(() =>
       authenticator.getCredential({
-        publicKeyCredentialRequestOptions: {
-          ...requestOptions,
-          allowCredentials: [
-            { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
-          ],
-        },
-        signatureFactory: ({ data }) => credentialSigner.sign(data),
+        publicKeyCredentialRequestOptions,
         meta: {
-          user: {
-            id: 'WRONG_USER_ID',
-          },
+          userId: USER_ID,
           origin: RP_ORIGIN,
         },
+        context: {
+          apiKeyId: undefined,
+        },
       }),
-    ).to.rejects.toThrowError();
+    ).to.rejects.toThrowError(
+      new CredentialNotFound({
+        data: {
+          userId: USER_ID,
+          rpId: RP_ID,
+          allowCredentialIds: [
+            UUIDMapper.bytesToUUID(Buffer.from('WRONG_CREDENTIAL_ID')),
+          ],
+        },
+      }),
+    );
   });
 });

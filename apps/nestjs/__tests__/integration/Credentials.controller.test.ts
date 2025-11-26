@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { MockJwtAudience } from '@repo/auth/__mocks__';
+import {
+  MockJwtAudience,
+  upsertTestingUser,
+  USER_JWT_PAYLOAD,
+} from '@repo/auth/__tests__/helpers';
+import { setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
+import {
+  CHALLENGE_BASE64URL,
+  RP_ID,
+  RP_ORIGIN,
+} from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
-import { COSEKeyAlgorithm } from '@repo/enums';
-import { COSEKey } from '@repo/keys';
-import {
-  CHALLENGE_BASE64URL,
-  MOCK_PERSONAL_JWT_PAYLOAD,
-  RP_ID,
-  RP_ORIGIN,
-  setDeep,
-  upsertTestingUser,
-  WRONG_UUID,
-} from '@repo/test-helpers';
-import { bytesToUuid } from '@repo/utils';
+import { UUIDMapper } from '@repo/core/mappers';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyMapper } from '@repo/keys/mappers';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -100,9 +101,11 @@ const performAndVerifyRegistration = async (opts: {
   expect(verification.registrationInfo?.credential.counter).toBe(0);
 
   expect(
-    COSEKey.fromBuffer(
-      verification.registrationInfo!.credential.publicKey,
-    ).toJwk(),
+    COSEKeyMapper.COSEKeyToJwk(
+      COSEKeyMapper.bytesToCOSEKey(
+        verification.registrationInfo!.credential.publicKey,
+      ),
+    ),
   ).toMatchObject({
     crv: 'P-256',
     d: undefined,
@@ -137,7 +140,7 @@ const performAndVerifyRegistration = async (opts: {
   return {
     response,
     verification,
-    webAuthnCredentialId: bytesToUuid(
+    webAuthnCredentialId: UUIDMapper.bytesToUUID(
       Buffer.from(response.body.id, 'base64url'),
     ),
   };
@@ -234,7 +237,7 @@ describe('CredentialsController', () => {
   let base64CredentialID: string;
 
   beforeAll(async () => {
-    token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
+    token = await jwtIssuer.sign(USER_JWT_PAYLOAD);
 
     const appRef = await Test.createTestingModule({
       imports: [AppModule],

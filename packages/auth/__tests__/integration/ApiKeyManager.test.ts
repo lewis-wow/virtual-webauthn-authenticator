@@ -1,15 +1,16 @@
 import { PrismaClient } from '@repo/prisma';
-import { upsertTestingUser, USER_ID } from '@repo/test-helpers';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { ApiKeyManager } from '../../src/ApiKeyManager';
+import { USER_ID } from '../helpers/consts';
+import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
 const prisma = new PrismaClient();
 
 const cleanup = async () => {
   await prisma.$transaction([
     prisma.user.deleteMany(),
-    prisma.apikey.deleteMany(),
+    prisma.apiKey.deleteMany(),
   ]);
 };
 
@@ -117,7 +118,7 @@ describe('ApiKeyManager', () => {
       await apiKeyManager.generate({ userId: USER_ID });
       await apiKeyManager.generate({ userId: USER_ID });
       const keys = await apiKeyManager.list({ userId: USER_ID });
-      expect(keys.length).toBe(2);
+      expect(keys.data.length).toBe(2);
     });
   });
 });

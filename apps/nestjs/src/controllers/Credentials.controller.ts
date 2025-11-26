@@ -1,18 +1,23 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
-import { contract } from '@repo/contract';
-import { KeyAlgorithm } from '@repo/enums';
-import { CredentialSignerFactory, KeyVault } from '@repo/key-vault';
-import { COSEKey } from '@repo/keys';
-import { Logger } from '@repo/logger';
-import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
-import { uuidToBytes } from '@repo/utils';
+import { AuditLog } from '@repo/audit-log';
+import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
+import { Permission, TokenType } from '@repo/auth/enums';
+import type { JwtPayload } from '@repo/auth/validation';
+import { nestjsContract } from '@repo/contract/nestjs';
 import {
-  type JwtPayload,
+  CreateCredentialResponseSchema,
+  GetCredentialResponseSchema,
+} from '@repo/contract/validation';
+import { UUIDMapper } from '@repo/core/mappers';
+import { Forbidden } from '@repo/exception/http';
+import { Logger } from '@repo/logger';
+import { VirtualAuthenticator } from '@repo/virtual-authenticator';
+import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
-} from '@repo/validation';
-import { VirtualAuthenticator } from '@repo/virtual-authenticator';
+} from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
+import { Schema } from 'effect';
 
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
@@ -22,130 +27,121 @@ import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 @UseFilters(new ExceptionFilter())
 export class CredentialsController {
   constructor(
-    private readonly keyVault: KeyVault,
     private readonly virtualAuthenticator: VirtualAuthenticator,
-    private readonly credentialSignerFactory: CredentialSignerFactory,
     private readonly logger: Logger,
+    private readonly auditLog: AuditLog,
   ) {}
 
-  @TsRestHandler(contract.api.credentials.create)
+  @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(contract.api.credentials.create, async ({ body }) => {
-      const { user } = jwtPayload;
-      const { publicKeyCredentialCreationOptions, meta } = body;
+    return tsRestHandler(
+      nestjsContract.api.credentials.create,
+      async ({ body }) => {
+        const { userId, apiKeyId, permissions, name } = jwtPayload;
+        const { publicKeyCredentialCreationOptions, meta } = body;
 
-      const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-        id: uuidToBytes(user.id),
-        name: user.name,
-        displayName: user.name,
-      };
+        if (!permissions.includes(Permission['Credential.create'])) {
+          throw new Forbidden();
+        }
 
-      const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
-        {
-          ...publicKeyCredentialCreationOptions,
-          user: publicKeyCredentialUserEntity,
+        const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
+          id: UUIDMapper.UUIDtoBytes(userId),
+          name: name,
+          displayName: name,
         };
 
-      this.logger.debug('Creating credential', {
-        userId: user.id,
-      });
+        const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
+          {
+            ...publicKeyCredentialCreationOptions,
+            user: publicKeyCredentialUserEntity,
+          };
 
-      const publicKeyCredential =
-        await this.virtualAuthenticator.createCredential({
-          publicKeyCredentialCreationOptions:
-            publicKeyCredentialCreationOptionsWithUser,
-          generateKeyPair: async (webAuthnCredentialUuid) => {
-            const {
-              jwk,
-              meta: { keyVaultKey },
-            } = await this.keyVault.createKey({
-              keyName: webAuthnCredentialUuid,
-              supportedPubKeyCredParam:
-                VirtualAuthenticator.findFirstSupportedPubKeyCredParams(
-                  publicKeyCredentialCreationOptions.pubKeyCredParams,
-                ),
-            });
-
-            const COSEPublicKey = COSEKey.fromJwk(jwk);
-
-            return {
-              COSEPublicKey: COSEPublicKey.toBuffer(),
-              meta: {
-                webAuthnCredentialKeyMetaType:
-                  WebAuthnCredentialKeyMetaType.KEY_VAULT,
-                webAuthnCredentialKeyVaultKeyMeta: {
-                  keyVaultKeyId: keyVaultKey.id,
-                  keyVaultKeyName: keyVaultKey.name,
-                  hsm: false,
-                },
-              },
-            };
-          },
-          meta: {
-            ...meta,
-            user,
-          },
+        this.logger.debug('Creating credential', {
+          userId: userId,
         });
 
-      return {
-        status: 200,
-        body: contract.api.credentials.create.responses[200].encode(
-          publicKeyCredential,
-        ),
-      };
-    });
+        const publicKeyCredential =
+          await this.virtualAuthenticator.createCredential({
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptionsWithUser,
+            meta: {
+              origin: meta.origin,
+              userId: userId,
+            },
+            context: {
+              apiKeyId: apiKeyId,
+            },
+          });
+
+        await this.auditLog.audit({
+          action: AuditLogAction.CREATE,
+          entity: AuditLogEntity.CREDENTIAL,
+          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
+
+        return {
+          status: 200,
+          body: Schema.encodeSync(CreateCredentialResponseSchema)(
+            publicKeyCredential,
+          ),
+        };
+      },
+    );
   }
 
-  @TsRestHandler(contract.api.credentials.get)
+  @TsRestHandler(nestjsContract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
   async getCredential(@Jwt() jwtPayload: JwtPayload) {
-    return tsRestHandler(contract.api.credentials.get, async ({ body }) => {
-      const { user } = jwtPayload;
-      const { publicKeyCredentialRequestOptions, meta } = body;
+    return tsRestHandler(
+      nestjsContract.api.credentials.get,
+      async ({ body }) => {
+        const { publicKeyCredentialRequestOptions, meta } = body;
+        const { userId, apiKeyId, permissions } = jwtPayload;
 
-      this.logger.debug('Getting credential', {
-        userId: user.id,
-      });
+        if (!permissions.includes(Permission['Credential.get'])) {
+          throw new Forbidden();
+        }
 
-      const publicKeyCredential = await this.virtualAuthenticator.getCredential(
-        {
-          publicKeyCredentialRequestOptions,
-          signatureFactory: async ({ data, webAuthnCredential, meta }) => {
-            if (
-              webAuthnCredential.webAuthnCredentialKeyMetaType !==
-              WebAuthnCredentialKeyMetaType.KEY_VAULT
-            ) {
-              throw new Error('Unexpected WebAuthnCredentialKeyMetaType.');
-            }
+        this.logger.debug('Getting credential', {
+          userId: userId,
+        });
 
-            const {
-              meta: { keyVaultKey },
-            } = await this.keyVault.getKey({
-              keyName: meta.webAuthnCredentialKeyVaultKeyMeta!.keyVaultKeyName,
-            });
+        const publicKeyCredential =
+          await this.virtualAuthenticator.getCredential({
+            publicKeyCredentialRequestOptions,
+            meta: {
+              origin: meta.origin,
+              userId: userId,
+            },
+            context: { apiKeyId },
+          });
 
-            const credentialSigner =
-              this.credentialSignerFactory.createCredentialSigner({
-                algorithm: KeyAlgorithm.ES256,
-                keyVaultKey,
-              });
+        await this.auditLog.audit({
+          action: AuditLogAction.GET,
+          entity: AuditLogEntity.CREDENTIAL,
+          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
-            return await credentialSigner.sign(data);
-          },
-          meta: {
-            ...meta,
-            user,
-          },
-        },
-      );
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
 
-      return {
-        status: 200,
-        body: contract.api.credentials.get.responses[200].encode(
-          publicKeyCredential,
-        ),
-      };
-    });
+        return {
+          status: 200,
+          body: Schema.encodeSync(GetCredentialResponseSchema)(
+            publicKeyCredential,
+          ),
+        };
+      },
+    );
   }
 }

@@ -5,29 +5,41 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./enums": "./src/enums/index.ts"
+    "./enums": "./src/enums/index.ts",
+    "./exceptions": "./src/exceptions/index.ts",
+    "./mappers": "./src/mappers/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./zod-validation": "./src/zod-validation/index.ts",
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
-    "test": "vitest run unit --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run unit --coverage --config __tests__/vitest.config.ts",
+    "build": "run-p barrel:*",
+    "barrel:validation": "../../scripts/barrel.ts ./src/validation",
+    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation",
+    "test": "vitest run --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/vitest-config": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@repo/enums": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@repo/exception": "workspace:*",
-    "cbor": "^10.0.11",
+    "@repo/utils": "workspace:*",
+    "buffer": "^6.0.3",
+    "cbor2": "^2.0.1",
+    "effect": "^3.19.4",
     "ts-pattern": "^5.8.0",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "uint8array-extras": "^1.5.0",
+    "zod": "^4.1.12"
   }
 }

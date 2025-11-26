@@ -1,19 +1,15 @@
-import js from '@eslint/js';
-import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 import { config as baseConfig } from './base.js';
 
 /**
- * A custom ESLint configuration for libraries that use Next.js.
+ * A custom ESLint configuration for libraries that use Nest.js.
  *
  * @type {import("eslint").Linter.Config[]}
  * */
 export const config = [
   ...baseConfig,
-  js.configs.recommended,
-  eslintConfigPrettier,
   {
     languageOptions: {
       globals: {
@@ -23,7 +19,7 @@ export const config = [
     },
   },
   ...tseslint.config({
-    files: ['**/*.ts', '**/*.tsx'], // <-- This is the key part of the fix
+    files: ['**/*.ts', '**/*.tsx'],
     extends: [...tseslint.configs.recommended],
     languageOptions: {
       sourceType: 'module',

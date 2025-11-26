@@ -8,6 +8,7 @@
 # --- Configuration ---
 # Set a default environment if the ENVIRONMENT variable is not provided.
 DEFAULT_ENV="development"
+SCRIPT_DIR=$(dirname "$0")
 
 # --- Script Logic ---
 
@@ -20,7 +21,7 @@ else
   CURRENT_ENV="$ENVIRONMENT"
 fi
 
-# 3. Construct the .env filename.
+ROOT_ENV_FILE="${SCRIPT_DIR}/../.env.${CURRENT_ENV}"
 ENV_FILE=".env.${CURRENT_ENV}"
 
 # 4. Check if the required .env file exists before attempting to use it.
@@ -34,4 +35,4 @@ fi
 #    --: Separates dotenvx's options from the command you want to run.
 #    "$@": Passes all arguments from this script directly to the command.
 echo "Loading environment from '$ENV_FILE'..."
-npx dotenvx run -f "$ENV_FILE" -- "$@"
+npx dotenvx run -f "$ROOT_ENV_FILE" -f "$ENV_FILE" -- "$@"

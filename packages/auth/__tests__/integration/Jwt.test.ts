@@ -1,18 +1,15 @@
-import { MockJwtAudience } from '../../__mocks__/MockJwtAudience.mock';
-
 import { PrismaClient } from '@repo/prisma';
-import {
-  API_KEY_ID,
-  MOCK_API_KEY_JWT_PAYLOAD,
-  MOCK_PERSONAL_JWT_PAYLOAD,
-  upsertTestingUser,
-  USER_ID,
-} from '@repo/test-helpers';
-import { ApiKeyJwtPayload } from '@repo/validation';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { JwtIssuer } from '../../src/JwtIssuer';
-import { JwtUtils } from '../../src/JwtUtils';
+import { MockJwtAudience } from '../helpers/MockJwtAudience';
+import {
+  API_KEY_ID,
+  API_KEY_JWT_PAYLOAD,
+  USER_ID,
+  USER_JWT_PAYLOAD,
+} from '../helpers/consts';
+import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
 const prisma = new PrismaClient();
 
@@ -58,17 +55,17 @@ describe('JWT', () => {
 
   describe('JwtIssuer and JwtAudience', () => {
     test('should sign and validate a personal JWT', async () => {
-      const token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
+      const token = await jwtIssuer.sign(USER_JWT_PAYLOAD);
       const validatedPayload = await jwtAudience.validateToken(token);
       expect(validatedPayload.sub).toBe(USER_ID);
     });
 
     test('should sign and validate an API key JWT', async () => {
-      const token = await jwtIssuer.sign(MOCK_API_KEY_JWT_PAYLOAD);
+      const token = await jwtIssuer.sign(API_KEY_JWT_PAYLOAD);
       const validatedPayload = await jwtAudience.validateToken(token);
 
       expect(validatedPayload.sub).toBe(API_KEY_ID);
-      expect((validatedPayload as ApiKeyJwtPayload).apiKey.id).toBe(API_KEY_ID);
+      expect(validatedPayload.apiKeyId).toBe(API_KEY_ID);
     });
 
     test('should throw an error for an invalid token', async () => {
@@ -79,32 +76,12 @@ describe('JWT', () => {
 
     test('should throw an error for an expired token', async () => {
       vi.useFakeTimers();
-      const token = await jwtIssuer.sign(MOCK_PERSONAL_JWT_PAYLOAD);
+      const token = await jwtIssuer.sign(USER_JWT_PAYLOAD);
 
       // Advance time by 16 minutes
       vi.advanceTimersByTime(16 * 60 * 1000);
 
       await expect(jwtAudience.validateToken(token)).rejects.toThrow();
-    });
-  });
-
-  describe('JwtUtils', () => {
-    test('should identify a personal JWT payload', () => {
-      expect(JwtUtils.isPersonalJwtPayload(MOCK_PERSONAL_JWT_PAYLOAD)).toBe(
-        true,
-      );
-
-      expect(JwtUtils.isPersonalJwtPayload(MOCK_API_KEY_JWT_PAYLOAD)).toBe(
-        false,
-      );
-    });
-
-    test('should identify an API key JWT payload', () => {
-      expect(JwtUtils.isApiKeyJwtPayload(MOCK_API_KEY_JWT_PAYLOAD)).toBe(true);
-
-      expect(JwtUtils.isApiKeyJwtPayload(MOCK_PERSONAL_JWT_PAYLOAD)).toBe(
-        false,
-      );
     });
   });
 });

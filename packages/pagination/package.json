@@ -1,0 +1,36 @@
+{
+  "name": "@repo/pagination",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./validation": "./src/validation/index.ts",
+    "./hooks": "./src/hooks/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@tanstack/react-table": "^8.21.3",
+    "@types/node": "^22.5.2",
+    "@types/react": "^19",
+    "type-fest": "^5.0.1",
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "effect": "^3.19.4",
+    "typanion": "^3.14.0"
+  },
+  "peerDependencies": {
+    "react": "19.1.0"
+  }
+}
