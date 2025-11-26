@@ -1,7 +1,7 @@
 import type { PaginationState, OnChangeFn } from '@tanstack/react-table';
 import { useState, useMemo, useCallback } from 'react';
 
-interface UseCursorPaginationProps {
+export type UseCursorPaginationProps = {
   /** * The initial number of rows per page.
    * @default 10
    */
@@ -14,9 +14,9 @@ interface UseCursorPaginationProps {
    * Used to calculate the fake rowCount.
    */
   hasNextPage?: boolean;
-}
+};
 
-interface UseCursorPaginationReturn {
+export type UseCursorPaginationPayload = {
   /** State object to pass to the DataTable `pagination` prop */
   pagination: PaginationState;
   /** Handler to pass to the DataTable `onPaginationChange` prop */
@@ -29,13 +29,13 @@ interface UseCursorPaginationReturn {
   rowCount: number;
   /** Helper to fully reset state (e.g., when applying new filters) */
   reset: () => void;
-}
+};
 
-export function useCursorPagination({
+export const useCursorPagination = ({
   defaultPageSize = 10,
   nextCursor = null,
   hasNextPage = false,
-}: UseCursorPaginationProps): UseCursorPaginationReturn {
+}: UseCursorPaginationProps): UseCursorPaginationPayload => {
   // 1. Standard TanStack Pagination State
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -115,4 +115,4 @@ export function useCursorPagination({
     rowCount,
     reset,
   };
-}
+};
