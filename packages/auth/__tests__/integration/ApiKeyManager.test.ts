@@ -119,7 +119,7 @@ describe('ApiKeyManager', () => {
       await apiKeyManager.generate({ userId: USER_ID });
       await apiKeyManager.generate({ userId: USER_ID });
       const keys = await apiKeyManager.list({ userId: USER_ID });
-      expect(keys.length).toBe(2);
+      expect(keys.data.length).toBe(2);
     });
   });
 });

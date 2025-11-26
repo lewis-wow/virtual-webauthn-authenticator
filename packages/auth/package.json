@@ -11,7 +11,7 @@
     "./zod-validation": "./src/zod-validation/index.ts",
     "./abilities": "./src/abilities/index.ts",
     "./repositories": "./src/repositories/index.ts",
-    "./__mocks__": "./__mocks__/index.ts"
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",

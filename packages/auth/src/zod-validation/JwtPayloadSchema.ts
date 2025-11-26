@@ -16,7 +16,7 @@ export const JwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
   z.discriminatedUnion('tokenType', [
     z.object({
       tokenType: z.literal(TokenType.USER),
-      apiKeyId: z.null(),
+      apiKeyId: z.undefined().optional(),
     }),
     z.object({
       tokenType: z.literal(TokenType.API_KEY),
