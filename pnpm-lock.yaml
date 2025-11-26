@@ -1612,9 +1612,6 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@repo/auth':
-        specifier: workspace:*
-        version: link:../auth
       '@repo/core':
         specifier: workspace:*
         version: link:../core

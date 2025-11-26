@@ -1,7 +1,7 @@
 import {
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
-} from '@repo/core/__tests__/helpers';
+} from '../../../key-vault/__tests__/helpers/consts';
 
 import { JsonWebKey } from '@repo/keys';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
@@ -53,7 +53,7 @@ export class MockKeyProvider implements IKeyProvider {
   }) {
     const { data, webAuthnCredential } = opts;
 
-    const keyPair = this.keyPairStore[webAuthnCredential.id];
+    const keyPair = this.keyPairStore[webAuthnCredential.id]!;
 
     const signature = createSign('sha256')
       .update(data)

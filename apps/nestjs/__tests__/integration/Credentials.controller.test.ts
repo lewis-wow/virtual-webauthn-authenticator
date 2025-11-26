@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   MockJwtAudience,
+  upsertTestingUser,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
-import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,

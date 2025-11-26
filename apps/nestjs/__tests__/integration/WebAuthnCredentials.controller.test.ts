@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   MockJwtAudience,
+  upsertTestingUser,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
+import { WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
-  WEBAUTHN_CREDENTIAL_ID,
-  WRONG_UUID,
-} from '@repo/core/__tests__/helpers';
-import {
-  upsertTestingUser,
   upsertTestingWebAuthnCredential,
-} from '@repo/prisma/__tests__/helpers';
+  WEBAUTHN_CREDENTIAL_ID,
+} from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';

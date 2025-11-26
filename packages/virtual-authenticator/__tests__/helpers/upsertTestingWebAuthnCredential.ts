@@ -1,11 +1,8 @@
+import { USER_ID } from '../../../auth/__tests__/helpers';
 import {
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
-  RP_ID,
-  USER_ID,
-  WEBAUTHN_CREDENTIAL_ID,
-  WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
-} from '../../../core/__tests__/helpers/consts';
+} from '../../../key-vault/__tests__/helpers';
 import { COSEPublicKey } from '../../../keys/__tests__/helpers/COSEPublicKey';
 
 import {
@@ -15,6 +12,11 @@ import {
 } from '@repo/prisma';
 
 import { COSEKeyMapper } from '../../../keys/src/mappers/COSEKeyMapper';
+import {
+  RP_ID,
+  WEBAUTHN_CREDENTIAL_ID,
+  WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
+} from './consts';
 
 export const upsertTestingWebAuthnCredential = async (opts: {
   prisma: PrismaClient;

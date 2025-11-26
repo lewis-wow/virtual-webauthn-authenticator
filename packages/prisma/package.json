@@ -5,8 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./mappers": "./src/mappers/index.ts",
-    "./__tests__/helpers": "./__tests__/helpers/index.ts"
+    "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
     "build": "prisma generate",

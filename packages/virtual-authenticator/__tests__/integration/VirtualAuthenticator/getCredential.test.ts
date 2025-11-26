@@ -1,11 +1,4 @@
-import {
-  CHALLENGE_BASE64URL,
-  RP_ORIGIN,
-  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-  RP_ID,
-  USER_ID,
-} from '@repo/core/__tests__/helpers';
-import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import { PrismaClient } from '@repo/prisma';
@@ -24,7 +17,13 @@ import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAut
 import { IKeyProvider } from '../../../src/types/IKeyProvider';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
 import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
-import { MockKeyProvider } from '../../helpers';
+import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import {
+  CHALLENGE_BASE64URL,
+  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+  RP_ID,
+  RP_ORIGIN,
+} from '../../helpers/consts';
 import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
 
 const prisma = new PrismaClient();

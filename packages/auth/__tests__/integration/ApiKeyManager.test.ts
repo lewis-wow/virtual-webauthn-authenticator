@@ -1,10 +1,9 @@
-import { USER_ID } from '@repo/core/__tests__/helpers';
-import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
-
 import { PrismaClient } from '@repo/prisma';
 import { afterEach, beforeEach, describe, expect, test } from 'vitest';
 
 import { ApiKeyManager } from '../../src/ApiKeyManager';
+import { USER_ID } from '../helpers/consts';
+import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
 const prisma = new PrismaClient();
 

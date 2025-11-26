@@ -1,10 +1,6 @@
-import {
-  USER_EMAIL,
-  USER_ID,
-  USER_NAME,
-} from '../../../core/__tests__/helpers/consts';
-
 import { PrismaClient } from '@repo/prisma';
+
+import { USER_EMAIL, USER_ID, USER_NAME } from './consts';
 
 export const upsertTestingUser = async (opts: { prisma: PrismaClient }) => {
   const { prisma } = opts;

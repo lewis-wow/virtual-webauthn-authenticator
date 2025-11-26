@@ -24,7 +24,6 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/auth": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/keys": "workspace:*",

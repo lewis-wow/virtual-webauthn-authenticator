@@ -1,14 +1,9 @@
+import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
+import { setDeep } from '../../../../core/__tests__/helpers';
 import {
-  CHALLENGE_BASE64URL,
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,
-  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-  RP_ID,
-  RP_ORIGIN,
-  USER_ID,
-  setDeep,
-} from '@repo/core/__tests__/helpers';
-import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
+} from '../../../../key-vault/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
@@ -30,7 +25,13 @@ import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSuppo
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/PublicKeyCredentialCreationOptionsSchema';
 import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
-import { MockKeyProvider } from '../../helpers';
+import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import {
+  CHALLENGE_BASE64URL,
+  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+  RP_ID,
+  RP_ORIGIN,
+} from '../../helpers/consts';
 
 const prisma = new PrismaClient();
 

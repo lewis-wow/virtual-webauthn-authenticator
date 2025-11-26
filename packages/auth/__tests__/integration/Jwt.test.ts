@@ -1,5 +1,3 @@
-import { upsertTestingUser } from '@repo/prisma/__tests__/helpers';
-
 import { PrismaClient } from '@repo/prisma';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -11,6 +9,7 @@ import {
   USER_ID,
   USER_JWT_PAYLOAD,
 } from '../helpers/consts';
+import { upsertTestingUser } from '../helpers/upsertTestingUser';
 
 const prisma = new PrismaClient();
 
