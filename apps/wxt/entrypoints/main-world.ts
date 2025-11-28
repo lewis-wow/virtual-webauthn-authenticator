@@ -5,10 +5,10 @@ import {
   PublicKeyCredentialRequestOptionsBrowserSchema,
 } from '@repo/browser/zod-validation';
 import {
-  CreateCredentialRequestBodySchema,
-  GetCredentialRequestBodySchema,
+  CreateCredentialBodySchema,
+  GetCredentialBodySchema,
   PublicKeyCredentialDtoSchema,
-} from '@repo/contract/zod-validation';
+} from '@repo/contract/dto';
 
 const LOG_PREFIX = 'MAIN';
 
@@ -26,7 +26,7 @@ export default defineUnlistedScript(() => {
       PublicKeyCredentialCreationOptionsBrowserSchema.parse(opts?.publicKey);
 
     const publicKeyCredentialCreationOptions =
-      CreateCredentialRequestBodySchema.encode({
+      CreateCredentialBodySchema.encode({
         publicKeyCredentialCreationOptions:
           publicKeyCredentialCreationOptionsBrowser,
         meta: {
@@ -68,14 +68,13 @@ export default defineUnlistedScript(() => {
     const publicKeyCredentialRequestOptionsBrowser =
       PublicKeyCredentialRequestOptionsBrowserSchema.parse(opts?.publicKey);
 
-    const publicKeyCredentialRequestOptions =
-      GetCredentialRequestBodySchema.encode({
-        publicKeyCredentialRequestOptions:
-          publicKeyCredentialRequestOptionsBrowser,
-        meta: {
-          origin: window.location.origin,
-        },
-      });
+    const publicKeyCredentialRequestOptions = GetCredentialBodySchema.encode({
+      publicKeyCredentialRequestOptions:
+        publicKeyCredentialRequestOptionsBrowser,
+      meta: {
+        origin: window.location.origin,
+      },
+    });
 
     const response = await mainWorldMessaging.sendMessage(
       'credentials.get',

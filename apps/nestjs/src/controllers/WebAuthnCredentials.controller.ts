@@ -3,7 +3,7 @@ import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { AuditLog } from '@repo/audit-log';
 import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/validation';
+import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
   DeleteWebAuthnCredentialResponseSchema,
   GetWebAuthnCredentialResponseSchema,
@@ -15,7 +15,7 @@ import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredentialWithMeta } from '@repo/virtual-authenticator/types';
-import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
+import { WebAuthnCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';

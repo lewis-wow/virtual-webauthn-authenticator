@@ -590,6 +590,9 @@ importers:
       react-use-promise:
         specifier: ^0.5.0
         version: 0.5.0(react@19.2.0)
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.1.17
@@ -1261,7 +1264,7 @@ importers:
         version: 3.19.4
       react:
         specifier: 19.1.0
-        version: 19.2.0
+        version: 19.1.0
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
@@ -1283,7 +1286,7 @@ importers:
         version: link:../vitest-config
       '@tanstack/react-table':
         specifier: ^8.21.3
-        version: 8.21.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+        version: 8.21.3(react-dom@19.2.0(react@19.1.0))(react@19.1.0)
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
@@ -11765,11 +11768,11 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@tanstack/react-table@8.21.3(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@tanstack/react-table@8.21.3(react-dom@19.2.0(react@19.1.0))(react@19.1.0)':
     dependencies:
       '@tanstack/table-core': 8.21.3
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
+      react: 19.1.0
+      react-dom: 19.2.0(react@19.1.0)
 
   '@tanstack/table-core@8.21.3': {}
 
@@ -12268,14 +12271,6 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
-    dependencies:
-      '@vitest/spy': 3.2.4
-      estree-walker: 3.0.3
-      magic-string: 0.30.19
-    optionalDependencies:
-      vite: 5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
-
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
       '@vitest/spy': 3.2.4
@@ -12313,7 +12308,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@24.10.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -15893,6 +15888,11 @@ snapshots:
       react: 19.1.0
       scheduler: 0.26.0
 
+  react-dom@19.2.0(react@19.1.0):
+    dependencies:
+      react: 19.1.0
+      scheduler: 0.27.0
+
   react-dom@19.2.0(react@19.2.0):
     dependencies:
       react: 19.2.0
@@ -17305,7 +17305,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))
+      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

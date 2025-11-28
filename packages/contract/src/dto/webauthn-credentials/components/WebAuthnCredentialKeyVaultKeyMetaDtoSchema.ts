@@ -1,4 +1,10 @@
-import { randBoolean, randHex, randUuid } from '@ngneat/falso';
+import {
+  randBetweenDate,
+  randBoolean,
+  randHex,
+  randPastDate,
+  randUuid,
+} from '@ngneat/falso';
 import { WebAuthnCredentialKeyVaultKeyMetaSchema } from '@repo/virtual-authenticator/zod-validation';
 
 import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
@@ -9,15 +15,22 @@ export const WebAuthnCredentialKeyVaultKeyMetaDtoSchema =
     updatedAt: DateSchemaCodec,
   }).meta({
     examples: [
-      {
-        id: randUuid(),
-        hsm: randBoolean(),
-        keyVaultKeyId: randHex(),
-        get keyVaultKeyName() {
-          return this.id;
-        },
-        createdAt: new Date('24.12.2026').toISOString(),
-        updatedAt: new Date('24.12.2026').toISOString(),
-      },
+      (() => {
+        const createdDate = randPastDate();
+        const updatedDate = randBetweenDate({
+          from: createdDate,
+          to: new Date(),
+        });
+        const id = randUuid();
+
+        return {
+          id: id,
+          hsm: randBoolean(),
+          keyVaultKeyId: randHex(),
+          keyVaultKeyName: id,
+          createdAt: createdDate.toISOString(),
+          updatedAt: updatedDate.toISOString(),
+        };
+      })(),
     ],
   });

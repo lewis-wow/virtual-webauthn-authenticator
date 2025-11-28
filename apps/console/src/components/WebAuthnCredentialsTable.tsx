@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@repo/ui/components/ui/dropdown-menu';
-import type { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
+import type { WebAuthnCredential } from '@repo/virtual-authenticator/zod-validation';
 import {
   type ColumnDef,
   type PaginationState,

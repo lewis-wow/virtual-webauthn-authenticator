@@ -6,9 +6,12 @@ import { NewApiKey } from '@/components/ApiKeys/NewApiKey';
 // Components
 import { Page } from '@/components/Page/Page';
 import { $api } from '@/lib/tsr';
-import { effectTsResolver } from '@hookform/resolvers/effect-ts';
-import { CreateApiKeyRequestBodySchema } from '@repo/contract/validation';
-import type { Duration } from '@repo/core/validation';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  CreateApiKeyBodySchema,
+  CreateApiKeyFormSchema,
+} from '@repo/contract/dto';
+import type { Duration } from '@repo/core/zod-validation';
 import { useCursorPagination } from '@repo/pagination/hooks';
 // The new standalone table
 import { Button } from '@repo/ui/components/Button';
@@ -25,7 +28,6 @@ import {
 } from '@repo/ui/components/ui/card';
 import { Form } from '@repo/ui/components/ui/form';
 import { keepPreviousData } from '@tanstack/react-query';
-import { Schema } from 'effect';
 import { Key, Plus } from 'lucide-react';
 // Added 'Key' import
 import { useEffect, useState } from 'react';
@@ -84,6 +86,7 @@ const ApiKeysPage = () => {
         enabled: true,
         expiresAt: null,
         permissions: [],
+        metadata: undefined,
       });
 
       toast('API key has been created.');
@@ -110,7 +113,7 @@ const ApiKeysPage = () => {
 
   // --- 4. Form Setup ---
   const form = useForm({
-    resolver: effectTsResolver(CreateApiKeyRequestBodySchema),
+    resolver: zodResolver(CreateApiKeyFormSchema),
     defaultValues: {
       name: '',
       enabled: true,
@@ -133,9 +136,7 @@ const ApiKeysPage = () => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit((values) => {
-                const encodedValues = Schema.encodeSync(
-                  CreateApiKeyRequestBodySchema,
-                )(values);
+                const encodedValues = CreateApiKeyBodySchema.encode(values);
                 authApiKeyCreateMutation.mutate({ body: encodedValues });
               })}
             >

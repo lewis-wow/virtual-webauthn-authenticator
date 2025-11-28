@@ -1,6 +1,6 @@
 'use client';
 
-import { AuditLogsTable } from '@/components/Logs/AuditLogsTable';
+import { LogsTable } from '@/components/Logs/LogsTable';
 import { Page } from '@/components/Page/Page';
 import { $api } from '@/lib/tsr';
 import { useCursorPagination } from '@repo/pagination/hooks';
@@ -37,7 +37,7 @@ const EventLogPage = () => {
 
   // 3. Run the Query
   // Note: We use the 'cursor' and 'pagination' directly from the hook
-  const logsQuery = $api.api.auditLogs.list.useQuery({
+  const logsQuery = $api.api.logs.list.useQuery({
     queryKey: [
       'api',
       'eventLog',
@@ -84,7 +84,7 @@ const EventLogPage = () => {
         </CardHeader>
         <CardContent>
           <Guard isLoading={logsQuery.isLoading} error={logsQuery.error}>
-            <AuditLogsTable
+            <LogsTable
               data={logsData}
               pagination={pagination}
               onPaginationChange={onPaginationChange}

@@ -12,6 +12,7 @@ export const UPDATE_API_KEY_FIELDS = {
   permissions: true,
   metadata: true,
   expiresAt: true,
+  revokedAt: true,
   enabled: true,
 } as const;
 

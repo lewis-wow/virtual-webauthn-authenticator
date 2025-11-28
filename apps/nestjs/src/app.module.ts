@@ -2,9 +2,9 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'node:path';
 
-import { AuditLogsController } from './controllers/AuditLogs.controller';
 import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
+import { LogsController } from './controllers/Logs.controller';
 import { ProfileController } from './controllers/Profile.controller';
 import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
@@ -32,7 +32,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     ProfileController,
     CredentialsController,
     WebAuthnCredentialsController,
-    AuditLogsController,
+    LogsController,
   ],
   providers: [
     PrismaService,

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Audit } from '@repo/audit-log/validation';
+import type { Audit } from '@repo/audit-log/zod-validation';
 import { DataTable } from '@repo/ui/components/DataTable';
 import type {
   ColumnDef,
@@ -13,19 +13,19 @@ import { useMemo, useState } from 'react';
 import { LogActionBadge } from './LogActionBadge';
 import { LogDetailsDialog } from './LogDetailsDialog';
 
-export type AuditLogsTableProps = {
+export type LogsTableProps = {
   data: readonly Audit[];
   pagination: PaginationState;
   rowCount: number;
   onPaginationChange: (updater: any) => void;
 };
 
-export function AuditLogsTable({
+export function LogsTable({
   data,
   pagination,
   onPaginationChange,
   rowCount,
-}: AuditLogsTableProps) {
+}: LogsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'createdAt', desc: true },
   ]);

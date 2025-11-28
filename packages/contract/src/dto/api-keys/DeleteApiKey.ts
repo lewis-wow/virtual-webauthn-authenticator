@@ -16,7 +16,7 @@ export const DELETE_API_KEY_FIELDS = {
 
 export const DeleteApiKeyFormSchema = ApiKeySchema.pick(DELETE_API_KEY_FIELDS);
 
-export const DeleteApiKeyRequestParamSchema = ApiKeyDtoSchema.pick(
+export const DeleteApiKeyParamsSchema = ApiKeyDtoSchema.pick(
   DELETE_API_KEY_FIELDS,
 );
 

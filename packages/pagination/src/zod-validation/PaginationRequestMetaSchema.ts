@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { StringToIntCodecSchema } from './codecs/StringToIntCodecSchema';
 
 export const PaginationRequestMetaSchema = z.object({
-  cursor: z.uuid(),
+  cursor: z.uuid().optional(),
   limit: StringToIntCodecSchema,
 });
 

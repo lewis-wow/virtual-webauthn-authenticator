@@ -13,10 +13,10 @@ import {
   CreateApiKeyResponseSchema,
   DeleteApiKeyResponseSchema,
   GetApiKeyResponseSchema,
-  GetTokenApiKeysResponseSchema,
+  GetTokenApiKeyResponseSchema,
   ListApiKeysResponseSchema,
   UpdateApiKeyResponseSchema,
-} from '@repo/contract/validation';
+} from '@repo/contract/dto';
 import { Unauthorized } from '@repo/exception/http';
 import { add } from 'date-fns';
 import { Schema } from 'effect';
@@ -57,9 +57,7 @@ apiKey.on(
       metadata: apiKey.metadata,
     });
 
-    return ctx.json(
-      Schema.encodeSync(GetTokenApiKeysResponseSchema)({ token }),
-    );
+    return ctx.json(GetTokenApiKeyResponseSchema.encode({ token }));
   },
 );
 
@@ -94,7 +92,7 @@ apiKey.post(
       },
     });
 
-    return ctx.json(Schema.encodeSync(CreateApiKeyResponseSchema)(apiKey));
+    return ctx.json(CreateApiKeyResponseSchema.encode(apiKey));
   },
 );
 
@@ -106,9 +104,7 @@ apiKey.get(
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(
-      Schema.encodeUnknownSync(ListApiKeysResponseSchema)(apiKeys),
-    );
+    return ctx.json(ListApiKeysResponseSchema.encode(apiKeys));
   },
 );
 
@@ -124,7 +120,7 @@ apiKey.get(
       id: param.id,
     });
 
-    return ctx.json(Schema.encodeSync(GetApiKeyResponseSchema)(apiKey));
+    return ctx.json(GetApiKeyResponseSchema.encode(apiKey));
   },
 );
 
@@ -163,7 +159,7 @@ apiKey.put(
       },
     });
 
-    return ctx.json(Schema.encodeSync(UpdateApiKeyResponseSchema)(apiKey));
+    return ctx.json(UpdateApiKeyResponseSchema.encode(apiKey));
   },
 );
 
@@ -187,6 +183,6 @@ apiKey.delete(
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(Schema.encodeSync(DeleteApiKeyResponseSchema)(apiKey));
+    return ctx.json(DeleteApiKeyResponseSchema.encode(apiKey));
   },
 );
