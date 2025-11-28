@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { AuditLog } from '@repo/audit-log';
+import { ActivityLog } from '@repo/activity-log';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import { ListLogsResponseSchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
@@ -9,12 +9,12 @@ import { Jwt } from '../decorators/Jwt.decorator';
 
 @Controller()
 export class LogsController {
-  constructor(private readonly auditLog: AuditLog) {}
+  constructor(private readonly activityLog: ActivityLog) {}
 
   @TsRestHandler(nestjsContract.api.logs.list)
   async healthcheck(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(nestjsContract.api.logs.list, async ({ query }) => {
-      const logs = await this.auditLog.getUserHistory({
+      const logs = await this.activityLog.getUserHistory({
         userId: jwtPayload.userId,
         limit: query.limit,
         cursor: query.cursor,

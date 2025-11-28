@@ -1,8 +1,8 @@
-import { AuditSchema } from '@repo/audit-log/zod-validation';
+import { LogSchema } from '@repo/activity-log/zod-validation';
 
 import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
 
-export const AuditLogDtoSchema = AuditSchema.extend({
+export const LogDtoSchema = LogSchema.extend({
   createdAt: DateSchemaCodec,
   updatedAt: DateSchemaCodec,
 });

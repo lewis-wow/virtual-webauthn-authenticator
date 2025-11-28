@@ -9,7 +9,7 @@ import { ProfileController } from './controllers/Profile.controller';
 import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
-import { AuditLogProvider } from './services/AuditLog.provider';
+import { ActivityLogProvider } from './services/ActivityLog.provider';
 import { AzureCredentialProvider } from './services/AzureCredential.provider';
 import { AzureKeyVaultKeyProviderProvider } from './services/AzureKeyVaultKeyProvider.provider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
@@ -45,7 +45,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     LoggerProvider,
     VirtualAuthenticatorProvider,
     JwtMiddleware,
-    AuditLogProvider,
+    ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
   ],
   exports: [
@@ -59,7 +59,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     LoggerProvider,
     VirtualAuthenticatorProvider,
     JwtMiddleware,
-    AuditLogProvider,
+    ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
   ],
 })

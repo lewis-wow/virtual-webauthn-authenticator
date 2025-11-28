@@ -19,7 +19,7 @@
     "generate:spec": "scripts/generate-spec.ts"
   },
   "devDependencies": {
-    "@repo/audit-log": "workspace:*",
+    "@repo/activity-log": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",

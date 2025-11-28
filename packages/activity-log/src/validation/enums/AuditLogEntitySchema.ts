@@ -1,6 +1,6 @@
 import { Schema } from 'effect';
 
-import { AuditLogEntity } from '../../enums/AuditLogEntity';
+import { AuditLogEntity } from '../../enums/LogEntity';
 
 export const AuditLogEntitySchema = Schema.Enums(AuditLogEntity).annotations({
   identifier: 'AuditLogEntity',

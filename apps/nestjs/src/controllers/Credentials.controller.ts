@@ -1,6 +1,6 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
-import { AuditLog } from '@repo/audit-log';
-import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
+import { ActivityLog } from '@repo/activity-log';
+import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
@@ -28,7 +28,7 @@ export class CredentialsController {
   constructor(
     private readonly virtualAuthenticator: VirtualAuthenticator,
     private readonly logger: Logger,
-    private readonly auditLog: AuditLog,
+    private readonly activityLog: ActivityLog,
   ) {}
 
   @TsRestHandler(nestjsContract.api.credentials.create)
@@ -73,9 +73,9 @@ export class CredentialsController {
             },
           });
 
-        await this.auditLog.audit({
-          action: AuditLogAction.CREATE,
-          entity: AuditLogEntity.CREDENTIAL,
+        await this.activityLog.audit({
+          action: LogAction.CREATE,
+          entity: LogEntity.CREDENTIAL,
           entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
           apiKeyId:
@@ -120,9 +120,9 @@ export class CredentialsController {
             context: { apiKeyId },
           });
 
-        await this.auditLog.audit({
-          action: AuditLogAction.GET,
-          entity: AuditLogEntity.CREDENTIAL,
+        await this.activityLog.audit({
+          action: LogAction.GET,
+          entity: LogEntity.CREDENTIAL,
           entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
           apiKeyId:

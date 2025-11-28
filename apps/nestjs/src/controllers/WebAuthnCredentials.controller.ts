@@ -1,7 +1,7 @@
 import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
-import { AuditLog } from '@repo/audit-log';
-import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
+import { ActivityLog } from '@repo/activity-log';
+import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
@@ -30,7 +30,7 @@ export class WebAuthnCredentialsController {
     private readonly prisma: PrismaService,
     private readonly keyClient: KeyClient,
     private readonly logger: Logger,
-    private readonly auditLog: AuditLog,
+    private readonly activityLog: ActivityLog,
   ) {}
 
   @TsRestHandler(nestjsContract.api.webAuthnCredentials.list)
@@ -147,9 +147,9 @@ export class WebAuthnCredentialsController {
           await pollOperation.pollUntilDone();
         }
 
-        await this.auditLog.audit({
-          action: AuditLogAction.DELETE,
-          entity: AuditLogEntity.WEBAUTHN_CREDENTIAL,
+        await this.activityLog.audit({
+          action: LogAction.DELETE,
+          entity: LogEntity.WEBAUTHN_CREDENTIAL,
 
           apiKeyId:
             jwtPayload.tokenType === TokenType.API_KEY

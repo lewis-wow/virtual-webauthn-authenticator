@@ -3,18 +3,17 @@ import type { PaginationResult } from '@repo/pagination/zod-validation';
 import { PrismaClient, Prisma } from '@repo/prisma';
 import type { MakeNullableOptional } from '@repo/types';
 
-import type { AuditLogEntity } from './enums/AuditLogEntity';
-import type { AuditPagination } from './validation/AuditPaginationSchema';
-import type { Audit } from './validation/AuditSchema';
+import type { LogEntity } from './enums/LogEntity';
+import type { Log } from './zod-validation/LogSchema';
 
-export type AuditLogOptions = {
+export type ActivityLogOptions = {
   prisma: PrismaClient;
 };
 
-export class AuditLog {
+export class ActivityLog {
   private prisma: PrismaClient;
 
-  constructor({ prisma }: AuditLogOptions) {
+  constructor({ prisma }: ActivityLogOptions) {
     this.prisma = prisma;
   }
 
@@ -24,7 +23,7 @@ export class AuditLog {
    * though you can await it if strict consistency is required.
    */
   async audit(
-    data: Omit<MakeNullableOptional<Audit>, 'id' | 'createdAt' | 'updatedAt'>,
+    data: Omit<MakeNullableOptional<Log>, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<void> {
     const { action, entity, entityId, userId, apiKeyId, metadata } = data;
 
@@ -53,11 +52,11 @@ export class AuditLog {
    * e.g. "Show me history for Order #123"
    */
   async getEntityHistory(opts: {
-    entity: AuditLogEntity;
+    entity: LogEntity;
     entityId: string;
     limit?: number;
     cursor?: string;
-  }): Promise<AuditPagination> {
+  }): Promise<PaginationResult<Log>> {
     const { entity, entityId, limit = 20, cursor } = opts;
 
     const pagination = new Pagination(async ({ pagination }) => {
@@ -72,7 +71,7 @@ export class AuditLog {
         ...pagination,
       });
 
-      return logs as Audit[];
+      return logs as Log[];
     });
 
     const result = await pagination.fetch({ cursor, limit });
@@ -84,7 +83,7 @@ export class AuditLog {
     userId: string;
     limit?: number;
     cursor?: string;
-  }): Promise<PaginationResult<Audit>> {
+  }): Promise<PaginationResult<Log>> {
     const { userId, limit = 20, cursor } = opts;
 
     const pagination = new Pagination(async ({ pagination }) => {
@@ -98,7 +97,7 @@ export class AuditLog {
         ...pagination,
       });
 
-      return logs as Audit[];
+      return logs as Log[];
     });
 
     const result = await pagination.fetch({ limit, cursor });

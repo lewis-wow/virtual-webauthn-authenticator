@@ -1,6 +1,6 @@
 import type { ValueOfEnum } from '@repo/types';
 
-export const AuditLogAction = {
+export const LogAction = {
   CREATE: 'CREATE',
   GET: 'GET',
   LIST: 'LIST',
@@ -8,4 +8,4 @@ export const AuditLogAction = {
   DELETE: 'DELETE',
 } as const;
 
-export type AuditLogAction = ValueOfEnum<typeof AuditLogAction>;
+export type LogAction = ValueOfEnum<typeof LogAction>;

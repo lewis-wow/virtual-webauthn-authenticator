@@ -3,7 +3,7 @@ import {
   PaginationResultSchema,
 } from '@repo/pagination/zod-validation';
 
-import { AuditLogDtoSchema } from './components/AuditLogDtoSchema';
+import { LogDtoSchema } from './components/LogDtoSchema';
 
 // =============================================================================
 // OPERATION: LIST
@@ -19,4 +19,4 @@ export const ListLogsQuerySchema = PaginationRequestMetaSchema;
 // Outputs
 // -------------------------------------
 
-export const ListLogsResponseSchema = PaginationResultSchema(AuditLogDtoSchema);
+export const ListLogsResponseSchema = PaginationResultSchema(LogDtoSchema);

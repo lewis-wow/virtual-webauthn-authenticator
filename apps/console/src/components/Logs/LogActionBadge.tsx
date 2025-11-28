@@ -1,23 +1,21 @@
-import { AuditLogAction } from '@repo/audit-log/enums';
+import { LogAction } from '@repo/activity-log/enums';
 import { Badge } from '@repo/ui/components/ui/badge';
 import { match } from 'ts-pattern';
 
 export type LogActionBadgeProps = {
-  action: AuditLogAction;
+  action: LogAction;
 };
 
 export const LogActionBadge = ({ action }: LogActionBadgeProps) => {
   return match(action)
-    .with(AuditLogAction.CREATE, AuditLogAction.UPDATE, () => (
+    .with(LogAction.CREATE, LogAction.UPDATE, () => (
       <Badge className="bg-emerald-600 hover:bg-emerald-700">{action}</Badge>
     ))
-    .with(AuditLogAction.GET, AuditLogAction.LIST, () => (
+    .with(LogAction.GET, LogAction.LIST, () => (
       <Badge variant="secondary" className="text-muted-foreground">
         {action}
       </Badge>
     ))
-    .with(AuditLogAction.DELETE, () => (
-      <Badge variant="destructive">{action}</Badge>
-    ))
+    .with(LogAction.DELETE, () => <Badge variant="destructive">{action}</Badge>)
     .exhaustive();
 };

@@ -1,12 +1,12 @@
 import { factory } from '@/factory';
+import { activityLog } from '@/lib/activityLog';
 import { apiKeyManager } from '@/lib/apiKeyManager';
-import { auditLog } from '@/lib/auditLog';
 import { auth } from '@/lib/auth';
 import { jwtIssuer } from '@/lib/jwtIssuer';
 import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
-import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
+import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { TokenType } from '@repo/auth/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import {
@@ -77,9 +77,9 @@ apiKey.post(
       expiresAt,
     });
 
-    await auditLog.audit({
-      entity: AuditLogEntity.API_KEY,
-      action: AuditLogAction.CREATE,
+    await activityLog.audit({
+      entity: LogEntity.API_KEY,
+      action: LogAction.CREATE,
       entityId: apiKey.apiKey.id,
 
       userId: ctx.var.user!.id,
@@ -144,9 +144,9 @@ apiKey.put(
       },
     });
 
-    await auditLog.audit({
-      entity: AuditLogEntity.API_KEY,
-      action: AuditLogAction.UPDATE,
+    await activityLog.audit({
+      entity: LogEntity.API_KEY,
+      action: LogAction.UPDATE,
       entityId: apiKey.id,
 
       userId: ctx.var.user!.id,
@@ -175,9 +175,9 @@ apiKey.delete(
       id: param.id,
     });
 
-    await auditLog.audit({
-      entity: AuditLogEntity.API_KEY,
-      action: AuditLogAction.DELETE,
+    await activityLog.audit({
+      entity: LogEntity.API_KEY,
+      action: LogAction.DELETE,
       entityId: apiKey.id,
 
       userId: ctx.var.user!.id,

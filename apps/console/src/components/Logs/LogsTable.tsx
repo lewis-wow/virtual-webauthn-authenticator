@@ -1,6 +1,6 @@
 'use client';
 
-import type { Audit } from '@repo/audit-log/zod-validation';
+import type { Log } from '@repo/activity-log/zod-validation';
 import { DataTable } from '@repo/ui/components/DataTable';
 import type {
   ColumnDef,
@@ -14,7 +14,7 @@ import { LogActionBadge } from './LogActionBadge';
 import { LogDetailsDialog } from './LogDetailsDialog';
 
 export type LogsTableProps = {
-  data: readonly Audit[];
+  data: readonly Log[];
   pagination: PaginationState;
   rowCount: number;
   onPaginationChange: (updater: any) => void;
@@ -30,7 +30,7 @@ export function LogsTable({
     { id: 'createdAt', desc: true },
   ]);
 
-  const columns: ColumnDef<Audit>[] = useMemo(
+  const columns: ColumnDef<Log>[] = useMemo(
     () => [
       {
         accessorKey: 'action',
