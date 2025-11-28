@@ -2,7 +2,7 @@ import { MaybePromise } from '@repo/types';
 import { createLocalJWKSet, type JSONWebKeySet, jwtVerify } from 'jose';
 
 import { JwtAudienceConfig } from '../../src/JwtAudience';
-import type { JwtPayload } from '../../src/validation/JwtPayloadSchema';
+import type { JwtPayload } from '../../src/zod-validation/JwtPayloadSchema';
 
 export type MockJwtAudienceConfig = JwtAudienceConfig;
 

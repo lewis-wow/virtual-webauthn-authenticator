@@ -8,15 +8,14 @@ import {
   type RegistrationResponseJSON,
   type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
-import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
+import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { IKeyProvider } from '../../../src/types/IKeyProvider';
-import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
-import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
+import type { PublicKeyCredentialRequestOptions } from '../../../src/zod-validation/PublicKeyCredentialRequestOptionsSchema';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
   CHALLENGE_BASE64URL,
@@ -61,7 +60,7 @@ const performAndVerifyAuth = async (opts: {
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: Schema.encodeSync(PublicKeyCredentialSchema)(
+    response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
@@ -134,9 +133,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
       },
     });
 
-    const encodedPublicKeyCredential = Schema.encodeSync(
-      PublicKeyCredentialSchema,
-    )(publicKeyCredential);
+    const encodedPublicKeyCredential =
+      PublicKeyCredentialDtoSchema.encode(publicKeyCredential);
 
     const registrationVerification = await verifyRegistrationResponse({
       response: encodedPublicKeyCredential as RegistrationResponseJSON,

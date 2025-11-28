@@ -14,17 +14,16 @@ import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
-import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
+import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/PublicKeyCredentialCreationOptionsSchema';
-import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
   CHALLENGE_BASE64URL,
@@ -59,7 +58,7 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
   // This confirms the credential was created correctly according to
   // WebAuthn standards and our server's expectations (challenge, RP ID, etc.).
   const registrationVerification = await verifyRegistrationResponse({
-    response: Schema.encodeSync(PublicKeyCredentialSchema)(
+    response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as RegistrationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
