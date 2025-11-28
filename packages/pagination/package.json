@@ -28,6 +28,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@ngneat/falso": "^8.0.2",
     "effect": "^3.19.4",
     "typanion": "^3.14.0",
     "zod": "^4.1.12"

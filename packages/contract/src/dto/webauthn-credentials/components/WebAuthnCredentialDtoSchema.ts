@@ -17,4 +17,5 @@ export const WebAuthnCredentialDtoSchema = (
       )
 ).meta({
   id: 'WebAuthnCredential',
+  title: 'WebAuthnCredential',
 });

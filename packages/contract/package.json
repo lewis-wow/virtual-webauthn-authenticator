@@ -33,6 +33,7 @@
     "zod-to-ts": "^2.0.0"
   },
   "dependencies": {
+    "@ngneat/falso": "^8.0.2",
     "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.0",
     "@repo/auth": "workspace:*",
     "@repo/core": "workspace:*",
