@@ -1,6 +1,6 @@
 import { PublicKeyCredentialUserEntitySchema } from '@repo/virtual-authenticator/zod-validation';
 
-import { BytesSchemaCodec } from '../../dto/codecs/BytesSchemaCodec';
+import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 
 export const PublicKeyCredentialUserEntityDtoSchema =
   PublicKeyCredentialUserEntitySchema.extend({

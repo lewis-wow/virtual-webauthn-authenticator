@@ -1,12 +1,17 @@
 import { initContract } from '@ts-rest/core';
-import { Schema } from 'effect';
 
-import { DeleteWebAuthnCredentialRequestPathParamsSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialRequestPathParamsSchema';
-import { DeleteWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/delete/DeleteWebAuthnCredentialResponseSchema';
-import { GetWebAuthnCredentialRequestPathParamsSchema } from '../validation/webauthn-credentials/get/GetWebAuthnCredentialRequestPathParamsSchema';
-import { GetWebAuthnCredentialResponseSchema } from '../validation/webauthn-credentials/get/GetWebAuthnCredentialResponseSchema';
-import { ListWebAuthnCredentialsRequestQuerySchema } from '../validation/webauthn-credentials/list/ListWebAuthnCredentialsRequestQuerySchema';
-import { ListWebAuthnCredentialsResponseSchema } from '../validation/webauthn-credentials/list/ListWebAuthnCredentialsResponseSchema';
+import {
+  DeleteWebAuthnCredentialParamsSchema,
+  DeleteWebAuthnCredentialResponseSchema,
+} from '../dto/webauthn-credentials/DeleteWebAuthnCredential';
+import {
+  GetWebAuthnCredentialParamsSchema,
+  GetWebAuthnCredentialResponseSchema,
+} from '../dto/webauthn-credentials/GetWebAuthnCredential';
+import {
+  ListWebAuthnCredentialsQuerySchema,
+  ListWebAuthnCredentialsResponseSchema,
+} from '../dto/webauthn-credentials/ListWebAuthnCredentials';
 
 const c = initContract();
 
@@ -14,31 +19,27 @@ export const webAuthnCredentialsRouter = c.router({
   list: {
     method: 'GET',
     path: '/webauthn-credentials',
-    query: Schema.standardSchemaV1(ListWebAuthnCredentialsRequestQuerySchema),
+    query: ListWebAuthnCredentialsQuerySchema,
     responses: {
-      200: Schema.standardSchemaV1(ListWebAuthnCredentialsResponseSchema),
+      200: ListWebAuthnCredentialsResponseSchema,
     },
     summary: 'List all WebAuthn credentials',
   },
   get: {
     method: 'GET',
     path: '/webauthn-credentials/:id',
-    pathParams: Schema.standardSchemaV1(
-      GetWebAuthnCredentialRequestPathParamsSchema,
-    ),
+    pathParams: GetWebAuthnCredentialParamsSchema,
     responses: {
-      200: Schema.standardSchemaV1(GetWebAuthnCredentialResponseSchema),
+      200: GetWebAuthnCredentialResponseSchema,
     },
     summary: 'Get a single WebAuthn credential',
   },
   delete: {
     method: 'DELETE',
     path: '/webauthn-credentials/:id',
-    pathParams: Schema.standardSchemaV1(
-      DeleteWebAuthnCredentialRequestPathParamsSchema,
-    ),
+    pathParams: DeleteWebAuthnCredentialParamsSchema,
     responses: {
-      200: Schema.standardSchemaV1(DeleteWebAuthnCredentialResponseSchema),
+      200: DeleteWebAuthnCredentialResponseSchema,
     },
     summary: 'Delete a WebAuthn credential',
   },

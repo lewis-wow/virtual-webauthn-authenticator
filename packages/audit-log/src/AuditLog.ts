@@ -1,4 +1,5 @@
 import { Pagination } from '@repo/pagination';
+import type { PaginationResult } from '@repo/pagination/zod-validation';
 import { PrismaClient, Prisma } from '@repo/prisma';
 import type { MakeNullableOptional } from '@repo/types';
 
@@ -83,7 +84,7 @@ export class AuditLog {
     userId: string;
     limit?: number;
     cursor?: string;
-  }): Promise<AuditPagination> {
+  }): Promise<PaginationResult<Audit>> {
     const { userId, limit = 20, cursor } = opts;
 
     const pagination = new Pagination(async ({ pagination }) => {

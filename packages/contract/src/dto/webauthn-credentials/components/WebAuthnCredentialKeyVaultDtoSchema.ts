@@ -4,8 +4,8 @@ import { WebAuthnCredentialBaseDtoSchema } from './WebAuthnCredentialBaseDtoSche
 import { WebAuthnCredentialKeyVaultKeyMetaDtoSchema } from './WebAuthnCredentialKeyVaultKeyMetaDtoSchema';
 
 export const WebAuthnCredentialKeyVaultDtoSchema =
-  WebAuthnCredentialBaseDtoSchema.extend(
-    WebAuthnCredentialKeyVaultSchema.shape,
+  WebAuthnCredentialKeyVaultSchema.extend(
+    WebAuthnCredentialBaseDtoSchema.shape,
   ).extend({
     webAuthnCredentialKeyVaultKeyMeta:
       WebAuthnCredentialKeyVaultKeyMetaDtoSchema,

@@ -1,6 +1,6 @@
 import { AuthenticatorAssertionResponseSchema } from '@repo/virtual-authenticator/zod-validation';
 
-import { BytesSchemaCodec } from '../../dto/codecs/BytesSchemaCodec';
+import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { UserHandleDtoSchema } from './UserHandleDtoSchema';
 
 export const AuthenticatorAssertionResponseDtoSchema =

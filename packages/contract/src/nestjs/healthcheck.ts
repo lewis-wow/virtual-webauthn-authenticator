@@ -1,7 +1,6 @@
 import { initContract } from '@ts-rest/core';
-import { Schema } from 'effect';
 
-import { GetHealthcheckResponseSchema } from '../validation/healthcheck/get/GetHealthcheckResponseSchema';
+import { GetHealthcheckResponseSchema } from '../dto/healthcheck/GetHealthcheck';
 
 const c = initContract();
 
@@ -10,7 +9,7 @@ export const healthcheckRouter = c.router({
     method: 'GET',
     path: '/healthcheck',
     responses: {
-      200: Schema.standardSchemaV1(GetHealthcheckResponseSchema),
+      200: GetHealthcheckResponseSchema,
     },
     summary: 'Check the health of the service',
   },

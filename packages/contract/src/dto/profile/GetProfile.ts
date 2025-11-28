@@ -1,6 +1,5 @@
+import { JwtPayloadSchema } from '@repo/auth/zod-validation';
 import z from 'zod';
-
-import { JwtPayloadDtoSchema } from '../../zod-validation/auth/JwtPayloadDtoSchema';
 
 // =============================================================================
 // OPERATION: GET
@@ -11,5 +10,5 @@ import { JwtPayloadDtoSchema } from '../../zod-validation/auth/JwtPayloadDtoSche
 // -------------------------------------
 
 export const GetProfileResponseSchema = z.object({
-  jwtPayload: JwtPayloadDtoSchema.nullable(),
+  jwtPayload: JwtPayloadSchema.nullable(),
 });

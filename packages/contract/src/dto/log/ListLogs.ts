@@ -13,11 +13,10 @@ import { AuditLogDtoSchema } from './components/AuditLogDtoSchema';
 // Inputs
 // -------------------------------------
 
-export const ListAuditLogsQuerySchema = PaginationRequestMetaSchema;
+export const ListLogsQuerySchema = PaginationRequestMetaSchema;
 
 // -------------------------------------
 // Outputs
 // -------------------------------------
 
-export const ListAuditLogsResponseSchema =
-  PaginationResultSchema(AuditLogDtoSchema);
+export const ListLogsResponseSchema = PaginationResultSchema(AuditLogDtoSchema);

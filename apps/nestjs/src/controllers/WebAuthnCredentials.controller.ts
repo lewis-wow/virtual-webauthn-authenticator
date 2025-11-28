@@ -4,12 +4,12 @@ import { AuditLog } from '@repo/audit-log';
 import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
-import { nestjsContract } from '@repo/contract/nestjs';
 import {
   DeleteWebAuthnCredentialResponseSchema,
   GetWebAuthnCredentialResponseSchema,
   ListWebAuthnCredentialsResponseSchema,
-} from '@repo/contract/validation';
+} from '@repo/contract/dto';
+import { nestjsContract } from '@repo/contract/nestjs';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
@@ -17,7 +17,6 @@ import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-import { Schema } from 'effect';
 
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
@@ -70,9 +69,7 @@ export class WebAuthnCredentialsController {
 
         return {
           status: 200,
-          body: Schema.encodeUnknownSync(ListWebAuthnCredentialsResponseSchema)(
-            result,
-          ),
+          body: ListWebAuthnCredentialsResponseSchema.encode(result),
         };
       },
     );
@@ -103,7 +100,7 @@ export class WebAuthnCredentialsController {
 
         return {
           status: 200,
-          body: Schema.encodeSync(GetWebAuthnCredentialResponseSchema)(
+          body: GetWebAuthnCredentialResponseSchema.encode(
             webAuthnCredential as WebAuthnCredential,
           ),
         };
@@ -163,7 +160,7 @@ export class WebAuthnCredentialsController {
 
         return {
           status: 200,
-          body: Schema.encodeSync(DeleteWebAuthnCredentialResponseSchema)(
+          body: DeleteWebAuthnCredentialResponseSchema.encode(
             webAuthnCredential as WebAuthnCredential,
           ),
         };
