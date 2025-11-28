@@ -10,6 +10,9 @@ export const WebAuthnCredentialBaseSchema = z.object({
   counter: z.number().int().nonnegative(),
   transports: z.array(z.string()),
   rpId: z.string(),
+
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
 export type WebAuthnCredentialBase = z.infer<

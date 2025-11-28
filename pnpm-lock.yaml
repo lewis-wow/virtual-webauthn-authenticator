@@ -1259,9 +1259,15 @@ importers:
       '@ngneat/falso':
         specifier: ^8.0.2
         version: 8.0.2
+      '@repo/exception':
+        specifier: workspace:*
+        version: link:../exception
       effect:
         specifier: ^3.19.4
         version: 3.19.4
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -1287,6 +1293,9 @@ importers:
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.0(react@19.1.0))(react@19.1.0)
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3

@@ -1,6 +1,7 @@
 import {
   PaginationRequestMetaSchema,
   PaginationResultSchema,
+  SortKeysSchema,
 } from '@repo/pagination/zod-validation';
 
 import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';
@@ -13,7 +14,8 @@ import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';
 // Inputs
 // -------------------------------------
 
-export const ListApiKeysQuerySchema = PaginationRequestMetaSchema;
+export const ListApiKeysQuerySchema =
+  PaginationRequestMetaSchema(SortKeysSchema);
 
 // -------------------------------------
 // Outputs

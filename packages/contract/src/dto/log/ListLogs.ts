@@ -1,6 +1,7 @@
 import {
   PaginationRequestMetaSchema,
   PaginationResultSchema,
+  SortKeysSchema,
 } from '@repo/pagination/zod-validation';
 
 import { LogDtoSchema } from './components/LogDtoSchema';
@@ -13,7 +14,7 @@ import { LogDtoSchema } from './components/LogDtoSchema';
 // Inputs
 // -------------------------------------
 
-export const ListLogsQuerySchema = PaginationRequestMetaSchema;
+export const ListLogsQuerySchema = PaginationRequestMetaSchema(SortKeysSchema);
 
 // -------------------------------------
 // Outputs

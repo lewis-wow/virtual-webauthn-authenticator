@@ -109,13 +109,12 @@ const WebAuthnRowActions = ({
   );
 };
 
-// --- 2. Main Table Component ---
-export function WebAuthnCredentialsTable({
+export const WebAuthnCredentialsTable = ({
   data,
   pagination,
   rowCount,
   onPaginationChange,
-}: WebAuthnTableProps) {
+}: WebAuthnTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const columns: ColumnDef<WebAuthnCredential>[] = useMemo(
@@ -203,4 +202,4 @@ export function WebAuthnCredentialsTable({
       onSortingChange={setSorting}
     />
   );
-}
+};

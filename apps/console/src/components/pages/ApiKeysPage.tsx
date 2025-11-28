@@ -86,7 +86,6 @@ export const ApiKeysPage = () => {
         enabled: true,
         expiresAt: null,
         permissions: [],
-        metadata: undefined,
       });
 
       toast('API key has been created.');

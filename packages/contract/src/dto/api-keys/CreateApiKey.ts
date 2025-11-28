@@ -11,7 +11,6 @@ import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';
 export const CREATE_API_KEY_FIELDS = {
   name: true,
   permissions: true,
-  metadata: true,
   expiresAt: true,
   enabled: true,
 } as const;

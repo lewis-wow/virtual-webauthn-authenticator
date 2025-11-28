@@ -1,6 +1,7 @@
 import {
   PaginationRequestMetaSchema,
   PaginationResultSchema,
+  SortKeysSchema,
 } from '@repo/pagination/zod-validation';
 
 import { WebAuthnCredentialDtoSchema } from './components/WebAuthnCredentialDtoSchema';
@@ -13,7 +14,8 @@ import { WebAuthnCredentialDtoSchema } from './components/WebAuthnCredentialDtoS
 // Inputs
 // -------------------------------------
 
-export const ListWebAuthnCredentialsQuerySchema = PaginationRequestMetaSchema;
+export const ListWebAuthnCredentialsQuerySchema =
+  PaginationRequestMetaSchema(SortKeysSchema);
 
 // -------------------------------------
 // Outputs

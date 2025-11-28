@@ -1,9 +1,10 @@
 import { Pagination } from '@repo/pagination';
+import type { SortDirection } from '@repo/pagination/enums';
 import type { PaginationResult } from '@repo/pagination/zod-validation';
 import { PrismaClient, Prisma } from '@repo/prisma';
 import type { MakeNullableOptional } from '@repo/types';
 
-import type { LogEntity } from './enums/LogEntity';
+import type { LogSortKeys } from './enums/LogSortKeys';
 import type { Log } from './zod-validation/LogSchema';
 
 export type ActivityLogOptions = {
@@ -47,51 +48,20 @@ export class ActivityLog {
     }
   }
 
-  /**
-   * specific helper to get the history of a specific object
-   * e.g. "Show me history for Order #123"
-   */
-  async getEntityHistory(opts: {
-    entity: LogEntity;
-    entityId: string;
-    limit?: number;
-    cursor?: string;
-  }): Promise<PaginationResult<Log>> {
-    const { entity, entityId, limit = 20, cursor } = opts;
-
-    const pagination = new Pagination(async ({ pagination }) => {
-      const logs = await this.prisma.auditLog.findMany({
-        where: {
-          entity,
-          entityId,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        ...pagination,
-      });
-
-      return logs as Log[];
-    });
-
-    const result = await pagination.fetch({ cursor, limit });
-
-    return result;
-  }
-
   async getUserHistory(opts: {
     userId: string;
     limit?: number;
     cursor?: string;
+    orderBy?: Record<LogSortKeys, SortDirection>;
   }): Promise<PaginationResult<Log>> {
-    const { userId, limit = 20, cursor } = opts;
+    const { userId, limit = 20, cursor, orderBy } = opts;
 
     const pagination = new Pagination(async ({ pagination }) => {
       const logs = await this.prisma.auditLog.findMany({
         where: {
           userId,
         },
-        orderBy: {
+        orderBy: orderBy ?? {
           createdAt: 'desc',
         },
         ...pagination,
