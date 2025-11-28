@@ -19,11 +19,12 @@
     "generate:spec": "scripts/generate-spec.ts"
   },
   "devDependencies": {
+    "@repo/audit-log": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
-    "@repo/audit-log": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@standard-schema/spec": "^1.0.0",
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.5.2",
     "typescript": "^5.5.4",
     "yaml": "^2.8.1"
@@ -32,12 +33,13 @@
     "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.0",
     "@repo/auth": "workspace:*",
     "@repo/core": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@repo/pagination": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",
     "effect": "^3.19.4",
+    "lodash-es": "^4.17.21",
     "zod": "^4.1.12"
   }
 }

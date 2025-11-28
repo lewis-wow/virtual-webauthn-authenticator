@@ -931,6 +931,9 @@ importers:
       effect:
         specifier: ^3.19.4
         version: 3.19.4
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -950,6 +953,9 @@ importers:
       '@standard-schema/spec':
         specifier: ^1.0.0
         version: 1.0.0
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
@@ -1244,6 +1250,9 @@ importers:
       typanion:
         specifier: ^3.14.0
         version: 3.14.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

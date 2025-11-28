@@ -13,6 +13,8 @@ const IndexPage = async () => {
     },
   });
 
+  console.log({ profileGetQuery });
+
   if (profileGetQuery.body.jwtPayload?.userId === undefined) {
     redirect('/auth/signin');
   }

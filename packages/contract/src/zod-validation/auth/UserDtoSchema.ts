@@ -1,6 +1,6 @@
 import { UserSchema } from '@repo/auth/zod-validation';
 
-import { DateSchemaCodec } from '../codecs/DateSchemaCodec';
+import { DateSchemaCodec } from '../../dto/codecs/DateSchemaCodec';
 
 export const UserDtoSchema = UserSchema.extend({
   createdAt: DateSchemaCodec,

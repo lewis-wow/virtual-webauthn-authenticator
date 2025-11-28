@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./validation": "./src/validation/index.ts",
+    "./zod-validation": "./src/zod-validation/index.ts",
     "./hooks": "./src/hooks/index.ts"
   },
   "scripts": {
@@ -28,7 +29,8 @@
   },
   "dependencies": {
     "effect": "^3.19.4",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   },
   "peerDependencies": {
     "react": "19.1.0"

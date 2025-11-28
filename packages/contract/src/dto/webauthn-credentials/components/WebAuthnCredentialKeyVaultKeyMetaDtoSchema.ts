@@ -1,6 +1,6 @@
 import { WebAuthnCredentialKeyVaultKeyMetaSchema } from '@repo/virtual-authenticator/zod-validation';
 
-import { DateSchemaCodec } from '../codecs/DateSchemaCodec';
+import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
 
 export const WebAuthnCredentialKeyVaultKeyMetaDtoSchema =
   WebAuthnCredentialKeyVaultKeyMetaSchema.extend({
