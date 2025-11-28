@@ -16,8 +16,8 @@ export class LogsController {
     return tsRestHandler(nestjsContract.api.logs.list, async ({ query }) => {
       const logs = await this.activityLog.getUserHistory({
         userId: jwtPayload.userId,
-        limit: query.limit,
-        cursor: query.cursor,
+        limit: query?.limit,
+        cursor: query?.cursor,
       });
 
       return {

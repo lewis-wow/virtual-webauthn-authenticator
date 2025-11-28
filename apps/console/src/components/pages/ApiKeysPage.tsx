@@ -42,7 +42,7 @@ const EXPIRATION_OPTIONS = [
   { label: '1 Year', value: { years: 1 } },
 ] as { label: string; value: Duration | null }[];
 
-const ApiKeysPage = () => {
+export const ApiKeysPage = () => {
   const queryClient = $api.useQueryClient();
 
   // --- 1. Pagination State & Hook ---
@@ -224,5 +224,3 @@ const ApiKeysPage = () => {
     </Page>
   );
 };
-
-export default ApiKeysPage;

@@ -19,7 +19,6 @@ import {
 } from '@repo/contract/dto';
 import { Unauthorized } from '@repo/exception/http';
 import { add } from 'date-fns';
-import { Schema } from 'effect';
 
 export const apiKey = factory.createApp();
 

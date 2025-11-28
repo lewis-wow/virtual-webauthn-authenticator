@@ -45,6 +45,7 @@ export const auth = betterAuth({
             name: payload.name as string,
             email: payload.email as string,
             image: payload.image as string | null,
+            apiKeyId: null,
 
             tokenType: TokenType.USER,
           };

@@ -3,7 +3,7 @@ import { Button } from '@repo/ui/components/Button';
 import { Stack } from '@repo/ui/components/Stack';
 import Link from 'next/link';
 
-const BrowserExtensionPage = () => {
+export const BrowserExtensionPage = () => {
   return (
     <Page pageTitle="Browser extension">
       <Stack direction="column" gap="1rem">
@@ -22,5 +22,3 @@ const BrowserExtensionPage = () => {
     </Page>
   );
 };
-
-export default BrowserExtensionPage;

@@ -63,8 +63,8 @@ export class WebAuthnCredentialsController {
         });
 
         const result = await pagination.fetch({
-          limit: query.limit,
-          cursor: query.cursor,
+          limit: query?.limit,
+          cursor: query?.cursor,
         });
 
         return {

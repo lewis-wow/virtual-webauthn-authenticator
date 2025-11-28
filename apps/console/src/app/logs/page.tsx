@@ -1,12 +1,12 @@
 'use client';
 
 import { AuthGuard } from '@/components/AuthGuard';
-import { WebAuthnCredentialsPage } from '@/components/pages/WebAuthnCredentialsPage';
+import { LogsPage } from '@/components/pages/LogsPage';
 
 export default () => {
   return (
     <AuthGuard requireAuthState="authenticated">
-      <WebAuthnCredentialsPage />
+      <LogsPage />
     </AuthGuard>
   );
 };
