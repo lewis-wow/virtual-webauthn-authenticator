@@ -166,7 +166,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         });
 
-        expect(webAuthnCredential).not.toBeNull();
         expect(webAuthnCredential).toMatchObject({
           id: webAuthnCredentialId,
           userId: USER_ID,
@@ -181,7 +180,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           });
 
-        expect(keyMeta).not.toBeNull();
         expect(keyMeta).toMatchObject({
           webAuthnCredentialId: webAuthnCredentialId,
           keyVaultKeyId: KEY_VAULT_KEY_ID,
@@ -363,7 +361,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           );
 
-          expect(webAuthnCredential).not.toBeNull();
           expect(webAuthnCredential).toMatchObject({
             id: webAuthnCredentialId,
             userId: USER_ID,
@@ -441,7 +438,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
                 },
               });
 
-            expect(webAuthnCredential).not.toBeNull();
             expect(webAuthnCredential).toMatchObject({
               id: webAuthnCredentialId,
               userId: USER_ID,
@@ -522,7 +518,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           );
 
-          expect(webAuthnCredential).not.toBeNull();
           expect(webAuthnCredential).toMatchObject({
             id: webAuthnCredentialId,
             userId: USER_ID,
@@ -600,7 +595,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
                 },
               });
 
-            expect(webAuthnCredential).not.toBeNull();
             expect(webAuthnCredential).toMatchObject({
               id: webAuthnCredentialId,
               userId: USER_ID,
@@ -656,7 +650,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         });
 
-        expect(webAuthnCredential).not.toBeNull();
         expect(webAuthnCredential).toMatchObject({
           id: webAuthnCredentialId,
           userId: USER_ID,
@@ -787,7 +780,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         });
 
-        expect(webAuthnCredential).not.toBeNull();
         expect(webAuthnCredential).toMatchObject({
           id: webAuthnCredentialId,
           userId: USER_ID,
