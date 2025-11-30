@@ -12,6 +12,7 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { IKeyProvider } from '../../../src/types/IKeyProvider';
@@ -314,5 +315,338 @@ describe('VirtualAuthenticator.getCredential()', () => {
         },
       }),
     );
+  });
+
+  describe('PublicKeyCredentialRequestOptions.userVerification', () => {
+    describe.each([
+      {
+        userVerification: undefined,
+      },
+      {
+        userVerification: UserVerificationRequirement.REQUIRED,
+      },
+      {
+        userVerification: UserVerificationRequirement.PREFERRED,
+      },
+      {
+        userVerification: UserVerificationRequirement.DISCOURAGED,
+      },
+    ])('With userVerification $userVerification', ({ userVerification }) => {
+      test('should produce a verifiable assertion', async () => {
+        const requestOptions = createPublicKeyCredentialRequestOptions({
+          credentialID: credentialRawID,
+        });
+
+        const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+          {
+            ...requestOptions,
+            userVerification,
+          };
+
+        const publicKeyCredential = await authenticator.getCredential({
+          publicKeyCredentialRequestOptions,
+          meta: {
+            userId: USER_ID,
+            origin: RP_ORIGIN,
+          },
+          context: {
+            apiKeyId: undefined,
+          },
+        });
+
+        const authenticationVerification = await verifyAuthenticationResponse({
+          response: PublicKeyCredentialDtoSchema.encode(
+            publicKeyCredential,
+          ) as AuthenticationResponseJSON,
+          expectedChallenge: CHALLENGE_BASE64URL,
+          expectedOrigin: RP_ORIGIN,
+          expectedRPID: RP_ID,
+          credential: {
+            id: credentialID,
+            publicKey,
+            counter,
+          },
+          requireUserVerification:
+            userVerification === UserVerificationRequirement.REQUIRED,
+        });
+
+        expect(authenticationVerification.verified).toBe(true);
+      });
+    });
+
+    test('should throw type mismatch when userVerification is not in enum', async () => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions = {
+        ...requestOptions,
+        userVerification: 'INVALID_USER_VERIFICATION',
+      };
+
+      await expect(async () =>
+        authenticator.getCredential({
+          publicKeyCredentialRequestOptions:
+            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
+          meta: {
+            userId: USER_ID,
+            origin: RP_ORIGIN,
+          },
+          context: {
+            apiKeyId: undefined,
+          },
+        }),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('PublicKeyCredentialRequestOptions.timeout', () => {
+    test.each([
+      { timeout: undefined },
+      { timeout: 30000 },
+      { timeout: 60000 },
+      { timeout: 120000 },
+      { timeout: 300000 },
+    ])('should work with timeout $timeout', async ({ timeout }) => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+        {
+          ...requestOptions,
+          timeout,
+        };
+
+      const publicKeyCredential = await authenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        meta: {
+          userId: USER_ID,
+          origin: RP_ORIGIN,
+        },
+        context: {
+          apiKeyId: undefined,
+        },
+      });
+
+      const authenticationVerification = await verifyAuthenticationResponse({
+        response: PublicKeyCredentialDtoSchema.encode(
+          publicKeyCredential,
+        ) as AuthenticationResponseJSON,
+        expectedChallenge: CHALLENGE_BASE64URL,
+        expectedOrigin: RP_ORIGIN,
+        expectedRPID: RP_ID,
+        credential: {
+          id: credentialID,
+          publicKey,
+          counter,
+        },
+        requireUserVerification: true,
+      });
+
+      expect(authenticationVerification.verified).toBe(true);
+    });
+  });
+
+  describe('PublicKeyCredentialRequestOptions.allowCredentials variations', () => {
+    test('should work with allowCredentials as empty array', async () => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+        {
+          ...requestOptions,
+          allowCredentials: [],
+        };
+
+      const publicKeyCredential = await authenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        meta: {
+          userId: USER_ID,
+          origin: RP_ORIGIN,
+        },
+        context: {
+          apiKeyId: undefined,
+        },
+      });
+
+      const authenticationVerification = await verifyAuthenticationResponse({
+        response: PublicKeyCredentialDtoSchema.encode(
+          publicKeyCredential,
+        ) as AuthenticationResponseJSON,
+        expectedChallenge: CHALLENGE_BASE64URL,
+        expectedOrigin: RP_ORIGIN,
+        expectedRPID: RP_ID,
+        credential: {
+          id: credentialID,
+          publicKey,
+          counter,
+        },
+        requireUserVerification: true,
+      });
+
+      expect(authenticationVerification.verified).toBe(true);
+    });
+
+    test('should work with multiple allowCredentials including the correct one', async () => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+        {
+          ...requestOptions,
+          allowCredentials: [
+            { id: Buffer.from('WRONG_CREDENTIAL_ID_1'), type: 'public-key' },
+            { id: Buffer.from('WRONG_CREDENTIAL_ID_2'), type: 'public-key' },
+            ...(requestOptions.allowCredentials ?? []),
+            { id: Buffer.from('WRONG_CREDENTIAL_ID_3'), type: 'public-key' },
+          ],
+        };
+
+      const publicKeyCredential = await authenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        meta: {
+          userId: USER_ID,
+          origin: RP_ORIGIN,
+        },
+        context: {
+          apiKeyId: undefined,
+        },
+      });
+
+      const authenticationVerification = await verifyAuthenticationResponse({
+        response: PublicKeyCredentialDtoSchema.encode(
+          publicKeyCredential,
+        ) as AuthenticationResponseJSON,
+        expectedChallenge: CHALLENGE_BASE64URL,
+        expectedOrigin: RP_ORIGIN,
+        expectedRPID: RP_ID,
+        credential: {
+          id: credentialID,
+          publicKey,
+          counter,
+        },
+        requireUserVerification: true,
+      });
+
+      expect(authenticationVerification.verified).toBe(true);
+    });
+  });
+
+  describe('PublicKeyCredentialRequestOptions.rpId', () => {
+    test('should work with explicit rpId matching the origin', async () => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+        {
+          ...requestOptions,
+          rpId: RP_ID,
+        };
+
+      const publicKeyCredential = await authenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        meta: {
+          userId: USER_ID,
+          origin: RP_ORIGIN,
+        },
+        context: {
+          apiKeyId: undefined,
+        },
+      });
+
+      const authenticationVerification = await verifyAuthenticationResponse({
+        response: PublicKeyCredentialDtoSchema.encode(
+          publicKeyCredential,
+        ) as AuthenticationResponseJSON,
+        expectedChallenge: CHALLENGE_BASE64URL,
+        expectedOrigin: RP_ORIGIN,
+        expectedRPID: RP_ID,
+        credential: {
+          id: credentialID,
+          publicKey,
+          counter,
+        },
+        requireUserVerification: true,
+      });
+
+      expect(authenticationVerification.verified).toBe(true);
+    });
+
+    test('should throw type mismatch when rpId is not a string', async () => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions = {
+        ...requestOptions,
+        rpId: 12345,
+      };
+
+      await expect(async () =>
+        authenticator.getCredential({
+          publicKeyCredentialRequestOptions:
+            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
+          meta: {
+            userId: USER_ID,
+            origin: RP_ORIGIN,
+          },
+          context: {
+            apiKeyId: undefined,
+          },
+        }),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('Combined PublicKeyCredentialRequestOptions', () => {
+    test('should work with all options combined', async () => {
+      const requestOptions = createPublicKeyCredentialRequestOptions({
+        credentialID: credentialRawID,
+      });
+
+      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+        {
+          ...requestOptions,
+          rpId: RP_ID,
+          timeout: 60000,
+          userVerification: UserVerificationRequirement.REQUIRED,
+          allowCredentials: [
+            { id: Buffer.from('WRONG_CREDENTIAL_ID_1'), type: 'public-key' },
+            ...(requestOptions.allowCredentials ?? []),
+          ],
+        };
+
+      const publicKeyCredential = await authenticator.getCredential({
+        publicKeyCredentialRequestOptions,
+        meta: {
+          userId: USER_ID,
+          origin: RP_ORIGIN,
+        },
+        context: {
+          apiKeyId: undefined,
+        },
+      });
+
+      const authenticationVerification = await verifyAuthenticationResponse({
+        response: PublicKeyCredentialDtoSchema.encode(
+          publicKeyCredential,
+        ) as AuthenticationResponseJSON,
+        expectedChallenge: CHALLENGE_BASE64URL,
+        expectedOrigin: RP_ORIGIN,
+        expectedRPID: RP_ID,
+        credential: {
+          id: credentialID,
+          publicKey,
+          counter,
+        },
+        requireUserVerification: true,
+      });
+
+      expect(authenticationVerification.verified).toBe(true);
+    });
   });
 });
