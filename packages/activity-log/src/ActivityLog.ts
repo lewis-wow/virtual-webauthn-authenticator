@@ -36,6 +36,7 @@ export class ActivityLog {
           entityId,
           userId,
           apiKeyId,
+          apiKeyIdReference: apiKeyId,
           metadata: metadata
             ? (metadata as Prisma.InputJsonValue)
             : Prisma.DbNull,

@@ -12,6 +12,7 @@ export const LogSchema = z.object({
 
   userId: z.uuid(),
   apiKeyId: z.uuid().nullable(),
+  apiKeyIdReference: z.uuid().nullable(),
 
   createdAt: z.date(),
   updatedAt: z.date(),

@@ -122,7 +122,7 @@ model WebAuthnCredential {
   name          String?
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String
-  apiKey        ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: NoAction)
+  apiKey        ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
   apiKeyId      String?
   COSEPublicKey Bytes
   counter       Int      @default(0)
@@ -170,10 +170,11 @@ model Log {
   entity   String
   entityId String?
 
-  userId   String
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  apiKeyId String?
-  apiKey   ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: NoAction)
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  apiKeyId          String?
+  apiKey            ApiKey? @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  apiKeyIdReference String?
 
   metadata Json?
 

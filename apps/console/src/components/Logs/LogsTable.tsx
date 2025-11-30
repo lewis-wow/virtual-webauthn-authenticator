@@ -48,13 +48,13 @@ export function LogsTable({
         id: 'actor',
         header: 'Initiated By',
         cell: ({ row }) => {
-          const { userId, apiKeyId, metadata } = row.original;
+          const { userId, apiKeyIdReference, metadata } = row.original;
           const metaEmail =
             metadata?.email || metadata?.actor_email || metadata?.user_email;
           const metaKeyName =
             metadata?.name || metadata?.key_name || metadata?.api_key_name;
 
-          if (apiKeyId) {
+          if (apiKeyIdReference) {
             return (
               <div className="flex items-center gap-2 text-sm">
                 <div className="p-1.5 rounded bg-orange-500/10 text-orange-600 shrink-0">
@@ -65,7 +65,7 @@ export function LogsTable({
                     {typeof metaKeyName === 'string' ? metaKeyName : 'API Key'}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-mono truncate max-w-[120px]">
-                    {apiKeyId}
+                    {apiKeyIdReference}
                   </span>
                 </div>
               </div>
