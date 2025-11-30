@@ -2,8 +2,8 @@ import { Prisma, PrismaClient } from '@repo/prisma';
 import { assert, isArray, isNullable, isOptional, isString } from 'typanion';
 
 import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
-import { CredentialNotFound } from '../exceptions';
-import type { WebAuthnCredentialWithMeta } from '../types';
+import { CredentialNotFound } from '../exceptions/CredentialNotFound';
+import type { WebAuthnCredentialWithMeta } from '../types/WebAuthnCredentialWithMeta';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,

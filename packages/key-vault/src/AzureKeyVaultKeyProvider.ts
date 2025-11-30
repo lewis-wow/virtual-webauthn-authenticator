@@ -7,7 +7,7 @@ import type {
   IKeyProvider,
   WebAuthnCredentialWithMeta,
 } from '@repo/virtual-authenticator/types';
-import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/validation';
+import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/zod-validation';
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';

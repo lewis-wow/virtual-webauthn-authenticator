@@ -14,17 +14,19 @@ import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
-import { Schema } from 'effect';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 
+import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
+import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
+import { ResidentKeyRequirement } from '../../../src/enums/ResidentKeyRequirement';
+import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/PublicKeyCredentialCreationOptionsSchema';
-import { PublicKeyCredentialSchema } from '../../../src/validation/PublicKeyCredentialSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
   CHALLENGE_BASE64URL,
@@ -59,7 +61,7 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
   // This confirms the credential was created correctly according to
   // WebAuthn standards and our server's expectations (challenge, RP ID, etc.).
   const registrationVerification = await verifyRegistrationResponse({
-    response: Schema.encodeSync(PublicKeyCredentialSchema)(
+    response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as RegistrationResponseJSON,
     expectedChallenge: CHALLENGE_BASE64URL,
@@ -164,7 +166,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         });
 
-        expect(webAuthnCredential).not.toBeNull();
         expect(webAuthnCredential).toMatchObject({
           id: webAuthnCredentialId,
           userId: USER_ID,
@@ -179,7 +180,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           });
 
-        expect(keyMeta).not.toBeNull();
         expect(keyMeta).toMatchObject({
           webAuthnCredentialId: webAuthnCredentialId,
           keyVaultKeyId: KEY_VAULT_KEY_ID,
@@ -303,6 +303,590 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         }),
       ).to.rejects.toThrowError();
+    });
+  });
+
+  describe('PublicKeyCredentialCreationOptions.authenticatorSelection', () => {
+    describe('authenticatorSelection.userVerification', () => {
+      describe.each([
+        {
+          userVerification: undefined,
+        },
+        {
+          userVerification: UserVerificationRequirement.PREFERRED,
+        },
+        {
+          userVerification: UserVerificationRequirement.REQUIRED,
+        },
+        {
+          userVerification: UserVerificationRequirement.DISCOURAGED,
+        },
+      ])('With userVerification $userVerification', ({ userVerification }) => {
+        let registrationVerification: VerifiedRegistrationResponse;
+        let webAuthnCredentialId: string;
+
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            userVerification,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        beforeAll(async () => {
+          await cleanup();
+          await upsertTestingUser({ prisma });
+
+          ({ registrationVerification, webAuthnCredentialId } =
+            await createCredentialAndVerifyRegistrationResponse({
+              authenticator,
+              publicKeyCredentialCreationOptions,
+            }));
+        });
+
+        afterAll(async () => {
+          await cleanup();
+        });
+
+        test('Should return a verified registration', () => {
+          expect(registrationVerification.verified).toBe(true);
+        });
+
+        test('Should save the WebAuthnCredential to the database', async () => {
+          const webAuthnCredential = await prisma.webAuthnCredential.findUnique(
+            {
+              where: {
+                id: webAuthnCredentialId,
+              },
+            },
+          );
+
+          expect(webAuthnCredential).toMatchObject({
+            id: webAuthnCredentialId,
+            userId: USER_ID,
+          });
+        });
+      });
+
+      test('Should throw type mismatch when userVerification is not in enum', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            userVerification: 'INVALID_USER_VERIFICATION',
+          },
+        };
+
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+    });
+
+    describe('authenticatorSelection.authenticatorAttachment', () => {
+      describe.each([
+        {
+          authenticatorAttachment: undefined,
+        },
+        {
+          authenticatorAttachment: AuthenticatorAttachment.PLATFORM,
+        },
+        {
+          authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
+        },
+      ])(
+        'With authenticatorAttachment $authenticatorAttachment',
+        ({ authenticatorAttachment }) => {
+          let registrationVerification: VerifiedRegistrationResponse;
+          let webAuthnCredentialId: string;
+
+          const publicKeyCredentialCreationOptions = {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+            attestation: Attestation.NONE,
+            authenticatorSelection: {
+              authenticatorAttachment,
+            },
+          } satisfies PublicKeyCredentialCreationOptions;
+
+          beforeAll(async () => {
+            await cleanup();
+            await upsertTestingUser({ prisma });
+
+            ({ registrationVerification, webAuthnCredentialId } =
+              await createCredentialAndVerifyRegistrationResponse({
+                authenticator,
+                publicKeyCredentialCreationOptions,
+              }));
+          });
+
+          afterAll(async () => {
+            await cleanup();
+          });
+
+          test('Should return a verified registration', () => {
+            expect(registrationVerification.verified).toBe(true);
+          });
+
+          test('Should save the WebAuthnCredential to the database', async () => {
+            const webAuthnCredential =
+              await prisma.webAuthnCredential.findUnique({
+                where: {
+                  id: webAuthnCredentialId,
+                },
+              });
+
+            expect(webAuthnCredential).toMatchObject({
+              id: webAuthnCredentialId,
+              userId: USER_ID,
+            });
+          });
+        },
+      );
+
+      test('Should throw type mismatch when authenticatorAttachment is not in enum', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            authenticatorAttachment: 'INVALID_ATTACHMENT',
+          },
+        };
+
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+    });
+
+    describe('authenticatorSelection.residentKey', () => {
+      describe.each([
+        {
+          residentKey: undefined,
+        },
+        {
+          residentKey: ResidentKeyRequirement.DISCOURAGED,
+        },
+        {
+          residentKey: ResidentKeyRequirement.PREFERRED,
+        },
+        {
+          residentKey: ResidentKeyRequirement.REQUIRED,
+        },
+      ])('With residentKey $residentKey', ({ residentKey }) => {
+        let registrationVerification: VerifiedRegistrationResponse;
+        let webAuthnCredentialId: string;
+
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            residentKey,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        beforeAll(async () => {
+          await cleanup();
+          await upsertTestingUser({ prisma });
+
+          ({ registrationVerification, webAuthnCredentialId } =
+            await createCredentialAndVerifyRegistrationResponse({
+              authenticator,
+              publicKeyCredentialCreationOptions,
+            }));
+        });
+
+        afterAll(async () => {
+          await cleanup();
+        });
+
+        test('Should return a verified registration', () => {
+          expect(registrationVerification.verified).toBe(true);
+        });
+
+        test('Should save the WebAuthnCredential to the database', async () => {
+          const webAuthnCredential = await prisma.webAuthnCredential.findUnique(
+            {
+              where: {
+                id: webAuthnCredentialId,
+              },
+            },
+          );
+
+          expect(webAuthnCredential).toMatchObject({
+            id: webAuthnCredentialId,
+            userId: USER_ID,
+          });
+        });
+      });
+
+      test('Should throw type mismatch when residentKey is not in enum', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            residentKey: 'INVALID_RESIDENT_KEY',
+          },
+        };
+
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+    });
+
+    describe('authenticatorSelection.requireResidentKey (deprecated)', () => {
+      describe.each([
+        {
+          requireResidentKey: undefined,
+        },
+        {
+          requireResidentKey: true,
+        },
+        {
+          requireResidentKey: false,
+        },
+      ])(
+        'With requireResidentKey $requireResidentKey',
+        ({ requireResidentKey }) => {
+          let registrationVerification: VerifiedRegistrationResponse;
+          let webAuthnCredentialId: string;
+
+          const publicKeyCredentialCreationOptions = {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+            attestation: Attestation.NONE,
+            authenticatorSelection: {
+              requireResidentKey,
+            },
+          } satisfies PublicKeyCredentialCreationOptions;
+
+          beforeAll(async () => {
+            await cleanup();
+            await upsertTestingUser({ prisma });
+
+            ({ registrationVerification, webAuthnCredentialId } =
+              await createCredentialAndVerifyRegistrationResponse({
+                authenticator,
+                publicKeyCredentialCreationOptions,
+              }));
+          });
+
+          afterAll(async () => {
+            await cleanup();
+          });
+
+          test('Should return a verified registration', () => {
+            expect(registrationVerification.verified).toBe(true);
+          });
+
+          test('Should save the WebAuthnCredential to the database', async () => {
+            const webAuthnCredential =
+              await prisma.webAuthnCredential.findUnique({
+                where: {
+                  id: webAuthnCredentialId,
+                },
+              });
+
+            expect(webAuthnCredential).toMatchObject({
+              id: webAuthnCredentialId,
+              userId: USER_ID,
+            });
+          });
+        },
+      );
+
+      test('Should throw type mismatch when requireResidentKey is not a boolean', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            requireResidentKey: 'INVALID_BOOLEAN',
+          },
+        };
+
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+    });
+
+    describe('Combined authenticatorSelection options', () => {
+      test('Should work with all authenticatorSelection options combined', async () => {
+        await cleanup();
+        await upsertTestingUser({ prisma });
+
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
+            residentKey: ResidentKeyRequirement.PREFERRED,
+            userVerification: UserVerificationRequirement.REQUIRED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification, webAuthnCredentialId } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+          where: {
+            id: webAuthnCredentialId,
+          },
+        });
+
+        expect(webAuthnCredential).toMatchObject({
+          id: webAuthnCredentialId,
+          userId: USER_ID,
+        });
+
+        await cleanup();
+      });
+    });
+  });
+
+  describe('PublicKeyCredentialCreationOptions.pubKeyCredParams - Multiple Algorithms', () => {
+    describe.each([
+      {
+        name: 'ES256 only',
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+        ],
+      },
+      {
+        name: 'RS256 only',
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
+        ],
+      },
+      {
+        name: 'ES256 and RS256',
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
+        ],
+      },
+      {
+        name: 'All ES algorithms',
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES512,
+          },
+        ],
+      },
+      {
+        name: 'All RS algorithms',
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS512,
+          },
+        ],
+      },
+      {
+        name: 'All PS algorithms',
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS512,
+          },
+        ],
+      },
+    ])('With $name', ({ pubKeyCredParams }) => {
+      let registrationVerification: VerifiedRegistrationResponse;
+      let webAuthnCredentialId: string;
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        pubKeyCredParams,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      beforeAll(async () => {
+        await cleanup();
+        await upsertTestingUser({ prisma });
+
+        ({ registrationVerification, webAuthnCredentialId } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          }));
+      });
+
+      afterAll(async () => {
+        await cleanup();
+      });
+
+      test('Should return a verified registration', () => {
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      test('Should save the WebAuthnCredential to the database', async () => {
+        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+          where: {
+            id: webAuthnCredentialId,
+          },
+        });
+
+        expect(webAuthnCredential).toMatchObject({
+          id: webAuthnCredentialId,
+          userId: USER_ID,
+        });
+      });
+
+      test('Should have the correct public key', () => {
+        const jwk = COSEKeyMapper.COSEKeyToJwk(
+          COSEKeyMapper.bytesToCOSEKey(
+            registrationVerification.registrationInfo!.credential.publicKey,
+          ),
+        );
+
+        expect(jwk).toMatchObject(
+          keyProvider
+            .getKeyPairStore()
+            [webAuthnCredentialId].publicKey.export({ format: 'jwk' }),
+        );
+      });
+    });
+  });
+
+  describe('PublicKeyCredentialCreationOptions.timeout', () => {
+    test.each([
+      { timeout: undefined },
+      { timeout: 30000 },
+      { timeout: 60000 },
+      { timeout: 120000 },
+      { timeout: 300000 },
+    ])('Should work with timeout $timeout', async ({ timeout }) => {
+      await cleanup();
+      await upsertTestingUser({ prisma });
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        timeout,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+
+      await cleanup();
+    });
+
+    test('Should throw type mismatch when timeout is not a number', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        timeout: 'INVALID_TIMEOUT',
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+  });
+
+  describe('PublicKeyCredentialCreationOptions.excludeCredentials', () => {
+    test('Should work with empty excludeCredentials array', async () => {
+      await cleanup();
+      await upsertTestingUser({ prisma });
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        excludeCredentials: [],
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+
+      await cleanup();
+    });
+
+    test('Should work with undefined excludeCredentials', async () => {
+      await cleanup();
+      await upsertTestingUser({ prisma });
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        excludeCredentials: undefined,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+
+      await cleanup();
     });
   });
 });

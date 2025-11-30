@@ -32,14 +32,14 @@ import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnCredentialWithMeta } from './types/WebAuthnCredentialWithMeta';
-import type { CollectedClientData } from './validation/CollectedClientDataSchema';
+import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
 import type {
   PubKeyCredParamLoose,
   PubKeyCredParamStrict,
-} from './validation/PubKeyCredParamSchema';
-import type { PublicKeyCredentialCreationOptions } from './validation/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
+} from './zod-validation/PubKeyCredParamSchema';
+import type { PublicKeyCredentialCreationOptions } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorCredentialMetaArgs = {
   origin: string;

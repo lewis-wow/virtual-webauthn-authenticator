@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { JwtPayload } from '@repo/auth/validation';
+import { JwtPayload } from '@repo/auth/zod-validation';
 import { Unauthorized } from '@repo/exception/http';
 import { Observable } from 'rxjs';
 

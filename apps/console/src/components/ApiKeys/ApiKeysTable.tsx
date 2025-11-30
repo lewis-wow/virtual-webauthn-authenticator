@@ -1,7 +1,7 @@
 'use client';
 
 import { $api } from '@/lib/tsr';
-import type { ApiKey } from '@repo/auth/validation';
+import type { ApiKey } from '@repo/auth/zod-validation';
 import { Button } from '@repo/ui/components/Button';
 import { DataTable } from '@repo/ui/components/DataTable';
 import { DeleteConfirmDialog } from '@repo/ui/components/DeleteConfirmDialog';

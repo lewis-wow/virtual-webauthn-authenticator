@@ -1,3 +1,3 @@
-import { AuditPaginationSchema } from '@repo/audit-log/validation';
+import { AuditPaginationSchema } from '../../../../../activity-log/src/validation';
 
-export const ListAuditLogsResponseSchema = AuditPaginationSchema;
+export const ListLogsResponseSchema = AuditPaginationSchema;

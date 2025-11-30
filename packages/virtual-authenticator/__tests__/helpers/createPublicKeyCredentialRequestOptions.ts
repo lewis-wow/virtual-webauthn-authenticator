@@ -1,4 +1,4 @@
-import type { PublicKeyCredentialRequestOptions } from '../../src/validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from '../../src/zod-validation/PublicKeyCredentialRequestOptionsSchema';
 import { CHALLENGE_BYTES, RP_ID } from './consts';
 
 export const createPublicKeyCredentialRequestOptions = (opts: {

@@ -1,6 +1,6 @@
 import type { PickDeep } from 'type-fest';
 
-import type { PubKeyCredParamStrict } from '../validation/PubKeyCredParamSchema';
+import type { PubKeyCredParamStrict } from '../zod-validation/PubKeyCredParamSchema';
 import type { WebAuthnCredentialMeta } from './WebAuthnCredentialMeta';
 
 export type GenerateKeyPairFunc = (args: {

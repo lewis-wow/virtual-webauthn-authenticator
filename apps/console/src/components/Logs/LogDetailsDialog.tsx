@@ -1,6 +1,6 @@
 'use client';
 
-import type { Audit } from '@repo/audit-log/validation';
+import type { Log } from '@repo/activity-log/zod-validation';
 import { Button } from '@repo/ui/components/Button';
 import {
   Dialog,
@@ -18,7 +18,7 @@ import { useState } from 'react';
 import { LogEntityIcon } from './LogEntityIcon';
 
 export type LogDetailsDialogProps = {
-  log: Audit;
+  log: Log;
 };
 
 export const LogDetailsDialog = ({ log }: LogDetailsDialogProps) => {

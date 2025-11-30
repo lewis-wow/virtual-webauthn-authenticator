@@ -1,13 +1,13 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
-import { AuditLog } from '@repo/audit-log';
-import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
+import { ActivityLog } from '@repo/activity-log';
+import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/validation';
-import { nestjsContract } from '@repo/contract/nestjs';
+import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
   CreateCredentialResponseSchema,
   GetCredentialResponseSchema,
-} from '@repo/contract/validation';
+} from '@repo/contract/dto';
+import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
@@ -15,9 +15,8 @@ import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
-} from '@repo/virtual-authenticator/validation';
+} from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-import { Schema } from 'effect';
 
 import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
@@ -29,7 +28,7 @@ export class CredentialsController {
   constructor(
     private readonly virtualAuthenticator: VirtualAuthenticator,
     private readonly logger: Logger,
-    private readonly auditLog: AuditLog,
+    private readonly activityLog: ActivityLog,
   ) {}
 
   @TsRestHandler(nestjsContract.api.credentials.create)
@@ -74,9 +73,9 @@ export class CredentialsController {
             },
           });
 
-        await this.auditLog.audit({
-          action: AuditLogAction.CREATE,
-          entity: AuditLogEntity.CREDENTIAL,
+        await this.activityLog.audit({
+          action: LogAction.CREATE,
+          entity: LogEntity.CREDENTIAL,
           entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
           apiKeyId:
@@ -88,9 +87,7 @@ export class CredentialsController {
 
         return {
           status: 200,
-          body: Schema.encodeSync(CreateCredentialResponseSchema)(
-            publicKeyCredential,
-          ),
+          body: CreateCredentialResponseSchema.encode(publicKeyCredential),
         };
       },
     );
@@ -123,9 +120,9 @@ export class CredentialsController {
             context: { apiKeyId },
           });
 
-        await this.auditLog.audit({
-          action: AuditLogAction.GET,
-          entity: AuditLogEntity.CREDENTIAL,
+        await this.activityLog.audit({
+          action: LogAction.GET,
+          entity: LogEntity.CREDENTIAL,
           entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
 
           apiKeyId:
@@ -137,9 +134,7 @@ export class CredentialsController {
 
         return {
           status: 200,
-          body: Schema.encodeSync(GetCredentialResponseSchema)(
-            publicKeyCredential,
-          ),
+          body: GetCredentialResponseSchema.encode(publicKeyCredential),
         };
       },
     );

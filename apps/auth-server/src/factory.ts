@@ -12,10 +12,12 @@ export const factory = createFactory<{
 }>({
   initApp: (app) => {
     app.onError((error) => {
+      console.error(error);
+
       const exception =
         error instanceof Exception ? error : new InternalServerError();
 
-      return ExceptionMapper.toResponse(exception);
+      return ExceptionMapper.exceptionToResponse(exception);
     });
   },
 });

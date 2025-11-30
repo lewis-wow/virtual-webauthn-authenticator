@@ -1,9 +1,8 @@
 import { Controller } from '@nestjs/common';
-import type { JwtPayload } from '@repo/auth/validation';
+import type { JwtPayload } from '@repo/auth/zod-validation';
+import { GetProfileResponseSchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { GetProfileResponseSchema } from '@repo/contract/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-import { Schema } from 'effect';
 
 import { Jwt } from '../decorators/Jwt.decorator';
 
@@ -14,7 +13,7 @@ export class ProfileController {
     return tsRestHandler(nestjsContract.api.profile.get, async () => {
       return {
         status: 200,
-        body: Schema.encodeSync(GetProfileResponseSchema)({
+        body: GetProfileResponseSchema.encode({
           jwtPayload,
         }),
       };

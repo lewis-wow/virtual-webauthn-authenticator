@@ -1,23 +1,12 @@
-import { getQueryClient } from '@/lib/getQueryClient';
-import { $api } from '@/lib/tsr';
-import { headers } from 'next/headers';
-import { redirect } from 'next/navigation';
+'use client';
 
-const IndexPage = async () => {
-  const queryClient = getQueryClient();
-  const tsrQueryClient = $api.initQueryClient(queryClient);
-  const profileGetQuery = await tsrQueryClient.api.profile.get.fetchQuery({
-    queryKey: [...'api.profile.get'.split('.')],
-    queryData: {
-      extraHeaders: Object.fromEntries(await headers()),
-    },
-  });
+import { AuthGuard } from '@/components/AuthGuard';
+import { WebAuthnCredentialsPage } from '@/components/pages/WebAuthnCredentialsPage';
 
-  if (profileGetQuery.body.jwtPayload?.userId === undefined) {
-    redirect('/auth/signin');
-  }
-
-  redirect('/dashboard');
+export default () => {
+  return (
+    <AuthGuard requireAuthState="authenticated">
+      <WebAuthnCredentialsPage />
+    </AuthGuard>
+  );
 };
-
-export default IndexPage;

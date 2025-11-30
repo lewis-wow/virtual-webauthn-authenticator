@@ -1,6 +1,6 @@
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import type { PaginationResult } from '@repo/pagination/validation';
+import type { PaginationResult } from '@repo/pagination/zod-validation';
 import { Prisma, type PrismaClient } from '@repo/prisma';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';

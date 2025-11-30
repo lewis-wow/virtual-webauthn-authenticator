@@ -99,7 +99,6 @@ describe('WebAuthnCredentialsController', () => {
           "data": [
             {
               "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
-              "apiKeyId": null,
               "counter": 0,
               "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
               "name": null,
@@ -146,7 +145,6 @@ describe('WebAuthnCredentialsController', () => {
       expect(getWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
         {
           "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
-          "apiKeyId": null,
           "counter": 0,
           "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
           "name": null,
@@ -206,7 +204,6 @@ describe('WebAuthnCredentialsController', () => {
       expect(deleteWebAuthnCredentialResponse.body).toMatchInlineSnapshot(`
         {
           "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
-          "apiKeyId": null,
           "counter": 0,
           "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
           "name": null,

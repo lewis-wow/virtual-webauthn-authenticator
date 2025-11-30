@@ -1,6 +1,6 @@
 'use client';
 
-import { authClient } from '@/lib/authClient';
+import { useSignOut } from '@/hooks/useSignOut';
 import { $api } from '@/lib/tsr';
 import { getInitials } from '@/lib/utils/getInitials';
 import { Guard } from '@repo/ui/components/Guard/Guard';
@@ -28,8 +28,10 @@ import { ChevronsUpDown, LogOut } from 'lucide-react';
 export const NavUser = () => {
   const { isMobile } = useSidebar();
 
+  const { signOut } = useSignOut();
+
   const profileGetQuery = $api.api.profile.get.useQuery({
-    queryKey: [...'api.profile.get'.split('.')],
+    queryKey: ['api', 'profile', 'get'],
   });
 
   const jwtPayload = profileGetQuery.data?.body.jwtPayload;
@@ -95,7 +97,7 @@ export const NavUser = () => {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() => authClient.signOut()}
+                onClick={async () => await signOut()}
               >
                 <LogOut />
                 Log out
