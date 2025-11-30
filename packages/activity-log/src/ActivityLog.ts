@@ -29,7 +29,7 @@ export class ActivityLog {
     const { action, entity, entityId, userId, apiKeyId, metadata } = data;
 
     try {
-      await this.prisma.auditLog.create({
+      await this.prisma.log.create({
         data: {
           action,
           entity,
@@ -57,7 +57,7 @@ export class ActivityLog {
     const { userId, limit = 20, cursor, orderBy } = opts;
 
     const pagination = new Pagination(async ({ pagination }) => {
-      const logs = await this.prisma.auditLog.findMany({
+      const logs = await this.prisma.log.findMany({
         where: {
           userId,
         },

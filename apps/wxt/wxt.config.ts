@@ -13,7 +13,7 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   dev: {
     server: {
-      port: 5555,
+      port: 6666,
     },
   },
   modules: ['@wxt-dev/module-react'],
