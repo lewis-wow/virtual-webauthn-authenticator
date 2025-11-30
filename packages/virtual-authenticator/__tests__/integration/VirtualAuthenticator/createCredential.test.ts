@@ -323,55 +323,53 @@ describe('VirtualAuthenticator.createCredential()', () => {
         {
           userVerification: UserVerificationRequirement.DISCOURAGED,
         },
-      ])(
-        'With userVerification $userVerification',
-        ({ userVerification }) => {
-          let registrationVerification: VerifiedRegistrationResponse;
-          let webAuthnCredentialId: string;
+      ])('With userVerification $userVerification', ({ userVerification }) => {
+        let registrationVerification: VerifiedRegistrationResponse;
+        let webAuthnCredentialId: string;
 
-          const publicKeyCredentialCreationOptions = {
-            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-            attestation: Attestation.NONE,
-            authenticatorSelection: {
-              userVerification,
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            userVerification,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        beforeAll(async () => {
+          await cleanup();
+          await upsertTestingUser({ prisma });
+
+          ({ registrationVerification, webAuthnCredentialId } =
+            await createCredentialAndVerifyRegistrationResponse({
+              authenticator,
+              publicKeyCredentialCreationOptions,
+            }));
+        });
+
+        afterAll(async () => {
+          await cleanup();
+        });
+
+        test('Should return a verified registration', () => {
+          expect(registrationVerification.verified).toBe(true);
+        });
+
+        test('Should save the WebAuthnCredential to the database', async () => {
+          const webAuthnCredential = await prisma.webAuthnCredential.findUnique(
+            {
+              where: {
+                id: webAuthnCredentialId,
+              },
             },
-          } satisfies PublicKeyCredentialCreationOptions;
+          );
 
-          beforeAll(async () => {
-            await cleanup();
-            await upsertTestingUser({ prisma });
-
-            ({ registrationVerification, webAuthnCredentialId } =
-              await createCredentialAndVerifyRegistrationResponse({
-                authenticator,
-                publicKeyCredentialCreationOptions,
-              }));
+          expect(webAuthnCredential).not.toBeNull();
+          expect(webAuthnCredential).toMatchObject({
+            id: webAuthnCredentialId,
+            userId: USER_ID,
           });
-
-          afterAll(async () => {
-            await cleanup();
-          });
-
-          test('Should return a verified registration', () => {
-            expect(registrationVerification.verified).toBe(true);
-          });
-
-          test('Should save the WebAuthnCredential to the database', async () => {
-            const webAuthnCredential =
-              await prisma.webAuthnCredential.findUnique({
-                where: {
-                  id: webAuthnCredentialId,
-                },
-              });
-
-            expect(webAuthnCredential).not.toBeNull();
-            expect(webAuthnCredential).toMatchObject({
-              id: webAuthnCredentialId,
-              userId: USER_ID,
-            });
-          });
-        },
-      );
+        });
+      });
 
       test('Should throw type mismatch when userVerification is not in enum', async () => {
         const publicKeyCredentialCreationOptions = {
@@ -516,12 +514,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         test('Should save the WebAuthnCredential to the database', async () => {
-          const webAuthnCredential =
-            await prisma.webAuthnCredential.findUnique({
+          const webAuthnCredential = await prisma.webAuthnCredential.findUnique(
+            {
               where: {
                 id: webAuthnCredentialId,
               },
-            });
+            },
+          );
 
           expect(webAuthnCredential).not.toBeNull();
           expect(webAuthnCredential).toMatchObject({
@@ -673,44 +672,83 @@ describe('VirtualAuthenticator.createCredential()', () => {
       {
         name: 'ES256 only',
         pubKeyCredParams: [
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
         ],
       },
       {
         name: 'RS256 only',
         pubKeyCredParams: [
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.RS256 },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
         ],
       },
       {
         name: 'ES256 and RS256',
         pubKeyCredParams: [
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.RS256 },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
         ],
       },
       {
         name: 'All ES algorithms',
         pubKeyCredParams: [
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES384 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES512 },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES512,
+          },
         ],
       },
       {
         name: 'All RS algorithms',
         pubKeyCredParams: [
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.RS256 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.RS384 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.RS512 },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS512,
+          },
         ],
       },
       {
         name: 'All PS algorithms',
         pubKeyCredParams: [
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.PS256 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.PS384 },
-          { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.PS512 },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS512,
+          },
         ],
       },
     ])('With $name', ({ pubKeyCredParams }) => {
