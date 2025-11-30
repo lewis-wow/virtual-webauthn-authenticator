@@ -270,7 +270,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         ],
       } satisfies Partial<PublicKeyCredentialCreationOptions>,
     ])(
-      'Should throw with any supported pubKeyCredParams',
+      'Should throw without any supported pubKeyCredParams',
       async ({ pubKeyCredParams }) => {
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -303,6 +303,63 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         }),
       ).to.rejects.toThrowError();
+    });
+  });
+
+  describe('PublicKeyCredentialCreationOptions.user.id byte length', () => {
+    test('Should throw TypeError when user.id is empty (0 bytes)', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        user: {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+          id: new Uint8Array(0),
+        },
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should throw TypeError when user.id exceeds 64 bytes', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        user: {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+          id: new Uint8Array(65), // 65 bytes, exceeds max of 64
+        },
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should work with valid user.id (16 bytes for UUID)', async () => {
+      // Note: The spec allows user.id to be 1-64 bytes.
+      // In this implementation, user.id must be a valid UUID (16 bytes)
+      // which is within the spec's requirements.
+      await cleanup();
+      await upsertTestingUser({ prisma });
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+            attestation: Attestation.NONE,
+          },
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+
+      await cleanup();
     });
   });
 
@@ -634,6 +691,38 @@ describe('VirtualAuthenticator.createCredential()', () => {
             residentKey: ResidentKeyRequirement.PREFERRED,
             userVerification: UserVerificationRequirement.REQUIRED,
           },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification, webAuthnCredentialId } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+          where: {
+            id: webAuthnCredentialId,
+          },
+        });
+
+        expect(webAuthnCredential).toMatchObject({
+          id: webAuthnCredentialId,
+          userId: USER_ID,
+        });
+
+        await cleanup();
+      });
+
+      test('Should work with empty authenticatorSelection (all defaults)', async () => {
+        await cleanup();
+        await upsertTestingUser({ prisma });
+
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {},
         } satisfies PublicKeyCredentialCreationOptions;
 
         const { registrationVerification, webAuthnCredentialId } =
