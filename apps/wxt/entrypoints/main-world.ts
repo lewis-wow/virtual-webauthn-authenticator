@@ -53,7 +53,7 @@ export default defineUnlistedScript(() => {
     const publicKeyCredentialStandardImpl =
       StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
 
-    console.error(`[${LOG_PREFIX}]`, publicKeyCredentialStandardImpl);
+    console.log(`[${LOG_PREFIX}]`, publicKeyCredentialStandardImpl);
 
     return publicKeyCredentialStandardImpl;
   };
@@ -95,7 +95,7 @@ export default defineUnlistedScript(() => {
     const publicKeyCredentialStandardImpl =
       StandardImplMapper.publicKeyCredentialToStandardImpl(parsedData);
 
-    console.error(`[${LOG_PREFIX}]`, publicKeyCredentialStandardImpl);
+    console.log(`[${LOG_PREFIX}]`, publicKeyCredentialStandardImpl);
 
     return publicKeyCredentialStandardImpl;
   };
