@@ -14,7 +14,15 @@ import {
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
-import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
@@ -1018,7 +1026,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         ],
       } satisfies PublicKeyCredentialCreationOptions;
 
-      expect(
+      await expect(
         async () =>
           await createCredentialAndVerifyRegistrationResponse({
             authenticator,
