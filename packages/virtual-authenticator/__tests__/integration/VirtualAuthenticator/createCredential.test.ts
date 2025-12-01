@@ -419,7 +419,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
               authenticator,
               publicKeyCredentialCreationOptions,
               requireUserVerification:
-                userVerification !== UserVerificationRequirement.DISCOURAGED,
+                userVerification === UserVerificationRequirement.REQUIRED,
             }));
         });
 
