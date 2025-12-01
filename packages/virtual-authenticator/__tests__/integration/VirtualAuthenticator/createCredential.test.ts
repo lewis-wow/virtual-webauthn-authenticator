@@ -46,8 +46,15 @@ const prisma = new PrismaClient();
 const createCredentialAndVerifyRegistrationResponse = async (opts: {
   authenticator: VirtualAuthenticator;
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
+  requireUserVerification?: boolean;
+  requireUserPresence?: boolean;
 }) => {
-  const { authenticator, publicKeyCredentialCreationOptions } = opts;
+  const {
+    authenticator,
+    publicKeyCredentialCreationOptions,
+    requireUserVerification,
+    requireUserPresence,
+  } = opts;
 
   // Simulate the full WebAuthn registration ceremony.
   // This creates a new public key credential (passkey) using the
@@ -75,8 +82,8 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
     ).toString('base64url'),
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
-    requireUserVerification: true, // Authenticator does perform UV
-    requireUserPresence: false, // Authenticator does NOT perform UP
+    requireUserVerification: requireUserVerification ?? true,
+    requireUserPresence: requireUserPresence ?? true,
   });
 
   const webAuthnCredentialId = UUIDMapper.bytesToUUID(
@@ -411,6 +418,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
             await createCredentialAndVerifyRegistrationResponse({
               authenticator,
               publicKeyCredentialCreationOptions,
+              requireUserVerification:
+                userVerification !== UserVerificationRequirement.DISCOURAGED,
             }));
         });
 

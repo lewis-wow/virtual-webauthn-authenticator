@@ -170,10 +170,15 @@ export class VirtualAuthenticator {
   private async _createAuthenticatorData(opts: {
     rpId: string;
     counter: number;
-    credentialID?: Uint8Array;
+    /**
+     * Should be only set if we are creating a new credential (registration).
+     */
+    credentialID: Uint8Array | undefined;
     COSEPublicKey: Uint8Array;
+    userVerification: UserVerificationRequirement | undefined;
   }): Promise<Uint8Array> {
-    const { rpId, counter, credentialID, COSEPublicKey } = opts;
+    const { rpId, counter, credentialID, COSEPublicKey, userVerification } =
+      opts;
 
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
@@ -186,7 +191,29 @@ export class VirtualAuthenticator {
     // Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
     // Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
     // Length (in bytes): 1
-    const flags = Buffer.from([(credentialID ? 0b01000000 : 0) | 0b00000101]);
+
+    // Bit 0: User Present (UP)
+    // Always 1 for standard WebAuthn flows
+    let flagsInt = 0b00000001;
+
+    // Bit 2: User Verified (UV)
+    // If 'required' or 'preferred' (and not explicitly 'discouraged')
+    if (
+      userVerification === UserVerificationRequirement.PREFERRED ||
+      userVerification === UserVerificationRequirement.REQUIRED ||
+      userVerification === undefined
+    ) {
+      flagsInt |= 0b00000100;
+    }
+
+    // Bit 6: Attested Credential Data (AT)
+    // Only set if we are creating a new credential (registration),
+    // indicated by the presence of credentialID
+    if (credentialID) {
+      flagsInt |= 0b01000000;
+    }
+
+    const flags = Buffer.from([flagsInt]);
 
     // Signature counter, 32-bit unsigned big-endian integer.
     // Length (in bytes): 4
@@ -459,10 +486,16 @@ export class VirtualAuthenticator {
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
-      rpId: publicKeyCredentialCreationOptions.rp.id,
+      /**
+       * Should be only set if we are creating a new credential (registration).
+       */
       credentialID: rawCredentialID,
+      rpId: publicKeyCredentialCreationOptions.rp.id,
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
+      userVerification:
+        publicKeyCredentialCreationOptions.authenticatorSelection
+          ?.userVerification,
     });
 
     const clientData: CollectedClientData = {
@@ -528,6 +561,7 @@ export class VirtualAuthenticator {
     const { publicKeyCredentialRequestOptions, meta, context } = opts;
 
     assert(publicKeyCredentialRequestOptions.rpId, isString());
+    assert(publicKeyCredentialRequestOptions.timeout, isOptional(isNumber()));
     assert(
       publicKeyCredentialRequestOptions.allowCredentials,
       isOptional(
@@ -562,8 +596,6 @@ export class VirtualAuthenticator {
         },
       );
 
-    console.log({ webAuthnCredential });
-
     const credentialID = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
 
     const clientData: CollectedClientData = {
@@ -580,9 +612,14 @@ export class VirtualAuthenticator {
     );
 
     const authData = await this._createAuthenticatorData({
+      /**
+       * Should be only set if we are creating a new credential (registration).
+       */
+      credentialID: undefined,
       rpId: publicKeyCredentialRequestOptions.rpId,
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
+      userVerification: publicKeyCredentialRequestOptions.userVerification,
     });
 
     const dataToSign = this._createDataToSign({
@@ -601,6 +638,8 @@ export class VirtualAuthenticator {
         });
       });
 
+    const userHandleBytes = UUIDMapper.UUIDtoBytes(webAuthnCredential.userId);
+
     return {
       id: Buffer.from(credentialID).toString('base64url'),
       rawId: credentialID,
@@ -609,7 +648,7 @@ export class VirtualAuthenticator {
         clientDataJSON: clientDataJSON,
         authenticatorData: authData,
         signature: new Uint8Array(signature),
-        userHandle: null,
+        userHandle: userHandleBytes,
       },
       clientExtensionResults: {},
     };
