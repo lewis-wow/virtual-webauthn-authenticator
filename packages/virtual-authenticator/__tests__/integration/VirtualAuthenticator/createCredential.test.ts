@@ -104,6 +104,14 @@ const cleanupWebAuthnCredentials = async () => {
   ]);
 };
 
+/**
+ * Tests for VirtualAuthenticator.createCredential() method
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+ * @see https://www.w3.org/TR/webauthn-3/#authenticatormakecredential
+ *
+ * Per spec: The authenticatorMakeCredential operation is used to create a new public key
+ * credential source. This is part of the WebAuthn registration ceremony.
+ */
 describe('VirtualAuthenticator.createCredential()', () => {
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
@@ -123,6 +131,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
     await prisma.user.deleteMany();
   });
 
+  /**
+   * Tests for attestation parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-attestation
+   * @see https://www.w3.org/TR/webauthn-3/#enum-attestation-convey
+   *
+   * Per spec: This member specifies the Relying Party's preference regarding attestation
+   * conveyance. Values: 'none', 'indirect', 'direct', 'enterprise'
+   */
   describe('PublicKeyCredentialCreationOptions.attestation', () => {
     describe.each([
       {
@@ -249,6 +265,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
   });
 
+  /**
+   * Tests for pubKeyCredParams parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-pubkeycredparams
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialparameters
+   *
+   * Per spec: This member contains information about the desired properties of the credential
+   * to be created. The sequence is ordered from most preferred to least preferred.
+   */
   describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
     afterEach(async () => {
       await cleanupWebAuthnCredentials();
@@ -311,6 +335,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
     );
   });
 
+  /**
+   * Tests for meta.userId validation
+   * @see https://www.w3.org/TR/webauthn-3/#user-handle
+   *
+   * Per spec: The user handle is used to identify the user account and must be a valid identifier
+   */
   describe('meta.userId', () => {
     afterEach(async () => {
       await cleanupWebAuthnCredentials();
@@ -333,6 +363,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
   });
 
+  /**
+   * Tests for user.id byte length validation
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialuserentity-id
+   * @see https://www.w3.org/TR/webauthn-3/#user-handle
+   *
+   * Per spec: The user handle is a BufferSource with a maximum size of 64 bytes,
+   * and a recommended size of at least 16 bytes, to aid in preventing user enumeration.
+   */
   describe('PublicKeyCredentialCreationOptions.user.id byte length', () => {
     afterEach(async () => {
       await cleanupWebAuthnCredentials();
@@ -386,7 +424,23 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
   });
 
+  /**
+   * Tests for authenticatorSelection parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-authenticatorselection
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-authenticatorselectioncriteria
+   *
+   * Per spec: This OPTIONAL member specifies capabilities and settings that the authenticator
+   * MUST or SHOULD satisfy to participate in the credential creation operation.
+   */
   describe('PublicKeyCredentialCreationOptions.authenticatorSelection', () => {
+    /**
+     * Tests for userVerification parameter
+     * @see https://www.w3.org/TR/webauthn-3/#dom-authenticatorselectioncriteria-userverification
+     * @see https://www.w3.org/TR/webauthn-3/#enum-userVerificationRequirement
+     *
+     * Per spec: This member describes the Relying Party's requirements regarding user verification.
+     * Values: 'required', 'preferred', 'discouraged'
+     */
     describe('authenticatorSelection.userVerification', () => {
       describe.each([
         {
@@ -467,6 +521,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
     });
 
+    /**
+     * Tests for authenticatorAttachment parameter
+     * @see https://www.w3.org/TR/webauthn-3/#dom-authenticatorselectioncriteria-authenticatorattachment
+     * @see https://www.w3.org/TR/webauthn-3/#enum-authenticatorAttachment
+     *
+     * Per spec: This OPTIONAL member specifies the authenticator attachment modality.
+     * Values: 'platform', 'cross-platform'
+     */
     describe('authenticatorSelection.authenticatorAttachment', () => {
       describe.each([
         {
@@ -544,6 +606,15 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
     });
 
+    /**
+     * Tests for residentKey parameter
+     * @see https://www.w3.org/TR/webauthn-3/#dom-authenticatorselectioncriteria-residentkey
+     * @see https://www.w3.org/TR/webauthn-3/#enum-residentKeyRequirement
+     *
+     * Per spec: This member specifies the Relying Party's requirements regarding
+     * resident credentials (aka discoverable credentials or passkeys).
+     * Values: 'discouraged', 'preferred', 'required'
+     */
     describe('authenticatorSelection.residentKey', () => {
       describe.each([
         {
@@ -622,6 +693,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
     });
 
+    /**
+     * Tests for requireResidentKey parameter (deprecated)
+     * @see https://www.w3.org/TR/webauthn-3/#dom-authenticatorselectioncriteria-requireresidentkey
+     *
+     * Per spec: This OPTIONAL member is retained for backwards compatibility with WebAuthn Level 1.
+     * Relying Parties should use residentKey instead. Default is false.
+     */
     describe('authenticatorSelection.requireResidentKey (deprecated)', () => {
       describe.each([
         {
@@ -699,6 +777,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
     });
 
+    /**
+     * Tests for combined authenticatorSelection options
+     * @see https://www.w3.org/TR/webauthn-3/#dictdef-authenticatorselectioncriteria
+     *
+     * Per spec: Tests that multiple authenticator selection criteria can be combined
+     */
     describe('Combined authenticatorSelection options', () => {
       afterEach(async () => {
         await cleanupWebAuthnCredentials();
@@ -764,6 +848,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
   });
 
+  /**
+   * Tests for multiple algorithm support in pubKeyCredParams
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-pubkeycredparams
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialparameters
+   * @see https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+   *
+   * Per spec: This member lists the key types and signature algorithms the Relying Party supports,
+   * ordered from most preferred to least preferred. The authenticator selects the first algorithm
+   * it supports.
+   */
   describe('PublicKeyCredentialCreationOptions.pubKeyCredParams - Multiple Algorithms', () => {
     describe.each([
       {
@@ -903,6 +997,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
   });
 
+  /**
+   * Tests for timeout parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-timeout
+   *
+   * Per spec: This OPTIONAL member specifies a time, in milliseconds, that the Relying Party
+   * is willing to wait for the call to complete. This is treated as a hint, and MAY be
+   * overridden by the client.
+   */
   describe('PublicKeyCredentialCreationOptions.timeout', () => {
     afterEach(async () => {
       await cleanupWebAuthnCredentials();

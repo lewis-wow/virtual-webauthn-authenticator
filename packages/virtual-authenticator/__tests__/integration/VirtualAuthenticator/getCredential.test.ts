@@ -95,6 +95,15 @@ const cleanup = async () => {
   ]);
 };
 
+/**
+ * Tests for VirtualAuthenticator.getCredential() method
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+ * @see https://www.w3.org/TR/webauthn-3/#authenticatorgetassertion
+ *
+ * Per spec: The authenticatorGetAssertion operation is used to produce an assertion
+ * signature representing a user's authentication. This is part of the WebAuthn
+ * authentication ceremony.
+ */
 describe('VirtualAuthenticator.getCredential()', () => {
   let keyProvider: IKeyProvider;
   let authenticator: VirtualAuthenticator;
@@ -160,6 +169,10 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await cleanup();
   });
 
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * Per spec: The authenticator should produce a valid assertion that can be verified
+   */
   test('should produce a verifiable assertion', async () => {
     const requestOptions = createPublicKeyCredentialRequestOptions({
       credentialID: credentialRawID,
@@ -175,6 +188,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
   });
 
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrequestoptions-allowcredentials
+   * Per spec: If allowCredentials is undefined or empty, the authenticator should
+   * use discoverable credentials associated with the RP ID
+   */
   test('should produce a verifiable assertion without allowCredentials', async () => {
     const requestOptions = createPublicKeyCredentialRequestOptions({
       credentialID: credentialRawID,
@@ -193,6 +211,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
   });
 
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrequestoptions-allowcredentials
+   * Per spec: The authenticator should find the matching credential even when
+   * allowCredentials contains additional non-matching credential IDs
+   */
   test('should produce a verifiable assertion with redundant allowCredentials', async () => {
     const requestOptions = createPublicKeyCredentialRequestOptions({
       credentialID: credentialRawID,
@@ -214,6 +237,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
   });
 
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrequestoptions-rpid
+   * @see https://www.w3.org/TR/webauthn-3/#relying-party-identifier
+   * Per spec: The RP ID must match the credential's RP ID for authentication to succeed
+   */
   test('should fail with different RP ID', async () => {
     const requestOptions = createPublicKeyCredentialRequestOptions({
       credentialID: credentialRawID,
@@ -421,6 +449,14 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
   });
 
+  /**
+   * Tests for timeout parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrequestoptions-timeout
+   *
+   * Per spec: This OPTIONAL member specifies a time, in milliseconds, that the Relying Party
+   * is willing to wait for the call to complete. The value is treated as a hint, and MAY be
+   * overridden by the client.
+   */
   describe('PublicKeyCredentialRequestOptions.timeout', () => {
     test.each([
       { timeout: undefined },
@@ -469,6 +505,15 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
   });
 
+  /**
+   * Tests for allowCredentials parameter variations
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrequestoptions-allowcredentials
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialdescriptor
+   *
+   * Per spec: This OPTIONAL member contains a list of PublicKeyCredentialDescriptor objects
+   * representing public key credentials acceptable to the caller, in descending order of
+   * preference. If empty, the authenticator should use discoverable credentials.
+   */
   describe('PublicKeyCredentialRequestOptions.allowCredentials variations', () => {
     test('should work with allowCredentials as empty array', async () => {
       const requestOptions = createPublicKeyCredentialRequestOptions({
@@ -556,6 +601,15 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
   });
 
+  /**
+   * Tests for rpId parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrequestoptions-rpid
+   * @see https://www.w3.org/TR/webauthn-3/#relying-party-identifier
+   *
+   * Per spec: This OPTIONAL member specifies the RP ID claimed by the Relying Party.
+   * If omitted, its value will be the CredentialsContainer object's relevant settings object's
+   * origin's effective domain.
+   */
   describe('PublicKeyCredentialRequestOptions.rpId', () => {
     test('should work with explicit rpId matching the origin', async () => {
       const requestOptions = createPublicKeyCredentialRequestOptions({
