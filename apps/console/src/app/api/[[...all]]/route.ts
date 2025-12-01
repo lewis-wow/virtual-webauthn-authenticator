@@ -53,3 +53,5 @@ const proxy = new Proxy({
 
 export const GET = handle(proxy.getApp());
 export const POST = handle(proxy.getApp());
+export const PUT = handle(proxy.getApp());
+export const DELETE = handle(proxy.getApp());
