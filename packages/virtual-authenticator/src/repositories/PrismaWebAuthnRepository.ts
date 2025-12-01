@@ -20,6 +20,31 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     this.prisma = opts.prisma;
   }
 
+  async existsByRpIdAndCredentialIds(opts: {
+    rpId: string;
+    credentialIds: string[];
+  }): Promise<boolean> {
+    const { rpId, credentialIds } = opts;
+
+    assert(rpId, isString());
+    assert(credentialIds, isArray(isString()));
+
+    if (credentialIds.length === 0) {
+      return false;
+    }
+
+    const count = await this.prisma.webAuthnCredential.count({
+      where: {
+        rpId: rpId,
+        id: {
+          in: credentialIds,
+        },
+      },
+    });
+
+    return count > 0;
+  }
+
   async createKeyVaultWebAuthnCredential(
     data: CreateKeyVaultDataArgs,
   ): Promise<WebAuthnCredentialWithMeta> {

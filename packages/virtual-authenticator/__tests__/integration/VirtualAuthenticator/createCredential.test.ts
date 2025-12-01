@@ -1,9 +1,8 @@
-import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
-import { setDeep } from '../../../../core/__tests__/helpers';
 import {
-  KEY_VAULT_KEY_ID,
-  KEY_VAULT_KEY_NAME,
-} from '../../../../key-vault/__tests__/helpers';
+  upsertTestingUser,
+  USER_ID,
+  USER_NAME,
+} from '../../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
@@ -14,25 +13,32 @@ import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { randomBytes } from 'node:crypto';
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
+import { AuthenticatorTransport } from '../../../src/enums/AuthenticatorTransport';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { ResidentKeyRequirement } from '../../../src/enums/ResidentKeyRequirement';
 import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
+import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
+import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
-  CHALLENGE_BASE64URL,
+  CHALLENGE_BYTES,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
+  RP_NAME,
   RP_ORIGIN,
+  USER_DISPLAY_NAME,
+  USER_ID_BYTSES,
 } from '../../helpers/consts';
 
 const prisma = new PrismaClient();
@@ -64,7 +70,9 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
     response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as RegistrationResponseJSON,
-    expectedChallenge: CHALLENGE_BASE64URL,
+    expectedChallenge: Buffer.from(
+      publicKeyCredentialCreationOptions.challenge,
+    ).toString('base64url'),
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
     requireUserVerification: true, // Authenticator does perform UV
@@ -82,22 +90,30 @@ const createCredentialAndVerifyRegistrationResponse = async (opts: {
   };
 };
 
-const cleanup = async () => {
+const cleanupWebAuthnCredentials = async () => {
   await prisma.$transaction([
-    prisma.user.deleteMany(),
     prisma.webAuthnCredential.deleteMany(),
     prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
   ]);
 };
 
 describe('VirtualAuthenticator.createCredential()', () => {
-  const keyProvider = new MockKeyProvider();
+  const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+  const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
   const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnCredentialRepository,
     keyProvider,
+  });
+
+  beforeAll(async () => {
+    await upsertTestingUser({ prisma });
+  });
+
+  afterAll(async () => {
+    await prisma.user.deleteMany();
   });
 
   describe('PublicKeyCredentialCreationOptions.attestation', () => {
@@ -121,9 +137,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
 
       beforeAll(async () => {
-        await cleanup();
-        await upsertTestingUser({ prisma });
-
         ({ registrationVerification, webAuthnCredentialId } =
           await createCredentialAndVerifyRegistrationResponse({
             authenticator,
@@ -132,7 +145,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       afterAll(async () => {
-        await cleanup();
+        await cleanupWebAuthnCredentials();
       });
 
       test('Should return a verified registration', () => {
@@ -182,8 +195,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         expect(keyMeta).toMatchObject({
           webAuthnCredentialId: webAuthnCredentialId,
-          keyVaultKeyId: KEY_VAULT_KEY_ID,
-          keyVaultKeyName: KEY_VAULT_KEY_NAME,
+          keyVaultKeyId: keyVaultKeyIdGenerator.getCurrent().keyVaultKeyId,
+          keyVaultKeyName: keyVaultKeyIdGenerator.getCurrent().keyVaultKeyName,
           hsm: false,
         });
       });
@@ -202,11 +215,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
         await expect(async () =>
           createCredentialAndVerifyRegistrationResponse({
             authenticator,
-            publicKeyCredentialCreationOptions: setDeep(
-              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-              'attestation',
-              () => attestation,
-            ),
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              attestation,
+            },
           }),
         ).rejects.toThrowError(
           new AttestationNotSupported({ data: { attestation } }),
@@ -231,6 +243,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
   });
 
   describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
     test('Should throw type mismatch when pubKeyCredParams is empty', async () => {
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -289,6 +305,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
   });
 
   describe('meta.userId', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
     test('Should throw type mismatch when userId is invalid', async () => {
       await expect(async () =>
         authenticator.createCredential({
@@ -307,6 +327,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
   });
 
   describe('PublicKeyCredentialCreationOptions.user.id byte length', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
     test('Should throw TypeError when user.id is empty (0 bytes)', async () => {
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -342,12 +366,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
 
     test('Should work with valid user.id (16 bytes for UUID)', async () => {
-      // Note: The spec allows user.id to be 1-64 bytes.
-      // In this implementation, user.id must be a valid UUID (16 bytes)
-      // which is within the spec's requirements.
-      await cleanup();
-      await upsertTestingUser({ prisma });
-
       const { registrationVerification } =
         await createCredentialAndVerifyRegistrationResponse({
           authenticator,
@@ -358,8 +376,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
       expect(registrationVerification.verified).toBe(true);
-
-      await cleanup();
     });
   });
 
@@ -391,9 +407,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
 
         beforeAll(async () => {
-          await cleanup();
-          await upsertTestingUser({ prisma });
-
           ({ registrationVerification, webAuthnCredentialId } =
             await createCredentialAndVerifyRegistrationResponse({
               authenticator,
@@ -402,7 +415,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         afterAll(async () => {
-          await cleanup();
+          await cleanupWebAuthnCredentials();
         });
 
         test('Should return a verified registration', () => {
@@ -440,6 +453,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
         ).rejects.toThrowError();
+
+        await cleanupWebAuthnCredentials();
       });
     });
 
@@ -469,9 +484,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           } satisfies PublicKeyCredentialCreationOptions;
 
           beforeAll(async () => {
-            await cleanup();
-            await upsertTestingUser({ prisma });
-
             ({ registrationVerification, webAuthnCredentialId } =
               await createCredentialAndVerifyRegistrationResponse({
                 authenticator,
@@ -480,7 +492,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           });
 
           afterAll(async () => {
-            await cleanup();
+            await cleanupWebAuthnCredentials();
           });
 
           test('Should return a verified registration', () => {
@@ -518,6 +530,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
         ).rejects.toThrowError();
+
+        await cleanupWebAuthnCredentials();
       });
     });
 
@@ -548,9 +562,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
 
         beforeAll(async () => {
-          await cleanup();
-          await upsertTestingUser({ prisma });
-
           ({ registrationVerification, webAuthnCredentialId } =
             await createCredentialAndVerifyRegistrationResponse({
               authenticator,
@@ -559,7 +570,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         afterAll(async () => {
-          await cleanup();
+          await cleanupWebAuthnCredentials();
         });
 
         test('Should return a verified registration', () => {
@@ -597,6 +608,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
         ).rejects.toThrowError();
+
+        await cleanupWebAuthnCredentials();
       });
     });
 
@@ -626,9 +639,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           } satisfies PublicKeyCredentialCreationOptions;
 
           beforeAll(async () => {
-            await cleanup();
-            await upsertTestingUser({ prisma });
-
             ({ registrationVerification, webAuthnCredentialId } =
               await createCredentialAndVerifyRegistrationResponse({
                 authenticator,
@@ -637,7 +647,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           });
 
           afterAll(async () => {
-            await cleanup();
+            await cleanupWebAuthnCredentials();
           });
 
           test('Should return a verified registration', () => {
@@ -675,14 +685,17 @@ describe('VirtualAuthenticator.createCredential()', () => {
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
         ).rejects.toThrowError();
+
+        await cleanupWebAuthnCredentials();
       });
     });
 
     describe('Combined authenticatorSelection options', () => {
-      test('Should work with all authenticatorSelection options combined', async () => {
-        await cleanup();
-        await upsertTestingUser({ prisma });
+      afterEach(async () => {
+        await cleanupWebAuthnCredentials();
+      });
 
+      test('Should work with all authenticatorSelection options combined', async () => {
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
           attestation: Attestation.NONE,
@@ -711,14 +724,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
           id: webAuthnCredentialId,
           userId: USER_ID,
         });
-
-        await cleanup();
       });
 
       test('Should work with empty authenticatorSelection (all defaults)', async () => {
-        await cleanup();
-        await upsertTestingUser({ prisma });
-
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
           attestation: Attestation.NONE,
@@ -743,8 +751,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
           id: webAuthnCredentialId,
           userId: USER_ID,
         });
-
-        await cleanup();
       });
     });
   });
@@ -844,9 +850,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
 
       beforeAll(async () => {
-        await cleanup();
-        await upsertTestingUser({ prisma });
-
         ({ registrationVerification, webAuthnCredentialId } =
           await createCredentialAndVerifyRegistrationResponse({
             authenticator,
@@ -855,7 +858,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       afterAll(async () => {
-        await cleanup();
+        await cleanupWebAuthnCredentials();
       });
 
       test('Should return a verified registration', () => {
@@ -892,6 +895,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
   });
 
   describe('PublicKeyCredentialCreationOptions.timeout', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
     test.each([
       { timeout: undefined },
       { timeout: 30000 },
@@ -899,9 +906,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
       { timeout: 120000 },
       { timeout: 300000 },
     ])('Should work with timeout $timeout', async ({ timeout }) => {
-      await cleanup();
-      await upsertTestingUser({ prisma });
-
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
         attestation: Attestation.NONE,
@@ -915,8 +919,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
       expect(registrationVerification.verified).toBe(true);
-
-      await cleanup();
     });
 
     test('Should throw type mismatch when timeout is not a number', async () => {
@@ -935,36 +937,117 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
   });
 
+  /**
+   * Tests for excludeCredentials (credential exclusion list)
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-excludecredentials
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialdescriptor
+   *
+   * Per spec: An OPTIONAL member containing a list of PublicKeyCredentialDescriptor objects
+   * representing public key credentials the Relying Party is aware of. The authenticator
+   * should avoid creating duplicate credentials on the same authenticator.
+   */
   describe('PublicKeyCredentialCreationOptions.excludeCredentials', () => {
-    test('Should work with empty excludeCredentials array', async () => {
-      await cleanup();
-      await upsertTestingUser({ prisma });
-
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        excludeCredentials: [],
-      } satisfies PublicKeyCredentialCreationOptions;
-
-      const { registrationVerification } =
-        await createCredentialAndVerifyRegistrationResponse({
-          authenticator,
-          publicKeyCredentialCreationOptions,
-        });
-
-      expect(registrationVerification.verified).toBe(true);
-
-      await cleanup();
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
     });
 
-    test('Should work with undefined excludeCredentials', async () => {
-      await cleanup();
-      await upsertTestingUser({ prisma });
+    test.each([
+      {
+        excludeCredentials: undefined,
+      },
+      {
+        excludeCredentials: [],
+      },
+    ])(
+      'Should work with empty or undefined excludeCredentials array',
+      async ({ excludeCredentials }) => {
+        // First, create a credential
+        const firstCredential =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(firstCredential.registrationVerification.verified).toBe(true);
+
+        // Now try to create another credential, excluding no credential using empty array
+        // Per spec, the authenticator should still allow this (different credential)
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          excludeCredentials,
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const secondCredential =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(secondCredential.registrationVerification.verified).toBe(true);
+      },
+    );
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-excludecredentials
+     * Per spec: If the authenticator has a credential matching a descriptor in excludeCredentials,
+     * it should not create a new credential (to prevent duplicate credentials)
+     */
+    test('Should work with excludeCredentials containing existing credential', async () => {
+      // First, create a credential
+      const firstCredential =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        });
+
+      expect(firstCredential.registrationVerification.verified).toBe(true);
+
+      // Now try to create another credential, excluding the first one
+      // Per spec, the authenticator should still allow this (different credential)
+      // but may reject if it interprets this as preventing duplicate registration
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        excludeCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: firstCredential.publicKeyCredential.rawId,
+            transports: undefined,
+          },
+        ],
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      expect(
+        async () =>
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          }),
+      ).rejects.toThrowError(new CredentialExcluded());
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialdescriptor-transports
+     * @see https://www.w3.org/TR/webauthn-3/#enum-transport
+     * Per spec: transports is an OPTIONAL hint about how to communicate with the authenticator
+     */
+    test('Should work with excludeCredentials containing transports', async () => {
+      const someCredentialId = new Uint8Array(randomBytes(16));
 
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
         attestation: Attestation.NONE,
-        excludeCredentials: undefined,
+        excludeCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: someCredentialId,
+            transports: [
+              AuthenticatorTransport.USB,
+              AuthenticatorTransport.BLE,
+            ],
+          },
+        ],
       } satisfies PublicKeyCredentialCreationOptions;
 
       const { registrationVerification } =
@@ -974,8 +1057,855 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
       expect(registrationVerification.verified).toBe(true);
+    });
 
-      await cleanup();
+    test('Should work with multiple excluded credentials', async () => {
+      const credId1 = new Uint8Array(randomBytes(16));
+      const credId2 = new Uint8Array(randomBytes(16));
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        excludeCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: credId1,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: credId2,
+            transports: ['internal' as const],
+          },
+        ],
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialdescriptor-type
+     * Per spec: type must be a valid PublicKeyCredentialType (currently only "public-key")
+     */
+    test('Should fail with invalid credential descriptor type', async () => {
+      const someCredentialId = new Uint8Array(randomBytes(16));
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        excludeCredentials: [
+          {
+            type: 'INVALID_TYPE',
+            id: someCredentialId,
+          },
+        ],
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should fail with invalid credential id (not Uint8Array)', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        excludeCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: 'not-a-uint8array',
+          },
+        ],
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+  });
+
+  /**
+   * Tests for challenge validation
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-cryptographic-challenges
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-challenge
+   *
+   * Per spec: "Challenges SHOULD contain enough entropy to make guessing them infeasible.
+   * Challenges SHOULD therefore be at least 16 bytes long."
+   */
+  describe('PublicKeyCredentialCreationOptions.challenge', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
+    test('Should work with challenge exactly 16 bytes (minimum recommended)', async () => {
+      const challenge = new Uint8Array(randomBytes(16)); // Exactly 16 bytes
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        challenge,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-cryptographic-challenges
+     * Spec states: "Challenges SHOULD therefore be at least 16 bytes long."
+     */
+    test('Should fail with challenge less than 16 bytes (spec recommends at least 16)', async () => {
+      const challenge = new Uint8Array(randomBytes(15)); // Less than 16 bytes
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge,
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should fail with empty challenge (0 bytes)', async () => {
+      const challenge = new Uint8Array(0);
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge,
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should work with very large challenge (1024 bytes)', async () => {
+      const challenge = new Uint8Array(randomBytes(1024));
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        challenge,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should fail when challenge is not Uint8Array', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge: 'not-a-uint8array',
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+  });
+
+  /**
+   * Tests for user entity validation
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialuserentity
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialentity-name
+   *
+   * Per spec: PublicKeyCredentialUserEntity extends PublicKeyCredentialEntity
+   * Required fields: id (user handle), name, displayName
+   * - id: BufferSource (1-64 bytes)
+   * - name: DOMString (human-palatable identifier, e.g., email)
+   * - displayName: DOMString (human-palatable name for display)
+   */
+  describe('PublicKeyCredentialCreationOptions.user', () => {
+    describe('user.name and user.displayName', () => {
+      afterEach(async () => {
+        await cleanupWebAuthnCredentials();
+      });
+
+      test('Should work with valid name and displayName', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          user: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+            name: 'user@example.com',
+            displayName: 'Test User',
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+        const { registrationVerification } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      /**
+       * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialentity-name
+       * Per spec: name is a required DOMString member
+       */
+      test('Should fail with missing name', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          user: {
+            id: USER_ID_BYTSES,
+            displayName: 'Test User',
+            // name is missing
+          },
+        };
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+
+      /**
+       * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialuserentity-displayname
+       * Per spec: displayName is a required DOMString member
+       */
+      test('Should fail with missing displayName', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          user: {
+            id: USER_ID_BYTSES,
+            name: 'user@example.com',
+            // displayName is missing
+          },
+        };
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+
+      test('Should work with special characters in name', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          user: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+            name: 'user+tag@example.com',
+            displayName: 'Test User 🚀',
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+        const { registrationVerification } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      test('Should work with very long name (64 characters)', async () => {
+        const longName = 'a'.repeat(64) + '@example.com';
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          user: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+            name: longName,
+            displayName: 'Test User',
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+        const { registrationVerification } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      test('Should work with very long displayName (64 characters)', async () => {
+        const longDisplayName = 'Test User '.repeat(6) + 'End'; // > 64 chars
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          user: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+            name: 'user@example.com',
+            displayName: longDisplayName,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+        const { registrationVerification } =
+          await createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions,
+          });
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      test('Should fail with non-string name', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          user: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+            name: 123,
+          },
+        };
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+
+      test('Should fail with non-string displayName', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          user: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+            displayName: 123,
+          },
+        };
+        await expect(async () =>
+          createCredentialAndVerifyRegistrationResponse({
+            authenticator,
+            publicKeyCredentialCreationOptions:
+              publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+          }),
+        ).rejects.toThrowError();
+      });
+    });
+  });
+
+  /**
+   * Tests for Relying Party entity validation
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrpentity
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrpentity-id
+   * @see https://www.w3.org/TR/webauthn-3/#relying-party-identifier
+   *
+   * Per spec: PublicKeyCredentialRpEntity extends PublicKeyCredentialEntity
+   * Required fields: name (DOMString), id (DOMString - valid domain)
+   * The RP ID must be a valid domain string and an effective domain
+   */
+  describe('PublicKeyCredentialCreationOptions.rp', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
+    test('Should work with valid RP name and id', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        rp: {
+          name: 'Example Corp',
+          id: 'example.com',
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialentity-name
+     * Per spec: name is a required DOMString member
+     */
+    test('Should fail with missing RP name', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        rp: {
+          id: 'example.com',
+          // name is missing
+        },
+      };
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrpentity-id
+     * Per spec: id is a required DOMString member that must be a valid domain
+     */
+    test('Should fail with missing RP id', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        rp: {
+          name: 'Example Corp',
+          // id is missing
+        },
+      };
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#relying-party-identifier
+     * Per spec: The RP ID must be a valid domain string
+     */
+    test('Should fail with invalid RP id format (not a valid domain)', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        rp: {
+          name: 'Example Corp',
+          id: 'not-a-valid-domain!@#',
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+      // The registration may succeed locally, but verification should fail
+      // because the RP ID won't match the expected origin
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should work with subdomain as RP id', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        rp: {
+          name: 'Example Corp',
+          id: 'example.com', // Must be valid effective domain
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should work with very long RP name', async () => {
+      const longRpName = 'Example Corporation '.repeat(10); // Very long name
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        rp: {
+          name: longRpName,
+          id: 'example.com',
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+      expect(registrationVerification.verified).toBe(true);
+    });
+  });
+
+  /**
+   * Tests for WebAuthn extensions
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-extensions
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-authenticationextensionsclientinputs
+   *
+   * Per spec: Extensions are optional and provide additional functionality.
+   * Unknown extensions should be ignored by the authenticator.
+   *
+   * Common extensions:
+   * - credProps: @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-credential-properties-extension
+   * - hmac-secret: @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-hmac-secret-extension
+   * - credProtect: @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-credProtect-extension
+   * - minPinLength: @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-minpinlength-extension
+   * - largeBlob: @see https://www.w3.org/TR/webauthn-3/#sctn-large-blob-extension
+   */
+  describe('PublicKeyCredentialCreationOptions.extensions', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
+    test('Should work with undefined extensions', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: undefined,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should work with empty extensions object', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {},
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-credential-properties-extension
+     * Per spec: credProps extension returns whether the credential is client-side discoverable (rk)
+     */
+    test('Should work with credProps extension', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          credProps: true,
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification, publicKeyCredential } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+      // Per spec, credProps extension should return rk (resident key) property
+      // The authenticator should include this in the response
+      // Note: Implementation may vary - this tests that it doesn't break registration
+      expect(publicKeyCredential).toBeDefined();
+    });
+
+    /**
+     * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-hmac-secret-extension
+     * Per CTAP2: Enables symmetric secret generation for HMAC operations
+     */
+    test('Should work with hmac-secret extension', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          'hmac-secret': true,
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-credProtect-extension
+     * Per CTAP2: Allows RPs to specify credential protection policy
+     * Values: userVerificationOptional, userVerificationOptionalWithCredentialIDList, userVerificationRequired
+     */
+    test('Should work with credProtect extension', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          credProtect: 'userVerificationOptional', // or 'userVerificationOptionalWithCredentialIDList', 'userVerificationRequired'
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-minpinlength-extension
+     * Per CTAP2: Returns the minimum PIN length required by the authenticator
+     */
+    test('Should work with minPinLength extension', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          minPinLength: true,
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-large-blob-extension
+     * Per spec: Allows storage and retrieval of large blob data associated with credential
+     * support values: 'required' or 'preferred'
+     */
+    test('Should work with largeBlob extension', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          largeBlob: {
+            support: 'required', // or 'preferred'
+          },
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-extensions
+     * Per spec: "Authenticators MUST ignore any extensions that they do not recognize."
+     */
+    test('Should ignore unknown/unsupported extensions', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          unknownExtension: 'some-value',
+          anotherUnknown: { complex: 'object' },
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      // Per spec, unknown extensions should be ignored, not cause errors
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should work with multiple extensions combined', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        extensions: {
+          credProps: true,
+          'hmac-secret': true,
+          minPinLength: true,
+          credProtect: 'userVerificationOptional',
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+  });
+
+  /**
+   * Tests for edge cases and overall spec compliance
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialcreationoptions
+   *
+   * These tests verify boundary conditions and ensure the implementation
+   * handles both minimal valid inputs and maximum complexity scenarios
+   */
+  describe('Edge Cases and Spec Compliance', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialcreationoptions
+     * Required fields: rp, user, challenge, pubKeyCredParams
+     */
+    test('Should work with minimal valid options (only required fields)', async () => {
+      // Only required fields per spec
+      const publicKeyCredentialCreationOptions = {
+        rp: {
+          name: RP_NAME,
+          id: RP_ID,
+        },
+        user: {
+          id: USER_ID_BYTSES,
+          name: USER_NAME,
+          displayName: USER_DISPLAY_NAME,
+        },
+        challenge: CHALLENGE_BYTES,
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+        ],
+        // All optional fields omitted: timeout, excludeCredentials, authenticatorSelection, attestation, extensions
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should work with all fields at maximum reasonable lengths', async () => {
+      const longName = 'a'.repeat(100) + '@example.com';
+      const longDisplayName = 'User Name '.repeat(20);
+      const longRpName = 'Corporation '.repeat(20);
+      const largeChallenge = new Uint8Array(randomBytes(1024));
+      const publicKeyCredentialCreationOptions = {
+        rp: {
+          name: longRpName,
+          id: RP_ID,
+        },
+        user: {
+          id: USER_ID_BYTSES,
+          name: longName,
+          displayName: longDisplayName,
+        },
+        challenge: largeChallenge,
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.ES512,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.RS512,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS256,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS384,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: COSEKeyAlgorithm.PS512,
+          },
+        ],
+        timeout: 300000,
+        excludeCredentials: [],
+        authenticatorSelection: {
+          authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
+          residentKey: ResidentKeyRequirement.PREFERRED,
+          userVerification: UserVerificationRequirement.REQUIRED,
+        },
+        attestation: Attestation.NONE,
+        extensions: {
+          credProps: true,
+          'hmac-secret': true,
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should fail with completely malformed options', async () => {
+      const malformedOptions = {
+        notValid: 'options',
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            malformedOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
+    });
+
+    test('Should fail with null in required field', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge: null,
+      };
+
+      await expect(async () =>
+        createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions:
+            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError();
     });
   });
 });

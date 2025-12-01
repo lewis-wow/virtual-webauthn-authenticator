@@ -17,6 +17,7 @@ import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { IKeyProvider } from '../../../src/types/IKeyProvider';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/zod-validation/PublicKeyCredentialRequestOptionsSchema';
+import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
   CHALLENGE_BASE64URL,
@@ -110,7 +111,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
 
-    keyProvider = new MockKeyProvider();
+    const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+    keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
 
     // Initialize the VirtualAuthenticator instance, passing in the Prisma client
     // for database interactions.

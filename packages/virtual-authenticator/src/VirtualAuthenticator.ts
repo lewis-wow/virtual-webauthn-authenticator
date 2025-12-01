@@ -10,6 +10,7 @@ import {
   assert,
   hasMinLength,
   isArray,
+  isBoolean,
   isEnum,
   isInstanceOf,
   isLiteral,
@@ -20,12 +21,15 @@ import {
 } from 'typanion';
 
 import { Attestation } from './enums/Attestation';
+import { AuthenticatorAttachment } from './enums/AuthenticatorAttachment';
 import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
 import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import { ResidentKeyRequirement } from './enums/ResidentKeyRequirement';
 import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
 import { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
+import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
 import { SignatureFailed } from './exceptions/SignatureFailed';
@@ -288,6 +292,7 @@ export class VirtualAuthenticator {
     const { publicKeyCredentialCreationOptions, meta, context } = opts;
 
     assert(publicKeyCredentialCreationOptions.rp.id, isString());
+    assert(publicKeyCredentialCreationOptions.rp.name, isString());
     assert(
       publicKeyCredentialCreationOptions.attestation,
       isOptional(isEnum(Attestation)),
@@ -308,6 +313,8 @@ export class VirtualAuthenticator {
       UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
       isLiteral(meta.userId),
     );
+    assert(publicKeyCredentialCreationOptions.user.name, isString());
+    assert(publicKeyCredentialCreationOptions.user.displayName, isString());
     assert(
       publicKeyCredentialCreationOptions.pubKeyCredParams,
       applyCascade(
@@ -320,8 +327,75 @@ export class VirtualAuthenticator {
         hasMinLength(1),
       ),
     );
+    assert(
+      publicKeyCredentialCreationOptions.excludeCredentials,
+      isOptional(
+        isArray(
+          isObject({
+            type: isEnum(PublicKeyCredentialType),
+            id: isInstanceOf(Uint8Array),
+            transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
+          }),
+        ),
+      ),
+    );
+    assert(publicKeyCredentialCreationOptions.timeout, isOptional(isNumber()));
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.authenticatorAttachment,
+      isOptional(isEnum(AuthenticatorAttachment)),
+    );
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.userVerification,
+      isOptional(isEnum(UserVerificationRequirement)),
+    );
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.requireResidentKey,
+      isOptional(isBoolean()),
+    );
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection?.residentKey,
+      isOptional(isEnum(ResidentKeyRequirement)),
+    );
     assert(meta.userId, isString());
     assert(meta.origin, isString());
+
+    if (
+      publicKeyCredentialCreationOptions.excludeCredentials &&
+      publicKeyCredentialCreationOptions.excludeCredentials.length > 0
+    ) {
+      const credentialIdsToCheck: string[] = [];
+
+      for (const descriptor of publicKeyCredentialCreationOptions.excludeCredentials) {
+        try {
+          // We must convert the raw byte ID to the UUID string format used in the DB.
+          // If the ID is not a valid UUID (e.g., created by a different authenticator),
+          // it cannot exist in our database, so we safely ignore it.
+          const uuid = UUIDMapper.bytesToUUID(descriptor.id);
+          credentialIdsToCheck.push(uuid);
+        } catch {
+          // ID format mismatch (not a UUID) -> ignore.
+        }
+      }
+
+      // Only proceed if we found valid UUIDs to check
+      if (credentialIdsToCheck.length > 0) {
+        // Check against the repository
+        const exists =
+          await this.webAuthnRepository.existsByRpIdAndCredentialIds({
+            rpId: publicKeyCredentialCreationOptions.rp.id,
+            credentialIds: credentialIdsToCheck,
+          });
+
+        if (exists) {
+          // Per WebAuthn spec, if a credential in the exclude list exists,
+          // the authenticator should fail or silently refuse to create a new one.
+          throw new CredentialExcluded();
+        }
+      }
+    }
 
     switch (publicKeyCredentialCreationOptions.attestation) {
       case Attestation.ENTERPRISE:

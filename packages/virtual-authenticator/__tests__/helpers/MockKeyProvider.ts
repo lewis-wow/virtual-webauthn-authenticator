@@ -1,8 +1,3 @@
-import {
-  KEY_VAULT_KEY_ID,
-  KEY_VAULT_KEY_NAME,
-} from '../../../key-vault/__tests__/helpers/consts';
-
 import { JsonWebKey } from '@repo/keys';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { COSEKeyMapper } from '@repo/keys/mappers';
@@ -15,9 +10,20 @@ import {
 import { WebAuthnCredentialKeyMetaType } from '../../src/enums/WebAuthnCredentialKeyMetaType';
 import { IKeyProvider } from '../../src/types/IKeyProvider';
 import { WebAuthnCredentialWithMeta } from '../../src/types/WebAuthnCredentialWithMeta';
+import { KeyVaultKeyIdGenerator } from './KeyVaultKeyIdGenerator';
+
+export type MockKeyProviderOptions = {
+  keyVaultKeyIdGenerator: KeyVaultKeyIdGenerator;
+};
 
 export class MockKeyProvider implements IKeyProvider {
+  private readonly keyVaultKeyIdGenerator: KeyVaultKeyIdGenerator;
+
   private keyPairStore: Record<string, KeyPairKeyObjectResult> = {};
+
+  constructor(opts: MockKeyProviderOptions) {
+    this.keyVaultKeyIdGenerator = opts.keyVaultKeyIdGenerator;
+  }
 
   async generateKeyPair(opts: { webAuthnCredentialId: string }) {
     const { webAuthnCredentialId } = opts;
@@ -36,12 +42,15 @@ export class MockKeyProvider implements IKeyProvider {
       COSEKeyMapper.jwkToCOSEKey(credentialPublicKey),
     );
 
+    const { keyVaultKeyId, keyVaultKeyName } =
+      this.keyVaultKeyIdGenerator.next();
+
     return {
       COSEPublicKey,
       webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
       webAuthnCredentialKeyVaultKeyMeta: {
-        keyVaultKeyId: KEY_VAULT_KEY_ID,
-        keyVaultKeyName: KEY_VAULT_KEY_NAME,
+        keyVaultKeyId,
+        keyVaultKeyName,
         hsm: false,
       },
     };
