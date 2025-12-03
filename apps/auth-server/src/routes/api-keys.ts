@@ -1,25 +1,24 @@
 import { factory } from '@/factory';
+import { activityLog } from '@/lib/activityLog';
 import { apiKeyManager } from '@/lib/apiKeyManager';
-import { auditLog } from '@/lib/auditLog';
 import { auth } from '@/lib/auth';
 import { jwtIssuer } from '@/lib/jwtIssuer';
 import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
-import { AuditLogAction, AuditLogEntity } from '@repo/audit-log/enums';
+import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { TokenType } from '@repo/auth/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import {
   CreateApiKeyResponseSchema,
   DeleteApiKeyResponseSchema,
   GetApiKeyResponseSchema,
-  GetTokenApiKeysResponseSchema,
+  GetTokenApiKeyResponseSchema,
   ListApiKeysResponseSchema,
   UpdateApiKeyResponseSchema,
-} from '@repo/contract/validation';
+} from '@repo/contract/dto';
 import { Unauthorized } from '@repo/exception/http';
 import { add } from 'date-fns';
-import { Schema } from 'effect';
 
 export const apiKey = factory.createApp();
 
@@ -57,9 +56,7 @@ apiKey.on(
       metadata: apiKey.metadata,
     });
 
-    return ctx.json(
-      Schema.encodeSync(GetTokenApiKeysResponseSchema)({ token }),
-    );
+    return ctx.json(GetTokenApiKeyResponseSchema.encode({ token }));
   },
 );
 
@@ -79,9 +76,9 @@ apiKey.post(
       expiresAt,
     });
 
-    await auditLog.audit({
-      entity: AuditLogEntity.API_KEY,
-      action: AuditLogAction.CREATE,
+    await activityLog.audit({
+      entity: LogEntity.API_KEY,
+      action: LogAction.CREATE,
       entityId: apiKey.apiKey.id,
 
       userId: ctx.var.user!.id,
@@ -94,7 +91,7 @@ apiKey.post(
       },
     });
 
-    return ctx.json(Schema.encodeSync(CreateApiKeyResponseSchema)(apiKey));
+    return ctx.json(CreateApiKeyResponseSchema.encode(apiKey));
   },
 );
 
@@ -106,9 +103,7 @@ apiKey.get(
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(
-      Schema.encodeUnknownSync(ListApiKeysResponseSchema)(apiKeys),
-    );
+    return ctx.json(ListApiKeysResponseSchema.encode(apiKeys));
   },
 );
 
@@ -124,7 +119,7 @@ apiKey.get(
       id: param.id,
     });
 
-    return ctx.json(Schema.encodeSync(GetApiKeyResponseSchema)(apiKey));
+    return ctx.json(GetApiKeyResponseSchema.encode(apiKey));
   },
 );
 
@@ -148,9 +143,9 @@ apiKey.put(
       },
     });
 
-    await auditLog.audit({
-      entity: AuditLogEntity.API_KEY,
-      action: AuditLogAction.UPDATE,
+    await activityLog.audit({
+      entity: LogEntity.API_KEY,
+      action: LogAction.UPDATE,
       entityId: apiKey.id,
 
       userId: ctx.var.user!.id,
@@ -163,7 +158,7 @@ apiKey.put(
       },
     });
 
-    return ctx.json(Schema.encodeSync(UpdateApiKeyResponseSchema)(apiKey));
+    return ctx.json(UpdateApiKeyResponseSchema.encode(apiKey));
   },
 );
 
@@ -179,14 +174,14 @@ apiKey.delete(
       id: param.id,
     });
 
-    await auditLog.audit({
-      entity: AuditLogEntity.API_KEY,
-      action: AuditLogAction.DELETE,
+    await activityLog.audit({
+      entity: LogEntity.API_KEY,
+      action: LogAction.DELETE,
       entityId: apiKey.id,
 
       userId: ctx.var.user!.id,
     });
 
-    return ctx.json(Schema.encodeSync(DeleteApiKeyResponseSchema)(apiKey));
+    return ctx.json(DeleteApiKeyResponseSchema.encode(apiKey));
   },
 );

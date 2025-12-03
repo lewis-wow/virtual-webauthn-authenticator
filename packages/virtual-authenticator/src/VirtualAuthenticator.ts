@@ -10,6 +10,7 @@ import {
   assert,
   hasMinLength,
   isArray,
+  isBoolean,
   isEnum,
   isInstanceOf,
   isLiteral,
@@ -20,26 +21,29 @@ import {
 } from 'typanion';
 
 import { Attestation } from './enums/Attestation';
+import { AuthenticatorAttachment } from './enums/AuthenticatorAttachment';
 import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
 import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import { ResidentKeyRequirement } from './enums/ResidentKeyRequirement';
 import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
 import { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
+import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnCredentialWithMeta } from './types/WebAuthnCredentialWithMeta';
-import type { CollectedClientData } from './validation/CollectedClientDataSchema';
+import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
 import type {
   PubKeyCredParamLoose,
   PubKeyCredParamStrict,
-} from './validation/PubKeyCredParamSchema';
-import type { PublicKeyCredentialCreationOptions } from './validation/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialRequestOptions } from './validation/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
+} from './zod-validation/PubKeyCredParamSchema';
+import type { PublicKeyCredentialCreationOptions } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorCredentialMetaArgs = {
   origin: string;
@@ -166,10 +170,15 @@ export class VirtualAuthenticator {
   private async _createAuthenticatorData(opts: {
     rpId: string;
     counter: number;
-    credentialID?: Uint8Array;
+    /**
+     * Should be only set if we are creating a new credential (registration).
+     */
+    credentialID: Uint8Array | undefined;
     COSEPublicKey: Uint8Array;
+    userVerification: UserVerificationRequirement | undefined;
   }): Promise<Uint8Array> {
-    const { rpId, counter, credentialID, COSEPublicKey } = opts;
+    const { rpId, counter, credentialID, COSEPublicKey, userVerification } =
+      opts;
 
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
@@ -182,7 +191,29 @@ export class VirtualAuthenticator {
     // Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
     // Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
     // Length (in bytes): 1
-    const flags = Buffer.from([(credentialID ? 0b01000000 : 0) | 0b00000101]);
+
+    // Bit 0: User Present (UP)
+    // Always 1 for standard WebAuthn flows
+    let flagsInt = 0b00000001;
+
+    // Bit 2: User Verified (UV)
+    // If 'required' or 'preferred' (and not explicitly 'discouraged')
+    if (
+      userVerification === UserVerificationRequirement.PREFERRED ||
+      userVerification === UserVerificationRequirement.REQUIRED ||
+      userVerification === undefined
+    ) {
+      flagsInt |= 0b00000100;
+    }
+
+    // Bit 6: Attested Credential Data (AT)
+    // Only set if we are creating a new credential (registration),
+    // indicated by the presence of credentialID
+    if (credentialID) {
+      flagsInt |= 0b01000000;
+    }
+
+    const flags = Buffer.from([flagsInt]);
 
     // Signature counter, 32-bit unsigned big-endian integer.
     // Length (in bytes): 4
@@ -288,6 +319,7 @@ export class VirtualAuthenticator {
     const { publicKeyCredentialCreationOptions, meta, context } = opts;
 
     assert(publicKeyCredentialCreationOptions.rp.id, isString());
+    assert(publicKeyCredentialCreationOptions.rp.name, isString());
     assert(
       publicKeyCredentialCreationOptions.attestation,
       isOptional(isEnum(Attestation)),
@@ -308,6 +340,8 @@ export class VirtualAuthenticator {
       UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
       isLiteral(meta.userId),
     );
+    assert(publicKeyCredentialCreationOptions.user.name, isString());
+    assert(publicKeyCredentialCreationOptions.user.displayName, isString());
     assert(
       publicKeyCredentialCreationOptions.pubKeyCredParams,
       applyCascade(
@@ -320,8 +354,75 @@ export class VirtualAuthenticator {
         hasMinLength(1),
       ),
     );
+    assert(
+      publicKeyCredentialCreationOptions.excludeCredentials,
+      isOptional(
+        isArray(
+          isObject({
+            type: isEnum(PublicKeyCredentialType),
+            id: isInstanceOf(Uint8Array),
+            transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
+          }),
+        ),
+      ),
+    );
+    assert(publicKeyCredentialCreationOptions.timeout, isOptional(isNumber()));
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.authenticatorAttachment,
+      isOptional(isEnum(AuthenticatorAttachment)),
+    );
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.userVerification,
+      isOptional(isEnum(UserVerificationRequirement)),
+    );
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.requireResidentKey,
+      isOptional(isBoolean()),
+    );
+    assert(
+      publicKeyCredentialCreationOptions.authenticatorSelection?.residentKey,
+      isOptional(isEnum(ResidentKeyRequirement)),
+    );
     assert(meta.userId, isString());
     assert(meta.origin, isString());
+
+    if (
+      publicKeyCredentialCreationOptions.excludeCredentials &&
+      publicKeyCredentialCreationOptions.excludeCredentials.length > 0
+    ) {
+      const credentialIdsToCheck: string[] = [];
+
+      for (const descriptor of publicKeyCredentialCreationOptions.excludeCredentials) {
+        try {
+          // We must convert the raw byte ID to the UUID string format used in the DB.
+          // If the ID is not a valid UUID (e.g., created by a different authenticator),
+          // it cannot exist in our database, so we safely ignore it.
+          const uuid = UUIDMapper.bytesToUUID(descriptor.id);
+          credentialIdsToCheck.push(uuid);
+        } catch {
+          // ID format mismatch (not a UUID) -> ignore.
+        }
+      }
+
+      // Only proceed if we found valid UUIDs to check
+      if (credentialIdsToCheck.length > 0) {
+        // Check against the repository
+        const exists =
+          await this.webAuthnRepository.existsByRpIdAndCredentialIds({
+            rpId: publicKeyCredentialCreationOptions.rp.id,
+            credentialIds: credentialIdsToCheck,
+          });
+
+        if (exists) {
+          // Per WebAuthn spec, if a credential in the exclude list exists,
+          // the authenticator should fail or silently refuse to create a new one.
+          throw new CredentialExcluded();
+        }
+      }
+    }
 
     switch (publicKeyCredentialCreationOptions.attestation) {
       case Attestation.ENTERPRISE:
@@ -385,10 +486,16 @@ export class VirtualAuthenticator {
 
     // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
-      rpId: publicKeyCredentialCreationOptions.rp.id,
+      /**
+       * Should be only set if we are creating a new credential (registration).
+       */
       credentialID: rawCredentialID,
+      rpId: publicKeyCredentialCreationOptions.rp.id,
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
+      userVerification:
+        publicKeyCredentialCreationOptions.authenticatorSelection
+          ?.userVerification,
     });
 
     const clientData: CollectedClientData = {
@@ -454,6 +561,7 @@ export class VirtualAuthenticator {
     const { publicKeyCredentialRequestOptions, meta, context } = opts;
 
     assert(publicKeyCredentialRequestOptions.rpId, isString());
+    assert(publicKeyCredentialRequestOptions.timeout, isOptional(isNumber()));
     assert(
       publicKeyCredentialRequestOptions.allowCredentials,
       isOptional(
@@ -488,8 +596,6 @@ export class VirtualAuthenticator {
         },
       );
 
-    console.log({ webAuthnCredential });
-
     const credentialID = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
 
     const clientData: CollectedClientData = {
@@ -506,9 +612,14 @@ export class VirtualAuthenticator {
     );
 
     const authData = await this._createAuthenticatorData({
+      /**
+       * Should be only set if we are creating a new credential (registration).
+       */
+      credentialID: undefined,
       rpId: publicKeyCredentialRequestOptions.rpId,
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
+      userVerification: publicKeyCredentialRequestOptions.userVerification,
     });
 
     const dataToSign = this._createDataToSign({
@@ -527,6 +638,8 @@ export class VirtualAuthenticator {
         });
       });
 
+    const userHandleBytes = UUIDMapper.UUIDtoBytes(webAuthnCredential.userId);
+
     return {
       id: Buffer.from(credentialID).toString('base64url'),
       rawId: credentialID,
@@ -535,7 +648,7 @@ export class VirtualAuthenticator {
         clientDataJSON: clientDataJSON,
         authenticatorData: authData,
         signature: new Uint8Array(signature),
-        userHandle: null,
+        userHandle: userHandleBytes,
       },
       clientExtensionResults: {},
     };

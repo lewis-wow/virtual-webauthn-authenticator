@@ -1,8 +1,7 @@
 import { Controller } from '@nestjs/common';
+import { GetHealthcheckResponseSchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { GetHealthcheckResponseSchema } from '@repo/contract/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-import { Schema } from 'effect';
 
 @Controller()
 export class HealthcheckController {
@@ -11,7 +10,7 @@ export class HealthcheckController {
     return tsRestHandler(nestjsContract.api.healthcheck.get, async () => {
       return {
         status: 200,
-        body: Schema.encodeSync(GetHealthcheckResponseSchema)({
+        body: GetHealthcheckResponseSchema.encode({
           healthy: true,
         }),
       };

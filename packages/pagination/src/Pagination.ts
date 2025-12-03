@@ -1,4 +1,4 @@
-import type { PaginationResult } from './validation/PaginationResultSchema';
+import type { PaginationResult } from './zod-validation/PaginationResultSchema';
 
 export type QueryFn<T extends { id: string }> = (opts: {
   pagination: {

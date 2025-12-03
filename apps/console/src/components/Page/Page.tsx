@@ -1,5 +1,7 @@
+'use client';
+
 import { SidebarProvider, SidebarInset } from '@repo/ui/components/ui/sidebar';
-import type { CSSProperties, ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 
 import { AppSidebar } from './AppSidebar';
 import { Header } from './Header';

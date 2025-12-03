@@ -12,7 +12,7 @@ const makeQueryClient = () => {
   const mutationCache = new MutationCache({
     onSuccess: () => {
       void client.invalidateQueries({
-        queryKey: ['api', 'auditLogs', 'list'],
+        queryKey: ['api', 'logs', 'list'],
       });
     },
   });

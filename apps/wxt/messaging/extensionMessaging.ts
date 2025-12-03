@@ -1,19 +1,19 @@
 import { MessageResponse } from '@/types';
 import type {
-  CreateCredentialRequestBodySchema,
-  GetCredentialRequestBodySchema,
-} from '@repo/contract/validation';
-import type { PublicKeyCredential } from '@repo/virtual-authenticator/validation';
+  CreateCredentialBodySchema,
+  GetCredentialBodySchema,
+} from '@repo/contract/dto';
+import type { PublicKeyCredential } from '@repo/virtual-authenticator/zod-validation';
 import { defineExtensionMessaging } from '@webext-core/messaging';
-import { Schema } from 'effect';
+import { z } from 'zod';
 
 export type MessagingProtocol = {
   'credentials.create': (
-    req: Schema.Schema.Encoded<typeof CreateCredentialRequestBodySchema>,
+    req: z.input<typeof CreateCredentialBodySchema>,
   ) => MessageResponse<PublicKeyCredential>;
 
   'credentials.get': (
-    req: Schema.Schema.Encoded<typeof GetCredentialRequestBodySchema>,
+    req: z.input<typeof GetCredentialBodySchema>,
   ) => MessageResponse<PublicKeyCredential>;
 };
 

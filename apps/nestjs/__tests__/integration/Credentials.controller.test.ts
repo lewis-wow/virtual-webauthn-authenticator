@@ -2,6 +2,7 @@
 import {
   MockJwtAudience,
   upsertTestingUser,
+  USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
@@ -215,7 +216,9 @@ const performAndVerifyAuthRequest = async (opts: {
       clientDataJSON:
         'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9',
       signature: expect.any(String),
-      userHandle: null,
+      userHandle: Buffer.from(UUIDMapper.UUIDtoBytes(USER_ID)).toString(
+        'base64url',
+      ),
     },
     type: 'public-key',
   });

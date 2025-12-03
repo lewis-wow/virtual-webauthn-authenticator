@@ -19,6 +19,7 @@ export const USER_JWT_PAYLOAD = {
   email: USER_EMAIL,
   image: USER_IMAGE,
   permissions: USER_PERMISSIONS,
+  apiKeyId: null,
 
   tokenType: TokenType.USER,
 } as const satisfies JwtPayload;

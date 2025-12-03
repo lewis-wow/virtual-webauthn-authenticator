@@ -11,14 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@repo/ui/components/ui/sidebar';
-import {
-  LayoutDashboard,
-  Settings2,
-  Key,
-  Fingerprint,
-  Blocks,
-  Logs,
-} from 'lucide-react';
+import { Settings2, Key, Fingerprint, Blocks, Logs } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import * as React from 'react';
@@ -32,28 +25,23 @@ export type SidebarItem = {
 const data = {
   navMain: [
     {
-      title: 'Dashboard',
-      url: '/dashboard',
-      icon: LayoutDashboard,
-    },
-    {
-      title: 'API keys',
-      url: '/dashboard/api-keys',
-      icon: Key,
-    },
-    {
       title: 'Credentials',
-      url: '/dashboard/webauthn-credentials',
+      url: '/',
       icon: Fingerprint,
     },
     {
-      title: 'Audit logs',
-      url: '/dashboard/audit-logs',
+      title: 'API keys',
+      url: '/api-keys',
+      icon: Key,
+    },
+    {
+      title: 'Logs',
+      url: '/logs',
       icon: Logs,
     },
     {
       title: 'Browser extension',
-      url: '/dashboard/browser-extension',
+      url: '/browser-extension',
       icon: Blocks,
     },
   ],

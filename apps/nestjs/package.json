@@ -23,7 +23,7 @@
     "@nestjs/serve-static": "^5.0.4",
     "@repo/auth": "workspace:*",
     "@repo/contract": "workspace:*",
-    "@repo/audit-log": "workspace:*",
+    "@repo/activity-log": "workspace:*",
     "@repo/pagination": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/exception": "workspace:*",
