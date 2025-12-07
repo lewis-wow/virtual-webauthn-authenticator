@@ -42,3 +42,12 @@ src/lib/api/v1.d.ts
 
 # generated public files
 public/generated
+
+# prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations
+
+# environment variables
+.env
+.env.local
