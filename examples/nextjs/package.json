@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm dotenvx next dev --turbopack",
+    "dev": "pnpm dotenvx next dev --port 4000 --turbopack",
     "build": "next build --turbopack",
     "start": "pnpm dotenvx next start",
     "lint": "eslint",
