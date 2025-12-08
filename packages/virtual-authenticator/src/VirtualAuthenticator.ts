@@ -22,7 +22,6 @@ import {
 
 import { Attestation } from './enums/Attestation';
 import { AuthenticatorAttachment } from './enums/AuthenticatorAttachment';
-import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
 import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { ResidentKeyRequirement } from './enums/ResidentKeyRequirement';
@@ -361,7 +360,7 @@ export class VirtualAuthenticator {
           isObject({
             type: isEnum(PublicKeyCredentialType),
             id: isInstanceOf(Uint8Array),
-            transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
+            transports: isOptional(isArray(isString())),
           }),
         ),
       ),
@@ -569,7 +568,7 @@ export class VirtualAuthenticator {
           isObject({
             id: isInstanceOf(Uint8Array),
             type: isEnum(PublicKeyCredentialType),
-            transports: isOptional(isArray(isEnum(AuthenticatorTransport))),
+            transports: isOptional(isArray(isString())),
           }),
         ),
       ),

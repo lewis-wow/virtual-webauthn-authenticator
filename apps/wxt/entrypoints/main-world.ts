@@ -23,16 +23,31 @@ export default defineUnlistedScript(() => {
     );
 
     const publicKeyCredentialCreationOptionsBrowser =
-      PublicKeyCredentialCreationOptionsBrowserSchema.parse(opts?.publicKey);
+      PublicKeyCredentialCreationOptionsBrowserSchema.safeParse(
+        opts?.publicKey,
+      );
+
+    if (!publicKeyCredentialCreationOptionsBrowser.success) {
+      console.error(
+        `[${LOG_PREFIX}] fallback to navigator.credential.create`,
+        publicKeyCredentialCreationOptionsBrowser.error,
+      );
+      return fallbackNavigatorCredentialsCreate(opts);
+    }
 
     const publicKeyCredentialCreationOptions =
       CreateCredentialBodySchema.encode({
         publicKeyCredentialCreationOptions:
-          publicKeyCredentialCreationOptionsBrowser,
+          publicKeyCredentialCreationOptionsBrowser.data,
         meta: {
           origin: window.location.origin,
         },
       });
+
+    console.log(
+      `[${LOG_PREFIX}] payload: `,
+      publicKeyCredentialCreationOptions,
+    );
 
     const response = await mainWorldMessaging.sendMessage(
       'credentials.create',
