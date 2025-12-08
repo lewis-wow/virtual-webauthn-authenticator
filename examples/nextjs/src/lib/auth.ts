@@ -1,5 +1,6 @@
 import { passkey } from '@better-auth/passkey';
 import { PrismaClient } from '@prisma/client';
+import type {} from '@simplewebauthn/server';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 
