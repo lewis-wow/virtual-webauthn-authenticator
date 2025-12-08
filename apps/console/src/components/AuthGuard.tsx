@@ -24,8 +24,6 @@ export const AuthGuard = ({ requireAuthState, children }: AuthGuardProps) => {
 
   const isAuthenticated = !!profileGetQuery.data?.body.jwtPayload;
 
-  console.log('RERENDER!');
-
   useEffect(() => {
     // If the query is loading, we do nothing yet
     if (profileGetQuery.isFetching) {
