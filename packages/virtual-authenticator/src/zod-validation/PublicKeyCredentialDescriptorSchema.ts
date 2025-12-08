@@ -2,7 +2,6 @@ import z from 'zod';
 
 import { see } from '../meta/see';
 import { BytesSchema } from './BytesSchema';
-import { AuthenticatorTransportSchema } from './enums/AuthenticatorTransportSchema';
 import { PublicKeyCredentialTypeSchema } from './enums/PublicKeyCredentialTypeSchema';
 
 // Used to exclude existing credentials for a user
@@ -20,7 +19,9 @@ export const PublicKeyCredentialDescriptorSchema = z
      * This OPTIONAL member contains a hint as to how the client might communicate
      * with the managing authenticator of the public key credential the caller is referring to.
      */
-    transports: z.array(AuthenticatorTransportSchema).optional(),
+    transports: z
+      .array(z.string().meta({ description: 'AuthenticatorTransport' }))
+      .optional(),
   })
   .meta({
     id: 'PublicKeyCredentialDescriptor',

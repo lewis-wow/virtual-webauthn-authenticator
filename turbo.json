@@ -19,6 +19,26 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["src/generated/client/**"]
     },
+    "@repo/browser#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["src/zod-validation/index.ts"]
+    },
+    "@repo/keys#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["src/validation/index.ts", "src/zod-validation/index.ts"]
+    },
+    "@repo/virtual-authenticator#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["src/validation/index.ts", "src/zod-validation/index.ts"]
+    },
+    "@repo/nextjs-example#build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },
