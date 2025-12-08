@@ -6,29 +6,17 @@ import { extensionMessaging } from '../messaging/extensionMessaging';
 const LOG_PREFIX = 'BACKGROUND';
 
 export default defineBackground(() => {
-  if (typeof globalThis.process === 'undefined') {
-    // @ts-ignore
-    globalThis.process = new Proxy(
-      {},
-      {
-        get(target, prop) {
-          console.warn(`🚨 BLOCKED ACCESS: process.${String(prop)}`);
-          console.trace('Here is the code trying to access it:');
-          return undefined; // Return undefined to keep script running (briefly)
-        },
-      },
-    );
-  }
-
   console.log(`[${LOG_PREFIX}]`, 'Init', {
     id: browser.runtime.id,
   });
 
   extensionMessaging.onMessage('credentials.create', async (req) => {
     const apiKey = await apiKeyItem.getValue();
+    let response: Response | undefined = undefined;
+    let rawContent: string | undefined = undefined;
 
     try {
-      const response = await fetch(
+      response = await fetch(
         `${import.meta.env.WXT_API_BASE_URL}/api/credentials/create`,
         {
           method: 'POST',
@@ -41,13 +29,18 @@ export default defineBackground(() => {
         },
       );
 
-      const json = await response.json();
+      rawContent = await response.text();
+
+      const json = JSON.parse(rawContent);
 
       return { ok: response.ok, data: json };
     } catch (error) {
       return {
         ok: false,
-        error: ErrorMapper.errorToErrorJSON(error),
+        error: ErrorMapper.errorToErrorJSON({
+          data: rawContent,
+          error,
+        }),
       };
     }
   });

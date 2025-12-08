@@ -51,22 +51,36 @@ export class AuthenticatorAttestationResponseImpl
       this.attestationObject,
     );
 
+    let decodedAttestation: DecodedAttestationObject | Map<string, unknown>;
     try {
-      // cbor.decodeFirstSync accepts Uint8Array
-      this._decodedAttestationObject = cbor.decode(attestationBytes, {
-        preferMap: true,
-      });
+      // cbor.decode may return a Map or an object depending on options
+      decodedAttestation = cbor.decode(attestationBytes, {
+        preferMap: false, // Use false to get a plain object
+      }) as DecodedAttestationObject | Map<string, unknown>;
     } catch (e) {
       throw new FailedToDecodeAttestationObject({
         cause: e,
       });
     }
 
+    // Handle both Map and object formats
+    let authDataBytes: Uint8Array | undefined;
+    if (decodedAttestation instanceof Map) {
+      this._decodedAttestationObject = {
+        authData: decodedAttestation.get('authData') as Uint8Array,
+        fmt: decodedAttestation.get('fmt') as string,
+        attStmt: decodedAttestation.get('attStmt') as Record<string, unknown>,
+      };
+      authDataBytes = this._decodedAttestationObject.authData;
+    } else {
+      this._decodedAttestationObject =
+        decodedAttestation as DecodedAttestationObject;
+      authDataBytes = this._decodedAttestationObject.authData;
+    }
+
     // 2. Extract authData
     // cbor usually returns Node Buffers for binary fields.
     // We treat it as a generic BufferSource.
-    const authDataBytes = this._decodedAttestationObject!.authData;
-
     if (!authDataBytes) {
       throw new AttestationObjectMissingAuthData();
     }
@@ -128,20 +142,30 @@ export class AuthenticatorAttestationResponseImpl
     const remainingBytes = authData.subarray(offset);
 
     try {
-      // decodeFirstSync will decode exactly one CBOR item (the key map)
-      const coseKeyMap = cbor.decode<COSEKeyMap>(remainingBytes, {
-        preferMap: true,
+      // cbor.decode will decode exactly one CBOR item (the key map)
+      // Use preferMap: false to get a plain object for easier access
+      const coseKeyDecoded = cbor.decode(remainingBytes, {
+        preferMap: false,
       });
 
-      // Extract the Algorithm (Key "3" is "alg")
-      if (coseKeyMap instanceof Map) {
-        this._publicKeyAlgo = coseKeyMap.get(3) as number | undefined;
+      let coseKeyMap: COSEKeyMap;
+
+      // Handle both Map and object formats
+      if (coseKeyDecoded instanceof Map) {
+        // Convert Map to object for consistent handling
+        coseKeyMap = Object.fromEntries(coseKeyDecoded) as COSEKeyMap;
+        this._publicKeyAlgo = coseKeyDecoded.get(3) as number | undefined;
       } else {
-        this._publicKeyAlgo = coseKeyMap[3];
+        coseKeyMap = coseKeyDecoded as COSEKeyMap;
+        // Extract the Algorithm (Key "3" is "alg")
+        // COSEKeyMap is a Map, so we need to use .get()
+        this._publicKeyAlgo = (coseKeyMap as Map<number, unknown>).get(3) as
+          | number
+          | undefined;
       }
 
       // Re-encode to get the exact raw bytes of the key map
-      // cbor.encode returns a Node Buffer
+      // cbor.encode returns a Buffer
       const rawKeyBytes = cbor.encode(coseKeyMap);
 
       // Normalize to ArrayBuffer using Mapper
