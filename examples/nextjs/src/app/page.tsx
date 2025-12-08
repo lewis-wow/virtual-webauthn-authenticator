@@ -93,7 +93,7 @@ export default function Home() {
         </Button>
       </div>
 
-      <Link href="/auth/passkey">
+      <Link href="/profile/passkeys">
         <Button variant="outline">Manage Passkeys</Button>
       </Link>
     </div>

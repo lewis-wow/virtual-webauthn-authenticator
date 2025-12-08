@@ -15,7 +15,7 @@ export default function LoginPage() {
       <div className="text-sm text-muted-foreground">
         Or{' '}
         <Link href="/auth/passkey" className="underline">
-          use Passkey
+          sign in with Passkey
         </Link>
       </div>
     </div>

@@ -7,13 +7,13 @@ import { Label } from '@repo/ui/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export function PasskeyAuth() {
+export function PasskeyAuth({ mode = 'signin' }: { mode?: 'signin' | 'add' }) {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleRegister = async () => {
+  const handleAddPasskey = async () => {
     setError('');
     setLoading(true);
 
@@ -24,9 +24,7 @@ export function PasskeyAuth() {
       router.push('/');
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to register passkey',
-      );
+      setError(err instanceof Error ? err.message : 'Failed to add passkey');
     } finally {
       setLoading(false);
     }
@@ -47,37 +45,34 @@ export function PasskeyAuth() {
     }
   };
 
+  if (mode === 'add') {
+    return (
+      <div className="space-y-4 w-full max-w-md">
+        <div className="space-y-2">
+          <Label htmlFor="passkey-name">Passkey Name (Optional)</Label>
+          <Input
+            id="passkey-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="My Passkey"
+            disabled={loading}
+          />
+          <Button
+            onClick={handleAddPasskey}
+            disabled={loading}
+            className="w-full"
+          >
+            {loading ? 'Adding Passkey...' : 'Add Passkey to Account'}
+          </Button>
+        </div>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 w-full max-w-md">
-      <div className="space-y-2">
-        <Label htmlFor="passkey-name">Passkey Name (Optional)</Label>
-        <Input
-          id="passkey-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="My Passkey"
-          disabled={loading}
-        />
-        <Button onClick={handleRegister} disabled={loading} className="w-full">
-          {loading ? 'Registering...' : 'Register Passkey'}
-        </Button>
-      </div>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or</span>
-        </div>
-      </div>
-
-      <Button
-        onClick={handleSignIn}
-        disabled={loading}
-        variant="secondary"
-        className="w-full"
-      >
+      <Button onClick={handleSignIn} disabled={loading} className="w-full">
         {loading ? 'Signing in...' : 'Sign In with Passkey'}
       </Button>
 
