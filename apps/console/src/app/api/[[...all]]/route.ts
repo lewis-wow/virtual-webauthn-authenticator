@@ -3,7 +3,6 @@ import { Proxy } from '@repo/proxy';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
 import { nextCookies } from 'better-auth/next-js';
-import { handle } from 'hono/vercel';
 
 const authClient = createAuthClient({
   plugins: [jwtClient(), nextCookies()],
@@ -14,15 +13,15 @@ const authClient = createAuthClient({
 const proxy = new Proxy({
   proxyName: 'API-Proxy',
   targetBaseURL: 'http://localhost:3001',
-  authorization: async ({ req }) => {
-    const xAuthTypeHeader = req.headers.get('X-Auth-Type');
+  authorization: async ({ request }) => {
+    const xAuthTypeHeader = request.headers.get('X-Auth-Type');
 
     if (xAuthTypeHeader === AuthType.API_KEY) {
       const response = await fetch(
         `http://localhost:3002/api/auth/api-keys/token`,
         {
           method: 'GET',
-          headers: req.headers,
+          headers: request.headers,
         },
       );
 
@@ -37,11 +36,15 @@ const proxy = new Proxy({
       return `Bearer ${token}`;
     }
 
+    const headers = Object.fromEntries(request.headers.entries());
+    console.log({ headers });
     const { data } = await authClient.token({
       fetchOptions: {
-        headers: req.headers,
+        headers: request.headers,
       },
     });
+
+    console.log({ data });
 
     if (!data) {
       return undefined;
@@ -51,7 +54,7 @@ const proxy = new Proxy({
   },
 });
 
-export const GET = handle(proxy.getApp());
-export const POST = handle(proxy.getApp());
-export const PUT = handle(proxy.getApp());
-export const DELETE = handle(proxy.getApp());
+export const GET = proxy.handleRequest.bind(proxy);
+export const POST = proxy.handleRequest.bind(proxy);
+export const PUT = proxy.handleRequest.bind(proxy);
+export const DELETE = proxy.handleRequest.bind(proxy);

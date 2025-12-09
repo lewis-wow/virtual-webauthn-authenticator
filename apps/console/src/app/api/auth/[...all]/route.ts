@@ -1,12 +1,11 @@
 import { Proxy } from '@repo/proxy';
-import { handle } from 'hono/vercel';
 
 const proxy = new Proxy({
   proxyName: 'Auth-Proxy',
   targetBaseURL: 'http://localhost:3002',
 });
 
-export const GET = handle(proxy.getApp());
-export const POST = handle(proxy.getApp());
-export const PUT = handle(proxy.getApp());
-export const DELETE = handle(proxy.getApp());
+export const GET = proxy.handleRequest.bind(proxy);
+export const POST = proxy.handleRequest.bind(proxy);
+export const PUT = proxy.handleRequest.bind(proxy);
+export const DELETE = proxy.handleRequest.bind(proxy);
