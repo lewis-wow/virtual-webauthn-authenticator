@@ -1,7 +1,7 @@
 import globals from 'globals';
-import tseslint from 'typescript-eslint';
 
 import { config as baseConfig } from './base.js';
+import { createTypeScriptConfig } from './typescript.js';
 
 /**
  * A custom ESLint configuration for libraries that use Nest.js.
@@ -18,20 +18,5 @@ export const config = [
       },
     },
   },
-  ...tseslint.config({
-    files: ['**/*.ts', '**/*.tsx'],
-    extends: [...tseslint.configs.recommended],
-    languageOptions: {
-      sourceType: 'module',
-      parserOptions: {
-        project: true,
-        tsconfigRootDir: process.cwd(),
-      },
-    },
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-    },
-  }),
+  ...createTypeScriptConfig(),
 ];

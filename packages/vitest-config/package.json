@@ -5,13 +5,15 @@
   "type": "module",
   "exports": {
     "./unit": "./src/unit.ts",
-    "./integration": "./src/integration.ts"
+    "./integration": "./src/integration.ts",
+    "./integration-factory": "./src/integration-factory.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.51.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",

@@ -14,6 +14,7 @@
     "@repo/auth": "workspace:*",
     "@repo/activity-log": "workspace:*",
     "@repo/contract": "workspace:*",
+    "@repo/env-config": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",

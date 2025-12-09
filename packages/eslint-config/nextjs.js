@@ -1,10 +1,8 @@
 import nextPlugin from '@next/eslint-plugin-next';
 import globals from 'globals';
-import tseslint from 'typescript-eslint';
 
-// Assuming you share this base config across the monorepo
-// If it is in a parent folder, adjust path: '../../base.js'
 import { config as baseConfig } from './base.js';
+import { createTypeScriptConfig } from './typescript.js';
 
 /**
  * A custom ESLint configuration for Next.js apps.
@@ -33,20 +31,5 @@ export const config = [
       '@next/next': nextPlugin,
     },
   },
-  ...tseslint.config({
-    files: ['**/*.ts', '**/*.tsx'],
-    extends: [...tseslint.configs.recommended],
-    languageOptions: {
-      sourceType: 'module',
-      parserOptions: {
-        project: true,
-        tsconfigRootDir: process.cwd(),
-      },
-    },
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-    },
-  }),
+  ...createTypeScriptConfig(),
 ];

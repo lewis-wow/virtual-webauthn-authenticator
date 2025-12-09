@@ -26,6 +26,7 @@
     "@repo/activity-log": "workspace:*",
     "@repo/pagination": "workspace:*",
     "@repo/core": "workspace:*",
+    "@repo/env-config": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",
     "@repo/keys": "workspace:*",

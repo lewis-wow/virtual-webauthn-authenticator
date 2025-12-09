@@ -1,0 +1,29 @@
+# =========================================================================== #
+# Shared Dockerfile base stages for all applications in the monorepo
+# This file contains common stages that can be used across multiple apps
+# Usage: Reference these stages in app-specific Dockerfiles
+# =========================================================================== #
+
+# =========================================================================== #
+# STAGE: base - Base image with pnpm configured
+# =========================================================================== #
+FROM node:22-alpine AS base
+
+RUN apk update && apk add --no-cache libc6-compat
+ENV NODE_ENV=production
+WORKDIR /app
+ENV TURBO_TELEMETRY_DISABLED=1
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+ENV CI=1
+RUN corepack enable pnpm
+
+# =========================================================================== #
+# STAGE: production-base - Base for production images with dotenvx
+# =========================================================================== #
+FROM base AS production-base
+
+RUN pnpm add -g @dotenvx/dotenvx
+WORKDIR /app
+
+ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/packages/prisma/src/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node"
