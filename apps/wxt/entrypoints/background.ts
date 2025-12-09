@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import { AuthType } from '@repo/auth/enums';
 import { ErrorMapper } from '@repo/core/mappers';
 
@@ -16,18 +17,15 @@ export default defineBackground(() => {
     let rawContent: string | undefined = undefined;
 
     try {
-      response = await fetch(
-        `${import.meta.env.WXT_API_BASE_URL}/api/credentials/create`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'X-Auth-Type': AuthType.API_KEY,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(req.data),
+      response = await fetch(`${env.WXT_API_BASE_URL}/api/credentials/create`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'X-Auth-Type': AuthType.API_KEY,
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify(req.data),
+      });
 
       rawContent = await response.text();
 
@@ -50,7 +48,7 @@ export default defineBackground(() => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.WXT_API_BASE_URL}/api/credentials/get`,
+        `${env.WXT_API_BASE_URL}/api/credentials/get`,
         {
           method: 'POST',
           headers: {

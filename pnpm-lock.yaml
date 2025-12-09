@@ -566,6 +566,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/env-config':
+        specifier: workspace:*
+        version: link:../../packages/env-config
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
