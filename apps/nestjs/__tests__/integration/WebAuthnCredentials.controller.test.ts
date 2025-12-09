@@ -18,7 +18,6 @@ import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
-import { env } from '../../src/env';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../helpers/consts';
@@ -31,7 +30,7 @@ describe('WebAuthnCredentialsController', () => {
   beforeAll(async () => {
     const jwtIssuer = new JwtIssuer({
       prisma,
-      encryptionKey: env.ENCRYPTION_KEY,
+      encryptionKey: 'secret',
       config: {
         aud: 'http://localhost:3002',
         iss: 'http://localhost:3002',

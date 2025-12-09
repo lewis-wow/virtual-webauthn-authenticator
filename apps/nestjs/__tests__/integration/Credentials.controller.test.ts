@@ -32,7 +32,6 @@ import { App } from 'supertest/types';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
-import { env } from '../../src/env';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../helpers/consts';
@@ -228,7 +227,7 @@ const performAndVerifyAuthRequest = async (opts: {
 
 const jwtIssuer = new JwtIssuer({
   prisma,
-  encryptionKey: env.ENCRYPTION_KEY,
+  encryptionKey: 'secret',
   config: JWT_CONFIG,
 });
 
