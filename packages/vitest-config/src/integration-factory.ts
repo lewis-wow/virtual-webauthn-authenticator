@@ -2,9 +2,9 @@ import { config as dotenvxConfig } from '@dotenvx/dotenvx';
 import { join } from 'node:path';
 import { defineConfig, mergeConfig, type ViteUserConfig } from 'vitest/config';
 
-import { integrationConfig } from './integration.js';
+import { integrationConfig } from './integration.ts';
 
-export interface IntegrationConfigOptions {
+export type IntegrationConfigOptions = {
   /**
    * The directory name where this config file is located (use import.meta.dirname)
    */
@@ -25,7 +25,7 @@ export interface IntegrationConfigOptions {
    * Additional vitest config to merge
    */
   additionalConfig?: ViteUserConfig;
-}
+};
 
 export const createIntegrationConfig = ({
   dirname,
