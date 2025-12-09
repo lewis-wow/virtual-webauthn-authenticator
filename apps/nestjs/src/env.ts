@@ -1,7 +1,7 @@
-import { createStandardEnv } from '@repo/env-config';
+import { defineEnv } from '@repo/env-config';
 import { z } from 'zod';
 
-export const env = createStandardEnv({
+export const env = defineEnv({
   server: {
     // App
     PORT: z.coerce.number(),

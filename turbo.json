@@ -1,7 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
-  "globalEnv": ["NODE_ENV", "ENVIRONMENT"],
+  "globalEnv": ["NODE_ENV", "ENVIRONMENT", "SKIP_ENV_VALIDATION"],
   "globalDependencies": ["scripts/**", ".env.*"],
   "tasks": {
     "build": {
