@@ -1400,6 +1400,9 @@ importers:
         specifier: ^3.14.0
         version: 3.14.0
     devDependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.5(hono@4.9.10)
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1415,6 +1418,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      hono:
+        specifier: ^4.9.10
+        version: 4.9.10
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
