@@ -1,11 +1,16 @@
+import { env } from '@/env';
 import { Proxy } from '@repo/proxy';
 
-const proxy = new Proxy({
-  proxyName: 'Auth-Proxy',
-  targetBaseURL: 'http://localhost:3002',
-});
+const handler = async (request: Request): Promise<Response> => {
+  const proxy = new Proxy({
+    proxyName: 'Auth-Proxy',
+    targetBaseURL: env.AUTH_BASE_URL,
+  });
 
-export const GET = proxy.handleRequest.bind(proxy);
-export const POST = proxy.handleRequest.bind(proxy);
-export const PUT = proxy.handleRequest.bind(proxy);
-export const DELETE = proxy.handleRequest.bind(proxy);
+  return await proxy.handleRequest(request);
+};
+
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const DELETE = handler;

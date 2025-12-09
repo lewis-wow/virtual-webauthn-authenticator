@@ -74,6 +74,9 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
+      '@repo/env-config':
+        specifier: workspace:*
+        version: link:../../packages/env-config
       '@repo/exception':
         specifier: workspace:*
         version: link:../../packages/exception
@@ -231,6 +234,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/env-config':
+        specifier: workspace:*
+        version: link:../../packages/env-config
       '@repo/pagination':
         specifier: workspace:*
         version: link:../../packages/pagination
@@ -403,6 +409,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/env-config':
+        specifier: workspace:*
+        version: link:../../packages/env-config
       '@repo/exception':
         specifier: workspace:*
         version: link:../../packages/exception
@@ -557,6 +566,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/env-config':
+        specifier: workspace:*
+        version: link:../../packages/env-config
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1087,6 +1099,28 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
+  packages/env-config:
+    dependencies:
+      '@t3-oss/env-core':
+        specifier: ^0.13.8
+        version: 0.13.8(typescript@5.9.2)(zod@4.1.12)
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
 
   packages/eslint-config:
     devDependencies:

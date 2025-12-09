@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import { apiKeyItem } from '@/utils/storage';
 import { Button } from '@repo/ui/components/Button';
 import { Guard } from '@repo/ui/components/Guard/Guard';
@@ -20,7 +21,7 @@ export const Settings = () => {
   const form = useForm<{ apiKey: string }>();
 
   return (
-    <Page title="Virtual WebAuthn Authenticator">
+    <Page title={env.WXT_APP_NAME}>
       <Guard isLoading={state === 'pending'} error={error}>
         {(result?.length ?? 0) > 0 ? (
           <div>
