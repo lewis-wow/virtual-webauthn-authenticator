@@ -13,9 +13,6 @@ export const env = createEnv({
     // Database
     DATABASE_URL: z.url(),
 
-    // Crypto
-    ENCRYPTION_KEY: z.string(),
-
     // Key vault
     AZURE_KEY_VAULT_BASE_URL: z.url(),
   },
