@@ -1768,6 +1768,13 @@ importers:
         version: 3.1.0(typescript@5.9.2)(vitest@3.2.4)
 
   packages/vitest-config:
+    dependencies:
+      '@dotenvx/dotenvx':
+        specifier: ^1.51.0
+        version: 1.51.0
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -1781,9 +1788,6 @@ importers:
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
 packages:
 
