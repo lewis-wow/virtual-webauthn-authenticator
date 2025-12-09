@@ -1,5 +1,6 @@
 # =========================================================================== #
 # STAGE 1: Base image with pnpm configured
+# Shared base from docker/Dockerfile.base
 # =========================================================================== #
 FROM node:22-alpine AS base
 
@@ -13,7 +14,7 @@ ENV CI=1
 RUN corepack enable pnpm
 
 # =========================================================================== #
-# STAGE 2: Prune the monorepo for the Next.js app
+# STAGE 2: Prune the monorepo for the NestJS app
 # =========================================================================== #
 FROM base AS pruner
 RUN pnpm install --global turbo
@@ -36,6 +37,7 @@ RUN pnpx turbo run build
 
 # =========================================================================== #
 # STAGE 4: Final production image
+# Shared production-base from docker/Dockerfile.base
 # =========================================================================== #
 FROM base AS production
 
@@ -52,8 +54,8 @@ COPY --from=pruner /app/out/full/package.json .
 COPY --from=pruner /app/out/full/apps ./apps
 COPY --from=pruner /app/out/full/packages ./packages
 
-# 2. Install a complete set of production dependencies
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+# 2. Install all dependencies (needed for runtime since webpack externalizes some modules)
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # 3. Copy only the necessary BUILT assets from the builder stage
 COPY --from=builder /app/apps/nestjs/dist ./apps/nestjs

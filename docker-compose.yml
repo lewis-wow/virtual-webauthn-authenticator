@@ -1,8 +1,13 @@
+x-build-config: &build-config
+  BUILDKIT_INLINE_CACHE: 1
+
 services:
   console:
     build:
       context: .
       dockerfile: ./apps/console/Dockerfile
+      args:
+        <<: *build-config
     ports:
       - '3000:3000'
     depends_on:
@@ -13,6 +18,8 @@ services:
     build:
       context: .
       dockerfile: ./apps/nestjs/Dockerfile
+      args:
+        <<: *build-config
     ports:
       - '3001:3001'
     depends_on:

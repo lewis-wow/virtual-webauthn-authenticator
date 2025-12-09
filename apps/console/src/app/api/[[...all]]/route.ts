@@ -7,24 +7,21 @@ import { handle } from 'hono/vercel';
 
 const authClient = createAuthClient({
   plugins: [jwtClient(), nextCookies()],
-  // eslint-disable-next-line turbo/no-undeclared-env-vars
-  baseURL: process.env.AUTH_BASE_URL,
+  // No baseURL - uses relative paths which go through console's own /api/auth proxy
 });
 
 const proxy = new Proxy({
   proxyName: 'API-Proxy',
-  targetBaseURL: 'http://localhost:3001',
+  targetBaseURL: process.env.API_BASE_URL || 'http://localhost:3001',
   authorization: async ({ req }) => {
     const xAuthTypeHeader = req.headers.get('X-Auth-Type');
 
     if (xAuthTypeHeader === AuthType.API_KEY) {
-      const response = await fetch(
-        `http://localhost:3002/api/auth/api-keys/token`,
-        {
-          method: 'GET',
-          headers: req.headers,
-        },
-      );
+      const authBaseUrl = process.env.AUTH_BASE_URL || 'http://localhost:3002';
+      const response = await fetch(`${authBaseUrl}/api/auth/api-keys/token`, {
+        method: 'GET',
+        headers: req.headers,
+      });
 
       if (!response.ok) {
         return undefined;
@@ -40,6 +37,7 @@ const proxy = new Proxy({
     const { data } = await authClient.token({
       fetchOptions: {
         headers: req.headers,
+        baseURL: process.env.AUTH_BASE_URL || 'http://localhost:3002',
       },
     });
 

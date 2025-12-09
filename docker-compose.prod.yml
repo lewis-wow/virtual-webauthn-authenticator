@@ -1,0 +1,158 @@
+# =========================================================================== #
+# Production Docker Compose Configuration
+# Single entry point on port 3000, all other services internal
+# Usage: docker compose -f docker-compose.prod.yml up
+# =========================================================================== #
+
+x-build-config: &build-config
+  BUILDKIT_INLINE_CACHE: 1
+
+services:
+  # Nginx reverse proxy - Only public-facing service
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '3000:80'
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - console
+      - nestjs
+      - auth-server
+    networks:
+      - public
+      - internal
+    restart: unless-stopped
+
+  # Next.js Console App
+  console:
+    build:
+      context: .
+      dockerfile: ./apps/console/Dockerfile
+      args:
+        <<: *build-config
+    expose:
+      - '3000'
+    environment:
+      - NODE_ENV=production
+      - API_URL=http://nestjs:3001
+    depends_on:
+      - nestjs
+      - postgres
+      - lowkey-vault
+      - assumed-identity
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # NestJS API Server
+  nestjs:
+    build:
+      context: .
+      dockerfile: ./apps/nestjs/Dockerfile
+      args:
+        <<: *build-config
+    expose:
+      - '3001'
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/app
+      - KEYVAULT_URL=https://lowkey-vault:3443
+      - AUTH_URL=http://assumed-identity:3080
+    depends_on:
+      - postgres
+      - lowkey-vault
+      - assumed-identity
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # Auth Server (Hono)
+  auth-server:
+    build:
+      context: .
+      dockerfile: ./apps/auth-server/Dockerfile
+      args:
+        <<: *build-config
+    expose:
+      - '3002'
+    depends_on:
+      - postgres
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # PostgreSQL Database - Internal only
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=app
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - internal
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Lowkey Vault - Internal only
+  lowkey-vault:
+    image: nagyesta/lowkey-vault:4.0.27@sha256:1edfe3f23c057aabf1cc5078a740d5130bdf795b00a66aac1d29faf859251f69
+    expose:
+      - '3443'
+    volumes:
+      - lowkey-vault-import:/import/:rw
+      - lowkey-vault-config:/config/:ro
+    environment:
+      LOWKEY_ARGS: >
+        --server.port=3443
+        --server.ssl.key-store-type=JKS
+        --server.ssl.key-store=/config/cert.jks
+        --server.ssl.key-store-password=password
+        --LOWKEY_VAULT_NAMES=-
+        --LOWKEY_DEBUG_REQUEST_LOG=false
+        --LOWKEY_IMPORT_LOCATION=/import/keyvault.json.hbs
+        --LOWKEY_IMPORT_TEMPLATE_HOST=lowkey-vault
+        --LOWKEY_IMPORT_TEMPLATE_PORT=3443
+    networks:
+      - internal
+    restart: unless-stopped
+
+  # Assumed Identity - Internal only
+  assumed-identity:
+    image: nagyesta/assumed-identity:2.1.17@sha256:60cd8ada7450238a9b1d82848fc2cfbe5499f68afd9b99b3a594f24b60a61044
+    expose:
+      - '3080'
+    environment:
+      - ASSUMED_ID_PORT=3080
+    networks:
+      - internal
+    restart: unless-stopped
+
+networks:
+  public:
+    driver: bridge
+  internal:
+    driver: bridge
+    internal: true
+
+volumes:
+  postgres-data:
+    driver: local
+  lowkey-vault-import:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/.lowkey-vault/import'
+  lowkey-vault-config:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '$PWD/.lowkey-vault/config'

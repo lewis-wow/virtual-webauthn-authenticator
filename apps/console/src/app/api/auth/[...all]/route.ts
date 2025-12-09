@@ -3,7 +3,7 @@ import { handle } from 'hono/vercel';
 
 const proxy = new Proxy({
   proxyName: 'Auth-Proxy',
-  targetBaseURL: 'http://localhost:3002',
+  targetBaseURL: process.env.AUTH_BASE_URL || 'http://localhost:3002',
 });
 
 export const GET = handle(proxy.getApp());
