@@ -7,7 +7,7 @@
     "dev": "pnpm dotenvx next dev --turbopack",
     "copy-deps": "copyfiles -f ../wxt/dist/Keyless.* public/generated/",
     "prebuild": "pnpm copy-deps",
-    "build": "next build --turbopack",
+    "build": "SKIP_ENV_VALIDATION=true next build --turbopack",
     "start": "pnpm dotenvx next start",
     "lint": "eslint",
     "dotenvx": "../../scripts/dotenvx.sh"
@@ -57,7 +57,8 @@
     "tailwind-merge": "^3.3.1",
     "ts-pattern": "^5.8.0",
     "zod": "^4.1.12",
-    "@repo/pagination": "workspace:*"
+    "@repo/pagination": "workspace:*",
+    "@repo/env-config": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

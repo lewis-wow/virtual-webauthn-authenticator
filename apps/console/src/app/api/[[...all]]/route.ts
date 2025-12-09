@@ -1,60 +1,64 @@
+import { env } from '@/env';
 import { AuthType } from '@repo/auth/enums';
 import { Proxy } from '@repo/proxy';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
 import { nextCookies } from 'better-auth/next-js';
 
-const authClient = createAuthClient({
-  plugins: [jwtClient(), nextCookies()],
-  // eslint-disable-next-line turbo/no-undeclared-env-vars
-  baseURL: process.env.AUTH_BASE_URL,
-});
+const handler = async (request: Request): Promise<Response> => {
+  const authClient = createAuthClient({
+    plugins: [jwtClient(), nextCookies()],
+    baseURL: env.AUTH_BASE_URL,
+  });
 
-const proxy = new Proxy({
-  proxyName: 'API-Proxy',
-  targetBaseURL: 'http://localhost:3001',
-  authorization: async ({ request }) => {
-    const xAuthTypeHeader = request.headers.get('X-Auth-Type');
+  const proxy = new Proxy({
+    proxyName: 'API-Proxy',
+    targetBaseURL: 'http://localhost:3001',
+    authorization: async ({ request }) => {
+      const xAuthTypeHeader = request.headers.get('X-Auth-Type');
 
-    if (xAuthTypeHeader === AuthType.API_KEY) {
-      const response = await fetch(
-        `http://localhost:3002/api/auth/api-keys/token`,
-        {
-          method: 'GET',
+      if (xAuthTypeHeader === AuthType.API_KEY) {
+        const response = await fetch(
+          `http://localhost:3002/api/auth/api-keys/token`,
+          {
+            method: 'GET',
+            headers: request.headers,
+          },
+        );
+
+        if (!response.ok) {
+          return undefined;
+        }
+
+        const { token } = await response.json();
+
+        console.log('TOKEN', token);
+
+        return `Bearer ${token}`;
+      }
+
+      const headers = Object.fromEntries(request.headers.entries());
+      console.log({ headers });
+      const { data } = await authClient.token({
+        fetchOptions: {
           headers: request.headers,
         },
-      );
+      });
 
-      if (!response.ok) {
+      console.log({ data });
+
+      if (!data) {
         return undefined;
       }
 
-      const { token } = await response.json();
+      return `Bearer ${data.token}`;
+    },
+  });
 
-      console.log('TOKEN', token);
+  return await proxy.handleRequest(request);
+};
 
-      return `Bearer ${token}`;
-    }
-
-    const headers = Object.fromEntries(request.headers.entries());
-    console.log({ headers });
-    const { data } = await authClient.token({
-      fetchOptions: {
-        headers: request.headers,
-      },
-    });
-
-    console.log({ data });
-
-    if (!data) {
-      return undefined;
-    }
-
-    return `Bearer ${data.token}`;
-  },
-});
-
-export const GET = proxy.handleRequest.bind(proxy);
-export const POST = proxy.handleRequest.bind(proxy);
-export const PUT = proxy.handleRequest.bind(proxy);
-export const DELETE = proxy.handleRequest.bind(proxy);
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const DELETE = handler;
