@@ -1,6 +1,6 @@
 import { config as dotenvxConfig } from '@dotenvx/dotenvx';
 import { join } from 'node:path';
-import { defineConfig, mergeConfig, type UserConfig } from 'vitest/config';
+import { defineConfig, mergeConfig, type ViteUserConfig } from 'vitest/config';
 
 import { integrationConfig } from './integration.js';
 
@@ -24,28 +24,9 @@ export interface IntegrationConfigOptions {
   /**
    * Additional vitest config to merge
    */
-  additionalConfig?: UserConfig;
+  additionalConfig?: ViteUserConfig;
 }
 
-/**
- * Creates a standardized vitest integration configuration with dotenvx support.
- * This eliminates duplication across multiple test configuration files.
- *
- * @param options - Configuration options
- * @returns A vitest configuration object
- *
- * @example
- * ```typescript
- * // In __tests__/vitest.integration.config.ts
- * import { createIntegrationConfig } from '@repo/vitest-config/integration-factory';
- * import pkg from '../package.json';
- *
- * export default createIntegrationConfig({
- *   dirname: import.meta.dirname,
- *   name: pkg.name,
- * });
- * ```
- */
 export const createIntegrationConfig = ({
   dirname,
   name,
