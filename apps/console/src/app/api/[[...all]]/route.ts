@@ -7,7 +7,7 @@ import { handle } from 'hono/vercel';
 
 const authClient = createAuthClient({
   plugins: [jwtClient(), nextCookies()],
-  // No baseURL - uses relative paths which go through console's own /api/auth proxy
+  baseURL: process.env.AUTH_BASE_URL,
 });
 
 const proxy = new Proxy({
