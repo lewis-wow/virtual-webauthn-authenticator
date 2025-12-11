@@ -1,11 +1,14 @@
 import { defineEnv } from '@repo/env-config';
+import { BASE_CONFIG } from '@repo/env-config/config';
+import { BASE_ENV, APP_ENV } from '@repo/env-config/presets';
 import { z } from 'zod';
 
 export const env = defineEnv({
   server: {
+    // Base
+    ...BASE_ENV,
     // App
-    PORT: z.coerce.number(),
-    BASE_URL: z.url(),
+    ...APP_ENV,
 
     HONO_BASE_URL: z.url(),
     NEXTJS_BASE_URL: z.url(),
@@ -28,5 +31,5 @@ export const env = defineEnv({
     GITHUB_CLIENT_ID: z.string(),
     GITHUB_CLIENT_SECRET: z.string(),
   },
-  runtimeEnv: process.env,
+  ...BASE_CONFIG,
 });

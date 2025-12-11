@@ -4,6 +4,8 @@ import { defineConfig, mergeConfig, type ViteUserConfig } from 'vitest/config';
 
 import { integrationConfig } from './integration.ts';
 
+const WORKSPACE_ROOT_DIR = join(import.meta.dirname, '..', '..', '..');
+
 export type IntegrationConfigArgs = {
   /**
    * The directory name where this config file is located (use import.meta.dirname)
@@ -34,13 +36,18 @@ export const createIntegrationConfig = ({
   additionalConfig = {},
 }: IntegrationConfigArgs) => {
   // Load environment variables from .env.test file
-  const env = dotenvxConfig({
-    path: join(dirname, envFilePath),
-    override: true,
-  }).parsed;
 
-  // Calculate the project root (parent of __tests__ directory)
+  console.log(join(WORKSPACE_ROOT_DIR, '.env.test'));
+  const loadedEnv = dotenvxConfig({
+    path: [join(WORKSPACE_ROOT_DIR, '.env.test'), join(dirname, envFilePath)],
+    processEnv: {},
+  });
+
+  const env = loadedEnv.parsed ?? {};
+
   const projectRoot = join(dirname, '..');
+
+  console.log({ env });
 
   return mergeConfig(
     integrationConfig,

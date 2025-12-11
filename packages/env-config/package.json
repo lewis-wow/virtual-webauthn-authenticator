@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./presets": "./src/presets/index.ts",
+    "./config": "./src/config/index.ts"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.8",

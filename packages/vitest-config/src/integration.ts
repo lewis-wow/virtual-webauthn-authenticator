@@ -12,5 +12,11 @@ export const integrationConfig = defineConfig({
     },
 
     fileParallelism: false,
+    maxConcurrency: 1,
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
   },
 });
