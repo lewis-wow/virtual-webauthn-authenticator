@@ -3,6 +3,7 @@ import {
   USER_ID,
   USER_NAME,
 } from '../../../../auth/__tests__/helpers';
+import { set } from '@repo/core/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
@@ -276,6 +277,34 @@ describe('VirtualAuthenticator.createCredential()', () => {
   describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
     afterEach(async () => {
       await cleanupWebAuthnCredentials();
+    });
+
+    test('Should work with multiple unsupported and one supported pubKeyCredParams', async () => {
+      const publicKeyCredentialCreationOptions = set(
+        PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        {
+          pubKeyCredParams: (pubKeyCredParams) => [
+            { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: -8,
+            },
+            {
+              type: 'WRONG_TYPE',
+              alg: COSEKeyAlgorithm.ES256,
+            },
+            ...pubKeyCredParams,
+          ],
+        },
+      );
+
+      const { registrationVerification } =
+        await createCredentialAndVerifyRegistrationResponse({
+          authenticator,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
     });
 
     test('Should throw type mismatch when pubKeyCredParams is empty', async () => {

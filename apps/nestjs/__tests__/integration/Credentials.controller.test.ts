@@ -4,7 +4,7 @@ import {
   upsertTestingUser,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
+import { set, setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -14,11 +14,25 @@ import {
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
+import { CreateCredentialBodySchema } from '@repo/contract/dto';
+import { RequestValidationFailed } from '@repo/exception';
+import { ExceptionMapper } from '@repo/exception/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import {
+  Attestation,
+  PublicKeyCredentialType,
+} from '@repo/virtual-authenticator/enums';
+import {
+  AttestationNotSupported,
+  NoSupportedPubKeyCredParamFound,
+} from '@repo/virtual-authenticator/exceptions';
+import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/zod-validation';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
+import { afterEach } from 'node:test';
 import request from 'supertest';
-import { describe, test, afterAll, beforeAll } from 'vitest';
+import { describe, test, afterAll, beforeAll, expect } from 'vitest';
+import z from 'zod';
 
 import { AppModule } from '../../src/app.module';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
@@ -43,7 +57,7 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
   meta: {
     origin: RP_ORIGIN,
   },
-};
+} as z.input<typeof CreateCredentialBodySchema>;
 
 /**
  * Reusable base query for GET /api/credentials
@@ -63,6 +77,13 @@ const jwtIssuer = new JwtIssuer({
   encryptionKey: 'secret',
   config: JWT_CONFIG,
 });
+
+const cleanupWebAuthnCredentials = async () => {
+  await prisma.$transaction([
+    prisma.webAuthnCredential.deleteMany(),
+    prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
+  ]);
+};
 
 describe('CredentialsController', () => {
   let app: INestApplication;
@@ -106,89 +127,244 @@ describe('CredentialsController', () => {
         app: app.getHttpServer(),
         token,
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+        expectStatus: 200,
         requireUserVerification: true,
         requireUserPresence: false,
       });
 
     // Save the results for use in other tests
-    registrationVerification = verification;
+    registrationVerification = verification!;
     base64CredentialID = response.body.id;
   });
 
   afterAll(async () => {
     await prisma.user.deleteMany();
-    await prisma.webAuthnCredential.deleteMany();
     await prisma.jwks.deleteMany();
 
     await app.close();
   });
 
   describe('POST /api/credentials/create', () => {
-    test('With multiple supported `pubKeyCredParams`', async () => {
-      const { webAuthnCredentialId } =
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
+    describe('Authorization', () => {
+      test('Should not work when unauthorized', async () => {
         await performPublicKeyCredentialRegistrationAndVerify({
           app: app.getHttpServer(),
           token,
-          payload: setDeep(
-            PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            'publicKeyCredentialCreationOptions.pubKeyCredParams',
-            (val) => [
-              ...val,
-              { alg: COSEKeyAlgorithm.ES512, type: 'public-key' },
-            ],
-          ),
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: 401,
         });
-
-      await prisma.webAuthnCredential.delete({
-        where: {
-          id: webAuthnCredentialId,
-        },
       });
-    });
 
-    test('With multiple unsupported and one supported `pubKeyCredParams`', async () => {
-      const { webAuthnCredentialId } =
+      test('Should not work when token is invalid', async () => {
         await performPublicKeyCredentialRegistrationAndVerify({
           app: app.getHttpServer(),
           token,
-          payload: setDeep(
-            PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            'publicKeyCredentialCreationOptions.pubKeyCredParams',
-            (val) => [{ alg: -8, type: 'public-key' }, ...val],
-          ),
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: 403,
         });
-
-      await prisma.webAuthnCredential.delete({
-        where: {
-          id: webAuthnCredentialId,
-        },
       });
     });
 
-    test('With multiple unsupported `pubKeyCredParams`', async () => {
-      await request(app.getHttpServer())
-        .post('/api/credentials/create')
-        .set('Authorization', `Bearer ${token}`)
-        .send(
-          setDeep(
-            PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            'publicKeyCredentialCreationOptions.pubKeyCredParams',
-            () => [
-              { alg: -8, type: 'public-key' },
-              { alg: -9, type: 'public-key' },
-            ],
+    /**
+     * Tests for attestation parameter
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-attestation
+     * @see https://www.w3.org/TR/webauthn-3/#enum-attestation-convey
+     *
+     * Per spec: This member specifies the Relying Party's preference regarding attestation
+     * conveyance. Values: 'none', 'indirect', 'direct', 'enterprise'
+     */
+    describe('PublicKeyCredentialCreationOptions.attestation', () => {
+      test.each([
+        {
+          attestation: undefined,
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        {
+          attestation: Attestation.NONE,
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        {
+          attestation: Attestation.DIRECT,
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      ])('With attestation $attestation', async ({ attestation }) => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            attestation,
+          },
+        });
+
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload,
+          expectStatus: 200,
+        });
+      });
+
+      test.each([
+        {
+          attestation: Attestation.ENTERPRISE,
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        {
+          attestation: Attestation.INDIRECT,
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      ])(
+        `Should throw ${AttestationNotSupported.name} with attestation $attestation`,
+        async ({ attestation }) => {
+          const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+            publicKeyCredentialCreationOptions: {
+              attestation,
+            },
+          });
+
+          const { response } =
+            await performPublicKeyCredentialRegistrationAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload,
+              expectStatus: 400,
+            });
+
+          expect(response.body).toStrictEqual(
+            ExceptionMapper.exceptionToResponseBody(
+              new AttestationNotSupported({ data: { attestation } }),
+            ),
+          );
+        },
+      );
+
+      test('Shold throw type mismatch when attestation is not in enum', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            attestation: 'INVALID_ATTESTATION' as Attestation,
+          },
+        });
+
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload,
+            expectStatus: 400,
+          });
+
+        expect(response.body).toStrictEqual(
+          ExceptionMapper.exceptionToResponseBody(
+            new RequestValidationFailed(),
           ),
-        )
-        .expect('Content-Type', /json/)
-        .expect(400);
+        );
+      });
     });
 
-    test('As guest', async () => {
-      await request(app.getHttpServer())
-        .post('/api/credentials/create')
-        .send(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD)
-        .expect('Content-Type', /json/)
-        .expect(401);
+    /**
+     * Tests for pubKeyCredParams parameter
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-pubkeycredparams
+     * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialparameters
+     *
+     * Per spec: This member contains information about the desired properties of the credential
+     * to be created. The sequence is ordered from most preferred to least preferred.
+     */
+    describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
+      test('Should work with multiple unsupported and one supported pubKeyCredParams', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            pubKeyCredParams: (pubKeyCredParams) => [
+              { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                alg: -8,
+              },
+              {
+                type: 'WRONG_TYPE',
+                alg: COSEKeyAlgorithm.ES256,
+              },
+              ...pubKeyCredParams,
+            ],
+          },
+        });
+
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload,
+          expectStatus: 200,
+        });
+      });
+
+      test('Should throw type mismatch when pubKeyCredParams is empty', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            pubKeyCredParams: [],
+          },
+        });
+
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload,
+            expectStatus: 400,
+          });
+
+        expect(response.body).toStrictEqual(
+          ExceptionMapper.exceptionToResponseBody(
+            new RequestValidationFailed(),
+          ),
+        );
+      });
+
+      test.each([
+        {
+          pubKeyCredParams: [
+            { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
+          ],
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        {
+          pubKeyCredParams: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: -8,
+            },
+          ],
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        {
+          pubKeyCredParams: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: -8,
+            },
+            {
+              type: 'WRONG_TYPE',
+              alg: COSEKeyAlgorithm.ES256,
+            },
+          ],
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      ])(
+        'Should throw without any supported pubKeyCredParams',
+        async ({ pubKeyCredParams }) => {
+          const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+            publicKeyCredentialCreationOptions: {
+              pubKeyCredParams,
+            },
+          });
+
+          const { response } =
+            await performPublicKeyCredentialRegistrationAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload,
+              expectStatus: 400,
+            });
+
+          expect(response.body).toStrictEqual(
+            ExceptionMapper.exceptionToResponseBody(
+              new NoSupportedPubKeyCredParamFound(),
+            ),
+          );
+        },
+      );
     });
 
     test('With short `challenge`', async () => {

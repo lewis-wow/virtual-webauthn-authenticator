@@ -6,7 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
-    "./exception": "./src/exception/index.ts",
+    "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
     "./mappers": "./src/mappers/index.ts",

@@ -19,7 +19,7 @@ export class ExceptionFilter implements NestjsExceptionFilter {
 
     let exception: Exception;
 
-    if (Exception.isException(error)) {
+    if (error instanceof Exception) {
       exception = error;
     } else if (isAnyPrismaError(error)) {
       exception =
@@ -32,8 +32,6 @@ export class ExceptionFilter implements NestjsExceptionFilter {
     } else {
       exception = new InternalServerError();
     }
-
-    console.log('error', exception, error);
 
     const webResponse = ExceptionMapper.exceptionToResponse(exception);
 

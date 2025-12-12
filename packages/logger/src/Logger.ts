@@ -54,6 +54,7 @@ const logFormat = winston.format.combine(
  * All child loggers will inherit this level.
  */
 const parentLogger = winston.createLogger({
+  // eslint-disable-next-line turbo/no-undeclared-env-vars
   level: process.env.LOG_LEVEL ?? 'debug', // Global log level
   format: logFormat,
   transports: [new winston.transports.Console()],

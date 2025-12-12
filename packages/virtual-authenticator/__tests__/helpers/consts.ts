@@ -32,4 +32,4 @@ export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   challenge: CHALLENGE_BYTES,
   pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
   timeout: 60000,
-} as const satisfies PublicKeyCredentialCreationOptions;
+} as PublicKeyCredentialCreationOptions;

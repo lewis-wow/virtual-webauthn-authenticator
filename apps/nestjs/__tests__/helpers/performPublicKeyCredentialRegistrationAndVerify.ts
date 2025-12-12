@@ -18,30 +18,44 @@ import z from 'zod';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   app: App;
-  token: string;
+  token: string | undefined;
   payload: z.input<typeof CreateCredentialBodySchema>;
+  expectStatus: number;
   requireUserVerification?: boolean;
   requireUserPresence?: boolean;
 };
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
   response: Response;
-  verification: VerifiedRegistrationResponse;
-  webAuthnCredentialId: string;
+  verification?: VerifiedRegistrationResponse;
+  webAuthnCredentialId?: string;
 };
 
 export const performPublicKeyCredentialRegistrationAndVerify = async (
   opts: PerformPublicKeyCredentialRegistrationAndVerifyArgs,
 ): Promise<PerformPublicKeyCredentialRegistrationAndVerifyResult> => {
-  const { app, token, payload, requireUserVerification, requireUserPresence } =
-    opts;
+  const {
+    app,
+    token,
+    payload,
+    requireUserVerification,
+    requireUserPresence,
+    expectStatus,
+  } = opts;
 
-  const response = await request(app)
-    .post('/api/credentials/create')
-    .set('Authorization', `Bearer ${token}`)
+  const requestInit = request(app).post('/api/credentials/create');
+  if (token !== undefined) {
+    requestInit.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await requestInit
     .send(payload)
     .expect('Content-Type', /json/)
-    .expect(200);
+    .expect(expectStatus ?? 200);
+
+  if (expectStatus !== 200) {
+    return { response };
+  }
 
   const verification = await verifyRegistrationResponse({
     response: response.body as RegistrationResponseJSON,
@@ -68,6 +82,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   });
 
   const webAuthnCredentialId = UUIDMapper.bytesToUUID(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     Buffer.from(response.body.id, 'base64url'),
   );
 
