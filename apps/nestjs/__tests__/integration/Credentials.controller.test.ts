@@ -2,7 +2,6 @@
 import {
   MockJwtAudience,
   upsertTestingUser,
-  USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { setDeep, WRONG_UUID } from '@repo/core/__tests__/helpers';
@@ -15,26 +14,18 @@ import {
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
-import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { COSEKeyMapper } from '@repo/keys/mappers';
-import {
-  AuthenticationResponseJSON,
-  VerifiedAuthenticationResponse,
-  VerifiedRegistrationResponse,
-  verifyAuthenticationResponse,
-  verifyRegistrationResponse,
-  type RegistrationResponseJSON,
-} from '@simplewebauthn/server';
+import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
-import request, { type Response } from 'supertest';
-import { App } from 'supertest/types';
-import { describe, test, expect, afterAll, beforeAll } from 'vitest';
+import request from 'supertest';
+import { describe, test, afterAll, beforeAll } from 'vitest';
 
 import { AppModule } from '../../src/app.module';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../helpers/consts';
+import { performPublicKeyCredentialRegistrationAndVerify } from '../helpers/performPublicKeyCredentialRegistrationAndVerify';
+import { performPublicKeyCredentialRequestAndVerify } from '../helpers/performPublicKeyCredentialRequestAndVerify';
 import { prisma } from '../helpers/prisma';
 
 /**
@@ -65,164 +56,6 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD = {
   meta: {
     origin: RP_ORIGIN,
   },
-};
-
-/**
- * Helper to perform and verify a successful registration (POST /api/credentials)
- */
-const performAndVerifyRegistration = async (opts: {
-  app: App;
-  token: string;
-  publicKeyCredentialRegistrationPayload: Record<string, unknown>;
-}): Promise<{
-  response: Response;
-  verification: VerifiedRegistrationResponse;
-  webAuthnCredentialId: string;
-}> => {
-  const { app, token, publicKeyCredentialRegistrationPayload } = opts;
-
-  const response = await request(app)
-    .post('/api/credentials/create')
-    .set('Authorization', `Bearer ${token}`)
-    .send(publicKeyCredentialRegistrationPayload)
-    .expect('Content-Type', /json/)
-    .expect(200);
-
-  const verification = await verifyRegistrationResponse({
-    response: response.body as RegistrationResponseJSON,
-    expectedChallenge: CHALLENGE_BASE64URL,
-    expectedOrigin: RP_ORIGIN,
-    expectedRPID: RP_ID,
-    requireUserVerification: true, // Authenticator does perform UV
-    requireUserPresence: false, // Authenticator does NOT perform UP
-  });
-
-  expect(verification.verified).toBe(true);
-  expect(verification.registrationInfo?.credential.counter).toBe(0);
-
-  expect(
-    COSEKeyMapper.COSEKeyToJwk(
-      COSEKeyMapper.bytesToCOSEKey(
-        verification.registrationInfo!.credential.publicKey,
-      ),
-    ),
-  ).toMatchObject({
-    crv: 'P-256',
-    d: undefined,
-    dp: undefined,
-    dq: undefined,
-    e: undefined,
-    k: undefined,
-    keyOps: undefined,
-    kid: undefined,
-    kty: 'EC',
-    n: undefined,
-    p: undefined,
-    q: undefined,
-    qi: undefined,
-    t: undefined,
-    x: expect.any(String),
-    y: expect.any(String),
-  });
-
-  expect(response.body).toStrictEqual({
-    clientExtensionResults: {},
-    id: expect.any(String),
-    rawId: expect.any(String),
-    response: {
-      attestationObject: expect.any(String),
-      clientDataJSON:
-        'eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9',
-    },
-    type: 'public-key',
-  });
-
-  return {
-    response,
-    verification,
-    webAuthnCredentialId: UUIDMapper.bytesToUUID(
-      Buffer.from(response.body.id, 'base64url'),
-    ),
-  };
-};
-
-/**
- * Helper to perform and verify a successful authentication (GET /api/credentials)
- */
-const performAndVerifyAuthRequest = async (opts: {
-  app: App;
-  queryOptions?: Record<string, unknown>;
-  registrationVerification: VerifiedRegistrationResponse;
-  token: string;
-  expectedNewCounter: number;
-}): Promise<{
-  response: Response;
-  verification: VerifiedAuthenticationResponse;
-}> => {
-  const {
-    app,
-    queryOptions,
-    registrationVerification,
-    token,
-    expectedNewCounter,
-  } = opts;
-
-  const { id: credentialID, publicKey: credentialPublicKey } =
-    registrationVerification.registrationInfo!.credential;
-
-  const publicKeyCredentialRequestPayload = {
-    ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-    publicKeyCredentialRequestOptions: {
-      ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD.publicKeyCredentialRequestOptions,
-      ...queryOptions,
-    },
-  };
-
-  const response = await request(app)
-    .post('/api/credentials/get')
-    .set('Authorization', `Bearer ${token}`)
-    .send(publicKeyCredentialRequestPayload)
-    .expect('Content-Type', /json/)
-    .expect(200);
-
-  const verification = await verifyAuthenticationResponse({
-    response: response.body as AuthenticationResponseJSON,
-    expectedChallenge: CHALLENGE_BASE64URL,
-    expectedOrigin: RP_ORIGIN,
-    expectedRPID: RP_ID,
-
-    credential: {
-      id: credentialID,
-      publicKey: credentialPublicKey,
-      // The counter is stateful from the previous test verification
-      counter: expectedNewCounter - 1,
-    },
-    requireUserVerification: true,
-  });
-
-  // The most important check: confirm that the authentication was successful.
-  expect(verification.verified).toBe(true);
-
-  // A critical security check: ensure the signature counter has incremented.
-  expect(verification.authenticationInfo.newCounter).toBe(expectedNewCounter);
-
-  expect(response.body).toStrictEqual({
-    clientExtensionResults: {},
-    id: expect.any(String),
-    rawId: expect.any(String),
-    response: {
-      authenticatorData: expect.any(String),
-      clientDataJSON:
-        'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9',
-      signature: expect.any(String),
-      userHandle: Buffer.from(UUIDMapper.UUIDtoBytes(USER_ID)).toString(
-        'base64url',
-      ),
-    },
-    type: 'public-key',
-  });
-
-  return { response, verification };
 };
 
 const jwtIssuer = new JwtIssuer({
@@ -268,12 +101,12 @@ describe('CredentialsController', () => {
 
     await app.init();
 
-    const { response, verification } = await performAndVerifyRegistration({
-      app: app.getHttpServer(),
-      token,
-      publicKeyCredentialRegistrationPayload:
-        PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-    });
+    const { response, verification } =
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+      });
 
     // Save the results for use in other tests
     registrationVerification = verification;
@@ -290,18 +123,19 @@ describe('CredentialsController', () => {
 
   describe('POST /api/credentials/create', () => {
     test('With multiple supported `pubKeyCredParams`', async () => {
-      const { webAuthnCredentialId } = await performAndVerifyRegistration({
-        app: app.getHttpServer(),
-        token,
-        publicKeyCredentialRegistrationPayload: setDeep(
-          PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-          'publicKeyCredentialCreationOptions.pubKeyCredParams',
-          (val) => [
-            ...val,
-            { alg: COSEKeyAlgorithm.ES512, type: 'public-key' },
-          ],
-        ),
-      });
+      const { webAuthnCredentialId } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: setDeep(
+            PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            'publicKeyCredentialCreationOptions.pubKeyCredParams',
+            (val) => [
+              ...val,
+              { alg: COSEKeyAlgorithm.ES512, type: 'public-key' },
+            ],
+          ),
+        });
 
       await prisma.webAuthnCredential.delete({
         where: {
@@ -311,15 +145,16 @@ describe('CredentialsController', () => {
     });
 
     test('With multiple unsupported and one supported `pubKeyCredParams`', async () => {
-      const { webAuthnCredentialId } = await performAndVerifyRegistration({
-        app: app.getHttpServer(),
-        token,
-        publicKeyCredentialRegistrationPayload: setDeep(
-          PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-          'publicKeyCredentialCreationOptions.pubKeyCredParams',
-          (val) => [{ alg: -8, type: 'public-key' }, ...val],
-        ),
-      });
+      const { webAuthnCredentialId } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: setDeep(
+            PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            'publicKeyCredentialCreationOptions.pubKeyCredParams',
+            (val) => [{ alg: -8, type: 'public-key' }, ...val],
+          ),
+        });
 
       await prisma.webAuthnCredential.delete({
         where: {
@@ -419,16 +254,18 @@ describe('CredentialsController', () => {
 
   describe('POST /api/credentials/get', () => {
     test('As authenticated user', async () => {
-      await performAndVerifyAuthRequest({
+      await performPublicKeyCredentialRequestAndVerify({
         app: app.getHttpServer(),
         token,
-        queryOptions: {
-          allowCredentials: [
-            {
-              id: base64CredentialID,
-              type: 'public-key',
-            },
-          ],
+        payload: {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64CredentialID,
+                type: 'public-key',
+              },
+            ],
+          },
         },
         registrationVerification,
         expectedNewCounter: 1,
@@ -436,11 +273,13 @@ describe('CredentialsController', () => {
     });
 
     test('With empty `allowCredentials` as authenticated user', async () => {
-      await performAndVerifyAuthRequest({
+      await performPublicKeyCredentialRequestAndVerify({
         app: app.getHttpServer(),
         token,
-        queryOptions: {
-          allowCredentials: [],
+        payload: {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [],
+          },
         },
         registrationVerification,
         expectedNewCounter: 2,
@@ -448,11 +287,14 @@ describe('CredentialsController', () => {
     });
 
     test('With undefined `allowCredentials` as authenticated user', async () => {
-      await performAndVerifyAuthRequest({
+      await performPublicKeyCredentialRequestAndVerify({
         app: app.getHttpServer(),
         token,
         registrationVerification,
         expectedNewCounter: 3,
+        payload: {
+          publicKeyCredentialRequestOptions: {},
+        },
       });
     });
 
