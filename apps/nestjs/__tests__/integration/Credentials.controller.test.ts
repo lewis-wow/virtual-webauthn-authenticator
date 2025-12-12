@@ -106,6 +106,8 @@ describe('CredentialsController', () => {
         app: app.getHttpServer(),
         token,
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+        requireUserVerification: true,
+        requireUserPresence: false,
       });
 
     // Save the results for use in other tests
@@ -258,7 +260,9 @@ describe('CredentialsController', () => {
         app: app.getHttpServer(),
         token,
         payload: {
+          ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
           publicKeyCredentialRequestOptions: {
+            ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD.publicKeyCredentialRequestOptions,
             allowCredentials: [
               {
                 id: base64CredentialID,
@@ -277,7 +281,9 @@ describe('CredentialsController', () => {
         app: app.getHttpServer(),
         token,
         payload: {
+          ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
           publicKeyCredentialRequestOptions: {
+            ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD.publicKeyCredentialRequestOptions,
             allowCredentials: [],
           },
         },
@@ -290,11 +296,9 @@ describe('CredentialsController', () => {
       await performPublicKeyCredentialRequestAndVerify({
         app: app.getHttpServer(),
         token,
+        payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
         registrationVerification,
         expectedNewCounter: 3,
-        payload: {
-          publicKeyCredentialRequestOptions: {},
-        },
       });
     });
 
