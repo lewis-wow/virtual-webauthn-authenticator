@@ -28,72 +28,7 @@ import {
   RP_ORIGIN,
 } from '../../helpers/consts';
 import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
-
-const prisma = new PrismaClient();
-
-/**
- * Helper function to de-duplicate the authentication and verification logic.
- * It uses and updates the `currentCounter` from the describe block's scope.
- */
-const performAndVerifyAuth = async (opts: {
-  authenticator: VirtualAuthenticator;
-  requestOptions: PublicKeyCredentialRequestOptions;
-  id: string;
-  publicKey: Uint8Array<ArrayBuffer>;
-  counter: number;
-  expectedNewCounter: number;
-}) => {
-  const {
-    authenticator,
-    requestOptions,
-    id,
-    publicKey,
-    counter,
-    expectedNewCounter,
-  } = opts;
-
-  const publicKeyCredential = await authenticator.getCredential({
-    publicKeyCredentialRequestOptions: requestOptions,
-    meta: {
-      userId: USER_ID,
-      origin: RP_ORIGIN,
-    },
-    context: {
-      apiKeyId: undefined,
-    },
-  });
-
-  const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialDtoSchema.encode(
-      publicKeyCredential,
-    ) as AuthenticationResponseJSON,
-    expectedChallenge: CHALLENGE_BASE64URL,
-    expectedOrigin: RP_ORIGIN,
-    expectedRPID: RP_ID,
-    credential: {
-      id,
-      publicKey,
-      counter,
-    },
-    requireUserVerification: true,
-  });
-
-  // The most important check: confirm that the authentication was successful.
-  expect(authenticationVerification.verified).toBe(true);
-
-  // A critical security check: ensure the signature counter has incremented.
-  expect(authenticationVerification.authenticationInfo.newCounter).toBe(
-    expectedNewCounter,
-  );
-};
-
-const cleanup = async () => {
-  await prisma.$transaction([
-    prisma.user.deleteMany(),
-    prisma.webAuthnCredential.deleteMany(),
-    prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
-  ]);
-};
+import { performPublicKeyCredentialRequestAndVerify } from '../../helpers/performPublicKeyCredentialRequestAndVerify';
 
 /**
  * Tests for VirtualAuthenticator.getCredential() method
@@ -105,11 +40,19 @@ const cleanup = async () => {
  * authentication ceremony.
  */
 describe('VirtualAuthenticator.getCredential()', () => {
+  const prisma = new PrismaClient();
   let keyProvider: IKeyProvider;
   let authenticator: VirtualAuthenticator;
   const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+
+  const cleanupWebAuthnCredentials = async () => {
+    await prisma.$transaction([
+      prisma.webAuthnCredential.deleteMany(),
+      prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
+    ]);
+  };
 
   let credentialID: string;
   let credentialRawID: Uint8Array;
@@ -117,9 +60,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
   let publicKey: Uint8Array<ArrayBuffer>;
 
   beforeAll(async () => {
-    await cleanup();
-
-    // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
 
     const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
@@ -166,7 +106,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   });
 
   afterAll(async () => {
-    await cleanup();
+    await prisma.user.deleteMany();
+    await cleanupWebAuthnCredentials();
   });
 
   /**
@@ -178,7 +119,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
-    await performAndVerifyAuth({
+    await performPublicKeyCredentialRequestAndVerify({
       authenticator,
       requestOptions,
       id: credentialID,
@@ -198,7 +139,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
-    await performAndVerifyAuth({
+    await performPublicKeyCredentialRequestAndVerify({
       authenticator,
       requestOptions: {
         ...requestOptions,
@@ -221,7 +162,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       credentialID: credentialRawID,
     });
 
-    await performAndVerifyAuth({
+    await performPublicKeyCredentialRequestAndVerify({
       authenticator,
       requestOptions: {
         ...requestOptions,
@@ -263,7 +204,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       }),
     ).to.rejects.toThrowError(
@@ -295,7 +236,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       }),
     ).to.rejects.toThrowError(
@@ -333,7 +274,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       }),
     ).to.rejects.toThrowError(
@@ -392,7 +333,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         });
 
@@ -442,7 +383,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -482,7 +423,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -533,7 +474,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -578,7 +519,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -629,7 +570,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -670,7 +611,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -707,7 +648,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -750,7 +691,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -776,7 +717,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -803,7 +744,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -844,7 +785,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -878,7 +819,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -918,7 +859,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -964,7 +905,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1013,7 +954,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1061,7 +1002,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1105,7 +1046,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1152,7 +1093,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1199,7 +1140,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1254,7 +1195,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1277,8 +1218,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
 
     test('should work with all fields at maximum complexity', async () => {
-      const largeChallenge = new Uint8Array(1024);
-      crypto.getRandomValues(largeChallenge);
+      const largeChallenge = new Uint8Array(randomBytes(1024));
 
       const requestOptions = createPublicKeyCredentialRequestOptions({
         credentialID: credentialRawID,
@@ -1317,7 +1257,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1353,7 +1293,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -1378,7 +1318,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -1403,7 +1343,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -1432,7 +1372,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1464,7 +1404,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1496,7 +1436,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1542,7 +1482,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -1561,7 +1501,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -1580,7 +1520,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: RP_ORIGIN,
           },
           context: {
-            apiKeyId: undefined,
+            apiKeyId: null,
           },
         }),
       ).rejects.toThrowError();
@@ -1606,7 +1546,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 
@@ -1642,7 +1582,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: wrongOrigin,
         },
         context: {
-          apiKeyId: undefined,
+          apiKeyId: null,
         },
       });
 

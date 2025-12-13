@@ -1,7 +1,7 @@
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { bytesNotEmpty, hasMinBytes } from '@repo/utils';
+import { assertSchema } from '@repo/utils';
 import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -10,21 +10,16 @@ import {
   assert,
   hasMinLength,
   isArray,
-  isBoolean,
   isEnum,
-  isInstanceOf,
-  isLiteral,
   isNumber,
   isObject,
-  isOptional,
   isString,
 } from 'typanion';
+import z from 'zod';
 
 import { Attestation } from './enums/Attestation';
-import { AuthenticatorAttachment } from './enums/AuthenticatorAttachment';
 import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
-import { ResidentKeyRequirement } from './enums/ResidentKeyRequirement';
 import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
 import { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
@@ -40,8 +35,14 @@ import type {
   PubKeyCredParamLoose,
   PubKeyCredParamStrict,
 } from './zod-validation/PubKeyCredParamSchema';
-import type { PublicKeyCredentialCreationOptions } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialRequestOptions } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
+import {
+  PublicKeyCredentialCreationOptionsSchema,
+  type PublicKeyCredentialCreationOptions,
+} from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
+import {
+  PublicKeyCredentialRequestOptionsSchema,
+  type PublicKeyCredentialRequestOptions,
+} from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorCredentialMetaArgs = {
@@ -49,20 +50,20 @@ export type VirtualAuthenticatorCredentialMetaArgs = {
   userId: string;
 };
 
+export type VirtualAuthenticatorCredentialContextArgs = {
+  apiKeyId: string | null;
+};
+
 export type VirtualAuthenticatorCreateCredentialArgs = {
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
   meta: VirtualAuthenticatorCredentialMetaArgs;
-  context: {
-    apiKeyId: string | null;
-  };
+  context: VirtualAuthenticatorCredentialContextArgs;
 };
 
 export type VirtualAuthenticatorGetCredentialArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   meta: VirtualAuthenticatorCredentialMetaArgs;
-  context: {
-    apiKeyId: string | null | undefined;
-  };
+  context: VirtualAuthenticatorCredentialContextArgs;
 };
 
 export type VirtualAuthenticatorOptions = {
@@ -317,76 +318,27 @@ export class VirtualAuthenticator {
   ): Promise<PublicKeyCredential> {
     const { publicKeyCredentialCreationOptions, meta, context } = opts;
 
-    assert(publicKeyCredentialCreationOptions.rp.id, isString());
-    assert(publicKeyCredentialCreationOptions.rp.name, isString());
-    assert(
-      publicKeyCredentialCreationOptions.attestation,
-      isOptional(isEnum(Attestation)),
+    assertSchema(
+      publicKeyCredentialCreationOptions,
+      PublicKeyCredentialCreationOptionsSchema,
     );
-    assert(
-      publicKeyCredentialCreationOptions.challenge,
-      applyCascade(isInstanceOf(Uint8Array), hasMinBytes(16)),
-    );
-    assert(
-      publicKeyCredentialCreationOptions.user.id,
-      isInstanceOf(Uint8Array),
-    );
-    assert(
-      publicKeyCredentialCreationOptions.user.id,
-      applyCascade(isInstanceOf(Uint8Array), bytesNotEmpty()),
-    );
-    assert(
-      UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
-      isLiteral(meta.userId),
-    );
-    assert(publicKeyCredentialCreationOptions.user.name, isString());
-    assert(publicKeyCredentialCreationOptions.user.displayName, isString());
-    assert(
-      publicKeyCredentialCreationOptions.pubKeyCredParams,
-      applyCascade(
-        isArray(
-          isObject({
-            type: isString(),
-            alg: isNumber(),
-          }),
+
+    assertSchema(
+      meta,
+      z.object({
+        origin: z.string(),
+        userId: z.literal(
+          UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
         ),
-        hasMinLength(1),
-      ),
+      }),
     );
-    assert(
-      publicKeyCredentialCreationOptions.excludeCredentials,
-      isOptional(
-        isArray(
-          isObject({
-            type: isEnum(PublicKeyCredentialType),
-            id: isInstanceOf(Uint8Array),
-            transports: isOptional(isArray(isString())),
-          }),
-        ),
-      ),
+
+    assertSchema(
+      context,
+      z.object({
+        apiKeyId: z.string().nullable(),
+      }),
     );
-    assert(publicKeyCredentialCreationOptions.timeout, isOptional(isNumber()));
-    assert(
-      publicKeyCredentialCreationOptions.authenticatorSelection
-        ?.authenticatorAttachment,
-      isOptional(isEnum(AuthenticatorAttachment)),
-    );
-    assert(
-      publicKeyCredentialCreationOptions.authenticatorSelection
-        ?.userVerification,
-      isOptional(isEnum(UserVerificationRequirement)),
-    );
-    assert(
-      publicKeyCredentialCreationOptions.authenticatorSelection
-        ?.requireResidentKey,
-      isOptional(isBoolean()),
-    );
-    assert(
-      publicKeyCredentialCreationOptions.authenticatorSelection?.residentKey,
-      isOptional(isEnum(ResidentKeyRequirement)),
-    );
-    assert(meta.userId, isString());
-    assert(meta.origin, isString());
 
     if (
       publicKeyCredentialCreationOptions.excludeCredentials &&
@@ -559,27 +511,24 @@ export class VirtualAuthenticator {
   ): Promise<PublicKeyCredential> {
     const { publicKeyCredentialRequestOptions, meta, context } = opts;
 
-    assert(publicKeyCredentialRequestOptions.rpId, isString());
-    assert(publicKeyCredentialRequestOptions.timeout, isOptional(isNumber()));
-    assert(
-      publicKeyCredentialRequestOptions.allowCredentials,
-      isOptional(
-        isArray(
-          isObject({
-            id: isInstanceOf(Uint8Array),
-            type: isEnum(PublicKeyCredentialType),
-            transports: isOptional(isArray(isString())),
-          }),
-        ),
-      ),
+    assertSchema(
+      publicKeyCredentialRequestOptions,
+      PublicKeyCredentialRequestOptionsSchema,
     );
-    assert(
-      publicKeyCredentialRequestOptions.challenge,
-      applyCascade(isInstanceOf(Uint8Array), hasMinBytes(16)),
+
+    assertSchema(
+      meta,
+      z.object({
+        origin: z.string(),
+        userId: z.string(),
+      }),
     );
-    assert(
-      publicKeyCredentialRequestOptions.userVerification,
-      isOptional(isEnum(UserVerificationRequirement)),
+
+    assertSchema(
+      context,
+      z.object({
+        apiKeyId: z.string().nullable(),
+      }),
     );
 
     const webAuthnCredential =

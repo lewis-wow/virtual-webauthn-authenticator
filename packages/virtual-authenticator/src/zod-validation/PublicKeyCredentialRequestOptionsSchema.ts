@@ -4,6 +4,7 @@ import { see } from '../meta/see';
 import { AuthenticationExtensionsClientInputsSchema } from './AuthenticationExtensionsClientInputsSchema';
 import { ChallengeSchema } from './ChallengeSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
+import { RpIdSchema } from './RpIdSchema';
 import { UserVerificationRequirementSchema } from './enums/UserVerificationRequirementSchema';
 
 /**
@@ -37,7 +38,7 @@ export const PublicKeyCredentialRequestOptionsSchema = z
      *
      * @see https://w3c.github.io/webauthn/#relying-party-identifier
      */
-    rpId: z.string().optional(),
+    rpId: RpIdSchema,
     userVerification: UserVerificationRequirementSchema.optional(),
     extensions: AuthenticationExtensionsClientInputsSchema.optional(),
   })
