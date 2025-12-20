@@ -347,9 +347,34 @@ export class VirtualAuthenticator {
       }),
     );
 
+    // Validate that the origin is authorized to act on behalf of the RP ID.
+    // Per WebAuthn spec, the RP ID must be a registrable domain suffix of or equal to the origin's effective domain.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (step 7)
+    // @see https://html.spec.whatwg.org/multipage/browsers.html#is-a-registrable-domain-suffix-of-or-is-equal-to
+
+    // hostname is without port, host is with port
+    const originHostname = new URL(meta.origin).hostname;
+    const rpId = publicKeyCredentialCreationOptions.rp.id;
+
     assertSchema(
-      new URL(meta.origin).host,
-      z.literal(publicKeyCredentialCreationOptions.rp.id),
+      originHostname,
+      z.string().refine(
+        (val) => {
+          // Exact match (e.g., origin "example.com" and RP ID "example.com")
+          if (val === rpId) return true;
+
+          // Subdomain (e.g., origin "login.example.com" and RP ID "example.com")
+          // Must end with a dot + rpId to prevent false positives such as "myexample.com" vs "example.com"
+          if (val.endsWith(`.${rpId}`) && val.length > rpId.length + 1) {
+            return true;
+          }
+
+          return false;
+        },
+        {
+          message: `Origin "${originHostname}" is not a valid subdomain of RP ID "${rpId}".`,
+        },
+      ),
     );
 
     assertSchema(
@@ -382,7 +407,7 @@ export class VirtualAuthenticator {
         // Check against the repository
         const exists =
           await this.webAuthnRepository.existsByRpIdAndCredentialIds({
-            rpId: publicKeyCredentialCreationOptions.rp.id,
+            rpId,
             credentialIds: credentialIdsToCheck,
           });
 
@@ -444,7 +469,7 @@ export class VirtualAuthenticator {
               webAuthnCredentialKeyVaultKeyMeta:
                 webAuthnCredentialPublicKey.webAuthnCredentialKeyVaultKeyMeta,
               COSEPublicKey: webAuthnCredentialPublicKey.COSEPublicKey,
-              rpId: publicKeyCredentialCreationOptions.rp.id,
+              rpId,
               userId: meta.userId,
               apiKeyId: context.apiKeyId,
             });
@@ -461,7 +486,7 @@ export class VirtualAuthenticator {
        * Should be only set if we are creating a new credential (registration).
        */
       credentialID: rawCredentialID,
-      rpId: publicKeyCredentialCreationOptions.rp.id,
+      rpId,
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
       userVerification:
@@ -555,13 +580,37 @@ export class VirtualAuthenticator {
       }),
     );
 
-    // https://example.com
-    const originURL = new URL(meta.origin);
+    // Validate that the origin is authorized to act on behalf of the RP ID.
+    // Per WebAuthn spec, the RP ID must be a registrable domain suffix of or equal to the origin's effective domain.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion (step 6)
+    // @see https://html.spec.whatwg.org/multipage/browsers.html#is-a-registrable-domain-suffix-of-or-is-equal-to
+
+    // hostname is without port, host is with port
+    const originHostname = new URL(meta.origin).hostname;
 
     if (publicKeyCredentialRequestOptions.rpId !== undefined) {
       assertSchema(
-        originURL.host,
-        z.literal(publicKeyCredentialRequestOptions.rpId),
+        originHostname,
+        z.string().refine(
+          (val) => {
+            // Exact match (e.g., origin "example.com" and RP ID "example.com")
+            if (val === publicKeyCredentialRequestOptions.rpId) return true;
+
+            // Subdomain (e.g., origin "login.example.com" and RP ID "example.com")
+            // Must end with a dot + rpId to prevent false positives such as "myexample.com" vs "example.com"
+            if (
+              val.endsWith(`.${publicKeyCredentialRequestOptions.rpId}`) &&
+              val.length > publicKeyCredentialRequestOptions.rpId!.length + 1
+            ) {
+              return true;
+            }
+
+            return false;
+          },
+          {
+            message: `Origin "${originHostname}" is not a valid subdomain of RP ID "${publicKeyCredentialRequestOptions.rpId}".`,
+          },
+        ),
       );
     }
 
@@ -573,7 +622,7 @@ export class VirtualAuthenticator {
     );
 
     // example.com
-    const rpId = publicKeyCredentialRequestOptions.rpId ?? originURL.host;
+    const rpId = publicKeyCredentialRequestOptions.rpId ?? originHostname;
 
     const webAuthnCredential =
       await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
