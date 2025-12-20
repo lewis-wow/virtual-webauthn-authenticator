@@ -509,6 +509,10 @@ export class VirtualAuthenticator {
         break;
     }
 
+    // NOTE: Per CTAP2 spec, attestationObject must use canonical CBOR encoding.
+    // Map keys MUST be sorted by length first, then lexicographically if equal length.
+    // Ensure cbor2 library supports canonical mode or keys are pre-sorted correctly.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-generating-an-attestation-object
     const attestationObject = new Map<string, unknown>([
       ['fmt', fmt],
       ['attStmt', attStmt],
