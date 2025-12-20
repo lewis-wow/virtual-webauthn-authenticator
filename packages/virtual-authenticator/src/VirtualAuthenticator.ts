@@ -17,6 +17,7 @@ import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
 import { SignatureFailed } from './exceptions/SignatureFailed';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnCredentialWithMeta } from './types/WebAuthnCredentialWithMeta';
@@ -376,6 +377,17 @@ export class VirtualAuthenticator {
       }),
     );
 
+    const userVerificationEnabled = meta.userVerificationEnabled ?? true;
+    const userPresenceEnabled = meta.userPresenceEnabled ?? true;
+
+    if (
+      !userVerificationEnabled &&
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.userVerification === UserVerificationRequirement.REQUIRED
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
     if (
       publicKeyCredentialCreationOptions.excludeCredentials &&
       publicKeyCredentialCreationOptions.excludeCredentials.length > 0
@@ -485,8 +497,8 @@ export class VirtualAuthenticator {
         publicKeyCredentialCreationOptions.authenticatorSelection
           ?.userVerification,
 
-      userVerificationEnabled: meta.userVerificationEnabled ?? true,
-      userPresenceEnabled: meta.userPresenceEnabled ?? true,
+      userVerificationEnabled,
+      userPresenceEnabled,
     });
 
     // NOTE: Per WebAuthn spec, clientDataJSON generation is the Client's (browser/extension) responsibility,
@@ -616,6 +628,17 @@ export class VirtualAuthenticator {
       }),
     );
 
+    const userVerificationEnabled = meta.userVerificationEnabled ?? true;
+    const userPresenceEnabled = meta.userPresenceEnabled ?? true;
+
+    if (
+      !userVerificationEnabled &&
+      publicKeyCredentialRequestOptions.userVerification ===
+        UserVerificationRequirement.REQUIRED
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
     // example.com
     const rpId = publicKeyCredentialRequestOptions.rpId ?? originHostname;
 
@@ -662,8 +685,8 @@ export class VirtualAuthenticator {
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
       userVerification: publicKeyCredentialRequestOptions.userVerification,
 
-      userVerificationEnabled: meta.userVerificationEnabled ?? true,
-      userPresenceEnabled: meta.userPresenceEnabled ?? true,
+      userVerificationEnabled,
+      userPresenceEnabled,
     });
 
     const dataToSign = this._createDataToSign({
