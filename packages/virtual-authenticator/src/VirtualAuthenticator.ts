@@ -1,21 +1,10 @@
 import { UUIDMapper } from '@repo/core/mappers';
 import { OriginSchema } from '@repo/core/zod-validation';
 import { Hash } from '@repo/crypto';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { assertSchema } from '@repo/utils';
 import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
-import {
-  applyCascade,
-  assert,
-  hasMinLength,
-  isArray,
-  isEnum,
-  isNumber,
-  isObject,
-  isString,
-} from 'typanion';
 import z from 'zod';
 
 import { Attestation } from './enums/Attestation';
@@ -32,9 +21,10 @@ import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnCredentialWithMeta } from './types/WebAuthnCredentialWithMeta';
 import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
-import type {
-  PubKeyCredParamLoose,
-  PubKeyCredParamStrict,
+import {
+  PubKeyCredParamStrictSchema,
+  type PubKeyCredParamLoose,
+  type PubKeyCredParamStrict,
 } from './zod-validation/PubKeyCredParamSchema';
 import {
   PublicKeyCredentialCreationOptionsSchema,
@@ -104,28 +94,10 @@ export class VirtualAuthenticator {
   private _findFirstSupportedPubKeyCredParamsOrThrow(
     pubKeyCredParams: PubKeyCredParamLoose[],
   ): PubKeyCredParamStrict {
-    assert(
-      pubKeyCredParams,
-      applyCascade(
-        isArray(
-          isObject({
-            type: isString(),
-            alg: isNumber(),
-          }),
-        ),
-        hasMinLength(1),
-      ),
-    );
-
     for (const pubKeyCredParam of pubKeyCredParams) {
-      if (
-        isEnum(PublicKeyCredentialType)(pubKeyCredParam.type) &&
-        isEnum(COSEKeyAlgorithm)(pubKeyCredParam.alg)
-      ) {
-        return {
-          type: pubKeyCredParam.type,
-          alg: pubKeyCredParam.alg,
-        };
+      const result = PubKeyCredParamStrictSchema.safeParse(pubKeyCredParam);
+      if (result.success) {
+        return result.data;
       }
     }
 
@@ -467,9 +439,9 @@ export class VirtualAuthenticator {
         });
       });
 
-    assert(
+    assertSchema(
       webAuthnCredentialPublicKey.webAuthnCredentialKeyMetaType,
-      isEnum(WebAuthnCredentialKeyMetaType),
+      z.enum(WebAuthnCredentialKeyMetaType),
     );
 
     const webAuthnCredential = await match({
