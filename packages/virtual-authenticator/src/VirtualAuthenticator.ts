@@ -469,6 +469,11 @@ export class VirtualAuthenticator {
           ?.userVerification,
     });
 
+    // NOTE: Per WebAuthn spec, clientDataJSON generation is the Client's (browser/extension) responsibility,
+    // not the Authenticator's. The authenticator should only receive clientDataHash.
+    // However, VirtualAuthenticator acts as an all-in-one backend simulating both client and authenticator logic,
+    // making this architectural simplification acceptable. The returned PublicKeyCredential must contain clientDataJSON.
+    // @see https://www.w3.org/TR/webauthn-3/#dom-authenticatorresponse-clientdatajson
     const clientData: CollectedClientData = {
       type: 'webauthn.create',
       challenge: Buffer.from(
@@ -581,6 +586,11 @@ export class VirtualAuthenticator {
 
     const credentialID = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
 
+    // NOTE: Per WebAuthn spec, clientDataJSON generation is the Client's (browser/extension) responsibility,
+    // not the Authenticator's. The authenticator should only receive clientDataHash.
+    // However, VirtualAuthenticator acts as an all-in-one backend simulating both client and authenticator logic,
+    // making this architectural simplification acceptable. The returned PublicKeyCredential must contain clientDataJSON.
+    // @see https://www.w3.org/TR/webauthn-3/#dom-authenticatorresponse-clientdatajson
     const clientData: CollectedClientData = {
       type: 'webauthn.get',
       challenge: Buffer.from(
