@@ -81,9 +81,10 @@ export class VirtualAuthenticator {
     this.keyProvider = opts.keyProvider;
   }
 
-  // The AAGUID of the authenticator.
-  // Length (in bytes): 16
-  // Zeroed-out AAGUID
+  /**
+   * The AAGUID of the authenticator (16 bytes, zeroed-out).
+   * @see https://www.w3.org/TR/webauthn-3/#aaguid
+   */
   static readonly AAGUID = new Uint8Array(Buffer.alloc(16));
 
   /**
@@ -128,8 +129,8 @@ export class VirtualAuthenticator {
   }
 
   /**
-   *
-   * @see https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
+   * Creates attested credential data structure.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
    */
   private async _createAttestedCredentialData(opts: {
     credentialID: Uint8Array;
@@ -142,9 +143,8 @@ export class VirtualAuthenticator {
     const credentialIdLength = Buffer.alloc(2);
     credentialIdLength.writeUInt16BE(opts.credentialID.length, 0);
 
-    // https://www.w3.org/TR/webauthn-2/#sctn-attested-credential-data
-    // Attested credential data is a variable-length byte array added to the
-    // authenticator data when generating an attestation object for a given credential.
+    // Attested credential data: variable-length byte array for attestation object.
+    // https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
     const attestedCredentialData = Buffer.concat([
       VirtualAuthenticator.AAGUID,
       credentialIdLength,
@@ -165,8 +165,8 @@ export class VirtualAuthenticator {
   }
 
   /**
-   *
-   * @see https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
+   * Creates authenticator data structure with flags and counters.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
    */
   private async _createAuthenticatorData(opts: {
     rpId: string;
@@ -221,7 +221,8 @@ export class VirtualAuthenticator {
     const signCountBuffer = Buffer.alloc(4);
     signCountBuffer.writeUInt32BE(counter, 0);
 
-    // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
+    // Concatenate authenticator data components per spec.
+    // https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
     const authenticatorData = Buffer.concat(
       [
         rpIdHash,
@@ -245,6 +246,10 @@ export class VirtualAuthenticator {
     return new Uint8Array(authenticatorData);
   }
 
+  /**
+   * Creates data to be signed: concatenation of authData and clientDataHash.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   */
   private _createDataToSign(opts: {
     clientDataJSON: Uint8Array;
     authData: Uint8Array;
@@ -257,14 +262,18 @@ export class VirtualAuthenticator {
     return new Uint8Array(dataToSign);
   }
 
+  /**
+   * Handles 'none' attestation (no attestation statement).
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
+   */
   private _handleAttestationNone(): {
     fmt: Fmt;
     attStmt: Map<string, Uint8Array | number>;
   } {
-    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
+    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
     const fmt = Fmt.NONE;
 
-    // https://www.w3.org/TR/webauthn-2/#attestation-statement
+    // https://www.w3.org/TR/webauthn-3/#attestation-statement
     const attStmt = new Map<string, Uint8Array | number>([]);
 
     return {
@@ -273,6 +282,10 @@ export class VirtualAuthenticator {
     };
   }
 
+  /**
+   * Handles 'direct' attestation using packed format.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
+   */
   private async _handleAttestationDirect(opts: {
     webAuthnCredential: WebAuthnCredentialWithMeta;
     data: {
@@ -282,7 +295,7 @@ export class VirtualAuthenticator {
   }): Promise<{ fmt: Fmt; attStmt: Map<string, Uint8Array | number> }> {
     const { webAuthnCredential, data } = opts;
 
-    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
+    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
     const fmt = Fmt.PACKED;
 
     const dataToSign = this._createDataToSign(data);
@@ -298,7 +311,7 @@ export class VirtualAuthenticator {
         });
       });
 
-    // https://www.w3.org/TR/webauthn-2/#attestation-statement
+    // https://www.w3.org/TR/webauthn-3/#attestation-statement
     const attStmt = new Map<string, Uint8Array | number>([
       ['alg', alg],
       ['sig', new Uint8Array(signature)],
@@ -311,8 +324,8 @@ export class VirtualAuthenticator {
   }
 
   /**
-   *
-   * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation
+   * Creates a new public key credential (registration ceremony).
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
    */
   public async createCredential(
     opts: VirtualAuthenticatorCreateCredentialArgs,
@@ -441,7 +454,8 @@ export class VirtualAuthenticator {
       )
       .exhaustive();
 
-    // https://www.w3.org/TR/webauthn-2/#sctn-authenticator-data
+    // Generate authenticator data for registration.
+    // https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
     const authData = await this._createAuthenticatorData({
       /**
        * Should be only set if we are creating a new credential (registration).
@@ -468,9 +482,10 @@ export class VirtualAuthenticator {
       Buffer.from(JSON.stringify(clientData)),
     );
 
-    // https://www.w3.org/TR/webauthn-2/#sctn-attstn-fmt-ids
+    // Determine attestation format and statement based on requested attestation.
+    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
     let fmt: Fmt;
-    // https://www.w3.org/TR/webauthn-2/#attestation-statement
+    // https://www.w3.org/TR/webauthn-3/#attestation-statement
     let attStmt: Map<string, Uint8Array | number>;
 
     switch (publicKeyCredentialCreationOptions.attestation) {
@@ -510,7 +525,8 @@ export class VirtualAuthenticator {
   }
 
   /**
-   * @see https://www.w3.org/TR/webauthn-2/#sctn-credential-assertion
+   * Gets an existing credential (authentication ceremony).
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion
    */
   public async getCredential(
     opts: VirtualAuthenticatorGetCredentialArgs,
