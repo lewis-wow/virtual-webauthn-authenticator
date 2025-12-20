@@ -49,6 +49,9 @@ import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSc
 export type VirtualAuthenticatorCredentialMetaArgs = {
   origin: string;
   userId: string;
+  userVerificationEnabled?: boolean;
+  userPresenceEnabled?: boolean;
+  crossOrigin?: boolean;
 };
 
 export type VirtualAuthenticatorCredentialContextArgs = {
@@ -177,9 +180,19 @@ export class VirtualAuthenticator {
     credentialID: Uint8Array | undefined;
     COSEPublicKey: Uint8Array;
     userVerification: UserVerificationRequirement | undefined;
+
+    userVerificationEnabled: boolean;
+    userPresenceEnabled: boolean;
   }): Promise<Uint8Array> {
-    const { rpId, counter, credentialID, COSEPublicKey, userVerification } =
-      opts;
+    const {
+      rpId,
+      counter,
+      credentialID,
+      COSEPublicKey,
+      userVerification,
+      userVerificationEnabled,
+      userPresenceEnabled,
+    } = opts;
 
     // SHA-256 hash of the RP ID the credential is scoped to.
     // Length (in bytes): 32
@@ -193,16 +206,19 @@ export class VirtualAuthenticator {
     // Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
     // Length (in bytes): 1
 
+    let flagsInt = 0b00000000;
+
     // Bit 0: User Present (UP)
     // Always 1 for standard WebAuthn flows
-    let flagsInt = 0b00000001;
+    if (userPresenceEnabled) {
+      flagsInt |= 0b00000001;
+    }
 
     // Bit 2: User Verified (UV)
     // If 'required' or 'preferred' (and not explicitly 'discouraged')
     if (
-      userVerification === UserVerificationRequirement.PREFERRED ||
-      userVerification === UserVerificationRequirement.REQUIRED ||
-      userVerification === undefined
+      userVerificationEnabled &&
+      userVerification !== UserVerificationRequirement.DISCOURAGED
     ) {
       flagsInt |= 0b00000100;
     }
@@ -344,6 +360,9 @@ export class VirtualAuthenticator {
         userId: z.literal(
           UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
         ),
+        userVerificationEnabled: z.boolean().optional(),
+        userPresenceEnabled: z.boolean().optional(),
+        crossOrigin: z.boolean().optional(),
       }),
     );
 
@@ -492,6 +511,9 @@ export class VirtualAuthenticator {
       userVerification:
         publicKeyCredentialCreationOptions.authenticatorSelection
           ?.userVerification,
+
+      userVerificationEnabled: meta.userVerificationEnabled ?? true,
+      userPresenceEnabled: meta.userPresenceEnabled ?? true,
     });
 
     // NOTE: Per WebAuthn spec, clientDataJSON generation is the Client's (browser/extension) responsibility,
@@ -505,7 +527,7 @@ export class VirtualAuthenticator {
         publicKeyCredentialCreationOptions.challenge,
       ).toString('base64url'),
       origin: meta.origin,
-      crossOrigin: false,
+      crossOrigin: meta.crossOrigin ?? false,
     };
 
     const clientDataJSON = new Uint8Array(
@@ -650,7 +672,7 @@ export class VirtualAuthenticator {
         publicKeyCredentialRequestOptions.challenge,
       ).toString('base64url'),
       origin: meta.origin,
-      crossOrigin: false,
+      crossOrigin: meta.crossOrigin ?? false,
     };
 
     const clientDataJSON = new Uint8Array(
@@ -666,6 +688,9 @@ export class VirtualAuthenticator {
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
       userVerification: publicKeyCredentialRequestOptions.userVerification,
+
+      userVerificationEnabled: meta.userVerificationEnabled ?? true,
+      userPresenceEnabled: meta.userPresenceEnabled ?? true,
     });
 
     const dataToSign = this._createDataToSign({
