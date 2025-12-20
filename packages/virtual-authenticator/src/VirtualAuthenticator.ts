@@ -49,6 +49,7 @@ import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSc
 export type VirtualAuthenticatorCredentialMetaArgs = {
   origin: string;
   userId: string;
+
   userVerificationEnabled?: boolean;
   userPresenceEnabled?: boolean;
   crossOrigin?: boolean;
