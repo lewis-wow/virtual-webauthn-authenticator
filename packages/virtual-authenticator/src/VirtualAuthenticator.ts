@@ -1,4 +1,5 @@
 import { UUIDMapper } from '@repo/core/mappers';
+import { OriginSchema } from '@repo/core/zod-validation';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { assertSchema } from '@repo/utils';
@@ -326,11 +327,16 @@ export class VirtualAuthenticator {
     assertSchema(
       meta,
       z.object({
-        origin: z.string(),
+        origin: OriginSchema,
         userId: z.literal(
           UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
         ),
       }),
+    );
+
+    assertSchema(
+      new URL(meta.origin).host,
+      z.literal(publicKeyCredentialCreationOptions.rp.id),
     );
 
     assertSchema(
@@ -519,10 +525,20 @@ export class VirtualAuthenticator {
     assertSchema(
       meta,
       z.object({
-        origin: z.string(),
+        origin: OriginSchema,
         userId: z.string(),
       }),
     );
+
+    // https://example.com
+    const originURL = new URL(meta.origin);
+
+    if (publicKeyCredentialRequestOptions.rpId !== undefined) {
+      assertSchema(
+        originURL.host,
+        z.literal(publicKeyCredentialRequestOptions.rpId),
+      );
+    }
 
     assertSchema(
       context,
@@ -531,10 +547,13 @@ export class VirtualAuthenticator {
       }),
     );
 
+    // example.com
+    const rpId = publicKeyCredentialRequestOptions.rpId ?? originURL.host;
+
     const webAuthnCredential =
       await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
         {
-          rpId: publicKeyCredentialRequestOptions.rpId,
+          rpId,
           userId: meta.userId,
           apiKeyId: context.apiKeyId,
           allowCredentialIds:
@@ -564,7 +583,7 @@ export class VirtualAuthenticator {
        * Should be only set if we are creating a new credential (registration).
        */
       credentialID: undefined,
-      rpId: publicKeyCredentialRequestOptions.rpId,
+      rpId,
       counter: webAuthnCredential.counter,
       COSEPublicKey: webAuthnCredential.COSEPublicKey,
       userVerification: publicKeyCredentialRequestOptions.userVerification,

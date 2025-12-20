@@ -1,8 +1,20 @@
 import { z } from 'zod';
 
-// Matches http/s, followed by host/port, forbids /, ?, and #
-export const OriginSchema = z.url().meta({
-  id: 'Origin',
-  title: 'Origin',
-  description: 'A valid protocol, host, and optional port without paths.',
-});
+export const OriginSchema = z.url().refine(
+  (val) => {
+    try {
+      // Create a URL object
+      const url = new URL(val);
+
+      // Compare the input string with the .origin property
+      // .origin automatically strips paths, query parameters, and trailing slashes
+      return url.origin === val;
+    } catch {
+      return false; // If new URL fails (though .url() should have caught this beforehand)
+    }
+  },
+  {
+    message:
+      'Value must be a valid origin (e.g., https://example.com without a trailing slash).',
+  },
+);

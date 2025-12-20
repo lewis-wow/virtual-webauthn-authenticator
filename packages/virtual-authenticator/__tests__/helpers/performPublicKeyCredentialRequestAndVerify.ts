@@ -13,34 +13,44 @@ import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   authenticator: VirtualAuthenticator;
-  requestOptions: PublicKeyCredentialRequestOptions;
-  id: string;
+  publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
+  webAuthnCredentialId: string;
   publicKey: Uint8Array<ArrayBuffer>;
   counter: number;
-  expectedNewCounter: number;
+  expectedNewCounter?: number;
   requireUserVerification?: boolean;
+  expectedChallenge?: string;
+  userId?: string;
+  origin?: string;
 };
 
-export type PerformPublicKeyCredentialRequestAndVerifyResult = {};
+export type PerformPublicKeyCredentialRequestAndVerifyResult = {
+  authenticationVerification: Awaited<
+    ReturnType<typeof verifyAuthenticationResponse>
+  >;
+};
 
 export const performPublicKeyCredentialRequestAndVerify = async (
   opts: PerformPublicKeyCredentialRequestAndVerifyArgs,
 ): Promise<PerformPublicKeyCredentialRequestAndVerifyResult> => {
   const {
     authenticator,
-    requestOptions,
-    id,
+    publicKeyCredentialRequestOptions,
+    webAuthnCredentialId,
     publicKey,
     counter,
     expectedNewCounter,
     requireUserVerification,
+    expectedChallenge = CHALLENGE_BASE64URL,
+    userId = USER_ID,
+    origin = RP_ORIGIN,
   } = opts;
 
   const publicKeyCredential = await authenticator.getCredential({
-    publicKeyCredentialRequestOptions: requestOptions,
+    publicKeyCredentialRequestOptions,
     meta: {
-      userId: USER_ID,
-      origin: RP_ORIGIN,
+      userId,
+      origin,
     },
     context: {
       apiKeyId: null,
@@ -51,11 +61,11 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as AuthenticationResponseJSON,
-    expectedChallenge: CHALLENGE_BASE64URL,
+    expectedChallenge,
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
     credential: {
-      id,
+      id: webAuthnCredentialId,
       publicKey,
       counter,
     },
@@ -65,10 +75,12 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   // The most important check: confirm that the authentication was successful.
   expect(authenticationVerification.verified).toBe(true);
 
-  // A critical security check: ensure the signature counter has incremented.
-  expect(authenticationVerification.authenticationInfo.newCounter).toBe(
-    expectedNewCounter,
-  );
+  // A critical security check: ensure the signature counter has incremented (if expected).
+  if (expectedNewCounter !== undefined) {
+    expect(authenticationVerification.authenticationInfo.newCounter).toBe(
+      expectedNewCounter,
+    );
+  }
 
-  return {};
+  return { authenticationVerification };
 };

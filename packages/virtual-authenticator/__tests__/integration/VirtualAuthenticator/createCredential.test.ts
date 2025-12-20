@@ -29,7 +29,6 @@ import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
   CHALLENGE_BYTES,
-  PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   RP_NAME,
   RP_ORIGIN,
@@ -37,6 +36,21 @@ import {
   USER_ID_BYTSES,
 } from '../../helpers/consts';
 import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
+
+const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
+  rp: {
+    name: RP_NAME,
+    id: RP_ID,
+  },
+  user: {
+    id: USER_ID_BYTSES,
+    name: USER_NAME,
+    displayName: USER_DISPLAY_NAME,
+  },
+  challenge: CHALLENGE_BYTES,
+  pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+  timeout: 60000,
+} as PublicKeyCredentialCreationOptions;
 
 /**
  * Tests for VirtualAuthenticator.createCredential() method

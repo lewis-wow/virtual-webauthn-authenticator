@@ -38,7 +38,7 @@ export const PublicKeyCredentialRequestOptionsSchema = z
      *
      * @see https://w3c.github.io/webauthn/#relying-party-identifier
      */
-    rpId: RpIdSchema,
+    rpId: RpIdSchema.optional(),
     userVerification: UserVerificationRequirementSchema.optional(),
     extensions: AuthenticationExtensionsClientInputsSchema.optional(),
   })
