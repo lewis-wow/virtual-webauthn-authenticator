@@ -67,6 +67,16 @@ export type VirtualAuthenticatorOptions = {
   keyProvider: IKeyProvider;
 };
 
+/**
+ * A virtual WebAuthn Authenticator implementation compliant with W3C Level 3 and CTAP2 specifications.
+ *
+ * This class simulates both registration (`createCredential`) and authentication (`getCredential`) ceremonies
+ * for testing and simulation purposes. It enforces strict protocol constraints, including Origin validation,
+ * RP ID checks, and User Verification (UV) requirements.
+ *
+ * Through configurable metadata, it allows simulation of various hardware states (e.g., User Verification
+ * availability, User Presence) and handles specific error scenarios like `UserVerificationNotAvailable`.
+ */
 export class VirtualAuthenticator {
   private readonly webAuthnRepository: IWebAuthnRepository;
   private readonly keyProvider: IKeyProvider;
