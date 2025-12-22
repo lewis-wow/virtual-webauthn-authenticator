@@ -16,15 +16,17 @@ import { BytesSchema } from './BytesSchema';
  *
  * @see https://www.w3.org/TR/webauthn/#user-handle
  */
-export const UserHandleSchema = BytesSchema.meta({
-  id: 'UserHandle',
-  ref: 'UserHandle',
-  description: `The user handle for the assertion (max 64 bytes). ${see(
-    'https://www.w3.org/TR/webauthn/#user-handle',
-  )}`,
-}).refine((buf) => buf === null || buf.length <= 64, {
-  message: 'User handle must not exceed 64 bytes in length.',
-  path: ['length'],
-});
+export const UserHandleSchema = BytesSchema.nullable()
+  .meta({
+    id: 'UserHandle',
+    ref: 'UserHandle',
+    description: `The user handle for the assertion (max 64 bytes). ${see(
+      'https://www.w3.org/TR/webauthn/#user-handle',
+    )}`,
+  })
+  .refine((buf) => buf === null || buf.length <= 64, {
+    message: 'User handle must not exceed 64 bytes in length.',
+    path: ['length'],
+  });
 
 export type UserHandle = z.infer<typeof UserHandleSchema>;

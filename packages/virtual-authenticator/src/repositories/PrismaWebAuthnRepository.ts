@@ -1,9 +1,14 @@
+import { UUIDMapper } from '@repo/core/mappers';
 import { Prisma, PrismaClient } from '@repo/prisma';
 import { assert, isArray, isNullable, isOptional, isString } from 'typanion';
 
 import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import type { WebAuthnCredentialWithMeta } from '../types/WebAuthnCredentialWithMeta';
+import type {
+  PublicKeyCredentialDescriptor,
+  WebAuthnCredential,
+} from '../zod-validation';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,
@@ -73,18 +78,55 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     return createdWebAuthnCredentialWithMeta as WebAuthnCredentialWithMeta;
   }
 
+  async findAllByAllowCredentialDescriptorList(opts: {
+    allowCredentialDescriptorList: Pick<PublicKeyCredentialDescriptor, 'id'>[];
+  }): Promise<WebAuthnCredential[]> {
+    const { allowCredentialDescriptorList } = opts;
+
+    const credentialOptions = await this.prisma.webAuthnCredential.findMany({
+      where: {
+        id: {
+          in: allowCredentialDescriptorList.map((allowCredentialDescriptor) =>
+            UUIDMapper.bytesToUUID(allowCredentialDescriptor.id),
+          ),
+        },
+      },
+      include: {
+        webAuthnCredentialKeyVaultKeyMeta: true,
+      },
+    });
+
+    return credentialOptions as WebAuthnCredential[];
+  }
+
+  async findAllByRpIdAndUserId(opts: {
+    userId: string;
+    rpId: string;
+    apiKeyId: string | null;
+  }): Promise<WebAuthnCredential[]> {
+    const { userId, rpId, apiKeyId } = opts;
+
+    const credentialOptions = await this.prisma.webAuthnCredential.findMany({
+      where: {
+        userId,
+        rpId,
+        apiKeyId,
+      },
+      include: {
+        webAuthnCredentialKeyVaultKeyMeta: true,
+      },
+    });
+
+    return credentialOptions as WebAuthnCredential[];
+  }
+
   async findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;
     userId: string;
-    apiKeyId: string | null | undefined;
-    allowCredentialIds?: string[];
+    apiKeyId: string | null;
+    allowCredentialDescriptorList?: string[];
   }): Promise<WebAuthnCredentialWithMeta> {
-    const { rpId, userId, allowCredentialIds, apiKeyId } = opts;
-
-    assert(rpId, isString());
-    assert(userId, isString());
-    assert(apiKeyId, isOptional(isNullable(isString())));
-    assert(allowCredentialIds, isOptional(isArray(isString())));
+    const { rpId, userId, allowCredentialDescriptorList, apiKeyId } = opts;
 
     const where: Prisma.WebAuthnCredentialWhereInput = {
       rpId,
@@ -92,9 +134,12 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       apiKeyId,
     };
 
-    if (allowCredentialIds && allowCredentialIds.length > 0) {
+    if (
+      allowCredentialDescriptorList &&
+      allowCredentialDescriptorList.length > 0
+    ) {
       where.id = {
-        in: allowCredentialIds,
+        in: allowCredentialDescriptorList,
       };
     }
 
@@ -105,13 +150,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         });
 
         if (webAuthnCredential === null) {
-          throw new CredentialNotFound({
-            data: {
-              userId,
-              allowCredentialIds,
-              rpId,
-            },
-          });
+          throw new CredentialNotFound();
         }
 
         return await tx.webAuthnCredential.update({

@@ -21,13 +21,25 @@ export const PublicKeyCredentialCreationOptionsSchema = z
     rp: PublicKeyCredentialRpEntitySchema,
     user: PublicKeyCredentialUserEntitySchema,
     challenge: ChallengeSchema,
-    pubKeyCredParams: z.array(PubKeyCredParamLooseSchema).min(1),
-    timeout: z.number().optional(),
+    // Per spec step 10: if empty array, ES256 (-7) and RS256 (-257) are used as defaults
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (step 10)
+    pubKeyCredParams: z.array(PubKeyCredParamLooseSchema),
+    // timeout is unsigned long in milliseconds
+    // range: 1 minute (60000ms) to 10 minutes (600000ms)
+    // @see https://www.w3.org/TR/webauthn-3/#recommended-range-and-default-for-a-webauthn-ceremony-timeout
+    timeout: z.number().int().min(60_000).max(600_000).optional(),
     excludeCredentials: z.array(PublicKeyCredentialDescriptorSchema).optional(),
     authenticatorSelection: AuthenticatorSelectionCriteriaSchema.optional(),
+    // hints is an optional array of DOMString values from PublicKeyCredentialHint
+    hints: z.array(z.string()).optional(),
     attestation: AttestationSchema.optional(),
+    // attestationFormats is optional array of strings (format identifiers)
+    attestationFormats: z.array(z.string()).optional(),
     // Extensions can be complex; a generic record is often sufficient for validation
     extensions: AuthenticationExtensionsClientInputsSchema.optional(),
+    // signal is an AbortSignal for aborting the operation
+    // @see https://www.w3.org/TR/webauthn-3/#dom-credentialcreationoptions-signal
+    signal: z.instanceof(AbortSignal).optional(),
   })
   .meta({
     id: 'PublicKeyCredentialCreationOptions',

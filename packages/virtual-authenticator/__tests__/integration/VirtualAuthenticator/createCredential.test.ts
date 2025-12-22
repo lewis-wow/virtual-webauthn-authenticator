@@ -21,6 +21,7 @@ import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialT
 import { ResidentKeyRequirement } from '../../../src/enums/ResidentKeyRequirement';
 import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
+import { ChallengeEntropyInsufficient } from '../../../src/exceptions/ChallengeEntropyInsufficient';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
@@ -1264,21 +1265,26 @@ describe('VirtualAuthenticator.createCredential()', () => {
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-cryptographic-challenges
      * Spec states: "Challenges SHOULD therefore be at least 16 bytes long."
+     * Note: SHOULD is a recommendation, not a requirement. The MUST requirement is only
+     * that challenges contain enough entropy. A 15-byte random challenge has sufficient
+     * entropy even though it's below the 16-byte recommendation.
      */
-    test('Should fail with challenge less than 16 bytes (spec recommends at least 16)', async () => {
-      const challenge = new Uint8Array(randomBytes(15)); // Less than 16 bytes
+    test('Should work with challenge less than 16 bytes (has entropy, just below recommendation)', async () => {
+      const challenge = new Uint8Array(randomBytes(15)); // Less than 16 bytes but has entropy
 
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
         challenge,
-      };
+      } satisfies PublicKeyCredentialCreationOptions;
 
-      await expect(async () =>
-        performPublicKeyCredentialRegistrationAndVerify({
+      const { registrationVerification } =
+        await performPublicKeyCredentialRegistrationAndVerify({
           authenticator,
           publicKeyCredentialCreationOptions,
-        }),
-      ).rejects.toThrowError(new TypeAssertionError());
+        });
+
+      expect(registrationVerification.verified).toBe(true);
     });
 
     test('Should fail with empty challenge (0 bytes)', async () => {
@@ -1294,7 +1300,24 @@ describe('VirtualAuthenticator.createCredential()', () => {
           authenticator,
           publicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(new ChallengeEntropyInsufficient());
+    });
+
+    test('Should work with empty challenge (0 bytes) with `allowWeakChallenges`', async () => {
+      const challenge = new Uint8Array(0);
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge,
+      };
+
+      await performPublicKeyCredentialRegistrationAndVerify({
+        authenticator,
+        publicKeyCredentialCreationOptions,
+        meta: {
+          allowWeakChallenges: true,
+        },
+      });
     });
 
     test('Should work with very large challenge (1024 bytes)', async () => {
@@ -1556,24 +1579,42 @@ describe('VirtualAuthenticator.createCredential()', () => {
     });
 
     /**
+     * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-rp
      * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialrpentity-id
-     * Per spec: id is a required DOMString member that must be a valid domain
+     * Per spec: id is an OPTIONAL DOMString member. If omitted, its value will be
+     * the CredentialsContainer object's relevant settings object's origin's effective domain.
      */
-    test('Should fail with missing RP id', async () => {
+    test('Should work with missing RP id (defaults to origin effective domain)', async () => {
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
         rp: {
           name: 'Example Corp',
-          // id is missing
+          // id is omitted - should default to origin's effective domain
         },
-      };
-      await expect(async () =>
-        performPublicKeyCredentialRegistrationAndVerify({
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification, webAuthnCredentialId } =
+        await performPublicKeyCredentialRegistrationAndVerify({
           authenticator,
-          publicKeyCredentialCreationOptions:
-            publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
-        }),
-      ).rejects.toThrowError(new TypeAssertionError());
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+
+      // Verify the credential was created and stored
+      const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+        where: {
+          id: webAuthnCredentialId,
+        },
+      });
+
+      expect(webAuthnCredential).toMatchObject({
+        id: webAuthnCredentialId,
+        userId: USER_ID,
+        // The rpId should default to the origin's effective domain (example.com)
+        rpId: new URL(RP_ORIGIN).hostname,
+      });
     });
 
     /**

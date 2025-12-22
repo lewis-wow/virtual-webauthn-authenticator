@@ -27,10 +27,11 @@ export const PublicKeyCredentialRequestOptionsSchema = z
      * (the first item in the list is the most preferred credential, and so on down the list).
      */
     allowCredentials: z.array(PublicKeyCredentialDescriptorSchema).optional(),
-    timeout: z.number().optional(),
+    // timeout is unsigned long - must be non-negative integer
+    timeout: z.number().int().nonnegative().optional(),
     /**
      * Specifies the Relying Party ID, a unique identifier for your web application.
-     * By default, the RP ID for a WebAuthn operation is set to the caller’s origin’s effective domain.
+     * By default, the RP ID for a WebAuthn operation is set to the caller's origin's effective domain.
      *
      * This value must be a valid domain string that is a registrable domain suffix of,
      * or is equal to, the origin's effective domain. For example, for an origin of
@@ -40,6 +41,8 @@ export const PublicKeyCredentialRequestOptionsSchema = z
      */
     rpId: RpIdSchema.optional(),
     userVerification: UserVerificationRequirementSchema.optional(),
+    // hints is an optional array of DOMString values from PublicKeyCredentialHint
+    hints: z.array(z.string()).optional(),
     extensions: AuthenticationExtensionsClientInputsSchema.optional(),
   })
   .meta({

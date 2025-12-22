@@ -1,4 +1,6 @@
 import type { WebAuthnCredentialWithMeta } from '../types/WebAuthnCredentialWithMeta';
+import type { PublicKeyCredentialDescriptor } from '../zod-validation';
+import type { WebAuthnCredential } from '../zod-validation/WebAuthnCredentialSchema';
 
 export type CreateKeyVaultDataArgs = {
   id: string;
@@ -15,6 +17,16 @@ export type CreateKeyVaultDataArgs = {
 };
 
 export interface IWebAuthnRepository {
+  findAllByAllowCredentialDescriptorList(opts: {
+    allowCredentialDescriptorList: Pick<PublicKeyCredentialDescriptor, 'id'>[];
+  }): Promise<WebAuthnCredential[]>;
+
+  findAllByRpIdAndUserId(opts: {
+    userId: string;
+    rpId: string;
+    apiKeyId: string | null;
+  }): Promise<WebAuthnCredential[]>;
+
   existsByRpIdAndCredentialIds(opts: {
     rpId: string;
     credentialIds: string[];
@@ -27,7 +39,7 @@ export interface IWebAuthnRepository {
   findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;
     userId: string;
-    apiKeyId: string | null | undefined;
-    allowCredentialIds?: string[];
+    apiKeyId: string | null;
+    allowCredentialDescriptorList: string[] | undefined;
   }): Promise<WebAuthnCredentialWithMeta>;
 }

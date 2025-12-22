@@ -19,13 +19,24 @@ export const AuthenticatorSelectionCriteriaSchema = z
      */
     authenticatorAttachment: AuthenticatorAttachmentSchema.optional(),
     /**
-     * @deprecated
+     * This member is retained for backwards compatibility with WebAuthn Level 1 and,
+     * for historical reasons, its naming retains the deprecated "resident" terminology
+     * for discoverable credentials. Relying Parties SHOULD set it to true if, and only if,
+     * residentKey is set to required.
+     *
+     * @see https://www.w3.org/TR/webauthn/#dom-authenticatorselectioncriteria-requireresidentkey
      */
     requireResidentKey: z.boolean().optional().meta({
       deprecated: true,
     }),
     /**
-     * @deprecated
+     * Specifies the extent to which the Relying Party desires to create a client-side
+     * discoverable credential. For historical reasons the naming retains the deprecated
+     * "resident" terminology. The value SHOULD be a member of ResidentKeyRequirement but
+     * client platforms MUST ignore unknown values, treating an unknown value as if the
+     * member does not exist.
+     *
+     * @see https://www.w3.org/TR/webauthn/#dom-authenticatorselectioncriteria-residentkey
      */
     residentKey: ResidentKeyRequirementSchema.optional().meta({
       deprecated: true,

@@ -13,11 +13,17 @@ import {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
 } from '../../src/zod-validation';
+import { VirtualAuthenticatorCredentialContextArgs } from '../../src/zod-validation/VirtualAuthenticatorCredentialContextArgsSchema';
+import { VirtualAuthenticatorCredentialMetaArgs } from '../../src/zod-validation/VirtualAuthenticatorCredentialMetaArgsSchema';
 import { RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   authenticator: VirtualAuthenticator;
+
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
+  meta?: Partial<VirtualAuthenticatorCredentialMetaArgs>;
+  context?: Partial<VirtualAuthenticatorCredentialContextArgs>;
+
   requireUserVerification?: boolean;
   requireUserPresence?: boolean;
 };
@@ -28,15 +34,16 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
   webAuthnCredentialId: string;
 };
 
-export const performPublicKeyCredentialRegistrationAndVerify = async (opts: {
-  authenticator: VirtualAuthenticator;
-  publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
-  requireUserVerification?: boolean;
-  requireUserPresence?: boolean;
-}): Promise<PerformPublicKeyCredentialRegistrationAndVerifyResult> => {
+export const performPublicKeyCredentialRegistrationAndVerify = async (
+  opts: PerformPublicKeyCredentialRegistrationAndVerifyArgs,
+): Promise<PerformPublicKeyCredentialRegistrationAndVerifyResult> => {
   const {
     authenticator,
+
     publicKeyCredentialCreationOptions,
+    meta,
+    context,
+
     requireUserVerification,
     requireUserPresence,
   } = opts;
@@ -49,9 +56,11 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (opts: {
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
+      ...meta,
     },
     context: {
       apiKeyId: null,
+      ...context,
     },
   });
 
