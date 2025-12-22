@@ -9,8 +9,7 @@ import z from 'zod';
 import { Fmt } from './enums/Fmt';
 import { UserVerificationRequirement } from './enums/UserVerificationRequirement';
 import { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
-import { InvalidStateError } from './exceptions';
-import { ChallengeEntropyInsufficient } from './exceptions/ChallengeEntropyInsufficient';
+import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
 import { SignatureFailed } from './exceptions/SignatureFailed';
@@ -316,17 +315,6 @@ export class VirtualAuthenticator {
     };
   }
 
-  private _checkChallengeEntropyOrThrow(opts: {
-    challenge: Uint8Array;
-    allowWeakChallenges: boolean;
-  }) {
-    const { challenge, allowWeakChallenges } = opts;
-
-    if (!allowWeakChallenges && challenge.byteLength < 16) {
-      throw new ChallengeEntropyInsufficient();
-    }
-  }
-
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
@@ -359,13 +347,6 @@ export class VirtualAuthenticator {
       excludeCredentialDescriptorList,
       // extensions,
     } = authenticatorMakeCredentialArgs;
-
-    // Ensure rpEntity.id is present (should be set by agent if omitted in options)
-    if (!rpEntity.id) {
-      throw new Error(
-        'rpEntity.id is required for authenticatorMakeCredential',
-      );
-    }
 
     // Step 2: Check if at least one of the specified combinations is supported
     const selectedCredTypeAndAlg =
@@ -410,7 +391,7 @@ export class VirtualAuthenticator {
           // In our backend context, finding a matching excluded credential means the user has been
           // presented with the situation and has confirmed they want to proceed anyway (which would
           // be unusual). Per spec, this confirmation should result in InvalidStateError.
-          throw new InvalidStateError();
+          throw new CredentialExcluded();
           // 'A credential from the exclude list already exists for this authenticator.',
         }
       }

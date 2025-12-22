@@ -22,8 +22,8 @@ import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialT
 import { ResidentKeyRequirement } from '../../../src/enums/ResidentKeyRequirement';
 import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
-import { ChallengeEntropyInsufficient } from '../../../src/exceptions/ChallengeEntropyInsufficient';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
+import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
@@ -202,9 +202,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
               attestation,
             },
           }),
-        ).rejects.toThrowError(
-          new AttestationNotSupported({ data: { attestation } }),
-        );
+        ).rejects.toThrowError(new AttestationNotSupported());
       },
     );
 
@@ -265,50 +263,62 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(registrationVerification.verified).toBe(true);
     });
 
-    test('Should throw type mismatch when pubKeyCredParams is empty', async () => {
+    test('Should work when pubKeyCredParams is empty', async () => {
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
         pubKeyCredParams: [],
       };
 
-      await expect(async () =>
-        performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      await performPublicKeyCredentialRegistrationAndVerify({
+        agent,
+        publicKeyCredentialCreationOptions,
+      });
     });
 
     test.each([
       {
-        pubKeyCredParams: [{ type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 }],
-      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        publicKeyCredentialCreationOptions: {
+          pubKeyCredParams: [
+            { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
+          ],
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        expectToThrowError: new CredentialTypesNotSupported(),
+      },
       {
-        pubKeyCredParams: [
-          {
-            type: PublicKeyCredentialType.PUBLIC_KEY,
-            alg: -8,
-          },
-        ],
-      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        publicKeyCredentialCreationOptions: {
+          pubKeyCredParams: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: -8,
+            },
+          ],
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        expectToThrowError: new NoSupportedPubKeyCredParamFound(),
+      },
       {
-        pubKeyCredParams: [
-          {
-            type: PublicKeyCredentialType.PUBLIC_KEY,
-            alg: -8,
-          },
-          {
-            type: 'WRONG_TYPE',
-            alg: COSEKeyAlgorithm.ES256,
-          },
-        ],
-      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        publicKeyCredentialCreationOptions: {
+          pubKeyCredParams: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: -8,
+            },
+            {
+              type: 'WRONG_TYPE',
+              alg: COSEKeyAlgorithm.ES256,
+            },
+          ],
+        } satisfies Partial<PublicKeyCredentialCreationOptions>,
+        expectToThrowError: new NoSupportedPubKeyCredParamFound(),
+      },
     ])(
       'Should throw without any supported pubKeyCredParams',
-      async ({ pubKeyCredParams }) => {
+      async ({
+        publicKeyCredentialCreationOptions: options,
+        expectToThrowError,
+      }) => {
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-          pubKeyCredParams,
+          pubKeyCredParams: options.pubKeyCredParams,
           attestation: undefined,
         };
 
@@ -317,7 +327,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             agent,
             publicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(new NoSupportedPubKeyCredParamFound());
+        ).rejects.toThrowError(expectToThrowError);
       },
     );
   });
@@ -997,7 +1007,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
     test.each([
       { timeout: undefined },
-      { timeout: 30000 },
       { timeout: 60000 },
       { timeout: 120000 },
       { timeout: 300000 },
@@ -1015,6 +1024,21 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
       expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should throw type mismatch when timeout is too small', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        timeout: 30_000,
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          }),
+      ).rejects.toThrowError(new TypeAssertionError());
     });
 
     test('Should throw type mismatch when timeout is not a number', async () => {
@@ -1287,23 +1311,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(registrationVerification.verified).toBe(true);
     });
 
-    test('Should fail with empty challenge (0 bytes)', async () => {
-      const challenge = new Uint8Array(0);
-
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        challenge,
-      };
-
-      await expect(async () =>
-        performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        }),
-      ).rejects.toThrowError(new ChallengeEntropyInsufficient());
-    });
-
-    test('Should work with empty challenge (0 bytes) with `allowWeakChallenges`', async () => {
+    test('Should work with empty challenge (0 bytes)', async () => {
       const challenge = new Uint8Array(0);
 
       const publicKeyCredentialCreationOptions = {
@@ -1314,9 +1322,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
       await performPublicKeyCredentialRegistrationAndVerify({
         agent,
         publicKeyCredentialCreationOptions,
-        meta: {
-          allowWeakChallenges: true,
-        },
       });
     });
 

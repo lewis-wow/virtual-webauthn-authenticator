@@ -7,10 +7,12 @@ import z from 'zod';
 import type { VirtualAuthenticator } from './VirtualAuthenticator';
 import {
   Attestation,
+  Fmt,
   ResidentKeyRequirement,
   UserVerificationRequirement,
 } from './enums';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
@@ -69,7 +71,7 @@ export class VirtualAuthenticatorAgent {
 
     assertSchema(
       meta,
-      VirtualAuthenticatorCredentialMetaArgsSchema.extend({
+      VirtualAuthenticatorCredentialMetaArgsSchema.safeExtend({
         userId: z.literal(
           UUIDMapper.bytesToUUID(publicKeyCredentialCreationOptions.user.id),
         ),
@@ -91,6 +93,16 @@ export class VirtualAuthenticatorAgent {
     const rpId = publicKeyCredentialCreationOptions.rp.id ?? originHostname;
 
     assertSchema(originHostname, createOriginMatchesRpIdSchema(rpId));
+
+    // Validate attestation conveyance preference
+    // Only 'none' and 'direct' are currently supported
+    const attestation = publicKeyCredentialCreationOptions.attestation;
+    if (
+      attestation === Attestation.ENTERPRISE ||
+      attestation === Attestation.INDIRECT
+    ) {
+      throw new AttestationNotSupported();
+    }
 
     // Step 9: Let credTypesAndPubKeyAlgs be a new list whose items
     // are pairs of PublicKeyCredentialType and a COSEAlgorithmIdentifier.
@@ -163,6 +175,33 @@ export class VirtualAuthenticatorAgent {
       throw publicKeyCredentialCreationOptions.signal.reason;
     }
 
+    // Step 17: Determine attestation statement formats based on attestation conveyance preference
+    // Map AttestationConveyancePreference to attestation statement format identifiers
+    const attestationPreference =
+      publicKeyCredentialCreationOptions.attestation ?? Attestation.NONE;
+    let attestationFormats: string[];
+
+    switch (attestationPreference) {
+      case Attestation.NONE:
+        // No attestation - use 'none' format
+        attestationFormats = [Fmt.NONE];
+        break;
+      case Attestation.DIRECT:
+        // Direct attestation - use 'packed' format which provides full attestation
+        attestationFormats = [Fmt.PACKED];
+        break;
+      case Attestation.INDIRECT:
+        // Indirect attestation - use 'packed' but authenticator should anonymize
+        attestationFormats = [Fmt.PACKED];
+        break;
+      case Attestation.ENTERPRISE:
+        // Enterprise attestation - use 'packed' for individually-identifying attestation
+        attestationFormats = [Fmt.PACKED];
+        break;
+      default:
+        attestationFormats = [Fmt.NONE];
+    }
+
     // Step 18: Invoke the authenticatorMakeCredential operation
     const { credentialId, attestationObject } =
       await this.authenticator.authenticatorMakeCredential({
@@ -170,7 +209,7 @@ export class VirtualAuthenticatorAgent {
           hash: clientDataHash,
           rpEntity: {
             name: publicKeyCredentialCreationOptions.rp.name,
-            id: publicKeyCredentialCreationOptions.rp.id ?? meta.origin,
+            id: rpId,
           },
           userEntity: publicKeyCredentialCreationOptions.user,
           requireResidentKey:
@@ -178,19 +217,17 @@ export class VirtualAuthenticatorAgent {
               ?.residentKey === ResidentKeyRequirement.REQUIRED ||
             publicKeyCredentialCreationOptions.authenticatorSelection
               ?.requireResidentKey === true,
-          requireUserPresence: true,
+          requireUserPresence: meta.userPresenceEnabled !== false,
           requireUserVerification:
+            meta.userVerificationEnabled !== false &&
             publicKeyCredentialCreationOptions.authenticatorSelection
               ?.userVerification === UserVerificationRequirement.REQUIRED,
           credTypesAndPubKeyAlgs,
           excludeCredentialDescriptorList:
             publicKeyCredentialCreationOptions.excludeCredentials,
           enterpriseAttestationPossible:
-            publicKeyCredentialCreationOptions.attestation ===
-            Attestation.ENTERPRISE,
-          attestationFormats: [
-            publicKeyCredentialCreationOptions.attestation ?? Attestation.NONE,
-          ],
+            attestationPreference === Attestation.ENTERPRISE,
+          attestationFormats,
           extensions: publicKeyCredentialCreationOptions.extensions,
         },
         context,

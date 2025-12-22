@@ -78,7 +78,10 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     ).toString('base64url'),
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
-    requireUserVerification: requireUserVerification ?? true,
+    requireUserVerification:
+      requireUserVerification ??
+      publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.userVerification === 'required',
     requireUserPresence: requireUserPresence ?? true,
   });
 
