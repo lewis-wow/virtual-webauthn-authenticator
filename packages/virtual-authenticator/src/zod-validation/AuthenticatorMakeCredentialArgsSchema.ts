@@ -3,12 +3,9 @@ import z from 'zod';
 import { PublicKeyCredentialType } from '../enums';
 import { see } from '../meta/see';
 import { BytesSchema } from './BytesSchema';
-import { PubKeyCredParamStrictSchema } from './PubKeyCredParamSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
 import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema';
 import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema';
-import { AttestationSchema } from './enums/AttestationSchema';
-import { UserVerificationRequirementSchema } from './enums/UserVerificationRequirementSchema';
 
 /**
  * Zod schema for authenticatorMakeCredential operation input parameters.
@@ -30,9 +27,11 @@ export const AuthenticatorMakeCredentialArgsSchema = z
     /**
      * The Relying Party's PublicKeyCredentialRpEntity.
      */
-    rpEntity: PublicKeyCredentialRpEntitySchema.meta({
-      description: "The Relying Party's entity information.",
-    }),
+    rpEntity: PublicKeyCredentialRpEntitySchema.extend({ id: z.string() }).meta(
+      {
+        description: "The Relying Party's entity information.",
+      },
+    ),
 
     /**
      * The user account's PublicKeyCredentialUserEntity, containing the user handle

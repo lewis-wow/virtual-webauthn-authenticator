@@ -4,7 +4,7 @@ import { PublicKeyCredentialRequestOptionsSchema } from './PublicKeyCredentialRe
 import { CredentialMediationRequirementSchema } from './enums/CredentialMediationRequirementSchema';
 
 export const CredentialRequestOptionsSchema = z.object({
-  mediation: CredentialMediationRequirementSchema,
+  mediation: CredentialMediationRequirementSchema.optional(),
   publicKey: PublicKeyCredentialRequestOptionsSchema.optional(),
   signal: z.instanceof(AbortSignal).optional(),
 });

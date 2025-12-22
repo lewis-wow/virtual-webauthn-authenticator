@@ -8,7 +8,7 @@ import {
 } from '@simplewebauthn/server';
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
-import { VirtualAuthenticator } from '../../src/VirtualAuthenticator';
+import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
 import {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
@@ -18,7 +18,7 @@ import { VirtualAuthenticatorCredentialMetaArgs } from '../../src/zod-validation
 import { RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
-  authenticator: VirtualAuthenticator;
+  agent: VirtualAuthenticatorAgent;
 
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
   meta?: Partial<VirtualAuthenticatorCredentialMetaArgs>;
@@ -38,7 +38,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   opts: PerformPublicKeyCredentialRegistrationAndVerifyArgs,
 ): Promise<PerformPublicKeyCredentialRegistrationAndVerifyResult> => {
   const {
-    authenticator,
+    agent,
 
     publicKeyCredentialCreationOptions,
     meta,
@@ -51,8 +51,10 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   // Simulate the full WebAuthn registration ceremony.
   // This creates a new public key credential (passkey) using the
   // specified options, public key, and key vault metadata.
-  const publicKeyCredential = await authenticator.createCredential({
-    publicKeyCredentialCreationOptions,
+  const publicKeyCredential = await agent.createCredential({
+    credentialCreationOptions: {
+      publicKey: publicKeyCredentialCreationOptions,
+    },
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,

@@ -168,7 +168,10 @@ export class VirtualAuthenticatorAgent {
       await this.authenticator.authenticatorMakeCredential({
         authenticatorMakeCredentialArgs: {
           hash: clientDataHash,
-          rpEntity: publicKeyCredentialCreationOptions.rp,
+          rpEntity: {
+            name: publicKeyCredentialCreationOptions.rp.name,
+            id: publicKeyCredentialCreationOptions.rp.id ?? meta.origin,
+          },
           userEntity: publicKeyCredentialCreationOptions.user,
           requireResidentKey:
             publicKeyCredentialCreationOptions.authenticatorSelection

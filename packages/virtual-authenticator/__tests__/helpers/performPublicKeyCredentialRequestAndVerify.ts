@@ -7,12 +7,13 @@ import {
 import { expect } from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
-import { VirtualAuthenticator } from '../../src/VirtualAuthenticator';
+import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
 import { PublicKeyCredentialRequestOptions } from '../../src/zod-validation';
 import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
-  authenticator: VirtualAuthenticator;
+  agent: VirtualAuthenticatorAgent;
+
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnCredentialId: string;
   publicKey: Uint8Array<ArrayBuffer>;
@@ -34,7 +35,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   opts: PerformPublicKeyCredentialRequestAndVerifyArgs,
 ): Promise<PerformPublicKeyCredentialRequestAndVerifyResult> => {
   const {
-    authenticator,
+    agent,
     publicKeyCredentialRequestOptions,
     webAuthnCredentialId,
     publicKey,
@@ -46,8 +47,10 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     origin = RP_ORIGIN,
   } = opts;
 
-  const publicKeyCredential = await authenticator.getCredential({
-    publicKeyCredentialRequestOptions,
+  const publicKeyCredential = await agent.getAssertion({
+    credentialRequestOptions: {
+      publicKey: publicKeyCredentialRequestOptions,
+    },
     meta: {
       userId,
       origin,

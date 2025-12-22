@@ -14,6 +14,7 @@ import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
 import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
 import { AuthenticatorTransport } from '../../../src/enums/AuthenticatorTransport';
@@ -72,6 +73,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
     webAuthnRepository: webAuthnCredentialRepository,
     keyProvider,
   });
+  const agent = new VirtualAuthenticatorAgent({ authenticator });
 
   const cleanupWebAuthnCredentials = async () => {
     await prisma.$transaction([
@@ -119,7 +121,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       beforeAll(async () => {
         ({ registrationVerification, webAuthnCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           }));
       });
@@ -194,7 +196,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       async ({ attestation }) => {
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions: {
               ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
               attestation,
@@ -214,7 +216,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
         }),
@@ -256,7 +258,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -271,7 +273,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
@@ -312,7 +314,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           }),
         ).rejects.toThrowError(new NoSupportedPubKeyCredParamFound());
@@ -333,15 +335,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
     test('Should throw type mismatch when userId is invalid', async () => {
       await expect(async () =>
-        authenticator.createCredential({
+        performPublicKeyCredentialRegistrationAndVerify({
+          agent,
           publicKeyCredentialCreationOptions:
             PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
           meta: {
             userId: 'INVALID_USER_ID',
             origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: null,
           },
         }),
       ).to.rejects.toThrowError(new TypeAssertionError());
@@ -372,7 +372,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
@@ -389,7 +389,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
@@ -398,7 +398,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
     test('Should work with valid user.id (16 bytes for UUID)', async () => {
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions: {
             ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
             attestation: Attestation.NONE,
@@ -455,7 +455,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         beforeAll(async () => {
           ({ registrationVerification, webAuthnCredentialId } =
             await performPublicKeyCredentialRegistrationAndVerify({
-              authenticator,
+              agent,
               publicKeyCredentialCreationOptions,
               requireUserVerification:
                 userVerification === UserVerificationRequirement.REQUIRED,
@@ -496,7 +496,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
@@ -542,7 +542,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           beforeAll(async () => {
             ({ registrationVerification, webAuthnCredentialId } =
               await performPublicKeyCredentialRegistrationAndVerify({
-                authenticator,
+                agent,
                 publicKeyCredentialCreationOptions,
               }));
           });
@@ -581,7 +581,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
@@ -629,7 +629,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         beforeAll(async () => {
           ({ registrationVerification, webAuthnCredentialId } =
             await performPublicKeyCredentialRegistrationAndVerify({
-              authenticator,
+              agent,
               publicKeyCredentialCreationOptions,
             }));
         });
@@ -668,7 +668,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
@@ -713,7 +713,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           beforeAll(async () => {
             ({ registrationVerification, webAuthnCredentialId } =
               await performPublicKeyCredentialRegistrationAndVerify({
-                authenticator,
+                agent,
                 publicKeyCredentialCreationOptions,
               }));
           });
@@ -752,7 +752,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
@@ -786,7 +786,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         const { registrationVerification, webAuthnCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
 
@@ -813,7 +813,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         const { registrationVerification, webAuthnCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
 
@@ -940,7 +940,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       beforeAll(async () => {
         ({ registrationVerification, webAuthnCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           }));
       });
@@ -1010,7 +1010,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1025,7 +1025,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
@@ -1060,7 +1060,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         // First, create a credential
         const firstCredential =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
           });
@@ -1076,7 +1076,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         const secondCredential =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
 
@@ -1093,7 +1093,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       // First, create a credential
       const firstCredential =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
         });
@@ -1117,7 +1117,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       await expect(
         async () =>
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           }),
       ).rejects.toThrowError(new CredentialExcluded());
@@ -1148,7 +1148,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1177,7 +1177,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1203,7 +1203,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
@@ -1223,7 +1223,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
@@ -1255,7 +1255,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1280,7 +1280,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1297,7 +1297,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new ChallengeEntropyInsufficient());
@@ -1312,7 +1312,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       };
 
       await performPublicKeyCredentialRegistrationAndVerify({
-        authenticator,
+        agent,
         publicKeyCredentialCreationOptions,
         meta: {
           allowWeakChallenges: true,
@@ -1331,7 +1331,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1346,7 +1346,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
@@ -1383,7 +1383,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
         const { registrationVerification } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
         expect(registrationVerification.verified).toBe(true);
@@ -1404,7 +1404,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         };
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
@@ -1426,7 +1426,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         };
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
@@ -1445,7 +1445,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
         const { registrationVerification } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
         expect(registrationVerification.verified).toBe(true);
@@ -1464,7 +1464,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
         const { registrationVerification } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
         expect(registrationVerification.verified).toBe(true);
@@ -1483,7 +1483,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
         const { registrationVerification } =
           await performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions,
           });
         expect(registrationVerification.verified).toBe(true);
@@ -1499,7 +1499,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         };
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
@@ -1516,7 +1516,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         };
         await expect(async () =>
           performPublicKeyCredentialRegistrationAndVerify({
-            authenticator,
+            agent,
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
@@ -1551,7 +1551,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
       expect(registrationVerification.verified).toBe(true);
@@ -1571,7 +1571,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       };
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
@@ -1596,7 +1596,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification, webAuthnCredentialId } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1633,7 +1633,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       // because the RP ID won't match the expected origin
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
@@ -1650,7 +1650,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
       expect(registrationVerification.verified).toBe(true);
@@ -1668,7 +1668,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
       expect(registrationVerification.verified).toBe(true);
@@ -1704,7 +1704,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1720,7 +1720,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1742,7 +1742,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification, publicKeyCredential } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1768,7 +1768,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1791,7 +1791,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1813,7 +1813,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1838,7 +1838,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1861,7 +1861,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1883,7 +1883,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -1931,7 +1931,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -2008,7 +2008,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions,
         });
 
@@ -2022,7 +2022,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             malformedOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
@@ -2037,7 +2037,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
-          authenticator,
+          agent,
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
