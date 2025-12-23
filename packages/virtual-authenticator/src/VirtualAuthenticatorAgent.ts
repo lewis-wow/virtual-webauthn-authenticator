@@ -16,7 +16,10 @@ import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
-import type { CredentialCreationOptions } from './zod-validation/CredentialCreationOptionsSchema';
+import {
+  CredentialCreationOptionsSchema,
+  type CredentialCreationOptions,
+} from './zod-validation/CredentialCreationOptionsSchema';
 import type { CredentialRequestOptions } from './zod-validation/CredentialRequestOptionsSchema';
 import { PublicKeyCredentialCreationOptionsSchema } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
@@ -60,14 +63,18 @@ export class VirtualAuthenticatorAgent {
   }): Promise<PublicKeyCredential> {
     const { credentialCreationOptions, meta, context } = opts;
 
-    // Step 1: Assert options.publicKey is present (validated by schema)
+    // Step 1: Assert options.publicKey is present
+    assertSchema(
+      credentialCreationOptions,
+      CredentialCreationOptionsSchema.safeExtend({
+        publicKey: PublicKeyCredentialCreationOptionsSchema,
+      }),
+    );
+
     const publicKeyCredentialCreationOptions =
       credentialCreationOptions.publicKey;
 
-    assertSchema(
-      publicKeyCredentialCreationOptions,
-      PublicKeyCredentialCreationOptionsSchema,
-    );
+    console.log('KOCKA', meta.userId);
 
     assertSchema(
       meta,
@@ -77,6 +84,8 @@ export class VirtualAuthenticatorAgent {
         ),
       }),
     );
+
+    console.log('PES');
 
     assertSchema(context, VirtualAuthenticatorCredentialContextArgsSchema);
 

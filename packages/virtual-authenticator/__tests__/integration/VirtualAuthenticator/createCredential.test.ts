@@ -5,7 +5,7 @@ import {
 } from '../../../../auth/__tests__/helpers';
 import { set } from '@repo/core/__tests__/helpers';
 
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyAlgorithm, KeyAlgorithm } from '@repo/keys/enums';
 import { COSEKeyMapper } from '@repo/keys/mappers';
 import { PrismaClient } from '@repo/prisma';
 import { TypeAssertionError } from '@repo/utils';
@@ -26,6 +26,7 @@ import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { CredentialCreationOptions } from '../../../src/zod-validation';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
@@ -2047,6 +2048,506 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
+    });
+  });
+
+  /**
+   * Tests for VirtualAuthenticatorAgent.createCredential() spec steps
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
+   *
+   * These tests validate that the agent correctly implements each step
+   * of the createCredential algorithm as defined in the WebAuthn Level 3 specification.
+   */
+  describe('VirtualAuthenticatorAgent.createCredential() - Spec Steps', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnCredentials();
+    });
+
+    /**
+     * Step 1: Assert options.publicKey is present
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (step 1)
+     */
+    describe('Step 1: Assert options.publicKey is present', () => {
+      test('Should throw when publicKey is undefined', async () => {
+        await expect(async () =>
+          agent.createCredential({
+            credentialCreationOptions: {
+              publicKey: undefined,
+            } as CredentialCreationOptions,
+            meta: {
+              userId: USER_ID,
+              origin: RP_ORIGIN,
+            },
+            context: {
+              apiKeyId: null,
+            },
+          }),
+        ).rejects.toThrow();
+      });
+
+      test('Should succeed when publicKey is present', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+      });
+    });
+
+    /**
+     * Step 5: Validate user.id length is between 1 and 64 bytes
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (step 5)
+     */
+    describe('Step 5: Validate user.id length', () => {
+      test('Should reject user.id with 0 bytes', async () => {
+        await expect(async () =>
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              user: {
+                ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+                id: new Uint8Array(0),
+              },
+            },
+          }),
+        ).rejects.toThrow();
+      });
+
+      test('Should reject user.id exceeding 64 bytes', async () => {
+        await expect(async () =>
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              user: {
+                ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+                id: new Uint8Array(65),
+              },
+            },
+          }),
+        ).rejects.toThrow();
+      });
+
+      /**
+       * Note: The implementation strictly requires user.id to be a valid UUID (16 bytes).
+       * The WebAuthn spec allows 1-64 bytes, but the implementation enforces UUID format.
+       */
+      test('Should reject user.id with 1 byte (fails due to strict UUID format)', async () => {
+        const userIdBytes = new Uint8Array(1);
+        userIdBytes[0] = 1;
+
+        await expect(async () =>
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              user: {
+                ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+                id: userIdBytes,
+              },
+            },
+          }),
+        ).rejects.toThrowError(new TypeAssertionError());
+      });
+
+      /**
+       * Note: The implementation strictly requires user.id to be a valid UUID (16 bytes).
+       * The WebAuthn spec allows 1-64 bytes, but the implementation enforces UUID format.
+       */
+      test('Should reject user.id with 64 bytes (fails due to strict UUID format)', async () => {
+        const userIdBytes = new Uint8Array(64);
+
+        await expect(async () =>
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              user: {
+                ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
+                id: userIdBytes,
+              },
+            },
+          }),
+        ).rejects.toThrowError(new TypeAssertionError());
+      });
+    });
+
+    /**
+     * Step 7-8: Determine effective domain and RP ID
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (steps 7-8)
+     */
+    describe('Step 7-8: Effective domain and RP ID', () => {
+      test('Should use origin hostname when rp.id is not provided', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              rp: {
+                name: RP_NAME,
+                // id is omitted
+              },
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.registrationInfo?.rpID).toBe(RP_ID);
+      });
+
+      test('Should use provided rp.id when present', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              rp: {
+                name: RP_NAME,
+                id: RP_ID,
+              },
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.registrationInfo?.rpID).toBe(RP_ID);
+      });
+
+      test('Should reject when rp.id is not a valid domain suffix of origin', async () => {
+        await expect(async () =>
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              rp: {
+                name: RP_NAME,
+                id: 'different-domain.com',
+              },
+            },
+          }),
+        ).rejects.toThrow();
+      });
+    });
+
+    /**
+     * Step 9-10: Process pubKeyCredParams
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (steps 9-10)
+     */
+    describe('Step 9-10: Process pubKeyCredParams', () => {
+      test('Should default to ES256 and RS256 when pubKeyCredParams is empty', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              pubKeyCredParams: [],
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // The authenticator should have used ES256 (-7) as the first default
+        expect(
+          registrationVerification.registrationInfo?.credential.publicKey,
+        ).toBeDefined();
+
+        const jwk = COSEKeyMapper.COSEKeyToJwk(
+          COSEKeyMapper.bytesToCOSEKey(
+            registrationVerification.registrationInfo!.credential.publicKey,
+          ),
+        );
+
+        expect(jwk.inferAlg()).toBe(KeyAlgorithm.ES256);
+      });
+
+      test('Should use the first supported algorithm from pubKeyCredParams', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              pubKeyCredParams: [
+                { type: PublicKeyCredentialType.PUBLIC_KEY, alg: -7 }, // ES256
+                { type: PublicKeyCredentialType.PUBLIC_KEY, alg: -257 }, // RS256
+              ],
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      test('Should skip unsupported credential types', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              pubKeyCredParams: [
+                { type: 'unsupported-type', alg: -7 } as never,
+                { type: PublicKeyCredentialType.PUBLIC_KEY, alg: -7 },
+              ],
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+      });
+
+      test('Should throw NotSupportedError when all credential types are unsupported', async () => {
+        await expect(async () =>
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              pubKeyCredParams: [
+                { type: 'unsupported-type', alg: -7 } as never,
+              ],
+            },
+          }),
+        ).rejects.toThrow(CredentialTypesNotSupported);
+      });
+    });
+
+    /**
+     * Step 13-15: Create and hash client data
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (steps 13-15)
+     */
+    describe('Step 13-15: Client data creation and hashing', () => {
+      test('Should create collectedClientData with correct type', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        const clientData = JSON.parse(
+          Buffer.from(publicKeyCredential.response.clientDataJSON).toString(),
+        );
+
+        expect(clientData.type).toBe('webauthn.create');
+      });
+
+      test('Should include challenge in base64url format', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        const clientData = JSON.parse(
+          Buffer.from(publicKeyCredential.response.clientDataJSON).toString(),
+        );
+
+        expect(clientData.challenge).toBe(
+          Buffer.from(CHALLENGE_BYTES).toString('base64url'),
+        );
+      });
+
+      test('Should include origin', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        const clientData = JSON.parse(
+          Buffer.from(publicKeyCredential.response.clientDataJSON).toString(),
+        );
+
+        expect(clientData.origin).toBe(RP_ORIGIN);
+      });
+
+      test('Should set crossOrigin to false for same-origin', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        const clientData = JSON.parse(
+          Buffer.from(publicKeyCredential.response.clientDataJSON).toString(),
+        );
+
+        expect(clientData.crossOrigin).toBe(false);
+      });
+
+      test('Should set crossOrigin to true and include topOrigin for cross-origin', async () => {
+        const topOrigin = 'https://top-level.com';
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+            meta: {
+              userId: USER_ID,
+              origin: RP_ORIGIN,
+              crossOrigin: true,
+              topOrigin,
+            },
+          });
+
+        const clientData = JSON.parse(
+          Buffer.from(publicKeyCredential.response.clientDataJSON).toString(),
+        );
+
+        expect(clientData.crossOrigin).toBe(true);
+        expect(clientData.topOrigin).toBe(topOrigin);
+      });
+    });
+
+    /**
+     * Step 17: Determine attestation formats
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (step 17)
+     */
+    describe('Step 17: Attestation format determination', () => {
+      test('Should use "none" format for attestation=none', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              attestation: Attestation.NONE,
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.registrationInfo?.fmt).toBe('none');
+      });
+
+      test('Should use "packed" format for attestation=direct', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              attestation: Attestation.DIRECT,
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.registrationInfo?.fmt).toBe('packed');
+      });
+
+      test('Should default to "none" format when attestation is undefined', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+              attestation: undefined,
+            },
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.registrationInfo?.fmt).toBe('none');
+      });
+    });
+
+    /**
+     * Step 22: Return PublicKeyCredential
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (step 22)
+     */
+    describe('Step 22: Return PublicKeyCredential', () => {
+      test('Should return credential with base64url encoded id', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(publicKeyCredential.id).toMatch(/^[A-Za-z0-9_-]+$/);
+        expect(publicKeyCredential.id.length).toBeGreaterThan(0);
+      });
+
+      test('Should return credential with rawId as Uint8Array', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(publicKeyCredential.rawId).toBeInstanceOf(Uint8Array);
+        expect(publicKeyCredential.rawId.length).toBeGreaterThan(0);
+      });
+
+      test('Should return credential with type "public-key"', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(publicKeyCredential.type).toBe(
+          PublicKeyCredentialType.PUBLIC_KEY,
+        );
+      });
+
+      test('Should return credential with response containing clientDataJSON', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(publicKeyCredential.response.clientDataJSON).toBeInstanceOf(
+          Uint8Array,
+        );
+        expect(
+          publicKeyCredential.response.clientDataJSON.length,
+        ).toBeGreaterThan(0);
+      });
+
+      test('Should return credential with response containing attestationObject', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(
+          (publicKeyCredential.response as { attestationObject: Uint8Array })
+            .attestationObject,
+        ).toBeInstanceOf(Uint8Array);
+        expect(
+          (publicKeyCredential.response as { attestationObject: Uint8Array })
+            .attestationObject.length,
+        ).toBeGreaterThan(0);
+      });
+
+      test('Should return credential with empty clientExtensionResults', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(publicKeyCredential.clientExtensionResults).toEqual({});
+      });
+
+      test('Should return credential where id equals base64url(rawId)', async () => {
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        const expectedId = Buffer.from(publicKeyCredential.rawId).toString(
+          'base64url',
+        );
+        expect(publicKeyCredential.id).toBe(expectedId);
+      });
     });
   });
 });
