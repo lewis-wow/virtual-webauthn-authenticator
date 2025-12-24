@@ -152,7 +152,8 @@ export class VirtualAuthenticatorAgent {
 
   /**
    * Construct credential algorithm - handles attestation conveyance preference.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (Step 23.3.1)
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential (Step 23.3)
+   * Step 22.SUCCESS.3
    *
    * This method modifies the attestation object based on the attestation conveyance preference:
    * - none: Replaces potentially identifying information with non-identifying versions
@@ -182,7 +183,7 @@ export class VirtualAuthenticatorAgent {
             Object.entries(decodedAttestation as Record<string, unknown>),
           );
 
-    // If credentialCreationData.attestationConveyancePreferenceOption's value is "none"
+    // Step 22.SUCCESS.3.1: If credentialCreationData.attestationConveyancePreferenceOption's value is "none"
     if (attestationConveyancePreferenceOption === Attestation.NONE) {
       // Replace potentially uniquely identifying information with non-identifying versions of the same:
 
@@ -204,11 +205,13 @@ export class VirtualAuthenticatorAgent {
       const aaguid = authData.slice(aaguidStartIndex, aaguidEndIndex);
       const isAaguidZeroed = aaguid.every((byte) => byte === 0);
 
-      // Check if self attestation is being used
+      // If the aaguid in the attested credential data is 16 zero bytes
+      // and credentialCreationData.attestationObjectResult.fmt is "packed"
+      // and x5c is absent
       const isSelfAttestation =
         isAaguidZeroed && fmt === Fmt.PACKED && !attStmtMap.has('x5c');
 
-      // If self attestation is being used, no further action needed
+      // then self attestation is being used and no further action is needed.
       if (isSelfAttestation) {
         return attestationObjectResult;
       }
@@ -317,18 +320,19 @@ export class VirtualAuthenticatorAgent {
     if (pkOptions.pubKeyCredParams.length === 0) {
       // Append the following pairs of PublicKeyCredentialType and COSEAlgorithmIdentifier values to credTypesAndPubKeyAlgs:
       credTypesAndPubKeyAlgs.push(
+        // public-key and -7 ("ES256").
         {
           type: PublicKeyCredentialType.PUBLIC_KEY,
-          // public-key and -7 ("ES256").
           alg: COSEKeyAlgorithm.ES256,
         },
+        // public-key and -257 ("RS256").
         {
           type: PublicKeyCredentialType.PUBLIC_KEY,
-          // public-key and -257 ("RS256").
           alg: COSEKeyAlgorithm.RS256,
         },
       );
-    } /* Step 10: If pkOptions.pubKeyCredParams’s size is non-zero */ else {
+    } else {
+      // Step 10: If pkOptions.pubKeyCredParams's size is non-zero
       // For each current of pkOptions.pubKeyCredParams:
       for (const pubKeyCredParam of pkOptions.pubKeyCredParams) {
         // If current.type does not contain a PublicKeyCredentialType supported by this implementation, then continue.
@@ -476,14 +480,14 @@ export class VirtualAuthenticatorAgent {
     // Step 22.11: Append authenticator to issuedRequests.
     // NOTE: Not implemented. Single virtual authenticator, no request tracking needed.
 
-    // Step 32: If any authenticator indicates success:
+    // Step 22.SUCCESS: If any authenticator indicates success:
 
-    // Step 23.1: If any authenticator indicates success (authenticatorMakeCredential returns successfully):
+    // Step 22.SUCCESS.1: If any authenticator indicates success (authenticatorMakeCredential returns successfully):
     //   Remove authenticator from issuedRequests.
     // NOTE: Not implemented. Single virtual authenticator always succeeds or throws, no multi-authenticator
     // coordination needed.
 
-    // Step 23.2: Let credentialCreationData be a struct
+    // Step 22.SUCCESS.2: Let credentialCreationData be a struct
     const credentialCreationData = {
       // attestationObjectResult: whose value is the bytes returned from the successful authenticatorMakeCredential operation.
       attestationObjectResult: attestationObject,
@@ -495,15 +499,14 @@ export class VirtualAuthenticatorAgent {
       clientExtensionResults: {},
     };
 
-    // Step 23.3: Let constructCredentialAlg be an algorithm that takes a global object global
-    // Step 23.3.1: Handle attestation conveyance preference
+    // Step 22.SUCCESS.3: Let constructCredentialAlg be an algorithm that takes a global object global
     const processedAttestationObject = this._constructCredentialAlg({
       attestationConveyancePreferenceOption:
         credentialCreationData.attestationConveyancePreferenceOption,
       attestationObjectResult: credentialCreationData.attestationObjectResult,
     });
 
-    // Step 23.4: Let pubKeyCred be a new PublicKeyCredential object associated
+    // Step 22.SUCCESS.4: Let pubKeyCred be a new PublicKeyCredential object associated
     const pubKeyCred = {
       id: Buffer.from(credentialId).toString('base64url'),
       rawId: credentialId,
@@ -515,9 +518,7 @@ export class VirtualAuthenticatorAgent {
       clientExtensionResults: {},
     };
 
-    console.log({ pubKeyCred });
-
-    // Step 23.5: Return pubKeyCred.
+    // Step 22.SUCCESS.5: Return pubKeyCred.
     return pubKeyCred;
   }
 
