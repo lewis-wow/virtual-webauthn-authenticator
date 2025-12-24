@@ -37,9 +37,6 @@ export const PublicKeyCredentialCreationOptionsSchema = z
     attestationFormats: z.array(z.string()).optional(),
     // Extensions can be complex; a generic record is often sufficient for validation
     extensions: AuthenticationExtensionsClientInputsSchema.optional(),
-    // signal is an AbortSignal for aborting the operation
-    // @see https://www.w3.org/TR/webauthn-3/#dom-credentialcreationoptions-signal
-    signal: z.instanceof(AbortSignal).optional(),
   })
   .meta({
     id: 'PublicKeyCredentialCreationOptions',

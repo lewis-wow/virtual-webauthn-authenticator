@@ -23,7 +23,10 @@ import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
 } from './zod-validation/CredentialCreationOptionsSchema';
-import type { CredentialRequestOptions } from './zod-validation/CredentialRequestOptionsSchema';
+import {
+  CredentialRequestOptionsSchema,
+  type CredentialRequestOptions,
+} from './zod-validation/CredentialRequestOptionsSchema';
 import { PublicKeyCredentialCreationOptionsSchema } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
@@ -254,6 +257,18 @@ export class VirtualAuthenticatorAgent {
       }),
     );
 
+    // Meta validation
+    assertSchema(
+      meta,
+      VirtualAuthenticatorCredentialMetaArgsSchema.safeExtend({
+        userId: z.literal(
+          UUIDMapper.bytesToUUID(credentialCreationOptions.publicKey.user.id),
+        ),
+      }),
+    );
+    // Context validation
+    assertSchema(context, VirtualAuthenticatorCredentialContextArgsSchema);
+
     // Step 2: Check sameOriginWithAncestors, mediation, and transient activation
     // NOTE: Browser security checks (sameOriginWithAncestors, mediation, transient activation)
     // are not applicable. This is a backend virtual authenticator for testing where such
@@ -261,15 +276,6 @@ export class VirtualAuthenticatorAgent {
 
     // Step 3: Let pkOptions be the value of options.publicKey.
     const pkOptions = credentialCreationOptions.publicKey;
-
-    assertSchema(
-      meta,
-      VirtualAuthenticatorCredentialMetaArgsSchema.safeExtend({
-        userId: z.literal(UUIDMapper.bytesToUUID(pkOptions.user.id)),
-      }),
-    );
-
-    assertSchema(context, VirtualAuthenticatorCredentialContextArgsSchema);
 
     // Step 4: If pkOptions.timeout is present, check if its value lies within a reasonable range as defined by the client
     // and if not, correct it to the closest value lying within that range.
@@ -373,8 +379,8 @@ export class VirtualAuthenticatorAgent {
     const clientDataHash = Hash.sha256(clientDataJSON);
 
     // Step 16: If options.signal is present and aborted, throw the options.signal's abort reason
-    if (pkOptions.signal?.aborted) {
-      throw pkOptions.signal.reason;
+    if (credentialCreationOptions.signal?.aborted) {
+      throw credentialCreationOptions.signal.reason;
     }
 
     // Step 17: Let issuedRequests be a new ordered set.
@@ -513,7 +519,7 @@ export class VirtualAuthenticatorAgent {
       clientDataJSONResult: clientDataJSON,
       // attestationConveyancePreferenceOption: whose value is the value of pkOptions.attestation.
       attestationConveyancePreferenceOption: pkOptions.attestation,
-      // clientExtensionResults: whose value is an AuthenticationExtensionsClientOutputs object containing extension identifier → client extension output entries.
+      // clientExtensionResults: whose value is an AuthenticationExtensionsClientOutputs object containing extension identifier -> client extension output entries.
       clientExtensionResults: {},
     };
 
@@ -552,25 +558,108 @@ export class VirtualAuthenticatorAgent {
   }): Promise<PublicKeyCredential> {
     const { credentialRequestOptions, meta, context } = opts;
 
-    // Step 1: Assert options.publicKey is present (validated by schema)
-    const publicKeyCredentialRequestOptions =
-      credentialRequestOptions.publicKey;
-
+    // Step 1: Assert options.publicKey is present
     assertSchema(
-      publicKeyCredentialRequestOptions,
-      PublicKeyCredentialRequestOptionsSchema,
+      credentialRequestOptions,
+      CredentialRequestOptionsSchema.safeExtend({
+        publicKey: PublicKeyCredentialRequestOptionsSchema,
+      }),
     );
 
+    // Meta validation
     assertSchema(meta, VirtualAuthenticatorCredentialMetaArgsSchema);
+    // Context validation
     assertSchema(context, VirtualAuthenticatorCredentialContextArgsSchema);
 
-    // Step 5-6: Validate origin and RP ID
-    const originHostname = new URL(meta.origin).hostname;
-    const rpId = publicKeyCredentialRequestOptions.rpId ?? originHostname;
+    // Step 2: Let pkOptions be the value of options.publicKey.
+    const pkOptions = credentialRequestOptions.publicKey;
 
-    assertSchema(originHostname, createOriginMatchesRpIdSchema(rpId));
+    // Step 3-4: Handle conditional mediation and set timeout
+    // NOTE: Not implemented. Conditional mediation is a browser UI feature for autofill
+    // in password fields (tagged with "webauthn" autofill detail token). This allows users
+    // to select credentials from a dropdown in form inputs. Since this is a backend virtual
+    // authenticator for testing without any browser UI context, conditional mediation is not
+    // applicable. The timeout handling (lifetimeTimer) is also not fully implemented as this
+    // is a testing environment where timeouts are typically not desired.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion (steps 3-4)
 
-    // Step 7-8: Check user verification availability
+    // Step 5: Let callerOrigin be origin.
+    // If callerOrigin is an opaque origin, throw a "NotAllowedError" DOMException.
+    // NOTE: The check for opaque origin is not implemented.
+    const callerOrigin = meta.origin;
+
+    // Step 6: Let effectiveDomain be the callerOrigin’s effective domain.
+    // If effective domain is not a valid domain, then throw a "SecurityError" DOMException.
+    // NOTE: The check is not implemented.
+    const effectiveDomain = new URL(meta.origin).hostname;
+
+    // Step 7: Process pkOptions.rpId
+    // If pkOptions.rpId is present:
+    //   If pkOptions.rpId is not a registrable domain suffix of and is not equal to effectiveDomain:
+    //     If the client supports related origin requests:
+    //       Run the related origins validation procedure with arguments callerOrigin and rpIdRequested.
+    //       If the result is false, throw a "SecurityError" DOMException.
+    //     If the client does not support related origin requests:
+    //       throw a "SecurityError" DOMException.
+    // If pkOptions.rpId is not present:
+    //   Set pkOptions.rpId to effectiveDomain.
+    // NOTE: Related origin requests are not supported. The implementation validates that rpId
+    // is a registrable domain suffix of or equal to effectiveDomain.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion (step 7)
+    const rpId = pkOptions.rpId ?? effectiveDomain;
+    assertSchema(effectiveDomain, createOriginMatchesRpIdSchema(rpId));
+
+    // Step 8: Let clientExtensions be a new map and let authenticatorExtensions be a new map.
+    // NOTE: Extensions are not implemented.
+
+    // Step 9: If pkOptions.extensions is present, then ...
+    // NOTE: Extensions are not implemented.
+
+    // Step 10: Let collectedClientData be a new CollectedClientData instance
+    const collectedClientData: CollectedClientData = {
+      type: CollectedClientDataType.WEBAUTHN_GET,
+      challenge: Buffer.from(
+        pkOptions.challenge,
+      ).toString('base64url'),
+      origin: meta.origin,
+      crossOrigin: meta.crossOrigin ?? false,
+      topOrigin: meta.crossOrigin ? meta.topOrigin : undefined,
+    };
+
+    // Step 11: Let clientDataJSON be the JSON-compatible serialization of client data constructed from collectedClientData.
+      const clientDataJSON = new Uint8Array(
+      Buffer.from(JSON.stringify(collectedClientData)),
+    );
+
+    // Step 12: Let clientDataHash be the hash of the serialized client data represented by clientDataJSON.
+    const clientDataHash = Hash.sha256(clientDataJSON);
+
+    // Step 13: If options.signal is present and aborted, throw the options.signal’s abort reason.
+        if (credentialRequestOptions.signal?.aborted) {
+      throw credentialRequestOptions.signal.reason;
+    }
+
+    // Step 14: Let issuedRequests be a new ordered set.
+    // NOTE: Not implemented.
+
+    // Step 15: Let savedCredentialIds be a new map.
+    // NOTE: Not implemened.
+
+    // Step 16: Let authenticators represent a value which at any given instant is a set of client platform-specific handles, where each item identifies an authenticator presently available on this client platform at that instant.
+    // NOTE: Not implemented.
+
+    // Step 17: Let silentlyDiscoveredCredentials be a new map whose entries are of the form: DiscoverableCredentialMetadata -> authenticator.
+    // NOTE: Not implemented
+
+    // Step 18: Consider the value of hints and craft the user interface accordingly, as the user-agent sees fit.
+    // NOTE: Not implemented
+
+    // Step 19: Start lifetimeTimer.
+    // NOTE: Not implemented
+
+    // TODO::::
+
+    // Step 8: Check user verification availability
     const userVerificationEnabled = meta.userVerificationEnabled ?? true;
     const userPresenceEnabled = meta.userPresenceEnabled ?? true;
 
