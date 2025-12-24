@@ -260,6 +260,64 @@ export class VirtualAuthenticator {
   }
 
   /**
+   * Handles 'none' attestation (no attestation statement).
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
+   */
+  private _handleAttestationNone(): {
+    fmt: Fmt;
+    attStmt: Map<string, Uint8Array | number>;
+  } {
+    // For "none" attestation, the attestation statement is an empty CBOR map
+    const fmt = Fmt.NONE;
+    const attStmt = new Map<string, Uint8Array | number>();
+
+    return {
+      fmt,
+      attStmt,
+    };
+  }
+
+  /**
+   * Handles 'packed' attestation using self-attestation.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
+   */
+  private async _handleAttestationPacked(opts: {
+    webAuthnCredential: WebAuthnCredentialWithMeta;
+    data: {
+      clientDataHash: Uint8Array;
+      authenticatorData: Uint8Array;
+    };
+  }): Promise<{ fmt: Fmt; attStmt: Map<string, Uint8Array | number> }> {
+    const { webAuthnCredential, data } = opts;
+
+    const fmt = Fmt.PACKED;
+    const dataToSign = this._createDataToSign(data);
+
+    // Sign the data to create the attestation signature
+    const { signature, alg } = await this.keyProvider
+      .sign({
+        data: dataToSign,
+        webAuthnCredential,
+      })
+      .catch((error) => {
+        throw new SignatureFailed({
+          cause: error,
+        });
+      });
+
+    // For packed self-attestation, attStmt contains alg and sig
+    const attStmt = new Map<string, Uint8Array | number>([
+      ['alg', alg],
+      ['sig', new Uint8Array(signature)],
+    ]);
+
+    return {
+      fmt,
+      attStmt,
+    };
+  }
+
+  /**
    * Find the first supported attestation statement format identifier.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (Step 12)
    *
@@ -499,31 +557,30 @@ export class VirtualAuthenticator {
 
     // Step 14: Create an attestation object for the new credential using the procedure
     // specified in § 6.5.4 Generating an Attestation Object
-    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
-    const dataToSign = this._createDataToSign({
-      clientDataHash: hash,
-      authenticatorData,
-    });
+    // Generate attestation based on the selected format from attestationFormats
+    let fmt: Fmt;
+    let attStmt: Map<string, Uint8Array | number>;
 
-    const { signature, alg } = await this.keyProvider
-      .sign({
-        data: dataToSign,
-        webAuthnCredential: webAuthnCredentialWithMeta,
-      })
-      .catch((error) => {
-        throw new SignatureFailed({
-          cause: error,
-        });
-      });
-
-    // https://www.w3.org/TR/webauthn-3/#attestation-statement
-    const attStmt = new Map<string, Uint8Array | number>([
-      ['alg', alg],
-      ['sig', new Uint8Array(signature)],
-    ]);
+    switch (attestationFormat) {
+      case Fmt.NONE:
+        // For "none" attestation, create empty attestation statement
+        ({ fmt, attStmt } = this._handleAttestationNone());
+        break;
+      case Fmt.PACKED:
+        // For "packed" attestation, create self-attestation with signature
+        ({ fmt, attStmt } = await this._handleAttestationPacked({
+          webAuthnCredential: webAuthnCredentialWithMeta,
+          data: { clientDataHash: hash, authenticatorData },
+        }));
+        break;
+      default:
+        // Unsupported format, fall back to 'none'
+        ({ fmt, attStmt } = this._handleAttestationNone());
+        break;
+    }
 
     const attestationObject = new Map<string, unknown>([
-      ['fmt', attestationFormat],
+      ['fmt', fmt],
       ['attStmt', attStmt],
       ['authData', authenticatorData],
     ]);

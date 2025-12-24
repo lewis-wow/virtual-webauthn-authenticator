@@ -171,10 +171,16 @@ export class VirtualAuthenticatorAgent {
       opts;
 
     // Decode the CBOR attestation object
-    const attestationObject = cbor.decode(attestationObjectResult) as Map<
-      string,
-      unknown
-    >;
+    // Note: cbor.decode returns a Map when the CBOR data contains a map
+    const decodedAttestation = cbor.decode(attestationObjectResult);
+
+    // Ensure we're working with a Map (cbor2 should decode CBOR maps as JavaScript Maps)
+    const attestationObject =
+      decodedAttestation instanceof Map
+        ? decodedAttestation
+        : new Map(
+            Object.entries(decodedAttestation as Record<string, unknown>),
+          );
 
     // If credentialCreationData.attestationConveyancePreferenceOption's value is "none"
     if (attestationConveyancePreferenceOption === Attestation.NONE) {
@@ -182,8 +188,14 @@ export class VirtualAuthenticatorAgent {
 
       // Extract attestation object components
       const fmt = attestationObject.get('fmt') as string;
-      const attStmt = attestationObject.get('attStmt') as Map<string, unknown>;
+      const attStmt = attestationObject.get('attStmt');
       const authData = attestationObject.get('authData') as Uint8Array;
+
+      // Convert attStmt to Map if it's a plain object
+      const attStmtMap =
+        attStmt instanceof Map
+          ? attStmt
+          : new Map(Object.entries(attStmt as Record<string, unknown>));
 
       // Check if aaguid (in authData) is 16 zero bytes
       // AAGUID is located at bytes 37-52 in authData (after rpIdHash [32 bytes], flags [1 byte], signCount [4 bytes])
@@ -194,7 +206,7 @@ export class VirtualAuthenticatorAgent {
 
       // Check if self attestation is being used
       const isSelfAttestation =
-        isAaguidZeroed && fmt === Fmt.PACKED && !attStmt.has('x5c');
+        isAaguidZeroed && fmt === Fmt.PACKED && !attStmtMap.has('x5c');
 
       // If self attestation is being used, no further action needed
       if (isSelfAttestation) {
