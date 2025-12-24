@@ -263,18 +263,11 @@ export class VirtualAuthenticator {
    * Handles 'none' attestation (no attestation statement).
    * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
    */
-  private _handleAttestationNone(): {
-    fmt: Fmt;
-    attStmt: Map<string, Uint8Array | number>;
-  } {
+  private _handleAttestationNone(): Map<string, Uint8Array | number> {
     // For "none" attestation, the attestation statement is an empty CBOR map
-    const fmt = Fmt.NONE;
     const attStmt = new Map<string, Uint8Array | number>();
 
-    return {
-      fmt,
-      attStmt,
-    };
+    return attStmt;
   }
 
   /**
@@ -287,10 +280,9 @@ export class VirtualAuthenticator {
       clientDataHash: Uint8Array;
       authenticatorData: Uint8Array;
     };
-  }): Promise<{ fmt: Fmt; attStmt: Map<string, Uint8Array | number> }> {
+  }): Promise<Map<string, Uint8Array | number>> {
     const { webAuthnCredential, data } = opts;
 
-    const fmt = Fmt.PACKED;
     const dataToSign = this._createDataToSign(data);
 
     // Sign the data to create the attestation signature
@@ -311,10 +303,7 @@ export class VirtualAuthenticator {
       ['sig', new Uint8Array(signature)],
     ]);
 
-    return {
-      fmt,
-      attStmt,
-    };
+    return attStmt;
   }
 
   /**
@@ -558,29 +547,26 @@ export class VirtualAuthenticator {
     // Step 14: Create an attestation object for the new credential using the procedure
     // specified in § 6.5.4 Generating an Attestation Object
     // Generate attestation based on the selected format from attestationFormats
-    let fmt: Fmt;
     let attStmt: Map<string, Uint8Array | number>;
 
     switch (attestationFormat) {
       case Fmt.NONE:
         // For "none" attestation, create empty attestation statement
-        ({ fmt, attStmt } = this._handleAttestationNone());
+        attStmt = this._handleAttestationNone();
         break;
       case Fmt.PACKED:
         // For "packed" attestation, create self-attestation with signature
-        ({ fmt, attStmt } = await this._handleAttestationPacked({
+        attStmt = await this._handleAttestationPacked({
           webAuthnCredential: webAuthnCredentialWithMeta,
           data: { clientDataHash: hash, authenticatorData },
-        }));
+        });
         break;
       default:
-        // Unsupported format, fall back to 'none'
-        ({ fmt, attStmt } = this._handleAttestationNone());
-        break;
+        throw new Error('Unsupported attestation format is used.');
     }
 
     const attestationObject = new Map<string, unknown>([
-      ['fmt', fmt],
+      ['fmt', attestationFormat],
       ['attStmt', attStmt],
       ['authData', authenticatorData],
     ]);
