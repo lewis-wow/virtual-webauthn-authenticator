@@ -438,8 +438,26 @@ export class VirtualAuthenticatorAgent {
 
     // Step 22.7: If pkOptions.attestation is set to none:
     //   Set attestationFormats to the single-element list containing the string "none"
-    if (pkOptions.attestation === Attestation.NONE) {
-      attestationFormats = [Fmt.NONE];
+    // NOTE: The spec only explicitly handles the NONE case. For DIRECT, INDIRECT, and ENTERPRISE
+    // attestation types, this implementation defaults to PACKED format when attestationFormats
+    // is empty, which is an implementation decision not specified in the WebAuthn spec.
+    switch (pkOptions.attestation) {
+      case Attestation.NONE:
+        attestationFormats = [Fmt.NONE];
+        break;
+      case Attestation.DIRECT:
+        // If attestationFormats is empty, default to packed format for direct attestation
+        if (attestationFormats.length === 0) {
+          attestationFormats = [Fmt.PACKED];
+        }
+        break;
+      // INDIRECT and ENTERPRISE: use the provided attestationFormats or default to packed
+      case Attestation.INDIRECT:
+      case Attestation.ENTERPRISE:
+        if (attestationFormats.length === 0) {
+          attestationFormats = [Fmt.PACKED];
+        }
+        break;
     }
 
     // Step 22.8: Let excludeCredentialDescriptorList be a new list.
