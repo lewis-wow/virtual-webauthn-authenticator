@@ -25,10 +25,10 @@ import {
   type AuthenticatorMakeCredentialArgs,
 } from './zod-validation/AuthenticatorMakeCredentialArgsSchema';
 import {
-  PubKeyCredParamStrictSchema,
-  type PubKeyCredParamLoose,
-  type PubKeyCredParamStrict,
-} from './zod-validation/PubKeyCredParamSchema';
+  SupportedPubKeyCredParamSchema,
+  type PubKeyCredParam,
+  type SupportedPubKeyCredParam,
+} from './zod-validation/CredParamSchema';
 import { type PublicKeyCredentialCreationOptions } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { type PublicKeyCredentialRequestOptions } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
 import {
@@ -95,6 +95,11 @@ export class VirtualAuthenticator {
    */
   static readonly AAGUID = new Uint8Array(Buffer.alloc(16));
 
+  static readonly SUPPORTED_ATTESTATION_FORMATS: string[] = [
+    Fmt.NONE,
+    Fmt.PACKED,
+  ];
+
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
    *
@@ -106,10 +111,10 @@ export class VirtualAuthenticator {
    * @throws {NoSupportedPubKeyCredParamFound} Throws this error if no parameter in the array is supported.
    */
   private _findFirstSupportedCredTypesAndPubKeyAlgsOrThrow(
-    pubKeyCredParams: PubKeyCredParamLoose[],
-  ): PubKeyCredParamStrict {
+    pubKeyCredParams: PubKeyCredParam[],
+  ): SupportedPubKeyCredParam {
     for (const pubKeyCredParam of pubKeyCredParams) {
-      const result = PubKeyCredParamStrictSchema.safeParse(pubKeyCredParam);
+      const result = SupportedPubKeyCredParamSchema.safeParse(pubKeyCredParam);
       if (result.success) {
         return result.data;
       }
@@ -255,64 +260,31 @@ export class VirtualAuthenticator {
   }
 
   /**
-   * Handles 'none' attestation (no attestation statement).
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
+   * Find the first supported attestation statement format identifier.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (Step 12)
+   *
+   * Let attestationFormat be the first supported attestation statement format identifier
+   * from attestationFormats, taking into account enterpriseAttestationPossible.
+   * If attestationFormats contains no supported value, use the most preferred format.
+   *
+   * @param attestationFormats - List of attestation format identifiers from the client
+   * @returns The first supported format, or the most preferred format (Fmt.NONE) if none are supported
    */
-  private _handleAttestationNone(): {
-    fmt: Fmt;
-    attStmt: Map<string, Uint8Array | number>;
-  } {
-    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
-    const fmt = Fmt.NONE;
+  private _findFirstSupportedAttestationFormat(opts: {
+    attestationFormats: string[];
+  }): Fmt {
+    const { attestationFormats } = opts;
 
-    // https://www.w3.org/TR/webauthn-3/#attestation-statement
-    const attStmt = new Map<string, Uint8Array | number>([]);
+    // Find the first attestation format from the list that this authenticator supports
+    const firstSupportedAttestationFormat = attestationFormats.find(
+      (attestationFormat) =>
+        VirtualAuthenticator.SUPPORTED_ATTESTATION_FORMATS.includes(
+          attestationFormat,
+        ),
+    );
 
-    return {
-      fmt,
-      attStmt,
-    };
-  }
-
-  /**
-   * Handles 'direct' attestation using packed format.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
-   */
-  private async _handleAttestationDirect(opts: {
-    webAuthnCredential: WebAuthnCredentialWithMeta;
-    data: {
-      clientDataHash: Uint8Array;
-      authenticatorData: Uint8Array;
-    };
-  }): Promise<{ fmt: Fmt; attStmt: Map<string, Uint8Array | number> }> {
-    const { webAuthnCredential, data } = opts;
-
-    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
-    const fmt = Fmt.PACKED;
-
-    const dataToSign = this._createDataToSign(data);
-
-    const { signature, alg } = await this.keyProvider
-      .sign({
-        data: dataToSign,
-        webAuthnCredential,
-      })
-      .catch((error) => {
-        throw new SignatureFailed({
-          cause: error,
-        });
-      });
-
-    // https://www.w3.org/TR/webauthn-3/#attestation-statement
-    const attStmt = new Map<string, Uint8Array | number>([
-      ['alg', alg],
-      ['sig', new Uint8Array(signature)],
-    ]);
-
-    return {
-      fmt,
-      attStmt,
-    };
+    // If no supported format found, return the most preferred format (Fmt.NONE)
+    return (firstSupportedAttestationFormat as Fmt) ?? Fmt.NONE;
   }
 
   /**
@@ -501,7 +473,9 @@ export class VirtualAuthenticator {
     // Step 12: Let attestationFormat be the first supported attestation statement format identifier
     // from attestationFormats, taking into account enterpriseAttestationPossible.
     // If attestationFormats contains no supported value, use the most preferred format.
-    const selectedAttestationFormat = attestationFormats[0] || 'none';
+    const attestationFormat = this._findFirstSupportedAttestationFormat({
+      attestationFormats,
+    });
 
     const attestedCredentialData = await this._createAttestedCredentialData({
       credentialID: rawCredentialID,
@@ -525,27 +499,31 @@ export class VirtualAuthenticator {
 
     // Step 14: Create an attestation object for the new credential using the procedure
     // specified in § 6.5.4 Generating an Attestation Object
-    let fmt: Fmt;
-    let attStmt: Map<string, Uint8Array | number>;
+    // https://www.w3.org/TR/webauthn-3/#sctn-attstn-fmt-ids
+    const dataToSign = this._createDataToSign({
+      clientDataHash: hash,
+      authenticatorData,
+    });
 
-    switch (selectedAttestationFormat) {
-      case 'none':
-        ({ fmt, attStmt } = this._handleAttestationNone());
-        break;
-      case 'packed':
-        ({ fmt, attStmt } = await this._handleAttestationDirect({
-          webAuthnCredential: webAuthnCredentialWithMeta,
-          data: { clientDataHash: hash, authenticatorData },
-        }));
-        break;
-      default:
-        // Unsupported format, fall back to 'none'
-        ({ fmt, attStmt } = this._handleAttestationNone());
-        break;
-    }
+    const { signature, alg } = await this.keyProvider
+      .sign({
+        data: dataToSign,
+        webAuthnCredential: webAuthnCredentialWithMeta,
+      })
+      .catch((error) => {
+        throw new SignatureFailed({
+          cause: error,
+        });
+      });
+
+    // https://www.w3.org/TR/webauthn-3/#attestation-statement
+    const attStmt = new Map<string, Uint8Array | number>([
+      ['alg', alg],
+      ['sig', new Uint8Array(signature)],
+    ]);
 
     const attestationObject = new Map<string, unknown>([
-      ['fmt', fmt],
+      ['fmt', attestationFormat],
       ['attStmt', attStmt],
       ['authData', authenticatorData],
     ]);
