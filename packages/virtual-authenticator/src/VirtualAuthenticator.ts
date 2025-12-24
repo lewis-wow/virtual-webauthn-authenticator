@@ -250,11 +250,11 @@ export class VirtualAuthenticator {
    */
   private _createDataToSign(opts: {
     clientDataHash: Uint8Array;
-    authenticatorData: Uint8Array;
+    authData: Uint8Array;
   }): Uint8Array {
-    const { clientDataHash, authenticatorData } = opts;
+    const { clientDataHash, authData } = opts;
 
-    const dataToSign = Buffer.concat([authenticatorData, clientDataHash]);
+    const dataToSign = Buffer.concat([authData, clientDataHash]);
 
     return new Uint8Array(dataToSign);
   }
@@ -278,7 +278,7 @@ export class VirtualAuthenticator {
     webAuthnCredential: WebAuthnCredentialWithMeta;
     data: {
       clientDataHash: Uint8Array;
-      authenticatorData: Uint8Array;
+      authData: Uint8Array;
     };
   }): Promise<Map<string, Uint8Array | number>> {
     const { webAuthnCredential, data } = opts;
@@ -332,6 +332,45 @@ export class VirtualAuthenticator {
 
     // If no supported format found, return the most preferred format (Fmt.NONE)
     return (firstSupportedAttestationFormat as Fmt) ?? Fmt.NONE;
+  }
+
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-generating-an-attestation-object
+   */
+  private async _generateAttestationObject(opts: {
+    webAuthnCredential: WebAuthnCredentialWithMeta;
+
+    attestationFormat: Fmt;
+    authData: Uint8Array;
+    hash: Uint8Array;
+  }): Promise<Map<string, unknown>> {
+    const { webAuthnCredential, attestationFormat, authData, hash } = opts;
+
+    let attStmt: Map<string, Uint8Array | number>;
+
+    switch (attestationFormat) {
+      case Fmt.NONE:
+        // For "none" attestation, create empty attestation statement
+        attStmt = this._handleAttestationNone();
+        break;
+      case Fmt.PACKED:
+        // For "packed" attestation, create self-attestation with signature
+        attStmt = await this._handleAttestationPacked({
+          webAuthnCredential,
+          data: { clientDataHash: hash, authData },
+        });
+        break;
+      default:
+        throw new Error('Unsupported attestation format is used.');
+    }
+
+    const attestationObject = new Map<string, unknown>([
+      ['fmt', attestationFormat],
+      ['attStmt', attStmt],
+      ['authData', authData],
+    ]);
+
+    return attestationObject;
   }
 
   /**
@@ -547,29 +586,13 @@ export class VirtualAuthenticator {
     // Step 14: Create an attestation object for the new credential using the procedure
     // specified in § 6.5.4 Generating an Attestation Object
     // Generate attestation based on the selected format from attestationFormats
-    let attStmt: Map<string, Uint8Array | number>;
+    const attestationObject = await this._generateAttestationObject({
+      webAuthnCredential: webAuthnCredentialWithMeta,
 
-    switch (attestationFormat) {
-      case Fmt.NONE:
-        // For "none" attestation, create empty attestation statement
-        attStmt = this._handleAttestationNone();
-        break;
-      case Fmt.PACKED:
-        // For "packed" attestation, create self-attestation with signature
-        attStmt = await this._handleAttestationPacked({
-          webAuthnCredential: webAuthnCredentialWithMeta,
-          data: { clientDataHash: hash, authenticatorData },
-        });
-        break;
-      default:
-        throw new Error('Unsupported attestation format is used.');
-    }
-
-    const attestationObject = new Map<string, unknown>([
-      ['fmt', attestationFormat],
-      ['attStmt', attStmt],
-      ['authData', authenticatorData],
-    ]);
+      attestationFormat,
+      hash,
+      authData: authenticatorData,
+    });
 
     const attestationObjectCborEncoded = cbor.encode(attestationObject);
 
