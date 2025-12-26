@@ -1,10 +1,11 @@
 import { OriginSchema } from '@repo/core/zod-validation';
 import z from 'zod';
 
-export const VirtualAuthenticatorCredentialMetaArgsSchema = z
-  .object({
+import { AuthenticatorMetaArgsSchema } from './AuthenticatorMetaArgsSchema';
+
+export const AuthenticatorAgentMetaArgsSchema =
+  AuthenticatorMetaArgsSchema.safeExtend({
     origin: OriginSchema,
-    userId: z.string(),
 
     allowWeakChallenges: z.boolean().optional(),
     userVerificationEnabled: z.boolean().optional(),
@@ -14,8 +15,7 @@ export const VirtualAuthenticatorCredentialMetaArgsSchema = z
     // topOrigin is set only if crossOrigin is true
     // @see https://www.w3.org/TR/webauthn-3/#dom-collectedclientdata-toporigin
     topOrigin: z.string().optional(),
-  })
-  .refine(
+  }).refine(
     (data) => {
       // If crossOrigin is true, topOrigin must be present
       if (data.crossOrigin === true) {
@@ -30,6 +30,6 @@ export const VirtualAuthenticatorCredentialMetaArgsSchema = z
     },
   );
 
-export type VirtualAuthenticatorCredentialMetaArgs = z.infer<
-  typeof VirtualAuthenticatorCredentialMetaArgsSchema
+export type AuthenticatorAgentMetaArgs = z.infer<
+  typeof AuthenticatorAgentMetaArgsSchema
 >;

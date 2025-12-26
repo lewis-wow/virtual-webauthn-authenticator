@@ -13,16 +13,16 @@ import {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
 } from '../../src/zod-validation';
-import { VirtualAuthenticatorCredentialContextArgs } from '../../src/zod-validation/VirtualAuthenticatorCredentialContextArgsSchema';
-import { VirtualAuthenticatorCredentialMetaArgs } from '../../src/zod-validation/VirtualAuthenticatorCredentialMetaArgsSchema';
+import { AuthenticatorAgentContextArgs } from '../../src/zod-validation/AuthenticatorAgentContextArgsSchema';
+import { AuthenticatorAgentMetaArgs } from '../../src/zod-validation/AuthenticatorAgentMetaArgsSchema';
 import { RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   agent: VirtualAuthenticatorAgent;
 
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
-  meta?: Partial<VirtualAuthenticatorCredentialMetaArgs>;
-  context?: Partial<VirtualAuthenticatorCredentialContextArgs>;
+  meta?: Partial<AuthenticatorAgentMetaArgs>;
+  context?: Partial<AuthenticatorAgentContextArgs>;
 
   requireUserVerification?: boolean;
   requireUserPresence?: boolean;
