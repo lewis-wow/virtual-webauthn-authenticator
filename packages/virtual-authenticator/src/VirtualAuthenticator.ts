@@ -615,13 +615,17 @@ export class VirtualAuthenticator {
   }): Promise<AuthenticatorGetAssertionPayload> {
     const { authenticatorGetAssertionArgs, context, userId } = opts;
 
-    // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length
+    // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
+    // If not, return an error code equivalent to "UnknownError" and terminate the operation.
     assertSchema(
       authenticatorGetAssertionArgs,
       AuthenticatorGetAssertionArgsSchema,
     );
 
+    // Context validation
     assertSchema(context, VirtualAuthenticatorCredentialContextArgsSchema);
+    // UserId validation
+    assertSchema(userId, z.string());
 
     const {
       hash,
@@ -632,8 +636,49 @@ export class VirtualAuthenticator {
       // extensions,
     } = authenticatorGetAssertionArgs;
 
-    // Step 2 - Step 7 + Step 9:
-    const webAuthnCredential =
+    // Step 2: Let credentialOptions be a new empty set of public key credential sources.
+    // NOTE: Not implemented as a separate data structure. Credential filtering is handled
+    // directly in the repository query below.
+
+    // Step 3-7 and Step 9: Credential selection, user consent, and counter increment
+    // This operation combines multiple spec steps into a single atomic repository operation:
+    //
+    // Step 3: If allowCredentialDescriptorList was supplied, then for each descriptor of allowCredentialDescriptorList:
+    //   If allowCredentialDescriptorList was supplied:
+    //     For each descriptor of allowCredentialDescriptorList:
+    //       Let credSource be the result of looking up descriptor.id in this authenticator.
+    //       If credSource is not null, append it to credentialOptions.
+    // Step 4: Otherwise (allowCredentialDescriptorList was not supplied):
+    //     For each key → credSource of this authenticator's credentials map, append credSource to credentialOptions.
+    //   NOTE: Implemented via repository query with optional allowCredentialDescriptorList filter.
+    //
+    // Step 5: Filter by rpId
+    //   Remove any items from credentialOptions whose rpId is not equal to rpId.
+    //   NOTE: Implemented as part of the repository query filter.
+    //
+    // Step 6: Check if credentialOptions is empty
+    //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.
+    //   NOTE: Implemented via repository's orThrow - throws if no credential found.
+    //
+    // Step 7: Prompt user to select credential and collect authorization gesture
+    //   Prompt the user to select a public key credential source selectedCredential from credentialOptions.
+    //   Collect an authorization gesture confirming user consent for using selectedCredential.
+    //   If requireUserVerification is true, the authorization gesture MUST include user verification.
+    //   If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
+    //   If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
+    //   NOTE: User prompts and gestures are not applicable to a backend virtual authenticator for testing.
+    //   The implementation automatically selects the first matching credential. User verification and presence
+    //   checks are handled later in Step 10 during authenticatorData creation.
+    //
+    // Step 9: Increment signature counter
+    //   Increment the credential associated signature counter or the global signature counter value,
+    //   depending on which approach is implemented by the authenticator, by some positive value.
+    //   If the authenticator does not implement a signature counter, let the signature counter value remain constant at zero.
+    //   NOTE: Implemented atomically in the repository operation to prevent race conditions.
+    //   The counter is incremented by 1 for each assertion operation.
+    //
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (steps 3-7, 9)
+    const webAuthnCredentialWithMeta =
       await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
         {
           userId,
@@ -646,33 +691,47 @@ export class VirtualAuthenticator {
         },
       );
 
-    const credentialId = UUIDMapper.UUIDtoBytes(webAuthnCredential.id);
+    //   Step 8: Let processedExtensions be the result of authenticator extension processing for each supported
+    //   extension identifier → authenticator extension input in extensions.
+    //   NOTE: Extension processing is skipped.
 
-    // Step 8: Let processedExtensions be the result of authenticator extension processing for each supported extension identifier → authenticator extension input in extensions.
-    // NOTE: Skipped
+    // Step 9: Already implemented in the webAuthnRepository.
 
-    // Step 10: Create authenticatorData
+    // Step 10: Let authenticatorData be the byte array specified in §6.1 Authenticator Data
+    // including processedExtensions, if any, as the extensions
+    // and excluding attestedCredentialData.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
     const authenticatorData = await this._createAuthenticatorData({
+      // excluding attestedCredentialData
       attestedCredentialData: undefined,
       rpId,
-      counter: webAuthnCredential.counter,
+      counter: webAuthnCredentialWithMeta.counter,
       userVerification: requireUserVerification
         ? UserVerificationRequirement.REQUIRED
         : UserVerificationRequirement.DISCOURAGED,
+
       userVerificationEnabled: requireUserVerification,
       userPresenceEnabled: requireUserPresence,
+      // including processedExtensions, if any, as the extensions
+      // NOTE: Extensions are not implemented.
     });
 
-    // Step 11:
+    // Step 11: Let signature be the assertion signature
+    // of the concatenation authenticatorData || hash
+    // using the privateKey of selectedCredential.
+    // A simple, undelimited concatenation is safe to use here because
+    // the authenticator data describes its own length.
+    // The hash of the serialized client data (which potentially has a variable length)
+    // is always the last element.
     const dataToSign = this._createDataToSign({
       clientDataHash: hash,
-      authenticatorData,
+      authData: authenticatorData,
     });
 
     const { signature } = await this.keyProvider
       .sign({
         data: dataToSign,
-        webAuthnCredential,
+        webAuthnCredential: webAuthnCredentialWithMeta,
       })
       .catch((error) => {
         // Step 12: If any error occurred while generating the assertion signature, return an error code equivalent to "UnknownError" and terminate the operation.
@@ -681,19 +740,23 @@ export class VirtualAuthenticator {
         });
       });
 
-    const userHandleBytes = UUIDMapper.UUIDtoBytes(webAuthnCredential.userId);
-
     // Step 13: Return to the user agent:
     // selectedCredential.id, if either a list of credentials (i.e., allowCredentialDescriptorList) of length 2 or greater was supplied by the client, or no such list was supplied.
     // Note: If, within allowCredentialDescriptorList, the client supplied exactly one credential and it was successfully employed, then its credential ID is not returned since the client already knows it. This saves transmitting these bytes over what may be a constrained connection in what is likely a common case.
     // authenticatorData
     // signature
     // selectedCredential.userHandle
+
+    const credentialId = UUIDMapper.UUIDtoBytes(webAuthnCredentialWithMeta.id);
+    const userHandle = UUIDMapper.UUIDtoBytes(
+      webAuthnCredentialWithMeta.userId,
+    );
+
     return {
       credentialId,
       authenticatorData,
-      signature: new Uint8Array(signature),
-      userHandle: userHandleBytes,
+      signature,
+      userHandle,
     };
   }
 }

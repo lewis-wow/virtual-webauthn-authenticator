@@ -8,7 +8,9 @@ import z from 'zod';
 import type { VirtualAuthenticator } from './VirtualAuthenticator';
 import {
   Attestation,
+  AuthenticatorAttachment,
   CollectedClientDataType,
+  CredentialMediationRequirement,
   Fmt,
   ResidentKeyRequirement,
   UserVerificationRequirement,
@@ -16,8 +18,10 @@ import {
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
-import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import type { PubKeyCredParam } from './zod-validation';
+import type {
+  PubKeyCredParam,
+  PublicKeyCredentialDescriptor,
+} from './zod-validation';
 import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
@@ -574,6 +578,40 @@ export class VirtualAuthenticatorAgent {
     // Step 2: Let pkOptions be the value of options.publicKey.
     const pkOptions = credentialRequestOptions.publicKey;
 
+    let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
+    // Step 3: If options.mediation is present with the value conditional:
+    if (
+      credentialRequestOptions.mediation ===
+      CredentialMediationRequirement.CONDITIONAL
+    ) {
+      // Step 3.1: Let credentialIdFilter be the value of pkOptions.allowCredentials.
+      credentialIdFilter = pkOptions.allowCredentials ?? [];
+
+      // Step 3.2: Set pkOptions.allowCredentials to empty.
+      // NOTE: Skipped
+
+      // Step 3.3: Set a timer lifetimeTimer to a value of infinity.
+      // NOTE: Not implemented.
+    } else {
+      // Step 4: Else:
+      // Step 4.1: Let credentialIdFilter be an empty list.
+      credentialIdFilter = [];
+
+      // Step 4.2: If pkOptions.timeout is present, check if its value lies within a reasonable range as defined by the client and if not, correct it to the closest value lying within that range. Set a timer lifetimeTimer to this adjusted value. If pkOptions.timeout is not present, then set lifetimeTimer to a client-specific default.
+      // @see https://www.w3.org/TR/webauthn-3/#recommended-range-and-default-for-a-webauthn-ceremony-timeout
+      // let lifetimeTimer = VirtualAuthenticatorAgent.DEFAULT_TIMEOUT_MILLIS;
+      // if (pkOptions.timeout !== undefined) {
+      //   // Correct to closest value within reasonable range
+      //   lifetimeTimer = Math.max(
+      //     VirtualAuthenticatorAgent.MIN_TIMEOUT_MILLIS,
+      //     Math.min(
+      //       VirtualAuthenticatorAgent.MAX_TIMEOUT_MILLIS,
+      //       pkOptions.timeout,
+      //     ),
+      //   );
+      // }
+    }
+
     // Step 3-4: Handle conditional mediation and set timeout
     // NOTE: Not implemented. Conditional mediation is a browser UI feature for autofill
     // in password fields (tagged with "webauthn" autofill detail token). This allows users
@@ -618,16 +656,14 @@ export class VirtualAuthenticatorAgent {
     // Step 10: Let collectedClientData be a new CollectedClientData instance
     const collectedClientData: CollectedClientData = {
       type: CollectedClientDataType.WEBAUTHN_GET,
-      challenge: Buffer.from(
-        pkOptions.challenge,
-      ).toString('base64url'),
+      challenge: Buffer.from(pkOptions.challenge).toString('base64url'),
       origin: meta.origin,
       crossOrigin: meta.crossOrigin ?? false,
       topOrigin: meta.crossOrigin ? meta.topOrigin : undefined,
     };
 
     // Step 11: Let clientDataJSON be the JSON-compatible serialization of client data constructed from collectedClientData.
-      const clientDataJSON = new Uint8Array(
+    const clientDataJSON = new Uint8Array(
       Buffer.from(JSON.stringify(collectedClientData)),
     );
 
@@ -635,7 +671,7 @@ export class VirtualAuthenticatorAgent {
     const clientDataHash = Hash.sha256(clientDataJSON);
 
     // Step 13: If options.signal is present and aborted, throw the options.signal’s abort reason.
-        if (credentialRequestOptions.signal?.aborted) {
+    if (credentialRequestOptions.signal?.aborted) {
       throw credentialRequestOptions.signal.reason;
     }
 
@@ -649,69 +685,89 @@ export class VirtualAuthenticatorAgent {
     // NOTE: Not implemented.
 
     // Step 17: Let silentlyDiscoveredCredentials be a new map whose entries are of the form: DiscoverableCredentialMetadata -> authenticator.
-    // NOTE: Not implemented
+    // NOTE: Not implemented.
 
     // Step 18: Consider the value of hints and craft the user interface accordingly, as the user-agent sees fit.
-    // NOTE: Not implemented
+    // NOTE: Not implemented.
 
     // Step 19: Start lifetimeTimer.
-    // NOTE: Not implemented
+    // NOTE: Not implemented.
 
-    // TODO::::
+    // Step 20: While lifetimeTimer has not expired, perform the following actions depending upon lifetimeTimer, and the state and response for each authenticator in authenticators:
+    // NOTE: The steps except SUCCESS are not implemented.
 
-    // Step 8: Check user verification availability
-    const userVerificationEnabled = meta.userVerificationEnabled ?? true;
-    const userPresenceEnabled = meta.userPresenceEnabled ?? true;
-
-    if (
-      !userVerificationEnabled &&
-      publicKeyCredentialRequestOptions.userVerification ===
-        UserVerificationRequirement.REQUIRED
-    ) {
-      throw new UserVerificationNotAvailable();
-    }
-
-    // Step 13: Let collectedClientData be a new CollectedClientData instance
-    const collectedClientData: CollectedClientData = {
-      type: 'webauthn.get',
-      challenge: Buffer.from(
-        publicKeyCredentialRequestOptions.challenge,
-      ).toString('base64url'),
-      origin: meta.origin,
-      crossOrigin: meta.crossOrigin ?? false,
-      topOrigin: meta.crossOrigin ? meta.topOrigin : undefined,
-    };
-
-    // Step 14: Let clientDataJSON be the JSON-compatible serialization of collectedClientData
-    const clientDataJSON = new Uint8Array(
-      Buffer.from(JSON.stringify(collectedClientData)),
-    );
-
-    // Step 15: Let clientDataHash be the hash of the serialized client data
-    const clientDataHash = Hash.sha256(clientDataJSON);
-
-    // Step 18: Invoke the authenticatorGetAssertion operation
     const { credentialId, authenticatorData, signature, userHandle } =
       await this.authenticator.authenticatorGetAssertion({
         authenticatorGetAssertionArgs: {
           hash: clientDataHash,
           rpId,
-          allowCredentialDescriptorList:
-            publicKeyCredentialRequestOptions.allowCredentials,
+          allowCredentialDescriptorList: pkOptions.allowCredentials,
           requireUserPresence: true,
           requireUserVerification:
-            publicKeyCredentialRequestOptions.userVerification ===
-            UserVerificationRequirement.REQUIRED,
-          extensions: publicKeyCredentialRequestOptions.extensions,
+            pkOptions.userVerification === UserVerificationRequirement.REQUIRED,
+          extensions: pkOptions.extensions,
         },
         context,
         userId: meta.userId,
       });
 
-    // Step 20: Return PublicKeyCredential
-    return {
-      id: Buffer.from(credentialId).toString('base64url'),
-      rawId: credentialId,
+    // Step 20.SUCCESS: If any authenticator indicates success
+
+    // Step 20.SUCCESS.1: Remove authenticator from issuedRequests.
+    // NOTE: Not implemented.
+
+    // Step 20.SUCCESS.2: Let assertionCreationData be a struct:
+    const assertionCreationData = {
+      // credentialIdResult: If savedCredentialIds[authenticator] exists, set the value of credentialIdResult to be the bytes of savedCredentialIds[authenticator]. Otherwise, set the value of credentialIdResult to be the bytes of the credential ID returned from the successful authenticatorGetAssertion operation, as defined in § 6.3.3 The authenticatorGetAssertion Operation.
+      credentialIdResult: credentialId,
+      // clientDataJSONResult: whose value is the bytes of clientDataJSON.
+      clientDataJSONResult: clientDataJSON,
+      // authenticatorDataResult: whose value is the bytes of the authenticator data returned by the authenticator.
+      authenticatorDataResult: authenticatorData,
+      // signatureResult: whose value is the bytes of the signature value returned by the authenticator.
+      signatureResult: signature,
+      // userHandleResult: If the authenticator returned a user handle, set the value of userHandleResult to be the bytes of the returned user handle. Otherwise, set the value of userHandleResult to null.
+      userHandleResult: userHandle,
+      // clientExtensionResults: whose value is an AuthenticationExtensionsClientOutputs object containing extension identifier → client extension output entries. The entries are created by running each extension’s client extension processing algorithm to create the client extension outputs, for each client extension in pkOptions.extensions.
+      // NOTE: Extensions are not implemented.
+      clientExtensionResults: {},
+    };
+
+    // STEP 20.SUCCESS.3: If credentialIdFilter is not empty and credentialIdFilter does not contain an item whose id’s value is set to the value of credentialIdResult, continue.
+    // NOTE:
+    if (credentialIdFilter?.length > 0) {
+      const containsCredentialId = credentialIdFilter.find(
+        (credentialIdFilterItem) =>
+          credentialIdFilterItem.id ===
+          assertionCreationData.credentialIdResult,
+      );
+
+      if (containsCredentialId === undefined) {
+        // continue.
+        throw new Error('No credential was found.');
+      }
+    }
+
+    // Step 20.SUCCESS.4: If credentialIdFilter is empty and userHandleResult is null, continue.
+    if (
+      credentialIdFilter.length === 0 &&
+      assertionCreationData.userHandleResult === null
+    ) {
+      // continue.
+      throw new Error('No credential was found.');
+    }
+
+    // Step 20.SUCCESS.5: Let settings be the current settings object. Let global be settings’ global object.
+    // NOTE: Not implemented.
+
+    // Step 20.SUCCESS.6: Let pubKeyCred be a new PublicKeyCredential:
+    const pubKeyCred = {
+      id: Buffer.from(assertionCreationData.credentialIdResult).toString(
+        'base64url',
+      ),
+      rawId: assertionCreationData.credentialIdResult,
+      // The AuthenticatorAttachment value matching the current authenticator attachment modality of authenticator.
+      authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON,
@@ -719,7 +775,14 @@ export class VirtualAuthenticatorAgent {
         signature,
         userHandle,
       },
+      // NOTE: Extensions are not implemented.
       clientExtensionResults: {},
     };
+
+    // Step 20.SUCCESS.7: For each remaining authenticator in issuedRequests invoke the authenticatorCancel operation on authenticator and remove it from issuedRequests.
+    // NOTE: Not implemented.
+
+    // Step 20.SUCCESS.8: Return pubKeyCred and terminate this algorithm.
+    return pubKeyCred;
   }
 }
