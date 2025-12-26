@@ -119,6 +119,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       expectedChallenge: CHALLENGE_BASE64URL,
       expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
+      requireUserVerification: false,
     });
 
     registrationInfo = {
@@ -463,7 +464,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
   });
@@ -494,7 +494,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -527,7 +526,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
   });
@@ -569,7 +567,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -642,7 +639,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
       });
     });
@@ -743,7 +739,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
       });
     });
@@ -818,7 +813,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -849,7 +843,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -886,7 +879,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -926,7 +918,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -965,7 +956,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -1000,7 +990,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -1039,7 +1028,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 
@@ -1076,7 +1064,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
   });
@@ -1159,7 +1146,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
         expectedChallenge: Buffer.from(largeChallenge).toString('base64url'),
       });
     });
@@ -1287,7 +1273,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
 
       const firstCounter =
@@ -1301,7 +1286,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter: firstCounter,
-        requireUserVerification: true,
       });
 
       const secondCounter =
@@ -1315,7 +1299,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter: secondCounter,
-        requireUserVerification: true,
       });
 
       const thirdCounter =
@@ -1464,7 +1447,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredentialId,
         publicKey,
         counter,
-        requireUserVerification: true,
       });
     });
 

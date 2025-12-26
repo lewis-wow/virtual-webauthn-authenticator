@@ -72,7 +72,9 @@ export const performPublicKeyCredentialRequestAndVerify = async (
       publicKey,
       counter,
     },
-    requireUserVerification,
+    requireUserVerification:
+      requireUserVerification ??
+      publicKeyCredentialRequestOptions.userVerification === 'required',
   });
 
   // The most important check: confirm that the authentication was successful.

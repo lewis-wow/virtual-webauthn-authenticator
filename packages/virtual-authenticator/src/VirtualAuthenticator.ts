@@ -167,8 +167,7 @@ export class VirtualAuthenticator {
     rpId: string;
     counter: number;
     attestedCredentialData: Uint8Array | undefined;
-    userVerification: UserVerificationRequirement | undefined;
-
+    requireUserVerification: boolean;
     userVerificationEnabled: boolean;
     userPresenceEnabled: boolean;
   }): Promise<Uint8Array> {
@@ -176,7 +175,7 @@ export class VirtualAuthenticator {
       rpId,
       counter,
       attestedCredentialData,
-      userVerification,
+      requireUserVerification,
       userVerificationEnabled,
       userPresenceEnabled,
     } = opts;
@@ -202,11 +201,8 @@ export class VirtualAuthenticator {
     }
 
     // Bit 2: User Verified (UV)
-    // If 'required' or 'preferred' (and not explicitly 'discouraged')
-    if (
-      userVerificationEnabled &&
-      userVerification !== UserVerificationRequirement.DISCOURAGED
-    ) {
+    // Set if user verification is required and the authenticator is capable
+    if (userVerificationEnabled && requireUserVerification) {
       flagsInt |= 0b00000100;
     }
 
@@ -574,13 +570,10 @@ export class VirtualAuthenticator {
       rpId: rpEntity.id,
       counter: webAuthnCredentialWithMeta.counter,
       attestedCredentialData,
-
-      userVerification: requireUserVerification
-        ? UserVerificationRequirement.REQUIRED
-        : UserVerificationRequirement.DISCOURAGED,
-
-      userVerificationEnabled: requireUserVerification,
-      userPresenceEnabled: requireUserPresence,
+      requireUserVerification,
+      // Virtual authenticator is always capable of user verification and user presence
+      userVerificationEnabled: true,
+      userPresenceEnabled: true,
     });
 
     // Step 14: Create an attestation object for the new credential using the procedure
@@ -706,12 +699,10 @@ export class VirtualAuthenticator {
       attestedCredentialData: undefined,
       rpId,
       counter: webAuthnCredentialWithMeta.counter,
-      userVerification: requireUserVerification
-        ? UserVerificationRequirement.REQUIRED
-        : UserVerificationRequirement.DISCOURAGED,
-
-      userVerificationEnabled: requireUserVerification,
-      userPresenceEnabled: requireUserPresence,
+      requireUserVerification,
+      // Virtual authenticator is always capable of user verification and user presence
+      userVerificationEnabled: true,
+      userPresenceEnabled: true,
       // including processedExtensions, if any, as the extensions
       // NOTE: Extensions are not implemented.
     });
