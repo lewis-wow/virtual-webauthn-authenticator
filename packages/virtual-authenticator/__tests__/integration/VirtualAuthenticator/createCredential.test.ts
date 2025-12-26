@@ -2165,26 +2165,26 @@ describe('VirtualAuthenticator.createCredential()', () => {
       const secondCredentialId = UUIDMapper.bytesToUUID(secondCredential.rawId);
 
       const firstExists =
-        await webAuthnCredentialRepository.existsByRpIdAndCredentialIds({
+        await webAuthnCredentialRepository.findAllByRpIdAndCredentialIds({
           rpId: RP_ID,
           credentialIds: [firstCredentialId],
         });
 
       const secondExists =
-        await webAuthnCredentialRepository.existsByRpIdAndCredentialIds({
+        await webAuthnCredentialRepository.findAllByRpIdAndCredentialIds({
           rpId: RP_ID,
           credentialIds: [secondCredentialId],
         });
 
       const bothExist =
-        await webAuthnCredentialRepository.existsByRpIdAndCredentialIds({
+        await webAuthnCredentialRepository.findAllByRpIdAndCredentialIds({
           rpId: RP_ID,
           credentialIds: [firstCredentialId, secondCredentialId],
         });
 
-      expect(firstExists).toBe(true);
-      expect(secondExists).toBe(true);
-      expect(bothExist).toBe(true);
+      expect(firstExists.length).toBeGreaterThan(0);
+      expect(secondExists.length).toBeGreaterThan(0);
+      expect(bothExist.length).toBeGreaterThan(0);
     });
 
     /**

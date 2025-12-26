@@ -15,10 +15,10 @@ export type CreateKeyVaultDataArgs = {
 };
 
 export interface IWebAuthnRepository {
-  existsByRpIdAndCredentialIds(opts: {
+  findAllByRpIdAndCredentialIds(opts: {
     rpId: string;
     credentialIds: string[];
-  }): Promise<boolean>;
+  }): Promise<WebAuthnCredentialWithMeta[]>;
 
   createKeyVaultWebAuthnCredential(
     data: CreateKeyVaultDataArgs,

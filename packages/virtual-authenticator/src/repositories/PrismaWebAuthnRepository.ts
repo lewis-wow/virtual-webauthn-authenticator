@@ -1,14 +1,9 @@
-import { UUIDMapper } from '@repo/core/mappers';
 import { Prisma, PrismaClient } from '@repo/prisma';
-import { assert, isArray, isNullable, isOptional, isString } from 'typanion';
+import { assert, isArray, isString } from 'typanion';
 
 import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import type { WebAuthnCredentialWithMeta } from '../types/WebAuthnCredentialWithMeta';
-import type {
-  PublicKeyCredentialDescriptor,
-  WebAuthnCredential,
-} from '../zod-validation';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,
@@ -25,29 +20,33 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     this.prisma = opts.prisma;
   }
 
-  async existsByRpIdAndCredentialIds(opts: {
+  async findAllByRpIdAndCredentialIds(opts: {
     rpId: string;
     credentialIds: string[];
-  }): Promise<boolean> {
+  }): Promise<WebAuthnCredentialWithMeta[]> {
     const { rpId, credentialIds } = opts;
 
     assert(rpId, isString());
     assert(credentialIds, isArray(isString()));
 
     if (credentialIds.length === 0) {
-      return false;
+      return [];
     }
 
-    const count = await this.prisma.webAuthnCredential.count({
-      where: {
-        rpId: rpId,
-        id: {
-          in: credentialIds,
+    const webAuthnCredentialWithMetaList =
+      await this.prisma.webAuthnCredential.findMany({
+        where: {
+          rpId: rpId,
+          id: {
+            in: credentialIds,
+          },
         },
-      },
-    });
+        include: {
+          webAuthnCredentialKeyVaultKeyMeta: true,
+        },
+      });
 
-    return count > 0;
+    return webAuthnCredentialWithMetaList as WebAuthnCredentialWithMeta[];
   }
 
   async createKeyVaultWebAuthnCredential(

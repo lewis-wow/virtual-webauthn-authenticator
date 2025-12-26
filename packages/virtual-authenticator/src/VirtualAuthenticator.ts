@@ -62,7 +62,7 @@ export type VirtualAuthenticatorOptions = {
  * availability, User Presence) and handles specific error scenarios like `UserVerificationNotAvailable`.
  */
 export class VirtualAuthenticator implements IAuthenticator {
-  private readonly webAuthnRepository: IWebAuthnRepository;
+  public readonly webAuthnRepository: IWebAuthnRepository;
   private readonly keyProvider: IKeyProvider;
 
   constructor(opts: VirtualAuthenticatorOptions) {
@@ -411,31 +411,33 @@ export class VirtualAuthenticator implements IAuthenticator {
       excludeCredentialDescriptorList &&
       excludeCredentialDescriptorList.length > 0
     ) {
-      for (const descriptor of excludeCredentialDescriptorList) {
-        let credentialId: string;
-        try {
-          credentialId = UUIDMapper.bytesToUUID(descriptor.id);
-        } catch {
-          continue;
-        }
+      const credentialIds = excludeCredentialDescriptorList
+        .map((excludeCredentialDescriptor) => {
+          try {
+            return UUIDMapper.bytesToUUID(excludeCredentialDescriptor.id);
+          } catch {
+            return undefined;
+          }
+        })
+        .filter((credentialId) => credentialId !== undefined);
 
-        // Step 3.1: If looking up descriptor.id in this authenticator returns non-null:
-        // Collect an authorization gesture confirming user consent for creating a new credential.
-        // The authorization gesture MUST include a test of user presence.
-        // If the user confirms consent to create a new credential, return an error code equivalent to "InvalidStateError" and terminate the operation.
-        // If the user does not consent to create a new credential, return an error code equivalent to "NotAllowedError" and terminate the operation.
-        // NOTE: In this backend authenticator implementation, user consent and presence have already been collected by the agent/client. Finding a matching excluded credential triggers InvalidStateError.
-        // Lookup the credential in the authenticator's credential map
-        const credentialExists =
-          await this.webAuthnRepository.existsByRpIdAndCredentialIds({
-            rpId: rpEntity.id,
-            credentialIds: [credentialId],
-          });
+      // Step 3.1: If looking up descriptor.id in this authenticator returns non-null:
+      // Collect an authorization gesture confirming user consent for creating a new credential.
+      // The authorization gesture MUST include a test of user presence.
+      // If the user confirms consent to create a new credential, return an error code equivalent to "InvalidStateError" and terminate the operation.
+      // If the user does not consent to create a new credential, return an error code equivalent to "NotAllowedError" and terminate the operation.
+      // NOTE: In this backend authenticator implementation, user consent and presence have already been collected by the agent/client.
+      // Finding a matching excluded credential throws CredentialExcluded error.
+      // The search for finding existing credential is done as batch operation for effectivity.
+      const credentialExists =
+        await this.webAuthnRepository.findAllByRpIdAndCredentialIds({
+          rpId: rpEntity.id,
+          credentialIds,
+        });
 
-        // If credential exists and the RP ID matches (type matching is implicit as we only store public-key type)
-        if (credentialExists) {
-          throw new CredentialExcluded();
-        }
+      // If credential exists and the RP ID matches (type matching is implicit as we only store public-key type)
+      if (credentialExists.length > 0) {
+        throw new CredentialExcluded();
       }
     }
 

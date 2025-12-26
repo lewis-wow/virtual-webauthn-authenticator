@@ -5,7 +5,11 @@ import { assertSchema } from '@repo/utils';
 import * as cbor from 'cbor2';
 import z from 'zod';
 
-import type { IAuthenticator } from './IAuthenticator';
+import type {
+  AuthenticatorGetAssertionPayload,
+  AuthenticatorMetaArgs,
+  IAuthenticator,
+} from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
 import {
   Attestation,
@@ -17,16 +21,20 @@ import {
   UserVerificationRequirement,
 } from './enums';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type {
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,
   PubKeyCredParam,
   PublicKeyCredentialDescriptor,
+  PublicKeyCredentialRequestOptions,
 } from './zod-validation';
 import { AuthenticatorAgentContextArgsSchema } from './zod-validation/AuthenticatorAgentContextArgsSchema';
 import { AuthenticatorAgentMetaArgsSchema } from './zod-validation/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorContextArgs } from './zod-validation/AuthenticatorContextArgsSchema';
 import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
@@ -61,6 +69,136 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
   constructor(opts: VirtualAuthenticatorAgentOptions) {
     this.authenticator = opts.authenticator;
+  }
+
+  /**
+   * This algorithm returns false if the client determines that the authenticator is not capable of handling the request, or true if the request was issued successfully.
+   * @see https://www.w3.org/TR/webauthn-3/#publickeycredential-issuing-a-credential-request-to-an-authenticator
+   */
+  private async _issueCredentialRequestToAuthenticator(opts: {
+    // authenticator: A client platform-specific handle identifying an authenticator presently available on this client platform.
+    authenticator: IAuthenticator;
+    // savedCredentialIds: A map containing authenticator → credential ID. This argument will be modified in this algorithm.
+    // NOTE: Not used, just for the compatibility with spec.
+    savedCredentialIds: Map<IAuthenticator, Uint8Array>;
+    // pkOptions: This argument is a PublicKeyCredentialRequestOptions object specifying the desired attributes of the public key credential to discover.
+    pkOptions: PublicKeyCredentialRequestOptions;
+    // rpId: The request RP ID.
+    rpId: string;
+    // clientDataHash: The hash of the serialized client data represented by clientDataJSON.
+    clientDataHash: Uint8Array;
+    // authenticatorExtensions: A map containing extension identifiers to the base64url encoding of the client extension processing output for authenticator extensions.
+    authenticatorExtensions: Record<string, unknown>;
+
+    meta: AuthenticatorAgentMetaArgs;
+    context: AuthenticatorAgentContextArgs;
+  }): Promise<AuthenticatorGetAssertionPayload> {
+    const {
+      authenticator,
+      pkOptions,
+      rpId,
+      clientDataHash,
+      authenticatorExtensions,
+
+      meta,
+      context,
+    } = opts;
+
+    // Step 1: If pkOptions.userVerification is set to required and the authenticator is not capable of performing user verification, return false.
+    // Note: As we have single authenticator, we can throw UserVerificationNotAvailable error
+    if (
+      pkOptions.userVerification === UserVerificationRequirement.REQUIRED &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
+    // Step 2: Let userVerification be the effective user verification requirement for assertion, a Boolean value, as follows. If pkOptions.userVerification
+    const requireUserVerification =
+      this._calculateEffectiveUserVerificationRequirement({
+        userVerification: pkOptions.userVerification,
+        userVerificationEnabled: meta.userVerificationEnabled,
+      });
+
+    let allowCredentialDescriptorList:
+      | PublicKeyCredentialDescriptor[]
+      | undefined = undefined;
+
+    // Step 3: If pkOptions.allowCredentials is not empty:
+    if (pkOptions.allowCredentials && pkOptions.allowCredentials.length > 0) {
+      // Step 3.1: Let allowCredentialDescriptorList be a new list.
+      // NOTE: Handled by next step.
+
+      // Step 3.2: Execute a client platform-specific procedure to determine which, if any,
+      // public key credentials described by pkOptions.allowCredentials are bound to this authenticator,
+      // by matching with rpId, pkOptions.allowCredentials.id, and pkOptions.allowCredentials.type.
+      // Set allowCredentialDescriptorList to this filtered list.
+      const webAuthnCredentialWithMetaList =
+        await authenticator.webAuthnRepository.findAllByRpIdAndCredentialIds({
+          rpId,
+          credentialIds: pkOptions.allowCredentials.map((allowCredential) =>
+            UUIDMapper.bytesToUUID(allowCredential.id),
+          ),
+        });
+
+      allowCredentialDescriptorList = webAuthnCredentialWithMetaList.map(
+        (webAuthnCredentialWithMeta) => ({
+          id: UUIDMapper.UUIDtoBytes(webAuthnCredentialWithMeta.id),
+          type: PublicKeyCredentialType.PUBLIC_KEY,
+          transports: webAuthnCredentialWithMeta.transports,
+        }),
+      );
+
+      // Step 3.3: If allowCredentialDescriptorList is empty, return false.
+      // NOTE: As we have single authenticator, we can throw CredentialNotFound error
+      if (allowCredentialDescriptorList.length === 0) {
+        throw new CredentialNotFound();
+      }
+
+      // Step 3.4: Let distinctTransports be a new ordered set.
+      // NOTE: Transports not implemented.
+
+      // Step 3.5: If allowCredentialDescriptorList has exactly one value,
+      // set savedCredentialIds[authenticator] to allowCredentialDescriptorList[0].id’s value
+      // (see here in §6.3.3 The authenticatorGetAssertion Operation for more information).
+      // NOTE: Not implemented. We don't need to use savedCredentialIds as we have single authenticator.
+
+      // Step 3.6: For each credential descriptor C in allowCredentialDescriptorList,
+      // append each value, if any, of C.transports to distinctTransports.
+      // NOTE: Transports not implemented.
+
+      // Step 3.7 If distinctTransports is not empty:
+      // NOTE: Not implemented.
+
+      // Step 3.7: If distinctTransports is empty:
+      // Using local configuration knowledge of the appropriate transport to use with authenticator,
+      // invoke the authenticatorGetAssertion operation on authenticator
+      // with rpId, clientDataHash, allowCredentialDescriptorList, userVerification, and authenticatorExtensions as parameters.
+      // NOTE: Handled with the second branch of step 3 below
+    }
+
+    // Step 3: If pkOptions.allowCredentials is empty:
+    // Using local configuration knowledge of the appropriate transport to use with authenticator,
+    // invoke the authenticatorGetAssertion operation on authenticator
+    // with rpId, clientDataHash, allowCredentialDescriptorList, userVerification, and authenticatorExtensions as parameters.
+    const authenticatorGetAssertionPayload =
+      await authenticator.authenticatorGetAssertion({
+        authenticatorGetAssertionArgs: {
+          allowCredentialDescriptorList,
+          extensions: authenticatorExtensions,
+          hash: clientDataHash,
+          rpId,
+          requireUserPresence: true,
+          requireUserVerification,
+        },
+        meta,
+        context,
+      });
+
+    // Step 4: Return true.
+    // NOTE: We don't need to use savedCredentialIds and saved authenticatorGetAssertion payload.
+    // We have single authenticator, so we can directly return the payload.
+    return authenticatorGetAssertionPayload;
   }
 
   /**
@@ -128,9 +266,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    */
   private _calculateEffectiveUserVerificationRequirement(opts: {
     userVerification: UserVerificationRequirement | undefined;
-    userVerificationEnabled: boolean;
+    userVerificationEnabled?: boolean;
   }): boolean {
-    const { userVerification, userVerificationEnabled } = opts;
+    const { userVerification, userVerificationEnabled = true } = opts;
 
     // If pkOptions.authenticatorSelection.userVerification is set to required
     if (userVerification === UserVerificationRequirement.REQUIRED) {
@@ -771,7 +909,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // If effective domain is not a valid domain, then throw a
     // "SecurityError" DOMException.
     // NOTE: The check is not implemented.
-    const effectiveDomain = new URL(meta.origin).hostname;
+    const effectiveDomain = new URL(callerOrigin).hostname;
 
     // Step 7: If pkOptions.rpId is not present, set pkOptions.rpId to
     // effectiveDomain.
@@ -876,21 +1014,44 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 20.AVAILABLE: If an authenticator becomes available on this client device
 
     // Step 20.AVAILABLE.1: If options.mediation is conditional and the authenticator supports the silentCredentialDiscovery operation:
+    // NOTE: Not Implemented.
 
+    // Step 20.AVAILABLE.2: Else:
+
+    // Step 20.AVAILABLE.2.1: Execute the `issuing a credential request to an authenticator algorithm` with authenticator, savedCredentialIds, pkOptions, rpId, clientDataHash, and authenticatorExtensions.
     const { credentialId, authenticatorData, signature, userHandle } =
-      await this.authenticator.authenticatorGetAssertion({
-        authenticatorGetAssertionArgs: {
-          hash: clientDataHash,
-          rpId,
-          allowCredentialDescriptorList: pkOptions.allowCredentials,
-          requireUserPresence: true,
-          requireUserVerification:
-            pkOptions.userVerification === UserVerificationRequirement.REQUIRED,
-          extensions: pkOptions.extensions,
-        },
+      await this._issueCredentialRequestToAuthenticator({
+        authenticator: this.authenticator,
+        // NOTE: Not used. Just for compatibility with spec.
+        savedCredentialIds: new Map<IAuthenticator, Uint8Array>(),
+        pkOptions,
+        rpId,
+        clientDataHash,
+        // NOTE: Extensions are not implemented.
+        authenticatorExtensions: {},
+
         meta,
         context,
       });
+
+    // Step 20.AVAILABLE.2.1: If this returns false, continue.
+    // Not implemented as we have single authenticator.
+
+    // Step 20.AVAILABLE.2.2: Append authenticator to issuedRequests.
+    // Not implemented as we have single authenticator.
+
+    // Step 20.UNAVAILABLE: If an authenticator ceases to be available on this client device,
+    // Remove authenticator from issuedRequests.
+    // NOTE: Not implemented.
+
+    // Step 20.USER_CANCELLATION_STATUS: If any authenticator returns a status indicating that the user cancelled the operation,
+    // Remove authenticator from issuedRequests.
+    // For each remaining authenticator in issuedRequests invoke the authenticatorCancel operation on authenticator and remove it from issuedRequests.
+    // NOTE: Not implemented.
+
+    // Step 20.UNKNOWN_ERROR:
+    // Remove authenticator from issuedRequests.
+    // NOTE: Not implemented.
 
     // Step 20.SUCCESS: If any authenticator indicates success, perform the
     // following steps:
@@ -912,7 +1073,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // if the authenticator returned one, otherwise null.
     // clientExtensionResults: whose value is an
     // AuthenticationExtensionsClientOutputs object containing extension
-    // identifier → client extension output entries.
+    // identifier -> client extension output entries.
     const assertionCreationData = {
       // credentialIdResult: If savedCredentialIds[authenticator] exists, set the value of credentialIdResult to be the bytes of savedCredentialIds[authenticator]. Otherwise, set the value of credentialIdResult to be the bytes of the credential ID returned from the successful authenticatorGetAssertion operation, as defined in §6.3.3 The authenticatorGetAssertion Operation.
       credentialIdResult: credentialId,

@@ -1,4 +1,5 @@
 import type { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
+import type { IWebAuthnRepository } from './repositories';
 import type { AuthenticatorAgentContextArgs } from './zod-validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './zod-validation/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialArgs } from './zod-validation/AuthenticatorMakeCredentialArgsSchema';
@@ -74,6 +75,8 @@ export type AuthenticatorMetaArgs = {
  * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-ops
  */
 export interface IAuthenticator {
+  readonly webAuthnRepository: IWebAuthnRepository;
+
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
