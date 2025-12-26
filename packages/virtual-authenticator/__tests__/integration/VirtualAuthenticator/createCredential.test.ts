@@ -5,6 +5,7 @@ import {
 } from '../../../../auth/__tests__/helpers';
 import { set } from '@repo/core/__tests__/helpers';
 
+import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm, KeyAlgorithm } from '@repo/keys/enums';
 import { COSEKeyMapper } from '@repo/keys/mappers';
 import { PrismaClient } from '@repo/prisma';
@@ -234,6 +235,30 @@ describe('VirtualAuthenticator.createCredential()', () => {
   describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
     afterEach(async () => {
       await cleanupWebAuthnCredentials();
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential Step 10
+     * Per spec: If pkOptions.pubKeyCredParams's size is zero, append default algorithms:
+     * - public-key and -7 ("ES256")
+     * - public-key and -257 ("RS256")
+     */
+    test('Should use default algorithms (ES256, RS256) when pubKeyCredParams is empty array', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        pubKeyCredParams: [],
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+      expect(
+        registrationVerification.registrationInfo?.credential.publicKey,
+      ).toBeDefined();
     });
 
     test('Should work with multiple unsupported and one supported pubKeyCredParams', async () => {
@@ -1254,6 +1279,67 @@ describe('VirtualAuthenticator.createCredential()', () => {
         }),
       ).rejects.toThrowError(new TypeAssertionError());
     });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred Step 3
+     * Per spec: For each descriptor of excludeCredentialDescriptorList, try to look up descriptor.id.
+     * If the ID is malformed (cannot be parsed), continue to next descriptor.
+     */
+    test('Should skip malformed credential IDs in excludeCredentials and succeed', async () => {
+      const malformedId = new Uint8Array([1, 2, 3]); // Not a valid UUID
+      const anotherMalformedId = new Uint8Array([255, 255, 255]); // Not a valid UUID
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        excludeCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: malformedId,
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: anotherMalformedId,
+          },
+        ],
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      // Should succeed because malformed IDs are skipped per spec Step 3
+      const { registrationVerification } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred Step 3
+     * Per spec: If credential exists for this RP and is in excludeCredentials, throw error
+     */
+    test('Should allow creation when excludeCredentials has non-matching UUIDs', async () => {
+      const nonExistentId = UUIDMapper.UUIDtoBytes(
+        '00000000-0000-0000-0000-000000000000',
+      );
+
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        excludeCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: nonExistentId,
+          },
+        ],
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
   });
 
   /**
@@ -1590,6 +1676,35 @@ describe('VirtualAuthenticator.createCredential()', () => {
      * Per spec: id is an OPTIONAL DOMString member. If omitted, its value will be
      * the CredentialsContainer object's relevant settings object's origin's effective domain.
      */
+    test('Should work with missing RP id (defaults to origin effective domain)', async () => {
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        attestation: Attestation.NONE,
+        rp: {
+          name: 'Example Corp',
+          // id is omitted - should default to origin's effective domain
+        },
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification, webAuthnCredentialId } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+
+      // Verify the credential was created and stored with the effective domain as rpId
+      const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+        where: {
+          id: webAuthnCredentialId,
+        },
+      });
+
+      expect(webAuthnCredential).toBeDefined();
+      expect(webAuthnCredential?.rpId).toBe(RP_ID); // Should use effective domain from origin
+    });
+
     test('Should work with missing RP id (defaults to origin effective domain)', async () => {
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -2011,6 +2126,92 @@ describe('VirtualAuthenticator.createCredential()', () => {
           'hmac-secret': true,
         },
       } satisfies PublicKeyCredentialCreationOptions;
+
+      const { registrationVerification } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    /**
+     * Step 7.4: Tests for authenticatorMakeCredential credential storage
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (step 7.4)
+     */
+    test('Should successfully create multiple credentials for same user and RP', async () => {
+      // Create first credential
+      const { publicKeyCredential: firstCredential } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        });
+
+      // Create second credential with same user and RP
+      const { publicKeyCredential: secondCredential } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        });
+
+      // Verify both credentials are different
+      expect(firstCredential.rawId).not.toEqual(secondCredential.rawId);
+
+      // Verify both credentials exist in database using the repository's existsByRpIdAndCredentialIds method
+      const firstCredentialId = UUIDMapper.bytesToUUID(firstCredential.rawId);
+      const secondCredentialId = UUIDMapper.bytesToUUID(secondCredential.rawId);
+
+      const firstExists =
+        await webAuthnCredentialRepository.existsByRpIdAndCredentialIds({
+          rpId: RP_ID,
+          credentialIds: [firstCredentialId],
+        });
+
+      const secondExists =
+        await webAuthnCredentialRepository.existsByRpIdAndCredentialIds({
+          rpId: RP_ID,
+          credentialIds: [secondCredentialId],
+        });
+
+      const bothExist =
+        await webAuthnCredentialRepository.existsByRpIdAndCredentialIds({
+          rpId: RP_ID,
+          credentialIds: [firstCredentialId, secondCredentialId],
+        });
+
+      expect(firstExists).toBe(true);
+      expect(secondExists).toBe(true);
+      expect(bothExist).toBe(true);
+    });
+
+    /**
+     * Tests for challenge size handling in client data hash
+     */
+    test('Should handle minimum recommended challenge size (16 bytes)', async () => {
+      const minChallenge = new Uint8Array(randomBytes(16));
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge: minChallenge,
+      };
+
+      const { registrationVerification } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(registrationVerification.verified).toBe(true);
+    });
+
+    test('Should handle large challenge size (512 bytes)', async () => {
+      const largeChallenge = new Uint8Array(randomBytes(512));
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        challenge: largeChallenge,
+      };
 
       const { registrationVerification } =
         await performPublicKeyCredentialRegistrationAndVerify({

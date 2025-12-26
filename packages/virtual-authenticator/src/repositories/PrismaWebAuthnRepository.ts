@@ -78,48 +78,6 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     return createdWebAuthnCredentialWithMeta as WebAuthnCredentialWithMeta;
   }
 
-  async findAllByAllowCredentialDescriptorList(opts: {
-    allowCredentialDescriptorList: Pick<PublicKeyCredentialDescriptor, 'id'>[];
-  }): Promise<WebAuthnCredential[]> {
-    const { allowCredentialDescriptorList } = opts;
-
-    const credentialOptions = await this.prisma.webAuthnCredential.findMany({
-      where: {
-        id: {
-          in: allowCredentialDescriptorList.map((allowCredentialDescriptor) =>
-            UUIDMapper.bytesToUUID(allowCredentialDescriptor.id),
-          ),
-        },
-      },
-      include: {
-        webAuthnCredentialKeyVaultKeyMeta: true,
-      },
-    });
-
-    return credentialOptions as WebAuthnCredential[];
-  }
-
-  async findAllByRpIdAndUserId(opts: {
-    userId: string;
-    rpId: string;
-    apiKeyId: string | null;
-  }): Promise<WebAuthnCredential[]> {
-    const { userId, rpId, apiKeyId } = opts;
-
-    const credentialOptions = await this.prisma.webAuthnCredential.findMany({
-      where: {
-        userId,
-        rpId,
-        apiKeyId,
-      },
-      include: {
-        webAuthnCredentialKeyVaultKeyMeta: true,
-      },
-    });
-
-    return credentialOptions as WebAuthnCredential[];
-  }
-
   async findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;
     userId: string;
