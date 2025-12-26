@@ -229,7 +229,7 @@ describe('CredentialsController', () => {
 
           expect(response.body).toStrictEqual(
             ExceptionMapper.exceptionToResponseBody(
-              new AttestationNotSupported({ data: { attestation } }),
+              new AttestationNotSupported(),
             ),
           );
         },

@@ -20,6 +20,7 @@ import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
 import { PrismaWebAuthnRepositoryProvider } from './services/PrismaWebAuthnRepository.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
+import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticatorAgent.provider';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     AzureKeyVaultKeyProviderProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
+    VirtualAuthenticatorAgentProvider,
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
@@ -58,6 +60,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     AzureKeyVaultKeyProviderProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
+    VirtualAuthenticatorAgentProvider,
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,

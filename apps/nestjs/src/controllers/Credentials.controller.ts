@@ -11,7 +11,7 @@ import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
-import { VirtualAuthenticator } from '@repo/virtual-authenticator';
+import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
@@ -26,7 +26,7 @@ import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 @UseFilters(new ExceptionFilter())
 export class CredentialsController {
   constructor(
-    private readonly virtualAuthenticator: VirtualAuthenticator,
+    private readonly virtualAuthenticatorAgent: VirtualAuthenticatorAgent,
     private readonly logger: Logger,
     private readonly activityLog: ActivityLog,
   ) {}
@@ -61,9 +61,11 @@ export class CredentialsController {
         });
 
         const publicKeyCredential =
-          await this.virtualAuthenticator.createCredential({
-            publicKeyCredentialCreationOptions:
-              publicKeyCredentialCreationOptionsWithUser,
+          await this.virtualAuthenticatorAgent.createCredential({
+            credentialCreationOptions: {
+              publicKey: publicKeyCredentialCreationOptionsWithUser,
+              signal: undefined,
+            },
             meta: {
               origin: meta.origin,
               userId: userId,
@@ -111,8 +113,11 @@ export class CredentialsController {
         });
 
         const publicKeyCredential =
-          await this.virtualAuthenticator.getCredential({
-            publicKeyCredentialRequestOptions,
+          await this.virtualAuthenticatorAgent.getAssertion({
+            credentialRequestOptions: {
+              publicKey: publicKeyCredentialRequestOptions,
+              signal: undefined,
+            },
             meta: {
               origin: meta.origin,
               userId: userId,
