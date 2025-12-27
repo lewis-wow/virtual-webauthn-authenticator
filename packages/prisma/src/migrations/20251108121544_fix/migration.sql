@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "apikey" ALTER COLUMN "permissions" SET DATA TYPE TEXT,
-ALTER COLUMN "metadata" SET DATA TYPE TEXT;
