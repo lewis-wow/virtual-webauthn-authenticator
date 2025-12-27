@@ -79,8 +79,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
   const cleanupWebAuthnCredentials = async () => {
     await prisma.$transaction([
-      prisma.webAuthnCredential.deleteMany(),
-      prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
+      prisma.webAuthnPublicKeyCredential.deleteMany(),
+      prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
     ]);
   };
 
@@ -157,7 +157,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       test('Should save the WebAuthnCredential to the database', async () => {
-        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+        const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
             id: webAuthnCredentialId,
           },
@@ -171,14 +171,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
       test('Should save the KeyVaultKeyMeta to the database', async () => {
         const keyMeta =
-          await prisma.webAuthnCredentialKeyVaultKeyMeta.findFirst({
+          await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.findFirst({
             where: {
-              webAuthnCredentialId: webAuthnCredentialId,
+              webAuthnPublicKeyCredentialId: webAuthnCredentialId,
             },
           });
 
         expect(keyMeta).toMatchObject({
-          webAuthnCredentialId: webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId: webAuthnCredentialId,
           keyVaultKeyId: keyVaultKeyIdGenerator.getCurrent().keyVaultKeyId,
           keyVaultKeyName: keyVaultKeyIdGenerator.getCurrent().keyVaultKeyName,
           hsm: false,
@@ -507,7 +507,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         test('Should save the WebAuthnCredential to the database', async () => {
-          const webAuthnCredential = await prisma.webAuthnCredential.findUnique(
+          const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique(
             {
               where: {
                 id: webAuthnCredentialId,
@@ -593,7 +593,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
           test('Should save the WebAuthnCredential to the database', async () => {
             const webAuthnCredential =
-              await prisma.webAuthnCredential.findUnique({
+              await prisma.webAuthnPublicKeyCredential.findUnique({
                 where: {
                   id: webAuthnCredentialId,
                 },
@@ -679,7 +679,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         test('Should save the WebAuthnCredential to the database', async () => {
-          const webAuthnCredential = await prisma.webAuthnCredential.findUnique(
+          const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique(
             {
               where: {
                 id: webAuthnCredentialId,
@@ -764,7 +764,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
           test('Should save the WebAuthnCredential to the database', async () => {
             const webAuthnCredential =
-              await prisma.webAuthnCredential.findUnique({
+              await prisma.webAuthnPublicKeyCredential.findUnique({
                 where: {
                   id: webAuthnCredentialId,
                 },
@@ -828,7 +828,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         expect(registrationVerification.verified).toBe(true);
 
-        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+        const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
             id: webAuthnCredentialId,
           },
@@ -855,7 +855,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         expect(registrationVerification.verified).toBe(true);
 
-        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+        const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
             id: webAuthnCredentialId,
           },
@@ -990,7 +990,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       test('Should save the WebAuthnCredential to the database', async () => {
-        const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+        const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
             id: webAuthnCredentialId,
           },
@@ -1695,7 +1695,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(registrationVerification.verified).toBe(true);
 
       // Verify the credential was created and stored with the effective domain as rpId
-      const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+      const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique({
         where: {
           id: webAuthnCredentialId,
         },
@@ -1724,7 +1724,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(registrationVerification.verified).toBe(true);
 
       // Verify the credential was created and stored
-      const webAuthnCredential = await prisma.webAuthnCredential.findUnique({
+      const webAuthnCredential = await prisma.webAuthnPublicKeyCredential.findUnique({
         where: {
           id: webAuthnCredentialId,
         },
