@@ -1,9 +1,9 @@
 import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 import { set } from '@repo/core/__tests__/helpers';
 
+import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { PrismaClient } from '@repo/prisma';
-import { TypeAssertionError } from '@repo/utils';
 import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
