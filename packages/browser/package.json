@@ -28,7 +28,6 @@
     "@repo/virtual-authenticator": "workspace:*",
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
-    "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }
 }

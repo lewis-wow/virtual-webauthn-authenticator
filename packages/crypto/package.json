@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@repo/assert": "workspace:*",
-    "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }
 }

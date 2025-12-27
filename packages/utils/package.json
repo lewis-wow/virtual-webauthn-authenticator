@@ -24,7 +24,6 @@
     "zod": "^4.1.12"
   },
   "dependencies": {
-    "effect": "^3.19.4",
-    "typanion": "^3.14.0"
+    "effect": "^3.19.4"
   }
 }

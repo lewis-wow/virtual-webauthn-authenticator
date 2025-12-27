@@ -31,7 +31,6 @@
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
     "cookie": "^1.1.1",
-    "typanion": "^3.14.0",
     "zod": "^4.1.12"
   }
 }
