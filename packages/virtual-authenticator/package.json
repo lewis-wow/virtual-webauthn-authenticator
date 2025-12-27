@@ -38,6 +38,7 @@
     "vitest-mock-extended": "^3.1.0"
   },
   "dependencies": {
+    "@repo/assert": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/prisma": "workspace:*",

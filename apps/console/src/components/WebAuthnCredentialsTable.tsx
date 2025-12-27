@@ -143,10 +143,11 @@ export const WebAuthnCredentialsTable = ({
         ),
       },
       {
-        accessorKey: 'webAuthnCredentialKeyVaultKeyMeta.hsm',
+        accessorKey: 'webAuthnPublicKeyCredentialKeyVaultKeyMeta.hsm',
         header: 'Security Level',
         cell: ({ row }) => {
-          const isHsm = row.original.webAuthnCredentialKeyVaultKeyMeta?.hsm;
+          const isHsm =
+            row.original.webAuthnPublicKeyCredentialKeyVaultKeyMeta?.hsm;
           return isHsm ? (
             <Badge
               variant="outline"

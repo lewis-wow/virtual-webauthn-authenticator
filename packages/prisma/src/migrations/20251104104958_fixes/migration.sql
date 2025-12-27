@@ -1,2 +1,4 @@
 -- AlterTable
-ALTER TABLE "webAuthnCredentialKeyVaultKeyMeta" ALTER COLUMN "webAuthnCredentialId" DROP NOT NULL;
+ALTER TABLE "webAuthnPublicKeyCredentialKeyVaultKeyMeta"
+ALTER COLUMN "webAuthnCredentialId"
+DROP NOT NULL;

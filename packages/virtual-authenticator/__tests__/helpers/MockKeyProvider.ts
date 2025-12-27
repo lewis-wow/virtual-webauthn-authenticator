@@ -9,7 +9,7 @@ import {
 
 import { WebAuthnCredentialKeyMetaType } from '../../src/enums/WebAuthnCredentialKeyMetaType';
 import { IKeyProvider } from '../../src/types/IKeyProvider';
-import { WebAuthnCredentialWithMeta } from '../../src/types/WebAuthnCredentialWithMeta';
+import { WebAuthnPublicKeyCredentialWithMeta } from '../../src/types/WebAuthnPublicKeyCredentialWithMeta';
 import { KeyVaultKeyIdGenerator } from './KeyVaultKeyIdGenerator';
 
 export type MockKeyProviderOptions = {
@@ -47,8 +47,9 @@ export class MockKeyProvider implements IKeyProvider {
 
     return {
       COSEPublicKey,
-      webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-      webAuthnCredentialKeyVaultKeyMeta: {
+      webAuthnPublicKeyCredentialKeyMetaType:
+        WebAuthnCredentialKeyMetaType.KEY_VAULT,
+      webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId,
         keyVaultKeyName,
         hsm: false,
@@ -58,7 +59,7 @@ export class MockKeyProvider implements IKeyProvider {
 
   async sign(opts: {
     data: Uint8Array;
-    webAuthnCredential: WebAuthnCredentialWithMeta;
+    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
     const { data, webAuthnCredential } = opts;
 

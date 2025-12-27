@@ -28,6 +28,7 @@
     "buffer": "^6.0.3",
     "effect": "^3.19.4",
     "zod": "^4.1.12",
-    "@repo/utils": "workspace:*"
+    "@repo/utils": "workspace:*",
+    "@repo/assert": "workspace:*"
   }
 }

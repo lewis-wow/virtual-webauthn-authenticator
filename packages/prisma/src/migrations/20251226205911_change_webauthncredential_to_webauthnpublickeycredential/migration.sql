@@ -2,7 +2,7 @@
   Warnings:
 
   - You are about to drop the `webAuthnCredential` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `webAuthnCredentialKeyVaultKeyMeta` table. If the table is not empty, all the data it contains will be lost.
+  - You are about to drop the `webAuthnPublicKeyCredentialKeyVaultKeyMeta` table. If the table is not empty, all the data it contains will be lost.
 
 */
 -- CreateEnum
@@ -15,13 +15,13 @@ ALTER TABLE "public"."webAuthnCredential" DROP CONSTRAINT "webAuthnCredential_ap
 ALTER TABLE "public"."webAuthnCredential" DROP CONSTRAINT "webAuthnCredential_userId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "public"."webAuthnCredentialKeyVaultKeyMeta" DROP CONSTRAINT "webAuthnCredentialKeyVaultKeyMeta_webAuthnCredentialId_fkey";
+ALTER TABLE "public"."webAuthnPublicKeyCredentialKeyVaultKeyMeta" DROP CONSTRAINT "webAuthnCredentialKeyVaultKeyMeta_webAuthnCredentialId_fkey";
 
 -- DropTable
 DROP TABLE "public"."webAuthnCredential";
 
 -- DropTable
-DROP TABLE "public"."webAuthnCredentialKeyVaultKeyMeta";
+DROP TABLE "public"."webAuthnPublicKeyCredentialKeyVaultKeyMeta";
 
 -- DropEnum
 DROP TYPE "public"."WebAuthnCredentialKeyMetaType";

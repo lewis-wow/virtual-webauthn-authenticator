@@ -1,7 +1,7 @@
+import { assertSchema } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { assertSchema } from '@repo/utils';
 import * as cbor from 'cbor2';
 import z from 'zod';
 

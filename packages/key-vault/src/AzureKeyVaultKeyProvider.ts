@@ -5,7 +5,7 @@ import { COSEKeyAlgorithmMapper, COSEKeyMapper } from '@repo/keys/mappers';
 import { WebAuthnCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
-  WebAuthnCredentialWithMeta,
+  WebAuthnPublicKeyCredentialWithMeta,
 } from '@repo/virtual-authenticator/types';
 import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/zod-validation';
 import ecdsa from 'ecdsa-sig-formatter';
@@ -123,8 +123,9 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     return {
       COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-      webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-      webAuthnCredentialKeyVaultKeyMeta: {
+      webAuthnPublicKeyCredentialKeyMetaType:
+        WebAuthnCredentialKeyMetaType.KEY_VAULT,
+      webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId: keyVaultKey.id ?? null,
         keyVaultKeyName: keyVaultKey.name,
         hsm: false,
@@ -134,12 +135,12 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
   async sign(opts: {
     data: Uint8Array;
-    webAuthnCredential: WebAuthnCredentialWithMeta;
+    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
     const { data, webAuthnCredential } = opts;
 
     if (
-      webAuthnCredential.webAuthnCredentialKeyMetaType !==
+      webAuthnCredential.webAuthnPublicKeyCredentialKeyMetaType !==
       WebAuthnCredentialKeyMetaType.KEY_VAULT
     ) {
       throw new UnexpectedWebAuthnCredentialKeyMetaType();
@@ -149,7 +150,8 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       meta: { keyVaultKey },
     } = await this._getKey({
       keyName:
-        webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta.keyVaultKeyName,
+        webAuthnCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta
+          .keyVaultKeyName,
     });
 
     const keyAlgorithm = KeyAlgorithm.ES256;

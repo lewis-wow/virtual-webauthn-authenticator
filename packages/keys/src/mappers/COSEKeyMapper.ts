@@ -1,7 +1,8 @@
+import { assertSchema } from '@repo/assert';
 import { objectKeys, swapKeysAndValues } from '@repo/utils';
 import * as cbor from 'cbor2';
-import { assert, isEnum, isNumber, isString } from 'typanion';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras';
+import z from 'zod';
 
 import { COSEKey, type COSEKeyMap } from '../COSEKey';
 import { JsonWebKey, type JsonWebKeyOptions } from '../JsonWebKey';
@@ -11,13 +12,17 @@ import { COSEKeyCurveParam } from '../enums/COSEKeyCurveParam';
 import { COSEKeyParam } from '../enums/COSEKeyParam';
 import { COSEKeyRsaParam } from '../enums/COSEKeyRsaParam';
 import { COSEKeyType } from '../enums/COSEKeyType';
-import { KeyAlgorithm } from '../enums/KeyAlgorithm';
 import { KeyType } from '../enums/KeyType';
+import {
+  COSEKeyCurveSchema,
+  COSEKeyTypeSchema,
+  KeyAlgorithmSchema,
+} from '../zod-validation';
 
 export class COSEKeyMapper {
   static jwkToCOSEKey(jwk: JsonWebKey): COSEKey {
     const alg = jwk.inferAlg();
-    assert(alg, isEnum(KeyAlgorithm));
+    assertSchema(alg, KeyAlgorithmSchema);
 
     const coseAlgorithm = COSEKeyAlgorithm[alg];
 
@@ -30,9 +35,9 @@ export class COSEKeyMapper {
         const kty = jwk.kty;
         const crv = COSEKeyCurve[jwk.crv as keyof typeof COSEKeyCurve];
 
-        assert(crv, isNumber());
-        assert(jwk.x, isString());
-        assert(jwk.y, isString());
+        assertSchema(crv, z.number());
+        assertSchema(jwk.x, z.string());
+        assertSchema(jwk.y, z.string());
 
         coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
         coseMap.set(COSEKeyCurveParam.crv, crv);
@@ -44,8 +49,8 @@ export class COSEKeyMapper {
       case KeyType.RSA: {
         const kty = jwk.kty;
 
-        assert(jwk.n, isString());
-        assert(jwk.e, isString());
+        assertSchema(jwk.n, z.string());
+        assertSchema(jwk.e, z.string());
 
         coseMap.set(COSEKeyParam.kty, COSEKeyType[kty]);
         coseMap.set(COSEKeyRsaParam.n, base64ToUint8Array(jwk.n));
@@ -72,7 +77,7 @@ export class COSEKeyMapper {
     for (const [key, value] of coseKey.map.entries()) {
       switch (key) {
         case COSEKeyParam.kty: // kty
-          assert(value, isEnum(COSEKeyType));
+          assertSchema(value, COSEKeyTypeSchema);
 
           jwk.kty = COSE_TO_JWK_KTY[value];
           break;
@@ -83,7 +88,7 @@ export class COSEKeyMapper {
           if (jwk.kty === KeyType.EC) {
             switch (key) {
               case COSEKeyCurveParam.crv: // crv
-                assert(value, isEnum(COSEKeyCurve));
+                assertSchema(value, COSEKeyCurveSchema);
 
                 jwk.crv = COSE_TO_JWK_CRV[value];
                 break;

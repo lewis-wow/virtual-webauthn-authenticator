@@ -1,4 +1,4 @@
-import type { WebAuthnCredentialWithMeta } from '../types/WebAuthnCredentialWithMeta';
+import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 
 export type CreateKeyVaultDataArgs = {
   id: string;
@@ -7,7 +7,7 @@ export type CreateKeyVaultDataArgs = {
   userId: string;
   apiKeyId: string | null;
 } & {
-  webAuthnCredentialKeyVaultKeyMeta: {
+  webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
     keyVaultKeyId: string | null;
     keyVaultKeyName: string;
     hsm: boolean;
@@ -18,16 +18,16 @@ export interface IWebAuthnRepository {
   findAllByRpIdAndCredentialIds(opts: {
     rpId: string;
     credentialIds: string[];
-  }): Promise<WebAuthnCredentialWithMeta[]>;
+  }): Promise<WebAuthnPublicKeyCredentialWithMeta[]>;
 
   createKeyVaultWebAuthnCredential(
     data: CreateKeyVaultDataArgs,
-  ): Promise<WebAuthnCredentialWithMeta>;
+  ): Promise<WebAuthnPublicKeyCredentialWithMeta>;
 
   findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;
     userId: string;
     apiKeyId: string | null;
     allowCredentialDescriptorList: string[] | undefined;
-  }): Promise<WebAuthnCredentialWithMeta>;
+  }): Promise<WebAuthnPublicKeyCredentialWithMeta>;
 }

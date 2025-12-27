@@ -6,7 +6,7 @@ import {
 import { COSEPublicKey } from '../../../keys/__tests__/helpers/COSEPublicKey';
 
 import {
-  WebAuthnCredentialKeyMetaType,
+  WebAuthnPublicKeyCredentialKeyMetaType,
   type PrismaClient,
   Prisma,
 } from '@repo/prisma';
@@ -35,7 +35,7 @@ export const upsertTestingWebAuthnCredential = async (opts: {
         rpId: RP_ID,
         COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
         webAuthnPublicKeyCredentialKeyMetaType:
-          WebAuthnCredentialKeyMetaType.KEY_VAULT,
+          WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
         webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
           create: {
             id: WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,

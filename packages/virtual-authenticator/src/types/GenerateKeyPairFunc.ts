@@ -1,7 +1,7 @@
 import type { PickDeep } from 'type-fest';
 
 import type { PubKeyCredParamStrict } from '../zod-validation/PubKeyCredParamSchema';
-import type { WebAuthnCredentialMeta } from './WebAuthnCredentialMeta';
+import type { WebAuthnCredentialMeta } from './WebAuthnPublicKeyCredentialMeta';
 
 export type GenerateKeyPairFunc = (args: {
   webAuthnCredentialId: string;
@@ -11,9 +11,9 @@ export type GenerateKeyPairFunc = (args: {
     COSEPublicKey: Uint8Array;
   } & PickDeep<
     WebAuthnCredentialMeta,
-    | 'webAuthnCredentialKeyMetaType'
-    | 'webAuthnCredentialKeyVaultKeyMeta.keyVaultKeyId'
-    | 'webAuthnCredentialKeyVaultKeyMeta.keyVaultKeyName'
-    | 'webAuthnCredentialKeyVaultKeyMeta.hsm'
+    | 'webAuthnPublicKeyCredentialKeyMetaType'
+    | 'webAuthnPublicKeyCredentialKeyVaultKeyMeta.keyVaultKeyId'
+    | 'webAuthnPublicKeyCredentialKeyVaultKeyMeta.keyVaultKeyName'
+    | 'webAuthnPublicKeyCredentialKeyVaultKeyMeta.hsm'
   >
 >;

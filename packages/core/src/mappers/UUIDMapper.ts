@@ -1,4 +1,4 @@
-import { assertSchema } from '@repo/utils';
+import { assertSchema } from '@repo/assert';
 import { Buffer } from 'buffer';
 import z from 'zod';
 

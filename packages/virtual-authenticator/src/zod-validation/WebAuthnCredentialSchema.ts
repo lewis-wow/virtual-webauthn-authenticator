@@ -12,7 +12,7 @@ export const WebAuthnCredentialSchema =
   WEBAUTHN_CREDENTIAL_VARIANTS.length === 1
     ? WEBAUTHN_CREDENTIAL_VARIANTS[0]
     : z.discriminatedUnion(
-        'webAuthnCredentialKeyMetaType',
+        'webAuthnPublicKeyCredentialKeyMetaType',
         WEBAUTHN_CREDENTIAL_VARIANTS,
       );
 

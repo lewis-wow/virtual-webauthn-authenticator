@@ -1,3 +1,6 @@
 -- AlterTable
-ALTER TABLE "webAuthnCredential" ALTER COLUMN "webAuthnCredentialKeyMetaType" DROP NOT NULL,
-ALTER COLUMN "webAuthnCredentialKeyMetaType" DROP DEFAULT;
+ALTER TABLE "webAuthnCredential"
+ALTER COLUMN "webAuthnPublicKeyCredentialKeyMetaType"
+DROP NOT NULL,
+ALTER COLUMN "webAuthnPublicKeyCredentialKeyMetaType"
+DROP DEFAULT;

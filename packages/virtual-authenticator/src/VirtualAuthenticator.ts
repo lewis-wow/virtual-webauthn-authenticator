@@ -1,6 +1,6 @@
+import { assertSchema } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
-import { assertSchema } from '@repo/utils';
 import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -19,7 +19,7 @@ import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyC
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
-import type { WebAuthnCredentialWithMeta } from './types/WebAuthnCredentialWithMeta';
+import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
@@ -259,7 +259,7 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
    */
   private async _handleAttestationPacked(opts: {
-    webAuthnCredential: WebAuthnCredentialWithMeta;
+    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
     data: {
       clientDataHash: Uint8Array;
       authData: Uint8Array;
@@ -323,7 +323,7 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-generating-an-attestation-object
    */
   private async _generateAttestationObject(opts: {
-    webAuthnCredential: WebAuthnCredentialWithMeta;
+    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
 
     attestationFormat: Fmt;
     authData: Uint8Array;
@@ -484,7 +484,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       });
 
     assertSchema(
-      webAuthnCredentialPublicKey.webAuthnCredentialKeyMetaType,
+      webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
       z.enum(WebAuthnCredentialKeyMetaType),
     );
 
@@ -509,21 +509,21 @@ export class VirtualAuthenticator implements IAuthenticator {
     // NOTE: In this implementation, we always store credentials in the
     // repository (backend database).
     const webAuthnCredentialWithMeta = await match({
-      webAuthnCredentialKeyMetaType:
-        webAuthnCredentialPublicKey.webAuthnCredentialKeyMetaType,
+      webAuthnPublicKeyCredentialKeyMetaType:
+        webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
     })
-      .returnType<Promise<WebAuthnCredentialWithMeta>>()
+      .returnType<Promise<WebAuthnPublicKeyCredentialWithMeta>>()
       .with(
         {
-          webAuthnCredentialKeyMetaType:
+          webAuthnPublicKeyCredentialKeyMetaType:
             WebAuthnCredentialKeyMetaType.KEY_VAULT,
         },
         async () => {
           const webAuthnCredentialWithKeyVaultMeta =
             await this.webAuthnRepository.createKeyVaultWebAuthnCredential({
               id: webAuthnCredentialId,
-              webAuthnCredentialKeyVaultKeyMeta:
-                webAuthnCredentialPublicKey.webAuthnCredentialKeyVaultKeyMeta,
+              webAuthnPublicKeyCredentialKeyVaultKeyMeta:
+                webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
               COSEPublicKey: webAuthnCredentialPublicKey.COSEPublicKey,
               rpId: rpEntity.id,
               userId: userHandle,

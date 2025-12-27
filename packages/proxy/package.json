@@ -25,11 +25,13 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/assert": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
     "cookie": "^1.1.1",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "zod": "^4.1.12"
   }
 }

@@ -6,10 +6,11 @@ import { WebAuthnCredentialKeyVaultKeyMetaSchema } from './WebAuthnCredentialKey
 
 export const WebAuthnCredentialKeyVaultSchema =
   WebAuthnCredentialBaseSchema.extend({
-    webAuthnCredentialKeyMetaType: z.literal(
+    webAuthnPublicKeyCredentialKeyMetaType: z.literal(
       WebAuthnCredentialKeyMetaType.KEY_VAULT,
     ),
-    webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMetaSchema,
+    webAuthnPublicKeyCredentialKeyVaultKeyMeta:
+      WebAuthnCredentialKeyVaultKeyMetaSchema,
   });
 
 export type WebAuthnCredentialKeyVault = z.infer<

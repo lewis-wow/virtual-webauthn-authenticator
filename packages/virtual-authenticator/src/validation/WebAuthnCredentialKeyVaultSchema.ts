@@ -7,10 +7,11 @@ import { WebAuthnCredentialKeyVaultKeyMetaSchema } from './WebAuthnCredentialKey
 export const WebAuthnCredentialKeyVaultSchema = Schema.extend(
   WebAuthnCredentialBaseSchema,
   Schema.Struct({
-    webAuthnCredentialKeyMetaType: Schema.Literal(
+    webAuthnPublicKeyCredentialKeyMetaType: Schema.Literal(
       WebAuthnCredentialKeyMetaType.KEY_VAULT,
     ),
-    webAuthnCredentialKeyVaultKeyMeta: WebAuthnCredentialKeyVaultKeyMetaSchema,
+    webAuthnPublicKeyCredentialKeyVaultKeyMeta:
+      WebAuthnCredentialKeyVaultKeyMetaSchema,
   }),
 );
 

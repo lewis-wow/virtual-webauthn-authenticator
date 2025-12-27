@@ -14,7 +14,7 @@ import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
-import { WebAuthnCredentialWithMeta } from '@repo/virtual-authenticator/types';
+import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
@@ -22,7 +22,6 @@ import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
-import { mapPrismaWebAuthnToApi } from '../utils/mapPrismaWebAuthnToApi';
 
 @Controller()
 @UseFilters(new ExceptionFilter())
@@ -60,9 +59,7 @@ export class WebAuthnCredentialsController {
               ...pagination,
             });
 
-          return webAuthnCredentials.map(
-            mapPrismaWebAuthnToApi,
-          ) as WebAuthnCredentialWithMeta[];
+          return webAuthnCredentials as WebAuthnPublicKeyCredentialWithMeta[];
         });
 
         const result = await pagination.fetch({
@@ -104,7 +101,7 @@ export class WebAuthnCredentialsController {
         return {
           status: 200,
           body: GetWebAuthnCredentialResponseSchema.encode(
-            mapPrismaWebAuthnToApi(webAuthnCredential) as WebAuthnCredential,
+            webAuthnCredential as WebAuthnCredential,
           ),
         };
       },
@@ -165,7 +162,7 @@ export class WebAuthnCredentialsController {
         return {
           status: 200,
           body: DeleteWebAuthnCredentialResponseSchema.encode(
-            mapPrismaWebAuthnToApi(webAuthnCredential) as WebAuthnCredential,
+            webAuthnCredential as WebAuthnCredential,
           ),
         };
       },

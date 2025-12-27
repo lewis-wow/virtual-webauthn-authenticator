@@ -7,6 +7,6 @@ export const WebAuthnCredentialKeyVaultDtoSchema =
   WebAuthnCredentialKeyVaultSchema.extend(
     WebAuthnCredentialBaseDtoSchema.shape,
   ).extend({
-    webAuthnCredentialKeyVaultKeyMeta:
+    webAuthnPublicKeyCredentialKeyVaultKeyMeta:
       WebAuthnCredentialKeyVaultKeyMetaDtoSchema,
   });
