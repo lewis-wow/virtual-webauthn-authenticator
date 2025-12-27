@@ -62,10 +62,14 @@ export class CredentialsController {
 
         const publicKeyCredential =
           await this.virtualAuthenticatorAgent.createCredential({
-            credentialCreationOptions: {
+            origin: meta.origin,
+            options: {
               publicKey: publicKeyCredentialCreationOptionsWithUser,
               signal: undefined,
             },
+            sameOriginWithAncestors: true,
+
+            // Internal options
             meta: {
               origin: meta.origin,
               userId: userId,
@@ -114,10 +118,14 @@ export class CredentialsController {
 
         const publicKeyCredential =
           await this.virtualAuthenticatorAgent.getAssertion({
-            credentialRequestOptions: {
+            origin: meta.origin,
+            options: {
               publicKey: publicKeyCredentialRequestOptions,
               signal: undefined,
             },
+            sameOriginWithAncestors: true,
+
+            // Internal options
             meta: {
               origin: meta.origin,
               userId: userId,
