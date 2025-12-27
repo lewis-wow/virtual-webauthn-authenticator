@@ -5,6 +5,7 @@ import { KeyAlgorithm } from '../../src/enums/KeyAlgorithm';
 import { KeyCurveName } from '../../src/enums/KeyCurveName';
 import { KeyOperation } from '../../src/enums/KeyOperation';
 import { KeyType } from '../../src/enums/KeyType';
+import { CannotParseJsonWebKey } from '../../src/exceptions/CannotParseJsonWebKey';
 
 // --- Test Data ---
 
@@ -85,8 +86,8 @@ describe('JsonWebKey', () => {
 
     test('should throw CannotParseJsonWebKey for invalid kty', () => {
       const invalidData = { kty: 'invalid-kty' } as JsonWebKeyOptions;
-      expect(() => new JsonWebKey(invalidData)).toThrow(
-        'Cannot parse Json Web Key.',
+      expect(() => new JsonWebKey(invalidData)).toThrowError(
+        new CannotParseJsonWebKey(),
       );
     });
 
@@ -95,8 +96,8 @@ describe('JsonWebKey', () => {
         kty: KeyType.EC,
         crv: 'invalid-curve',
       };
-      expect(() => new JsonWebKey(invalidData)).toThrow(
-        'Cannot parse Json Web Key.',
+      expect(() => new JsonWebKey(invalidData)).toThrowError(
+        new CannotParseJsonWebKey(),
       );
     });
 
@@ -104,8 +105,8 @@ describe('JsonWebKey', () => {
       const invalidData = {
         keyOps: 'sign',
       } as unknown as JsonWebKeyOptions;
-      expect(() => new JsonWebKey(invalidData)).toThrow(
-        'Cannot parse Json Web Key.',
+      expect(() => new JsonWebKey(invalidData)).toThrowError(
+        new CannotParseJsonWebKey(),
       );
     });
 
@@ -113,8 +114,8 @@ describe('JsonWebKey', () => {
       const invalidData: JsonWebKeyOptions = {
         keyOps: [KeyOperation.SIGN, 'invalid-op'],
       };
-      expect(() => new JsonWebKey(invalidData)).toThrow(
-        'Cannot parse Json Web Key.',
+      expect(() => new JsonWebKey(invalidData)).toThrowError(
+        new CannotParseJsonWebKey(),
       );
     });
   });

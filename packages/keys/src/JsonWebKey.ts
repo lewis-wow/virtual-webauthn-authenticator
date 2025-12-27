@@ -1,5 +1,6 @@
 import { assertSchema } from '@repo/assert';
 import { Buffer } from 'buffer';
+import z from 'zod';
 
 import { KeyAlgorithm } from './enums/KeyAlgorithm';
 import { KeyCurveName } from './enums/KeyCurveName';
@@ -226,7 +227,10 @@ export class JsonWebKey {
   } {
     try {
       assertSchema(looseJsonWebKey.kty, KeyTypeSchema.optional());
-      assertSchema(looseJsonWebKey.keyOps, KeyOperationSchema.optional());
+      assertSchema(
+        looseJsonWebKey.keyOps,
+        z.array(KeyOperationSchema).optional(),
+      );
       assertSchema(looseJsonWebKey.crv, KeyCurveNameSchema.optional());
 
       return true;
