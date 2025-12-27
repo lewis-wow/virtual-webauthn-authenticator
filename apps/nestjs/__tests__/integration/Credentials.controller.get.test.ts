@@ -17,15 +17,24 @@ import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,
 } from '@repo/contract/dto';
+import { ExceptionMapper } from '@repo/exception/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   PublicKeyCredentialType,
   UserVerificationRequirement,
 } from '@repo/virtual-authenticator/enums';
+import { CredentialNotFound } from '@repo/virtual-authenticator/exceptions';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
-import { randomBytes } from 'node:crypto';
-import request from 'supertest';
-import { describe, test, afterAll, beforeAll } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import {
+  describe,
+  test,
+  afterAll,
+  beforeAll,
+  expect,
+  beforeEach,
+  afterEach,
+} from 'vitest';
 import z from 'zod';
 
 import { AppModule } from '../../src/app.module';
@@ -81,7 +90,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
   let token: string;
 
   let registrationVerification: VerifiedRegistrationResponse;
-  let base64CredentialID: string;
+  let base64urlCredentialId: string;
 
   beforeAll(async () => {
     token = await jwtIssuer.sign(USER_JWT_PAYLOAD);
@@ -112,7 +121,9 @@ describe('CredentialsController - POST /api/credentials/get', () => {
     await upsertTestingUser({ prisma });
 
     await app.init();
+  });
 
+  beforeEach(async () => {
     const { response, verification } =
       await performPublicKeyCredentialRegistrationAndVerify({
         app: app.getHttpServer(),
@@ -123,37 +134,136 @@ describe('CredentialsController - POST /api/credentials/get', () => {
 
     // Save the results for use in other tests
     registrationVerification = verification!;
-    base64CredentialID = response.body.id;
+    base64urlCredentialId = response.body.id;
+  });
+
+  afterEach(async () => {
+    await prisma.webAuthnPublicKeyCredential.deleteMany();
+    await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany();
   });
 
   afterAll(async () => {
     await prisma.user.deleteMany();
     await prisma.jwks.deleteMany();
-    await prisma.webAuthnPublicKeyCredential.deleteMany();
-    await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany();
 
     await app.close();
   });
 
-  test('As authenticated user', async () => {
-    const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-      publicKeyCredentialRequestOptions: {
-        allowCredentials: [
-          {
-            id: base64CredentialID,
-            type: PublicKeyCredentialType.PUBLIC_KEY,
-          },
-        ],
-      },
+  describe('Authorization', () => {
+    test('Should not work when unauthorized', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+        publicKeyCredentialRequestOptions: {
+          allowCredentials: [
+            {
+              id: base64urlCredentialId,
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+          ],
+        },
+      });
+
+      await performPublicKeyCredentialRequestAndVerify({
+        app: app.getHttpServer(),
+        registrationVerification,
+        token: undefined,
+        payload,
+        expectStatus: 401,
+      });
     });
 
-    await performPublicKeyCredentialRequestAndVerify({
-      app: app.getHttpServer(),
-      token: undefined,
-      payload,
-      registrationVerification,
-      expectedNewCounter: 1,
-      expectStatus: 401,
+    test('Should not work when token is invalid', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+        publicKeyCredentialRequestOptions: {
+          allowCredentials: [
+            {
+              id: base64urlCredentialId,
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+          ],
+        },
+      });
+
+      await performPublicKeyCredentialRequestAndVerify({
+        app: app.getHttpServer(),
+        registrationVerification,
+        token: 'INVALID_TOKEN',
+        payload,
+        expectStatus: 401,
+      });
+    });
+
+    test('Should not work when token do not have any permission', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+        publicKeyCredentialRequestOptions: {
+          allowCredentials: [
+            {
+              id: base64urlCredentialId,
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+          ],
+        },
+      });
+
+      await performPublicKeyCredentialRequestAndVerify({
+        app: app.getHttpServer(),
+        registrationVerification,
+        token: await jwtIssuer.sign({
+          ...USER_JWT_PAYLOAD,
+          permissions: [],
+        }),
+        payload,
+        expectStatus: 403,
+      });
+    });
+
+    test('Should not work when token is for user that does not exists', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+        publicKeyCredentialRequestOptions: {
+          allowCredentials: [
+            {
+              id: base64urlCredentialId,
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+          ],
+        },
+      });
+
+      const { response } = await performPublicKeyCredentialRequestAndVerify({
+        app: app.getHttpServer(),
+        registrationVerification,
+        token: await jwtIssuer.sign({
+          ...USER_JWT_PAYLOAD,
+          userId: randomUUID(),
+        }),
+        payload,
+        expectStatus: 404,
+      });
+
+      expect(response.body).toStrictEqual(
+        ExceptionMapper.exceptionToResponseBody(new CredentialNotFound()),
+      );
+    });
+
+    test('As authenticated user', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+        publicKeyCredentialRequestOptions: {
+          allowCredentials: [
+            {
+              id: base64urlCredentialId,
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+          ],
+        },
+      });
+
+      await performPublicKeyCredentialRequestAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload,
+        registrationVerification,
+        expectedNewCounter: 1,
+        expectStatus: 200,
+      });
     });
   });
 

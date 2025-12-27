@@ -156,9 +156,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           userId: randomUUID(),
         }),
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        // NOTE: The Auth server should throw 403 before the action
-        // That is the reason why API throws 500, as it do not have access to users database
-        expectStatus: 500,
+        expectStatus: 403,
       });
     });
   });

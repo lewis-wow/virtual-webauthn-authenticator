@@ -26,8 +26,9 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   token: string | undefined;
   payload: z.input<typeof GetCredentialBodySchema>;
   registrationVerification: VerifiedRegistrationResponse;
-  expectedNewCounter: number;
   expectStatus: number;
+
+  expectedNewCounter?: number;
 };
 
 export type PerformPublicKeyCredentialRequestAndVerifyResult = {
@@ -48,8 +49,11 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     expectStatus,
   } = opts;
 
-  const { id: webAuthnCredentialId, publicKey: credentialPublicKey } =
-    registrationVerification.registrationInfo!.credential;
+  const {
+    id: webAuthnCredentialId,
+    publicKey: credentialPublicKey,
+    counter,
+  } = registrationVerification.registrationInfo!.credential;
 
   const requestInit = request(app).post('/api/credentials/get');
   if (token !== undefined) {
@@ -58,8 +62,9 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
   const response = await requestInit
     .send(payload)
-    .expect('Content-Type', /json/)
-    .expect(expectStatus);
+    .expect('Content-Type', /json/);
+
+  expect(response.status).toBe(expectStatus);
 
   if (expectStatus !== 200) {
     return { response };
@@ -70,14 +75,11 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     expectedChallenge: payload.publicKeyCredentialRequestOptions.challenge,
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
-
     credential: {
       id: webAuthnCredentialId,
       publicKey: credentialPublicKey,
-      // The counter is stateful from the previous test verification
-      counter: expectedNewCounter - 1,
+      counter,
     },
-
     requireUserVerification:
       payload.publicKeyCredentialRequestOptions.userVerification ===
       UserVerificationRequirement.REQUIRED,
@@ -87,7 +89,9 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   expect(verification.verified).toBe(true);
 
   // A critical security check: ensure the signature counter has incremented.
-  expect(verification.authenticationInfo.newCounter).toBe(expectedNewCounter);
+  if (expectedNewCounter !== undefined) {
+    expect(verification.authenticationInfo.newCounter).toBe(expectedNewCounter);
+  }
 
   expect(response.body).toStrictEqual({
     clientExtensionResults: {},

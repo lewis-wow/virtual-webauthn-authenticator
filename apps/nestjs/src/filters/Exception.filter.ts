@@ -6,8 +6,6 @@ import {
 import { Exception, RequestValidationFailed } from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
 import { ExceptionMapper } from '@repo/exception/mappers';
-import { isAnyPrismaError } from '@repo/prisma';
-import { PrismaErrorMapper } from '@repo/prisma/mappers';
 import { TsRestRequestValidationError } from '@ts-rest/nest';
 import type { Response as ExpressResponse } from 'express';
 
@@ -21,10 +19,6 @@ export class ExceptionFilter implements NestjsExceptionFilter {
 
     if (error instanceof Exception) {
       exception = error;
-    } else if (isAnyPrismaError(error)) {
-      exception =
-        PrismaErrorMapper.prismaErrorToException(error) ??
-        new InternalServerError();
     } else if (error instanceof TsRestRequestValidationError) {
       exception = new RequestValidationFailed({
         cause: error,

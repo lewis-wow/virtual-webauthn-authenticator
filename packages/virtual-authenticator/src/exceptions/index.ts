@@ -7,3 +7,5 @@ export * from './InvalidStateError';
 export * from './NotAllowedError';
 export * from './SignatureFailed';
 export * from './UserVerificationNotAvailable';
+export * from './UserNotExists';
+export * from './ApiKeyNotExists';

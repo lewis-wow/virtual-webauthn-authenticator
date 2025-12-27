@@ -60,8 +60,6 @@ export class CredentialsController {
           userId: userId,
         });
 
-        console.log('START');
-
         const publicKeyCredential =
           await this.virtualAuthenticatorAgent.createCredential({
             origin: meta.origin,
@@ -80,8 +78,6 @@ export class CredentialsController {
               apiKeyId: apiKeyId,
             },
           });
-
-        console.log('END');
 
         await this.activityLog.audit({
           action: LogAction.CREATE,
