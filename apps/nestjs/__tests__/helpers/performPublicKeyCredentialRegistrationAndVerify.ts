@@ -5,7 +5,10 @@ import {
 
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { UUIDMapper } from '@repo/core/mappers';
-import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
+import {
+  PublicKeyCredentialType,
+  UserVerificationRequirement,
+} from '@repo/virtual-authenticator/enums';
 import {
   type RegistrationResponseJSON,
   VerifiedRegistrationResponse,
@@ -21,8 +24,6 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   token: string | undefined;
   payload: z.input<typeof CreateCredentialBodySchema>;
   expectStatus: number;
-  requireUserVerification?: boolean;
-  requireUserPresence?: boolean;
 };
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
@@ -34,14 +35,7 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
 export const performPublicKeyCredentialRegistrationAndVerify = async (
   opts: PerformPublicKeyCredentialRegistrationAndVerifyArgs,
 ): Promise<PerformPublicKeyCredentialRegistrationAndVerifyResult> => {
-  const {
-    app,
-    token,
-    payload,
-    requireUserVerification,
-    requireUserPresence,
-    expectStatus,
-  } = opts;
+  const { app, token, payload, expectStatus } = opts;
 
   const requestInit = request(app).post('/api/credentials/create');
   if (token !== undefined) {
@@ -51,7 +45,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   const response = await requestInit
     .send(payload)
     .expect('Content-Type', /json/)
-    .expect(expectStatus ?? 200);
+    .expect(expectStatus);
 
   if (expectStatus !== 200) {
     return { response };
@@ -62,8 +56,10 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     expectedChallenge: payload.publicKeyCredentialCreationOptions.challenge,
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
-    requireUserVerification,
-    requireUserPresence,
+    requireUserVerification:
+      payload.publicKeyCredentialCreationOptions.authenticatorSelection
+        ?.userVerification === UserVerificationRequirement.REQUIRED,
+    requireUserPresence: true,
   });
 
   expect(verification.verified).toBe(true);
@@ -75,8 +71,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     rawId: expect.any(String),
     response: {
       attestationObject: expect.any(String),
-      clientDataJSON:
-        'eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9',
+      clientDataJSON: expect.any(String),
     },
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });

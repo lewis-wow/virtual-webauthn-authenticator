@@ -6,7 +6,10 @@ import {
 
 import { GetCredentialBodySchema } from '@repo/contract/dto';
 import { UUIDMapper } from '@repo/core/mappers';
-import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
+import {
+  PublicKeyCredentialType,
+  UserVerificationRequirement,
+} from '@repo/virtual-authenticator/enums';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -20,33 +23,47 @@ import z from 'zod';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   app: App;
-  token: string;
+  token: string | undefined;
   payload: z.input<typeof GetCredentialBodySchema>;
   registrationVerification: VerifiedRegistrationResponse;
   expectedNewCounter: number;
+  expectStatus: number;
 };
 
 export type PerformPublicKeyCredentialRequestAndVerifyResult = {
   response: Response;
-  verification: VerifiedAuthenticationResponse;
-  webAuthnCredentialId: string;
+  verification?: VerifiedAuthenticationResponse;
+  webAuthnCredentialId?: string;
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
   opts: PerformPublicKeyCredentialRequestAndVerifyArgs,
 ): Promise<PerformPublicKeyCredentialRequestAndVerifyResult> => {
-  const { app, payload, registrationVerification, token, expectedNewCounter } =
-    opts;
+  const {
+    app,
+    payload,
+    registrationVerification,
+    token,
+    expectedNewCounter,
+    expectStatus,
+  } = opts;
 
   const { id: webAuthnCredentialId, publicKey: credentialPublicKey } =
     registrationVerification.registrationInfo!.credential;
 
-  const response = await request(app)
-    .post('/api/credentials/get')
-    .set('Authorization', `Bearer ${token}`)
+  const requestInit = request(app).post('/api/credentials/get');
+  if (token !== undefined) {
+    requestInit.set('Authorization', `Bearer ${token}`);
+  }
+
+  const response = await requestInit
     .send(payload)
     .expect('Content-Type', /json/)
-    .expect(200);
+    .expect(expectStatus);
+
+  if (expectStatus !== 200) {
+    return { response };
+  }
 
   const verification = await verifyAuthenticationResponse({
     response: response.body as AuthenticationResponseJSON,
@@ -60,7 +77,10 @@ export const performPublicKeyCredentialRequestAndVerify = async (
       // The counter is stateful from the previous test verification
       counter: expectedNewCounter - 1,
     },
-    requireUserVerification: true,
+
+    requireUserVerification:
+      payload.publicKeyCredentialRequestOptions.userVerification ===
+      UserVerificationRequirement.REQUIRED,
   });
 
   // The most important check: confirm that the authentication was successful.
@@ -75,8 +95,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     rawId: expect.any(String),
     response: {
       authenticatorData: expect.any(String),
-      clientDataJSON:
-        'eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiWU4wZ3RDc3VoTDhIZWR3TEhCRXFtUSIsIm9yaWdpbiI6Imh0dHBzOi8vZXhhbXBsZS5jb20iLCJjcm9zc09yaWdpbiI6ZmFsc2V9',
+      clientDataJSON: expect.any(String),
       signature: expect.any(String),
       userHandle: Buffer.from(UUIDMapper.UUIDtoBytes(USER_ID)).toString(
         'base64url',

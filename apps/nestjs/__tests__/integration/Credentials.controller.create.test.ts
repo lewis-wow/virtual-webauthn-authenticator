@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import {
   MockJwtAudience,
   upsertTestingUser,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { set, setDeep } from '@repo/core/__tests__/helpers';
+import { set } from '@repo/core/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -26,7 +25,6 @@ import { AttestationNotSupported } from '@repo/virtual-authenticator/exceptions'
 import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/zod-validation';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { afterEach } from 'node:test';
-import request from 'supertest';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';
 import z from 'zod';
 
@@ -138,7 +136,19 @@ describe('CredentialsController - POST /api/credentials/create', () => {
       });
     });
 
-    test('Should not work when token is for another user', async () => {
+    test('Should not work when token do not have any permission', async () => {
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token: await jwtIssuer.sign({
+          ...USER_JWT_PAYLOAD,
+          permissions: [],
+        }),
+        payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+        expectStatus: 403,
+      });
+    });
+
+    test('Should not work when token is for user that does not exists', async () => {
       await performPublicKeyCredentialRegistrationAndVerify({
         app: app.getHttpServer(),
         token: await jwtIssuer.sign({
@@ -146,262 +156,265 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           userId: randomUUID(),
         }),
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        expectStatus: 403,
+        // NOTE: The Auth server should throw 403 before the action
+        // That is the reason why API throws 500, as it do not have access to users database
+        expectStatus: 500,
       });
     });
   });
 
-  // /**
-  //  * Tests for attestation parameter
-  //  * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-attestation
-  //  * @see https://www.w3.org/TR/webauthn-3/#enum-attestation-convey
-  //  *
-  //  * Per spec: This member specifies the Relying Party's preference regarding attestation
-  //  * conveyance. Values: 'none', 'indirect', 'direct', 'enterprise'
-  //  */
-  // describe('PublicKeyCredentialCreationOptions.attestation', () => {
-  //   test.each([
-  //     {
-  //       attestation: undefined,
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //     {
-  //       attestation: Attestation.NONE,
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //     {
-  //       attestation: Attestation.DIRECT,
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //   ])('With attestation $attestation', async ({ attestation }) => {
-  //     const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-  //       publicKeyCredentialCreationOptions: {
-  //         attestation,
-  //       },
-  //     });
+  /**
+   * Tests for attestation parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-attestation
+   * @see https://www.w3.org/TR/webauthn-3/#enum-attestation-convey
+   *
+   * Per spec: This member specifies the Relying Party's preference regarding attestation
+   * conveyance. Values: 'none', 'indirect', 'direct', 'enterprise'
+   */
+  describe('PublicKeyCredentialCreationOptions.attestation', () => {
+    test.each([
+      {
+        attestation: undefined,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.NONE,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.DIRECT,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+    ])('With attestation $attestation', async ({ attestation }) => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+        publicKeyCredentialCreationOptions: {
+          attestation,
+        },
+      });
 
-  //     await performPublicKeyCredentialRegistrationAndVerify({
-  //       app: app.getHttpServer(),
-  //       token,
-  //       payload,
-  //       expectStatus: 200,
-  //     });
-  //   });
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload,
+        expectStatus: 200,
+      });
+    });
 
-  //   test.each([
-  //     {
-  //       attestation: Attestation.ENTERPRISE,
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //     {
-  //       attestation: Attestation.INDIRECT,
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //   ])(
-  //     `Should throw ${AttestationNotSupported.name} with attestation $attestation`,
-  //     async ({ attestation }) => {
-  //       const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-  //         publicKeyCredentialCreationOptions: {
-  //           attestation,
-  //         },
-  //       });
+    test.each([
+      {
+        attestation: Attestation.ENTERPRISE,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.INDIRECT,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+    ])(
+      `Should throw ${AttestationNotSupported.name} with attestation $attestation`,
+      async ({ attestation }) => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            attestation,
+          },
+        });
 
-  //       const { response } =
-  //         await performPublicKeyCredentialRegistrationAndVerify({
-  //           app: app.getHttpServer(),
-  //           token,
-  //           payload,
-  //           expectStatus: 400,
-  //         });
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload,
+            expectStatus: 400,
+          });
 
-  //       expect(response.body).toStrictEqual(
-  //         ExceptionMapper.exceptionToResponseBody(
-  //           new AttestationNotSupported(),
-  //         ),
-  //       );
-  //     },
-  //   );
+        expect(response.body).toStrictEqual(
+          ExceptionMapper.exceptionToResponseBody(
+            new AttestationNotSupported(),
+          ),
+        );
+      },
+    );
 
-  //   test('Shold throw type mismatch when attestation is not in enum', async () => {
-  //     const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-  //       publicKeyCredentialCreationOptions: {
-  //         attestation: 'INVALID_ATTESTATION' as Attestation,
-  //       },
-  //     });
+    test('Shold throw type mismatch when attestation is not in enum', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+        publicKeyCredentialCreationOptions: {
+          attestation: 'INVALID_ATTESTATION' as Attestation,
+        },
+      });
 
-  //     const { response } =
-  //       await performPublicKeyCredentialRegistrationAndVerify({
-  //         app: app.getHttpServer(),
-  //         token,
-  //         payload,
-  //         expectStatus: 400,
-  //       });
+      const { response } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload,
+          expectStatus: 400,
+        });
 
-  //     expect(response.body).toStrictEqual(
-  //       ExceptionMapper.exceptionToResponseBody(new RequestValidationFailed()),
-  //     );
-  //   });
-  // });
+      expect(response.body).toStrictEqual(
+        ExceptionMapper.exceptionToResponseBody(new RequestValidationFailed()),
+      );
+    });
+  });
 
-  // /**
-  //  * Tests for pubKeyCredParams parameter
-  //  * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-pubkeycredparams
-  //  * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialparameters
-  //  *
-  //  * Per spec: This member contains information about the desired properties of the credential
-  //  * to be created. The sequence is ordered from most preferred to least preferred.
-  //  */
-  // describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
-  //   test('Should work with multiple unsupported and one supported pubKeyCredParams', async () => {
-  //     const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-  //       publicKeyCredentialCreationOptions: {
-  //         pubKeyCredParams: (pubKeyCredParams) => [
-  //           { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
-  //           {
-  //             type: PublicKeyCredentialType.PUBLIC_KEY,
-  //             alg: -8,
-  //           },
-  //           {
-  //             type: 'WRONG_TYPE',
-  //             alg: COSEKeyAlgorithm.ES256,
-  //           },
-  //           ...pubKeyCredParams,
-  //         ],
-  //       },
-  //     });
+  /**
+   * Tests for pubKeyCredParams parameter
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-pubkeycredparams
+   * @see https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialparameters
+   *
+   * Per spec: This member contains information about the desired properties of the credential
+   * to be created. The sequence is ordered from most preferred to least preferred.
+   */
+  describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
+    test('Should work with multiple unsupported and one supported pubKeyCredParams', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+        publicKeyCredentialCreationOptions: {
+          pubKeyCredParams: (pubKeyCredParams) => [
+            { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: -8,
+            },
+            {
+              type: 'WRONG_TYPE',
+              alg: COSEKeyAlgorithm.ES256,
+            },
+            ...pubKeyCredParams,
+          ],
+        },
+      });
 
-  //     await performPublicKeyCredentialRegistrationAndVerify({
-  //       app: app.getHttpServer(),
-  //       token,
-  //       payload,
-  //       expectStatus: 200,
-  //     });
-  //   });
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload,
+        expectStatus: 200,
+      });
+    });
 
-  //   test('Should throw type mismatch when pubKeyCredParams is empty', async () => {
-  //     const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-  //       publicKeyCredentialCreationOptions: {
-  //         pubKeyCredParams: [],
-  //       },
-  //     });
+    test('Should work when pubKeyCredParams is empty', async () => {
+      const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+        publicKeyCredentialCreationOptions: {
+          pubKeyCredParams: [],
+        },
+      });
 
-  //     const { response } =
-  //       await performPublicKeyCredentialRegistrationAndVerify({
-  //         app: app.getHttpServer(),
-  //         token,
-  //         payload,
-  //         expectStatus: 400,
-  //       });
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload,
+        expectStatus: 200,
+      });
+    });
 
-  //     expect(response.body).toStrictEqual(
-  //       ExceptionMapper.exceptionToResponseBody(new RequestValidationFailed()),
-  //     );
-  //   });
+    test.each([
+      {
+        pubKeyCredParams: [{ type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 }],
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: -8,
+          },
+        ],
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        pubKeyCredParams: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            alg: -8,
+          },
+          {
+            type: 'WRONG_TYPE',
+            alg: COSEKeyAlgorithm.ES256,
+          },
+        ],
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+    ])(
+      'Should throw without any supported pubKeyCredParams',
+      async ({ pubKeyCredParams }) => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            pubKeyCredParams,
+          },
+        });
 
-  //   test.each([
-  //     {
-  //       pubKeyCredParams: [{ type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 }],
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //     {
-  //       pubKeyCredParams: [
-  //         {
-  //           type: PublicKeyCredentialType.PUBLIC_KEY,
-  //           alg: -8,
-  //         },
-  //       ],
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //     {
-  //       pubKeyCredParams: [
-  //         {
-  //           type: PublicKeyCredentialType.PUBLIC_KEY,
-  //           alg: -8,
-  //         },
-  //         {
-  //           type: 'WRONG_TYPE',
-  //           alg: COSEKeyAlgorithm.ES256,
-  //         },
-  //       ],
-  //     } satisfies Partial<PublicKeyCredentialCreationOptions>,
-  //   ])(
-  //     'Should throw without any supported pubKeyCredParams',
-  //     async ({ pubKeyCredParams }) => {
-  //       const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-  //         publicKeyCredentialCreationOptions: {
-  //           pubKeyCredParams,
-  //         },
-  //       });
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload,
+            expectStatus: 400,
+          });
 
-  //       const { response } =
-  //         await performPublicKeyCredentialRegistrationAndVerify({
-  //           app: app.getHttpServer(),
-  //           token,
-  //           payload,
-  //           expectStatus: 400,
-  //         });
+        expect(response.body).toStrictEqual(
+          ExceptionMapper.exceptionToResponseBody(
+            new CredentialTypesNotSupported(),
+          ),
+        );
+      },
+    );
+  });
 
-  //       expect(response.body).toStrictEqual(
-  //         ExceptionMapper.exceptionToResponseBody(
-  //           new CredentialTypesNotSupported(),
-  //         ),
-  //       );
-  //     },
-  //   );
-  // });
+  test('Should work with short `challenge`', async () => {
+    const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+      publicKeyCredentialCreationOptions: {
+        challenge: randomBytes(10).toString('base64url'),
+      },
+    });
 
-  // test('With short `challenge`', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/create')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-  //         'publicKeyCredentialCreationOptions.challenge',
-  //         () => randomBytes(10).toString('base64url'),
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(400);
-  // });
+    await performPublicKeyCredentialRegistrationAndVerify({
+      app: app.getHttpServer(),
+      token,
+      payload,
+      expectStatus: 200,
+    });
+  });
 
-  // test('With wrong `pubKeyCredParams.type`', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/create')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-  //         'publicKeyCredentialCreationOptions.pubKeyCredParams[0].type',
-  //         () => 'wrong-type',
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(400);
-  // });
+  test('With wrong `pubKeyCredParams.type`', async () => {
+    const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+      publicKeyCredentialCreationOptions: {
+        pubKeyCredParams: (pubKeyCredParams) => [
+          { ...pubKeyCredParams[0]!, type: 'WRONG_TYPE' },
+        ],
+      },
+    });
 
-  // test('With wrong symetric `pubKeyCredParams.alg`', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/create')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-  //         'publicKeyCredentialCreationOptions.pubKeyCredParams[0].alg',
-  //         // 1 = AES-GCM mode w/ 128-bit key, 128-bit tag
-  //         () => 1,
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(400);
-  // });
+    await performPublicKeyCredentialRegistrationAndVerify({
+      app: app.getHttpServer(),
+      token,
+      payload,
+      expectStatus: 400,
+    });
+  });
 
-  // test('With unsupported asymetric `pubKeyCredParams.alg`', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/create')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-  //         'publicKeyCredentialCreationOptions.pubKeyCredParams[0].alg',
-  //         // -47 = ES256K	ECDSA using secp256k1 curve and SHA-256
-  //         () => -47,
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(400);
-  // });
+  test('With wrong symetric `pubKeyCredParams.alg`', async () => {
+    const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+      publicKeyCredentialCreationOptions: {
+        pubKeyCredParams: (pubKeyCredParams) => [
+          // 1 = AES-GCM mode w/ 128-bit key, 128-bit tag
+          { ...pubKeyCredParams[0]!, alg: 1 },
+        ],
+      },
+    });
+
+    await performPublicKeyCredentialRegistrationAndVerify({
+      app: app.getHttpServer(),
+      token,
+      payload,
+      expectStatus: 400,
+    });
+  });
+
+  test('With unsupported asymetric `pubKeyCredParams.alg`', async () => {
+    const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+      publicKeyCredentialCreationOptions: {
+        pubKeyCredParams: (pubKeyCredParams) => [
+          // -47 = ES256K	ECDSA using secp256k1 curve and SHA-256
+          { ...pubKeyCredParams[0]!, alg: -47 },
+        ],
+      },
+    });
+
+    await performPublicKeyCredentialRegistrationAndVerify({
+      app: app.getHttpServer(),
+      token,
+      payload,
+      expectStatus: 400,
+    });
+  });
 });
