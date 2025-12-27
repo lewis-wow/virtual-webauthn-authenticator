@@ -13,7 +13,7 @@ import { nestjsContract } from '@repo/contract/nestjs';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import { WebAuthnCredentialKeyMetaType } from '@repo/prisma';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
@@ -52,7 +52,7 @@ export class WebAuthnCredentialsController {
               where: {
                 userId: userId,
                 webAuthnPublicKeyCredentialKeyMetaType:
-                  WebAuthnCredentialKeyMetaType.KEY_VAULT,
+                  WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
               },
               include: {
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
@@ -141,7 +141,7 @@ export class WebAuthnCredentialsController {
 
         if (
           webAuthnCredential.webAuthnPublicKeyCredentialKeyMetaType ===
-          WebAuthnCredentialKeyMetaType.KEY_VAULT
+          WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT
         ) {
           const pollOperation = await this.keyClient.beginDeleteKey(
             webAuthnCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta!
