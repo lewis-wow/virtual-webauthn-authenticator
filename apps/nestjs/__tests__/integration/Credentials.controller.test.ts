@@ -83,7 +83,7 @@ const jwtIssuer = new JwtIssuer({
   config: JWT_CONFIG,
 });
 
-const cleanupWebAuthnCredentials = async () => {
+const cleanupWebAuthnPublicKeyCredentials = async () => {
   await prisma.$transaction([
     prisma.webAuthnPublicKeyCredential.deleteMany(),
     prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
@@ -151,7 +151,7 @@ describe('CredentialsController', () => {
 
   describe('POST /api/credentials/create', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     describe('Authorization', () => {

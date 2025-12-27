@@ -66,7 +66,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   });
   const agent = new VirtualAuthenticatorAgent({ authenticator });
 
-  const cleanupWebAuthnCredentials = async () => {
+  const cleanupWebAuthnPublicKeyCredentials = async () => {
     await prisma.$transaction([
       prisma.webAuthnPublicKeyCredential.deleteMany(),
       prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
@@ -86,12 +86,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
   afterAll(async () => {
     await prisma.user.deleteMany();
-    await cleanupWebAuthnCredentials();
+    await cleanupWebAuthnPublicKeyCredentials();
   });
 
   afterEach(async () => {
     // Clean up credentials after each test to ensure a fresh state for the next test
-    await cleanupWebAuthnCredentials();
+    await cleanupWebAuthnPublicKeyCredentials();
   });
 
   beforeEach(async () => {

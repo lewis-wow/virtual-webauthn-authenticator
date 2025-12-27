@@ -76,7 +76,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
   });
   const agent = new VirtualAuthenticatorAgent({ authenticator });
 
-  const cleanupWebAuthnCredentials = async () => {
+  const cleanupWebAuthnPublicKeyCredentials = async () => {
     await prisma.$transaction([
       prisma.webAuthnPublicKeyCredential.deleteMany(),
       prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
@@ -128,7 +128,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       afterAll(async () => {
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
 
       test('Should return a verified registration', () => {
@@ -234,7 +234,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.pubKeyCredParams', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     /**
@@ -366,7 +366,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('meta.userId', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test('Should throw type mismatch when userId is invalid', async () => {
@@ -394,7 +394,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.user.id byte length', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test('Should throw TypeError when user.id is empty (0 bytes)', async () => {
@@ -499,7 +499,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         afterAll(async () => {
-          await cleanupWebAuthnCredentials();
+          await cleanupWebAuthnPublicKeyCredentials();
         });
 
         test('Should return a verified registration', () => {
@@ -537,7 +537,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           }),
         ).rejects.toThrowError(new TypeAssertionError());
 
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
     });
 
@@ -583,7 +583,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           });
 
           afterAll(async () => {
-            await cleanupWebAuthnCredentials();
+            await cleanupWebAuthnPublicKeyCredentials();
           });
 
           test('Should return a verified registration', () => {
@@ -622,7 +622,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           }),
         ).rejects.toThrowError(new TypeAssertionError());
 
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
     });
 
@@ -670,7 +670,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         });
 
         afterAll(async () => {
-          await cleanupWebAuthnCredentials();
+          await cleanupWebAuthnPublicKeyCredentials();
         });
 
         test('Should return a verified registration', () => {
@@ -708,7 +708,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           }),
         ).rejects.toThrowError(new TypeAssertionError());
 
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
     });
 
@@ -753,7 +753,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           });
 
           afterAll(async () => {
-            await cleanupWebAuthnCredentials();
+            await cleanupWebAuthnPublicKeyCredentials();
           });
 
           test('Should return a verified registration', () => {
@@ -792,7 +792,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           }),
         ).rejects.toThrowError(new TypeAssertionError());
 
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
     });
 
@@ -804,7 +804,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
      */
     describe('Combined authenticatorSelection options', () => {
       afterEach(async () => {
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
 
       test('Should work with all authenticatorSelection options combined', async () => {
@@ -982,7 +982,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       afterAll(async () => {
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
 
       test('Should return a verified registration', () => {
@@ -1029,7 +1029,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.timeout', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test.each([
@@ -1095,7 +1095,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.excludeCredentials', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test.each([
@@ -1353,7 +1353,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.challenge', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test('Should work with challenge exactly 16 bytes (minimum recommended)', async () => {
@@ -1461,7 +1461,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
   describe('PublicKeyCredentialCreationOptions.user', () => {
     describe('user.name and user.displayName', () => {
       afterEach(async () => {
-        await cleanupWebAuthnCredentials();
+        await cleanupWebAuthnPublicKeyCredentials();
       });
 
       test('Should work with valid name and displayName', async () => {
@@ -1630,7 +1630,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.rp', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test('Should work with valid RP name and id', async () => {
@@ -1816,7 +1816,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.extensions', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     test('Should work with undefined extensions', async () => {
@@ -2024,7 +2024,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('Edge Cases and Spec Compliance', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     /**
@@ -2264,7 +2264,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('VirtualAuthenticatorAgent.createCredential() - Spec Steps', () => {
     afterEach(async () => {
-      await cleanupWebAuthnCredentials();
+      await cleanupWebAuthnPublicKeyCredentials();
     });
 
     /**
