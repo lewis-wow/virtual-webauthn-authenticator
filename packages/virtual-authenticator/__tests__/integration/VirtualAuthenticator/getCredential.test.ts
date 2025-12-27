@@ -99,9 +99,13 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // This creates a new public key credential (passkey) using the
     // specified options, public key, and key vault metadata.
     const publicKeyCredential = await agent.createCredential({
-      credentialCreationOptions: {
+      origin: RP_ORIGIN,
+      options: {
         publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
       },
+      sameOriginWithAncestors: true,
+
+      // Internal options
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,

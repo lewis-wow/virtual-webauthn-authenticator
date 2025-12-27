@@ -48,9 +48,13 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   } = opts;
 
   const publicKeyCredential = await agent.getAssertion({
-    credentialRequestOptions: {
+    origin,
+    options: {
       publicKey: publicKeyCredentialRequestOptions,
     },
+    sameOriginWithAncestors: true,
+
+    // Internal options
     meta: {
       userId,
       origin,

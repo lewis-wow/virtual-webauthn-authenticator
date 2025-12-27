@@ -7,7 +7,6 @@ import z from 'zod';
 
 import type {
   AuthenticatorGetAssertionPayload,
-  AuthenticatorMetaArgs,
   IAuthenticator,
 } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
@@ -34,7 +33,6 @@ import type {
 } from './zod-validation';
 import { AuthenticatorAgentContextArgsSchema } from './zod-validation/AuthenticatorAgentContextArgsSchema';
 import { AuthenticatorAgentMetaArgsSchema } from './zod-validation/AuthenticatorAgentMetaArgsSchema';
-import type { AuthenticatorContextArgs } from './zod-validation/AuthenticatorContextArgsSchema';
 import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
@@ -398,29 +396,40 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
    */
   public async createCredential(opts: {
-    credentialCreationOptions: CredentialCreationOptions;
+    // origin: This argument is the relevant settings object’s origin, as determined by the calling create() implementation.
+    // NOTE: It must match the meta.origin value
+    origin: string;
+    // options: This argument is a CredentialCreationOptions object whose options.publicKey member
+    // contains a PublicKeyCredentialCreationOptions object specifying the desired attributes of the to-be-created public key credential.
+    options: CredentialCreationOptions;
+    // sameOriginWithAncestors: This argument is a Boolean value which is true if and only if the caller’s environment settings object is same-origin with its ancestors.
+    // It is false if caller is cross-origin.
+    sameOriginWithAncestors: boolean;
+
+    // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
   }): Promise<PublicKeyCredential> {
-    const { credentialCreationOptions, meta, context } = opts;
+    const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
     // [[Create]](origin, options, sameOriginWithAncestors) internal method.
     // Assert that options.publicKey is present.
     assertSchema(
-      credentialCreationOptions,
+      options,
       CredentialCreationOptionsSchema.safeExtend({
         publicKey: PublicKeyCredentialCreationOptionsSchema,
       }),
     );
 
+    assertSchema(sameOriginWithAncestors, z.literal(true));
+
     // Meta validation
     assertSchema(
       meta,
       AuthenticatorAgentMetaArgsSchema.safeExtend({
-        userId: z.literal(
-          UUIDMapper.bytesToUUID(credentialCreationOptions.publicKey.user.id),
-        ),
+        userId: z.literal(UUIDMapper.bytesToUUID(options.publicKey.user.id)),
+        origin: z.literal(origin),
       }),
     );
     // Context validation
@@ -440,7 +449,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // contexts don't exist.
 
     // Step 3: Let pkOptions be the value of options.publicKey.
-    const pkOptions = credentialCreationOptions.publicKey;
+    const pkOptions = options.publicKey;
 
     // Step 4: If pkOptions.timeout is present, check if its value lies
     // within a reasonable range as defined by the client and if not,
@@ -580,8 +589,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 16: If options.signal is present and its aborted flag is set:
     // Throw a new "AbortError" DOMException and terminate this algorithm.
-    if (credentialCreationOptions.signal?.aborted) {
-      throw credentialCreationOptions.signal.reason;
+    if (options.signal?.aborted) {
+      throw options.signal.reason;
     }
 
     // Step 17: Let issuedRequests be a new ordered set.
@@ -632,9 +641,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // For each authenticator in issuedRequests invoke the authenticatorCancel operation on authenticator
     // and remove authenticator from issuedRequests. Throw a "NotAllowedError" DOMException.
     // NOTE: Cancellation is not impelemented.
-    if (credentialCreationOptions.signal?.aborted) {
+    if (options.signal?.aborted) {
       // NOTE: signal reason is used instead of NotAllowedError
-      throw credentialCreationOptions.signal.reason;
+      throw options.signal.reason;
     }
 
     // Step 22.AVAILABLE: If an authenticator becomes available on this client device
@@ -832,37 +841,51 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion
    */
   public async getAssertion(opts: {
-    credentialRequestOptions: CredentialRequestOptions;
+    // origin: This argument is the relevant settings object’s origin, as determined by the calling get() implementation, i.e., CredentialsContainer’s Request a Credential abstract operation.
+    // NOTE: It must match the meta.origin value
+    origin: string;
+    // options: This argument is a CredentialRequestOptions object whose options.publicKey member
+    // contains a PublicKeyCredentialRequestOptions object specifying the desired attributes of the public key credential to discover.
+    options: CredentialRequestOptions;
+    // sameOriginWithAncestors: This argument is a Boolean value which is true if and only if the caller’s environment settings object is same-origin with its ancestors.
+    // It is false if caller is cross-origin.
+    sameOriginWithAncestors: boolean;
+
+    // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
   }): Promise<PublicKeyCredential> {
-    const { credentialRequestOptions, meta, context } = opts;
+    const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
     // [[DiscoverFromExternalSource]](origin, options,
     // sameOriginWithAncestors) internal method.
     // Assert that options.publicKey is present.
     assertSchema(
-      credentialRequestOptions,
+      options,
       CredentialRequestOptionsSchema.safeExtend({
         publicKey: PublicKeyCredentialRequestOptionsSchema,
       }),
     );
 
+    assertSchema(sameOriginWithAncestors, z.literal(true));
+
     // Meta validation
-    assertSchema(meta, AuthenticatorAgentMetaArgsSchema);
+    assertSchema(
+      meta,
+      AuthenticatorAgentMetaArgsSchema.safeExtend({
+        origin: z.literal(origin),
+      }),
+    );
     // Context validation
     assertSchema(context, AuthenticatorAgentContextArgsSchema);
 
     // Step 2: Let pkOptions be the value of options.publicKey.
-    const pkOptions = credentialRequestOptions.publicKey;
+    const pkOptions = options.publicKey;
 
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
     // Step 3: If options.mediation is present with the value conditional:
-    if (
-      credentialRequestOptions.mediation ===
-      CredentialMediationRequirement.CONDITIONAL
-    ) {
+    if (options.mediation === CredentialMediationRequirement.CONDITIONAL) {
       // Step 3.1: Let credentialIdFilter be the value of pkOptions.allowCredentials.
       credentialIdFilter = pkOptions.allowCredentials ?? [];
 
@@ -953,8 +976,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 13: If options.signal is present and aborted, throw the
     // options.signal's abort reason.
-    if (credentialRequestOptions.signal?.aborted) {
-      throw credentialRequestOptions.signal.reason;
+    if (options.signal?.aborted) {
+      throw options.signal.reason;
     }
 
     // Step 14: Let issuedRequests be a new ordered set.
@@ -998,8 +1021,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // For each authenticator in issuedRequests invoke the authenticatorCancel operation on authenticator
     // and remove authenticator from issuedRequests.
     // Then throw the options.signal’s abort reason.
-    if (credentialRequestOptions.signal?.aborted) {
-      throw credentialRequestOptions.signal.reason;
+    if (options.signal?.aborted) {
+      throw options.signal.reason;
     }
 
     // Step 20.USER_INTERACTION: If options.mediation is conditional

@@ -387,12 +387,20 @@ export class VirtualAuthenticator implements IAuthenticator {
       rpEntity,
       userEntity,
       // requireResidentKey,
-      requireUserPresence,
+
+      // NOTE: Should be always true. Just for compatibility with spec.
+      // requireUserPresence,
+
       requireUserVerification,
       credTypesAndPubKeyAlgs,
+
+      // NOTE: enterpriseAttestationPossible is always false. Just for compatibility with spec.
       // enterpriseAttestationPossible,
+
       attestationFormats,
       excludeCredentialDescriptorList,
+
+      // NOTE: Extensions are not implemented.
       // extensions,
     } = authenticatorMakeCredentialArgs;
 
@@ -620,8 +628,12 @@ export class VirtualAuthenticator implements IAuthenticator {
       hash,
       rpId,
       allowCredentialDescriptorList,
-      requireUserPresence,
+
+      // NOTE: Should be always true. Just for compatibility with spec.
+      // requireUserPresence,
       requireUserVerification,
+
+      // NOTE: Extensions are not implemented.
       // extensions,
     } = authenticatorGetAssertionArgs;
 

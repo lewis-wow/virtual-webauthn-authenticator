@@ -27,7 +27,6 @@ import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import { CredentialCreationOptions } from '../../../src/zod-validation';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
@@ -2275,10 +2274,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
     describe('Step 1: Assert options.publicKey is present', () => {
       test('Should throw when publicKey is undefined', async () => {
         await expect(async () =>
-          agent.createCredential({
-            credentialCreationOptions: {
-              publicKey: undefined,
-            } as CredentialCreationOptions,
+          performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              undefined as unknown as PublicKeyCredentialCreationOptions,
             meta: {
               userId: USER_ID,
               origin: RP_ORIGIN,
