@@ -23,10 +23,7 @@ import {
   PublicKeyCredentialType,
   UserVerificationRequirement,
 } from '@repo/virtual-authenticator/enums';
-import {
-  AttestationNotSupported,
-  NoSupportedPubKeyCredParamFound,
-} from '@repo/virtual-authenticator/exceptions';
+import { AttestationNotSupported } from '@repo/virtual-authenticator/exceptions';
 import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/zod-validation';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
@@ -35,6 +32,7 @@ import request from 'supertest';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';
 import z from 'zod';
 
+import { CredentialTypesNotSupported } from '../../../../packages/virtual-authenticator/src/exceptions/CredentialTypesNotSupported';
 import { AppModule } from '../../src/app.module';
 import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../src/services/Prisma.service';
@@ -365,7 +363,7 @@ describe('CredentialsController', () => {
 
           expect(response.body).toStrictEqual(
             ExceptionMapper.exceptionToResponseBody(
-              new NoSupportedPubKeyCredParamFound(),
+              new CredentialTypesNotSupported(),
             ),
           );
         },

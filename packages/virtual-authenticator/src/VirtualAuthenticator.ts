@@ -14,8 +14,8 @@ import type {
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
+import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
-import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
@@ -89,7 +89,7 @@ export class VirtualAuthenticator implements IAuthenticator {
    *
    * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
    * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
-   * @throws {NoSupportedPubKeyCredParamFound} Throws this error if no parameter in the array is supported.
+   * @throws {CredentialTypesNotSupported} Throws this error if no parameter in the array is supported.
    */
   private _findFirstSupportedCredTypesAndPubKeyAlgsOrThrow(
     pubKeyCredParams: PubKeyCredParam[],
@@ -101,7 +101,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       }
     }
 
-    throw new NoSupportedPubKeyCredParamFound();
+    throw new CredentialTypesNotSupported();
   }
 
   /**

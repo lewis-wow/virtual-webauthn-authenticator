@@ -25,7 +25,6 @@ import { UserVerificationRequirement } from '../../../src/enums/UserVerification
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
-import { NoSupportedPubKeyCredParamFound } from '../../../src/exceptions/NoSupportedPubKeyCredParamWasFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
@@ -319,7 +318,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           ],
         } satisfies Partial<PublicKeyCredentialCreationOptions>,
-        expectToThrowError: new NoSupportedPubKeyCredParamFound(),
+        expectToThrowError: new CredentialTypesNotSupported(),
       },
       {
         publicKeyCredentialCreationOptions: {
@@ -334,7 +333,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           ],
         } satisfies Partial<PublicKeyCredentialCreationOptions>,
-        expectToThrowError: new NoSupportedPubKeyCredParamFound(),
+        expectToThrowError: new CredentialTypesNotSupported(),
       },
     ])(
       'Should throw without any supported pubKeyCredParams',
