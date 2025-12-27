@@ -1,13 +1,13 @@
 import { Schema } from 'effect';
 
-import { WebAuthnCredentialKeyMetaType } from '../../enums/WebAuthnCredentialKeyMetaType';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 
 export const WebAuthnCredentialKeyMetaTypeSchema = Schema.Enums(
-  WebAuthnCredentialKeyMetaType,
+  WebAuthnPublicKeyCredentialKeyMetaType,
 ).pipe(
   Schema.annotations({
-    identifier: 'WebAuthnCredentialKeyMetaType',
-    title: 'WebAuthnCredentialKeyMetaType',
-    examples: [WebAuthnCredentialKeyMetaType.KEY_VAULT],
+    identifier: 'WebAuthnPublicKeyCredentialKeyMetaType',
+    title: 'WebAuthnPublicKeyCredentialKeyMetaType',
+    examples: [WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT],
   }),
 );

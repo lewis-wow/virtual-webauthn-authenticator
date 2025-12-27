@@ -1,10 +1,10 @@
 import z from 'zod';
 
-import { WebAuthnCredentialKeyMetaType } from '../../enums/WebAuthnCredentialKeyMetaType';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 
 export const WebAuthnCredentialKeyMetaTypeSchema = z
-  .enum(WebAuthnCredentialKeyMetaType)
+  .enum(WebAuthnPublicKeyCredentialKeyMetaType)
   .meta({
-    id: 'WebAuthnCredentialKeyMetaType',
-    examples: [WebAuthnCredentialKeyMetaType.KEY_VAULT],
+    id: 'WebAuthnPublicKeyCredentialKeyMetaType',
+    examples: [WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT],
   });

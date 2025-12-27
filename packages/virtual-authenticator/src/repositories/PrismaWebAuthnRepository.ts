@@ -2,7 +2,7 @@ import { assertSchema } from '@repo/assert';
 import { Prisma, PrismaClient } from '@repo/prisma';
 import z from 'zod';
 
-import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import type {
@@ -67,7 +67,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
           apiKeyId: data.apiKeyId,
 
           webAuthnPublicKeyCredentialKeyMetaType:
-            WebAuthnCredentialKeyMetaType.KEY_VAULT,
+            WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
           webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
             create: { ...data.webAuthnPublicKeyCredentialKeyVaultKeyMeta },
           },

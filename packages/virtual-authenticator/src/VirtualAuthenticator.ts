@@ -12,7 +12,7 @@ import type {
   IAuthenticator,
 } from './IAuthenticator';
 import { Fmt } from './enums/Fmt';
-import { WebAuthnCredentialKeyMetaType } from './enums/WebAuthnCredentialKeyMetaType';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { NoSupportedPubKeyCredParamFound } from './exceptions/NoSupportedPubKeyCredParamWasFound';
@@ -485,7 +485,7 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     assertSchema(
       webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
-      z.enum(WebAuthnCredentialKeyMetaType),
+      z.enum(WebAuthnPublicKeyCredentialKeyMetaType),
     );
 
     // Step 7.2: Let userHandle be userEntity.id.
@@ -516,7 +516,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       .with(
         {
           webAuthnPublicKeyCredentialKeyMetaType:
-            WebAuthnCredentialKeyMetaType.KEY_VAULT,
+            WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
         },
         async () => {
           const webAuthnCredentialWithKeyVaultMeta =

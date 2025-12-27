@@ -2,7 +2,7 @@ import type { KeyClient, KeyVaultKey, SignResult } from '@azure/keyvault-keys';
 import { JsonWebKey } from '@repo/keys';
 import { KeyAlgorithm, KeyOperation } from '@repo/keys/enums';
 import { COSEKeyAlgorithmMapper, COSEKeyMapper } from '@repo/keys/mappers';
-import { WebAuthnCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
   WebAuthnPublicKeyCredentialWithMeta,
@@ -124,7 +124,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     return {
       COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
       webAuthnPublicKeyCredentialKeyMetaType:
-        WebAuthnCredentialKeyMetaType.KEY_VAULT,
+        WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId: keyVaultKey.id ?? null,
         keyVaultKeyName: keyVaultKey.name,
@@ -141,7 +141,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     if (
       webAuthnCredential.webAuthnPublicKeyCredentialKeyMetaType !==
-      WebAuthnCredentialKeyMetaType.KEY_VAULT
+      WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT
     ) {
       throw new UnexpectedWebAuthnCredentialKeyMetaType();
     }

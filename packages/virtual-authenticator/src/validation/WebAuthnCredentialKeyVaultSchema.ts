@@ -1,6 +1,6 @@
 import { Schema } from 'effect';
 
-import { WebAuthnCredentialKeyMetaType } from '../enums/WebAuthnCredentialKeyMetaType';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { WebAuthnCredentialBaseSchema } from './WebAuthnCredentialBaseSchema';
 import { WebAuthnCredentialKeyVaultKeyMetaSchema } from './WebAuthnCredentialKeyVaultKeyMetaSchema';
 
@@ -8,7 +8,7 @@ export const WebAuthnCredentialKeyVaultSchema = Schema.extend(
   WebAuthnCredentialBaseSchema,
   Schema.Struct({
     webAuthnPublicKeyCredentialKeyMetaType: Schema.Literal(
-      WebAuthnCredentialKeyMetaType.KEY_VAULT,
+      WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
     ),
     webAuthnPublicKeyCredentialKeyVaultKeyMeta:
       WebAuthnCredentialKeyVaultKeyMetaSchema,

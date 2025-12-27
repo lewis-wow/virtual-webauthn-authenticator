@@ -7,7 +7,7 @@ import {
   KeyPairKeyObjectResult,
 } from 'node:crypto';
 
-import { WebAuthnCredentialKeyMetaType } from '../../src/enums/WebAuthnCredentialKeyMetaType';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../src/enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { IKeyProvider } from '../../src/types/IKeyProvider';
 import { WebAuthnPublicKeyCredentialWithMeta } from '../../src/types/WebAuthnPublicKeyCredentialWithMeta';
 import { KeyVaultKeyIdGenerator } from './KeyVaultKeyIdGenerator';
@@ -48,7 +48,7 @@ export class MockKeyProvider implements IKeyProvider {
     return {
       COSEPublicKey,
       webAuthnPublicKeyCredentialKeyMetaType:
-        WebAuthnCredentialKeyMetaType.KEY_VAULT,
+        WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId,
         keyVaultKeyName,

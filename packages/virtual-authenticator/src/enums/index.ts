@@ -8,5 +8,5 @@ export * from './PublicKeyCredentialType';
 export * from './ResidentKeyRequirement';
 export * from './UserVerificationRequirement';
 export * from './TokenBindingStatus';
-export * from './WebAuthnCredentialKeyMetaType';
+export * from './WebAuthnPublicKeyCredentialKeyMetaType';
 export * from './CredentialMediationRequirement';
