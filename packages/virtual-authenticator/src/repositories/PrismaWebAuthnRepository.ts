@@ -20,6 +20,19 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     this.prisma = opts.prisma;
   }
 
+  // Helper method to map Prisma model to application type
+  private mapPrismaToApp(prismaCredential: any): WebAuthnCredentialWithMeta {
+    return {
+      ...prismaCredential,
+      webAuthnCredentialKeyMetaType:
+        prismaCredential.webAuthnPublicKeyCredentialKeyMetaType,
+      webAuthnCredentialKeyVaultKeyMeta:
+        prismaCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
+      webAuthnPublicKeyCredentialKeyMetaType: undefined,
+      webAuthnPublicKeyCredentialKeyVaultKeyMeta: undefined,
+    } as WebAuthnCredentialWithMeta;
+  }
+
   async findAllByRpIdAndCredentialIds(opts: {
     rpId: string;
     credentialIds: string[];
@@ -34,7 +47,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     }
 
     const webAuthnCredentialWithMetaList =
-      await this.prisma.webAuthnCredential.findMany({
+      await this.prisma.webAuthnPublicKeyCredential.findMany({
         where: {
           rpId: rpId,
           id: {
@@ -42,18 +55,20 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
           },
         },
         include: {
-          webAuthnCredentialKeyVaultKeyMeta: true,
+          webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
         },
       });
 
-    return webAuthnCredentialWithMetaList as WebAuthnCredentialWithMeta[];
+    return webAuthnCredentialWithMetaList.map((cred) =>
+      this.mapPrismaToApp(cred),
+    );
   }
 
   async createKeyVaultWebAuthnCredential(
     data: CreateKeyVaultDataArgs,
   ): Promise<WebAuthnCredentialWithMeta> {
     const createdWebAuthnCredentialWithMeta =
-      await this.prisma.webAuthnCredential.create({
+      await this.prisma.webAuthnPublicKeyCredential.create({
         data: {
           id: data.id,
 
@@ -65,16 +80,16 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
           userId: data.userId,
           apiKeyId: data.apiKeyId,
 
-          webAuthnCredentialKeyMetaType:
+          webAuthnPublicKeyCredentialKeyMetaType:
             WebAuthnCredentialKeyMetaType.KEY_VAULT,
-          webAuthnCredentialKeyVaultKeyMeta: {
+          webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
             create: { ...data.webAuthnCredentialKeyVaultKeyMeta },
           },
         },
-        include: { webAuthnCredentialKeyVaultKeyMeta: true },
+        include: { webAuthnPublicKeyCredentialKeyVaultKeyMeta: true },
       });
 
-    return createdWebAuthnCredentialWithMeta as WebAuthnCredentialWithMeta;
+    return this.mapPrismaToApp(createdWebAuthnCredentialWithMeta);
   }
 
   async findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
@@ -85,7 +100,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
   }): Promise<WebAuthnCredentialWithMeta> {
     const { rpId, userId, allowCredentialDescriptorList, apiKeyId } = opts;
 
-    const where: Prisma.WebAuthnCredentialWhereInput = {
+    const where: Prisma.WebAuthnPublicKeyCredentialWhereInput = {
       rpId,
       userId,
       apiKeyId,
@@ -102,15 +117,16 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
 
     const updatedWebAuthnCredential = await this.prisma.$transaction(
       async (tx) => {
-        const webAuthnCredential = await tx.webAuthnCredential.findFirst({
-          where,
-        });
+        const webAuthnCredential =
+          await tx.webAuthnPublicKeyCredential.findFirst({
+            where,
+          });
 
         if (webAuthnCredential === null) {
           throw new CredentialNotFound();
         }
 
-        return await tx.webAuthnCredential.update({
+        return await tx.webAuthnPublicKeyCredential.update({
           where: {
             id: webAuthnCredential.id,
           },
@@ -120,12 +136,12 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
             },
           },
           include: {
-            webAuthnCredentialKeyVaultKeyMeta: true,
+            webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
           },
         });
       },
     );
 
-    return updatedWebAuthnCredential as WebAuthnCredentialWithMeta;
+    return this.mapPrismaToApp(updatedWebAuthnCredential);
   }
 }

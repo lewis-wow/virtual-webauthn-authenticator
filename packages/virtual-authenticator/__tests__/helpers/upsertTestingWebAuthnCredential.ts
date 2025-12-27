@@ -24,7 +24,7 @@ export const upsertTestingWebAuthnCredential = async (opts: {
   const { prisma } = opts;
 
   try {
-    return await prisma.webAuthnCredential.upsert({
+    return await prisma.webAuthnPublicKeyCredential.upsert({
       where: {
         id: WEBAUTHN_CREDENTIAL_ID,
       },
@@ -34,8 +34,9 @@ export const upsertTestingWebAuthnCredential = async (opts: {
         userId: USER_ID,
         rpId: RP_ID,
         COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-        webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-        webAuthnCredentialKeyVaultKeyMeta: {
+        webAuthnPublicKeyCredentialKeyMetaType:
+          WebAuthnCredentialKeyMetaType.KEY_VAULT,
+        webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
           create: {
             id: WEBAUTHN_CREDENTIAL_KEYVAULT_KEY_META_ID,
             keyVaultKeyName: KEY_VAULT_KEY_NAME,
@@ -48,7 +49,7 @@ export const upsertTestingWebAuthnCredential = async (opts: {
         updatedAt: new Date(0),
       },
       include: {
-        webAuthnCredentialKeyVaultKeyMeta: true,
+        webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
       },
     });
   } catch (e) {
@@ -60,12 +61,12 @@ export const upsertTestingWebAuthnCredential = async (opts: {
       console.warn(
         `Prisma upsert race condition handled for webAuthnCredential: ${WEBAUTHN_CREDENTIAL_ID}`,
       );
-      return await prisma.webAuthnCredential.findUniqueOrThrow({
+      return await prisma.webAuthnPublicKeyCredential.findUniqueOrThrow({
         where: {
           id: WEBAUTHN_CREDENTIAL_ID,
         },
         include: {
-          webAuthnCredentialKeyVaultKeyMeta: true,
+          webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
         },
       });
     } else {

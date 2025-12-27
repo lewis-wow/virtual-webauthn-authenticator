@@ -13,16 +13,16 @@ generator client {
 }
 
 model User {
-  id                  String               @id @default(uuid())
-  name                String
-  email               String
-  emailVerified       Boolean              @default(false)
-  image               String?
-  sessions            Session[]
-  accounts            Account[]
-  apiKeys             ApiKey[]
-  webAuthnCredentials WebAuthnCredential[]
-  logs                Log[]
+  id                           String                        @id @default(uuid())
+  name                         String
+  email                        String
+  emailVerified                Boolean                       @default(false)
+  image                        String?
+  sessions                     Session[]
+  accounts                     Account[]
+  apiKeys                      ApiKey[]
+  webAuthnPublicKeyCredentials WebAuthnPublicKeyCredential[]
+  logs                         Log[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -96,8 +96,8 @@ model ApiKey {
 
   permissions String[]
 
-  // Created webAuthnCredentials using this API key
-  webAuthnCredentials WebAuthnCredential[]
+  // Created webAuthnPublicKeyCredentials using this API key
+  webAuthnPublicKeyCredentials WebAuthnPublicKeyCredential[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -117,7 +117,7 @@ model Jwks {
   @@map("jwks")
 }
 
-model WebAuthnCredential {
+model WebAuthnPublicKeyCredential {
   id            String   @id @default(uuid())
   name          String?
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -128,8 +128,8 @@ model WebAuthnCredential {
   counter       Int      @default(0)
   transports    String[]
 
-  webAuthnCredentialKeyMetaType     WebAuthnCredentialKeyMetaType
-  webAuthnCredentialKeyVaultKeyMeta WebAuthnCredentialKeyVaultKeyMeta?
+  webAuthnPublicKeyCredentialKeyMetaType     WebAuthnPublicKeyCredentialKeyMetaType
+  webAuthnPublicKeyCredentialKeyVaultKeyMeta WebAuthnPublicKeyCredentialKeyVaultKeyMeta?
 
   // The Relying Party ID (e.g., "your-website.com") this credential is scoped to.
   // This is essential for finding all credentials for a specific site.
@@ -144,22 +144,22 @@ model WebAuthnCredential {
 
   @@index([userId])
   @@index([rpId]) // Add an index to rpId for fast lookups
-  @@map("webAuthnCredential")
+  @@map("webAuthnPublicKeyCredential")
 }
 
-model WebAuthnCredentialKeyVaultKeyMeta {
+model WebAuthnPublicKeyCredentialKeyVaultKeyMeta {
   id              String  @id @default(uuid())
   keyVaultKeyId   String? @unique
   keyVaultKeyName String
   hsm             Boolean @default(false)
 
-  webAuthnCredential   WebAuthnCredential @relation(fields: [webAuthnCredentialId], references: [id], onDelete: Cascade)
-  webAuthnCredentialId String             @unique
+  webAuthnPublicKeyCredential   WebAuthnPublicKeyCredential @relation(fields: [webAuthnPublicKeyCredentialId], references: [id], onDelete: Cascade)
+  webAuthnPublicKeyCredentialId String                      @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@map("webAuthnCredentialKeyVaultKeyMeta")
+  @@map("webAuthnPublicKeyCredentialKeyVaultKeyMeta")
 }
 
 model Log {
@@ -198,6 +198,6 @@ enum PermissionSubject {
   USER
 }
 
-enum WebAuthnCredentialKeyMetaType {
+enum WebAuthnPublicKeyCredentialKeyMetaType {
   KEY_VAULT
 }

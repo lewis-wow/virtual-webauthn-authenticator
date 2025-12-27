@@ -72,7 +72,7 @@ describe('WebAuthnCredentialsController', () => {
 
   afterAll(async () => {
     await prisma.user.deleteMany();
-    await prisma.webAuthnCredential.deleteMany({
+    await prisma.webAuthnPublicKeyCredential.deleteMany({
       where: {
         id: {
           in: [WEBAUTHN_CREDENTIAL_ID],
@@ -106,8 +106,8 @@ describe('WebAuthnCredentialsController', () => {
               "transports": [],
               "updatedAt": "1970-01-01T00:00:00.000Z",
               "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
-              "webAuthnCredentialKeyMetaType": "KEY_VAULT",
-              "webAuthnCredentialKeyVaultKeyMeta": {
+              "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
+              "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {
                 "createdAt": "1970-01-01T00:00:00.000Z",
                 "hsm": false,
                 "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
@@ -154,8 +154,8 @@ describe('WebAuthnCredentialsController', () => {
           "transports": [],
           "updatedAt": "1970-01-01T00:00:00.000Z",
           "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
-          "webAuthnCredentialKeyMetaType": "KEY_VAULT",
-          "webAuthnCredentialKeyVaultKeyMeta": {
+          "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
+          "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {
             "createdAt": "1970-01-01T00:00:00.000Z",
             "hsm": false,
             "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
@@ -215,8 +215,8 @@ describe('WebAuthnCredentialsController', () => {
           "transports": [],
           "updatedAt": "1970-01-01T00:00:00.000Z",
           "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
-          "webAuthnCredentialKeyMetaType": "KEY_VAULT",
-          "webAuthnCredentialKeyVaultKeyMeta": {
+          "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
+          "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {
             "createdAt": "1970-01-01T00:00:00.000Z",
             "hsm": false,
             "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",

@@ -80,8 +80,8 @@ const jwtIssuer = new JwtIssuer({
 
 const cleanupWebAuthnCredentials = async () => {
   await prisma.$transaction([
-    prisma.webAuthnCredential.deleteMany(),
-    prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
+    prisma.webAuthnPublicKeyCredential.deleteMany(),
+    prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
   ]);
 };
 

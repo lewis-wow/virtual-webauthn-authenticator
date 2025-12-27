@@ -22,6 +22,7 @@ import { Jwt } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
+import { mapPrismaWebAuthnToApi } from '../utils/mapPrismaWebAuthnToApi';
 
 @Controller()
 @UseFilters(new ExceptionFilter())
@@ -47,19 +48,21 @@ export class WebAuthnCredentialsController {
 
         const pagination = new Pagination(async ({ pagination }) => {
           const webAuthnCredentials =
-            await this.prisma.webAuthnCredential.findMany({
+            await this.prisma.webAuthnPublicKeyCredential.findMany({
               where: {
                 userId: userId,
-                webAuthnCredentialKeyMetaType:
+                webAuthnPublicKeyCredentialKeyMetaType:
                   WebAuthnCredentialKeyMetaType.KEY_VAULT,
               },
               include: {
-                webAuthnCredentialKeyVaultKeyMeta: true,
+                webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
               },
               ...pagination,
             });
 
-          return webAuthnCredentials as WebAuthnCredentialWithMeta[];
+          return webAuthnCredentials.map(
+            mapPrismaWebAuthnToApi,
+          ) as WebAuthnCredentialWithMeta[];
         });
 
         const result = await pagination.fetch({
@@ -88,20 +91,20 @@ export class WebAuthnCredentialsController {
         }
 
         const webAuthnCredential =
-          await this.prisma.webAuthnCredential.findUniqueOrThrow({
+          await this.prisma.webAuthnPublicKeyCredential.findUniqueOrThrow({
             where: {
               id: params.id,
               userId: userId,
             },
             include: {
-              webAuthnCredentialKeyVaultKeyMeta: true,
+              webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
             },
           });
 
         return {
           status: 200,
           body: GetWebAuthnCredentialResponseSchema.encode(
-            webAuthnCredential as WebAuthnCredential,
+            mapPrismaWebAuthnToApi(webAuthnCredential) as WebAuthnCredential,
           ),
         };
       },
@@ -120,15 +123,16 @@ export class WebAuthnCredentialsController {
           throw new Forbidden();
         }
 
-        const webAuthnCredential = await this.prisma.webAuthnCredential.delete({
-          where: {
-            id: params.id,
-            userId: userId,
-          },
-          include: {
-            webAuthnCredentialKeyVaultKeyMeta: true,
-          },
-        });
+        const webAuthnCredential =
+          await this.prisma.webAuthnPublicKeyCredential.delete({
+            where: {
+              id: params.id,
+              userId: userId,
+            },
+            include: {
+              webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
+            },
+          });
 
         this.logger.debug('Removing WebAuthnCredential.', {
           webAuthnCredential,
@@ -136,11 +140,11 @@ export class WebAuthnCredentialsController {
         });
 
         if (
-          webAuthnCredential.webAuthnCredentialKeyMetaType ===
+          webAuthnCredential.webAuthnPublicKeyCredentialKeyMetaType ===
           WebAuthnCredentialKeyMetaType.KEY_VAULT
         ) {
           const pollOperation = await this.keyClient.beginDeleteKey(
-            webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta!
+            webAuthnCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta!
               .keyVaultKeyName,
           );
 
@@ -161,7 +165,7 @@ export class WebAuthnCredentialsController {
         return {
           status: 200,
           body: DeleteWebAuthnCredentialResponseSchema.encode(
-            webAuthnCredential as WebAuthnCredential,
+            mapPrismaWebAuthnToApi(webAuthnCredential) as WebAuthnCredential,
           ),
         };
       },
