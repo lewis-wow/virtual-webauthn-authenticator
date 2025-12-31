@@ -15,7 +15,7 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   agent: VirtualAuthenticatorAgent;
 
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
-  webAuthnCredentialId: string;
+  webAuthnPublicKeyCredentialId: string;
   publicKey: Uint8Array<ArrayBuffer>;
   counter: number;
   expectedNewCounter?: number;
@@ -37,7 +37,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   const {
     agent,
     publicKeyCredentialRequestOptions,
-    webAuthnCredentialId,
+    webAuthnPublicKeyCredentialId,
     publicKey,
     counter,
     expectedNewCounter,
@@ -72,7 +72,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
     credential: {
-      id: webAuthnCredentialId,
+      id: webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
     },

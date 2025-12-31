@@ -2,7 +2,7 @@ import type { ValueOfEnum } from '@repo/types';
 
 export const PermissionEntity = {
   Credential: 'Credential',
-  WebAuthnCredential: 'WebAuthnCredential',
+  WebAuthnPublicKeyCredential: 'WebAuthnPublicKeyCredential',
   ApiKey: 'ApiKey',
 } as const;
 

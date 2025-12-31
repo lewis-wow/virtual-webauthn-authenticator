@@ -131,7 +131,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // public key credentials described by pkOptions.allowCredentials are bound to this authenticator,
       // by matching with rpId, pkOptions.allowCredentials.id, and pkOptions.allowCredentials.type.
       // Set allowCredentialDescriptorList to this filtered list.
-      const webAuthnCredentialWithMetaList =
+      const webAuthnPublicKeyCredentialWithMetaList =
         await authenticator.webAuthnRepository.findAllByRpIdAndCredentialIds({
           rpId,
           credentialIds: pkOptions.allowCredentials.map((allowCredential) =>
@@ -139,11 +139,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           ),
         });
 
-      allowCredentialDescriptorList = webAuthnCredentialWithMetaList.map(
-        (webAuthnCredentialWithMeta) => ({
-          id: UUIDMapper.UUIDtoBytes(webAuthnCredentialWithMeta.id),
+      allowCredentialDescriptorList = webAuthnPublicKeyCredentialWithMetaList.map(
+        (webAuthnPublicKeyCredentialWithMeta) => ({
+          id: UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialWithMeta.id),
           type: PublicKeyCredentialType.PUBLIC_KEY,
-          transports: webAuthnCredentialWithMeta.transports,
+          transports: webAuthnPublicKeyCredentialWithMeta.transports,
         }),
       );
 

@@ -1,5 +1,5 @@
-import type { WebAuthnCredential } from '../zod-validation/WebAuthnCredentialSchema';
-import type { WebAuthnCredentialMeta } from './WebAuthnPublicKeyCredentialMeta';
+import type { WebAuthnPublicKeyCredential } from '../zod-validation/WebAuthnPublicKeyCredentialSchema';
+import type { WebAuthnPublicKeyCredentialMeta } from './WebAuthnPublicKeyCredentialMeta';
 
-export type WebAuthnPublicKeyCredentialWithMeta = WebAuthnCredential &
-  WebAuthnCredentialMeta;
+export type WebAuthnPublicKeyCredentialWithMeta = WebAuthnPublicKeyCredential &
+  WebAuthnPublicKeyCredentialMeta;

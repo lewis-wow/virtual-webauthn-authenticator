@@ -66,11 +66,11 @@ describe('VirtualAuthenticator.createCredential()', () => {
   const prisma = new PrismaClient();
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
-  const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
+  const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
   const authenticator = new VirtualAuthenticator({
-    webAuthnRepository: webAuthnCredentialRepository,
+    webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
   });
   const agent = new VirtualAuthenticatorAgent({ authenticator });
@@ -111,7 +111,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies Partial<PublicKeyCredentialCreationOptions>,
     ])('With attestation $attestation', ({ attestation }) => {
       let registrationVerification: VerifiedRegistrationResponse;
-      let webAuthnCredentialId: string;
+      let webAuthnPublicKeyCredentialId: string;
 
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -119,7 +119,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
 
       beforeAll(async () => {
-        ({ registrationVerification, webAuthnCredentialId } =
+        ({ registrationVerification, webAuthnPublicKeyCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
             agent,
             publicKeyCredentialCreationOptions,
@@ -150,20 +150,20 @@ describe('VirtualAuthenticator.createCredential()', () => {
         expect(jwk).toMatchObject(
           keyProvider
             .getKeyPairStore()
-            [webAuthnCredentialId].publicKey.export({ format: 'jwk' }),
+            [webAuthnPublicKeyCredentialId].publicKey.export({ format: 'jwk' }),
         );
       });
 
-      test('Should save the WebAuthnCredential to the database', async () => {
-        const webAuthnCredential =
+      test('Should save the WebAuthnPublicKeyCredential to the database', async () => {
+        const webAuthnPublicKeyCredential =
           await prisma.webAuthnPublicKeyCredential.findUnique({
             where: {
-              id: webAuthnCredentialId,
+              id: webAuthnPublicKeyCredentialId,
             },
           });
 
-        expect(webAuthnCredential).toMatchObject({
-          id: webAuthnCredentialId,
+        expect(webAuthnPublicKeyCredential).toMatchObject({
+          id: webAuthnPublicKeyCredentialId,
           userId: USER_ID,
         });
       });
@@ -172,12 +172,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
         const keyMeta =
           await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.findFirst({
             where: {
-              webAuthnPublicKeyCredentialId: webAuthnCredentialId,
+              webAuthnPublicKeyCredentialId: webAuthnPublicKeyCredentialId,
             },
           });
 
         expect(keyMeta).toMatchObject({
-          webAuthnPublicKeyCredentialId: webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId: webAuthnPublicKeyCredentialId,
           keyVaultKeyId: keyVaultKeyIdGenerator.getCurrent().keyVaultKeyId,
           keyVaultKeyName: keyVaultKeyIdGenerator.getCurrent().keyVaultKeyName,
           hsm: false,
@@ -477,7 +477,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         },
       ])('With userVerification $userVerification', ({ userVerification }) => {
         let registrationVerification: VerifiedRegistrationResponse;
-        let webAuthnCredentialId: string;
+        let webAuthnPublicKeyCredentialId: string;
 
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -488,7 +488,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
 
         beforeAll(async () => {
-          ({ registrationVerification, webAuthnCredentialId } =
+          ({ registrationVerification, webAuthnPublicKeyCredentialId } =
             await performPublicKeyCredentialRegistrationAndVerify({
               agent,
               publicKeyCredentialCreationOptions,
@@ -505,16 +505,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
           expect(registrationVerification.verified).toBe(true);
         });
 
-        test('Should save the WebAuthnCredential to the database', async () => {
-          const webAuthnCredential =
+        test('Should save the WebAuthnPublicKeyCredential to the database', async () => {
+          const webAuthnPublicKeyCredential =
             await prisma.webAuthnPublicKeyCredential.findUnique({
               where: {
-                id: webAuthnCredentialId,
+                id: webAuthnPublicKeyCredentialId,
               },
             });
 
-          expect(webAuthnCredential).toMatchObject({
-            id: webAuthnCredentialId,
+          expect(webAuthnPublicKeyCredential).toMatchObject({
+            id: webAuthnPublicKeyCredentialId,
             userId: USER_ID,
           });
         });
@@ -563,7 +563,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         'With authenticatorAttachment $authenticatorAttachment',
         ({ authenticatorAttachment }) => {
           let registrationVerification: VerifiedRegistrationResponse;
-          let webAuthnCredentialId: string;
+          let webAuthnPublicKeyCredentialId: string;
 
           const publicKeyCredentialCreationOptions = {
             ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -574,7 +574,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           } satisfies PublicKeyCredentialCreationOptions;
 
           beforeAll(async () => {
-            ({ registrationVerification, webAuthnCredentialId } =
+            ({ registrationVerification, webAuthnPublicKeyCredentialId } =
               await performPublicKeyCredentialRegistrationAndVerify({
                 agent,
                 publicKeyCredentialCreationOptions,
@@ -589,16 +589,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
             expect(registrationVerification.verified).toBe(true);
           });
 
-          test('Should save the WebAuthnCredential to the database', async () => {
-            const webAuthnCredential =
+          test('Should save the WebAuthnPublicKeyCredential to the database', async () => {
+            const webAuthnPublicKeyCredential =
               await prisma.webAuthnPublicKeyCredential.findUnique({
                 where: {
-                  id: webAuthnCredentialId,
+                  id: webAuthnPublicKeyCredentialId,
                 },
               });
 
-            expect(webAuthnCredential).toMatchObject({
-              id: webAuthnCredentialId,
+            expect(webAuthnPublicKeyCredential).toMatchObject({
+              id: webAuthnPublicKeyCredentialId,
               userId: USER_ID,
             });
           });
@@ -650,7 +650,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         },
       ])('With residentKey $residentKey', ({ residentKey }) => {
         let registrationVerification: VerifiedRegistrationResponse;
-        let webAuthnCredentialId: string;
+        let webAuthnPublicKeyCredentialId: string;
 
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -661,7 +661,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         } satisfies PublicKeyCredentialCreationOptions;
 
         beforeAll(async () => {
-          ({ registrationVerification, webAuthnCredentialId } =
+          ({ registrationVerification, webAuthnPublicKeyCredentialId } =
             await performPublicKeyCredentialRegistrationAndVerify({
               agent,
               publicKeyCredentialCreationOptions,
@@ -676,16 +676,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
           expect(registrationVerification.verified).toBe(true);
         });
 
-        test('Should save the WebAuthnCredential to the database', async () => {
-          const webAuthnCredential =
+        test('Should save the WebAuthnPublicKeyCredential to the database', async () => {
+          const webAuthnPublicKeyCredential =
             await prisma.webAuthnPublicKeyCredential.findUnique({
               where: {
-                id: webAuthnCredentialId,
+                id: webAuthnPublicKeyCredentialId,
               },
             });
 
-          expect(webAuthnCredential).toMatchObject({
-            id: webAuthnCredentialId,
+          expect(webAuthnPublicKeyCredential).toMatchObject({
+            id: webAuthnPublicKeyCredentialId,
             userId: USER_ID,
           });
         });
@@ -733,7 +733,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         'With requireResidentKey $requireResidentKey',
         ({ requireResidentKey }) => {
           let registrationVerification: VerifiedRegistrationResponse;
-          let webAuthnCredentialId: string;
+          let webAuthnPublicKeyCredentialId: string;
 
           const publicKeyCredentialCreationOptions = {
             ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -744,7 +744,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           } satisfies PublicKeyCredentialCreationOptions;
 
           beforeAll(async () => {
-            ({ registrationVerification, webAuthnCredentialId } =
+            ({ registrationVerification, webAuthnPublicKeyCredentialId } =
               await performPublicKeyCredentialRegistrationAndVerify({
                 agent,
                 publicKeyCredentialCreationOptions,
@@ -759,16 +759,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
             expect(registrationVerification.verified).toBe(true);
           });
 
-          test('Should save the WebAuthnCredential to the database', async () => {
-            const webAuthnCredential =
+          test('Should save the WebAuthnPublicKeyCredential to the database', async () => {
+            const webAuthnPublicKeyCredential =
               await prisma.webAuthnPublicKeyCredential.findUnique({
                 where: {
-                  id: webAuthnCredentialId,
+                  id: webAuthnPublicKeyCredentialId,
                 },
               });
 
-            expect(webAuthnCredential).toMatchObject({
-              id: webAuthnCredentialId,
+            expect(webAuthnPublicKeyCredential).toMatchObject({
+              id: webAuthnPublicKeyCredentialId,
               userId: USER_ID,
             });
           });
@@ -817,7 +817,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         } satisfies PublicKeyCredentialCreationOptions;
 
-        const { registrationVerification, webAuthnCredentialId } =
+        const { registrationVerification, webAuthnPublicKeyCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
             agent,
             publicKeyCredentialCreationOptions,
@@ -825,15 +825,15 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         expect(registrationVerification.verified).toBe(true);
 
-        const webAuthnCredential =
+        const webAuthnPublicKeyCredential =
           await prisma.webAuthnPublicKeyCredential.findUnique({
             where: {
-              id: webAuthnCredentialId,
+              id: webAuthnPublicKeyCredentialId,
             },
           });
 
-        expect(webAuthnCredential).toMatchObject({
-          id: webAuthnCredentialId,
+        expect(webAuthnPublicKeyCredential).toMatchObject({
+          id: webAuthnPublicKeyCredentialId,
           userId: USER_ID,
         });
       });
@@ -845,7 +845,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           authenticatorSelection: {},
         } satisfies PublicKeyCredentialCreationOptions;
 
-        const { registrationVerification, webAuthnCredentialId } =
+        const { registrationVerification, webAuthnPublicKeyCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
             agent,
             publicKeyCredentialCreationOptions,
@@ -853,15 +853,15 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
         expect(registrationVerification.verified).toBe(true);
 
-        const webAuthnCredential =
+        const webAuthnPublicKeyCredential =
           await prisma.webAuthnPublicKeyCredential.findUnique({
             where: {
-              id: webAuthnCredentialId,
+              id: webAuthnPublicKeyCredentialId,
             },
           });
 
-        expect(webAuthnCredential).toMatchObject({
-          id: webAuthnCredentialId,
+        expect(webAuthnPublicKeyCredential).toMatchObject({
+          id: webAuthnPublicKeyCredentialId,
           userId: USER_ID,
         });
       });
@@ -964,7 +964,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       },
     ])('With $name', ({ pubKeyCredParams }) => {
       let registrationVerification: VerifiedRegistrationResponse;
-      let webAuthnCredentialId: string;
+      let webAuthnPublicKeyCredentialId: string;
 
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -973,7 +973,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       } satisfies PublicKeyCredentialCreationOptions;
 
       beforeAll(async () => {
-        ({ registrationVerification, webAuthnCredentialId } =
+        ({ registrationVerification, webAuthnPublicKeyCredentialId } =
           await performPublicKeyCredentialRegistrationAndVerify({
             agent,
             publicKeyCredentialCreationOptions,
@@ -988,16 +988,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
         expect(registrationVerification.verified).toBe(true);
       });
 
-      test('Should save the WebAuthnCredential to the database', async () => {
-        const webAuthnCredential =
+      test('Should save the WebAuthnPublicKeyCredential to the database', async () => {
+        const webAuthnPublicKeyCredential =
           await prisma.webAuthnPublicKeyCredential.findUnique({
             where: {
-              id: webAuthnCredentialId,
+              id: webAuthnPublicKeyCredentialId,
             },
           });
 
-        expect(webAuthnCredential).toMatchObject({
-          id: webAuthnCredentialId,
+        expect(webAuthnPublicKeyCredential).toMatchObject({
+          id: webAuthnPublicKeyCredentialId,
           userId: USER_ID,
         });
       });
@@ -1012,7 +1012,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         expect(jwk).toMatchObject(
           keyProvider
             .getKeyPairStore()
-            [webAuthnCredentialId].publicKey.export({ format: 'jwk' }),
+            [webAuthnPublicKeyCredentialId].publicKey.export({ format: 'jwk' }),
         );
       });
     });
@@ -1686,7 +1686,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         },
       } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification, webAuthnCredentialId } =
+      const { registrationVerification, webAuthnPublicKeyCredentialId } =
         await performPublicKeyCredentialRegistrationAndVerify({
           agent,
           publicKeyCredentialCreationOptions,
@@ -1695,15 +1695,15 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(registrationVerification.verified).toBe(true);
 
       // Verify the credential was created and stored with the effective domain as rpId
-      const webAuthnCredential =
+      const webAuthnPublicKeyCredential =
         await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
-            id: webAuthnCredentialId,
+            id: webAuthnPublicKeyCredentialId,
           },
         });
 
-      expect(webAuthnCredential).toBeDefined();
-      expect(webAuthnCredential?.rpId).toBe(RP_ID); // Should use effective domain from origin
+      expect(webAuthnPublicKeyCredential).toBeDefined();
+      expect(webAuthnPublicKeyCredential?.rpId).toBe(RP_ID); // Should use effective domain from origin
     });
 
     test('Should work with missing RP id (defaults to origin effective domain)', async () => {
@@ -1716,7 +1716,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         },
       } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification, webAuthnCredentialId } =
+      const { registrationVerification, webAuthnPublicKeyCredentialId } =
         await performPublicKeyCredentialRegistrationAndVerify({
           agent,
           publicKeyCredentialCreationOptions,
@@ -1725,15 +1725,15 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(registrationVerification.verified).toBe(true);
 
       // Verify the credential was created and stored
-      const webAuthnCredential =
+      const webAuthnPublicKeyCredential =
         await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
-            id: webAuthnCredentialId,
+            id: webAuthnPublicKeyCredentialId,
           },
         });
 
-      expect(webAuthnCredential).toMatchObject({
-        id: webAuthnCredentialId,
+      expect(webAuthnPublicKeyCredential).toMatchObject({
+        id: webAuthnPublicKeyCredentialId,
         userId: USER_ID,
         // The rpId should default to the origin's effective domain (example.com)
         rpId: new URL(RP_ORIGIN).hostname,
@@ -2167,19 +2167,19 @@ describe('VirtualAuthenticator.createCredential()', () => {
       const secondCredentialId = UUIDMapper.bytesToUUID(secondCredential.rawId);
 
       const firstExists =
-        await webAuthnCredentialRepository.findAllByRpIdAndCredentialIds({
+        await webAuthnPublicKeyCredentialRepository.findAllByRpIdAndCredentialIds({
           rpId: RP_ID,
           credentialIds: [firstCredentialId],
         });
 
       const secondExists =
-        await webAuthnCredentialRepository.findAllByRpIdAndCredentialIds({
+        await webAuthnPublicKeyCredentialRepository.findAllByRpIdAndCredentialIds({
           rpId: RP_ID,
           credentialIds: [secondCredentialId],
         });
 
       const bothExist =
-        await webAuthnCredentialRepository.findAllByRpIdAndCredentialIds({
+        await webAuthnPublicKeyCredentialRepository.findAllByRpIdAndCredentialIds({
           rpId: RP_ID,
           credentialIds: [firstCredentialId, secondCredentialId],
         });

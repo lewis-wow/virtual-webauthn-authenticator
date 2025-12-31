@@ -25,14 +25,14 @@ export class MockKeyProvider implements IKeyProvider {
     this.keyVaultKeyIdGenerator = opts.keyVaultKeyIdGenerator;
   }
 
-  async generateKeyPair(opts: { webAuthnCredentialId: string }) {
-    const { webAuthnCredentialId } = opts;
+  async generateKeyPair(opts: { webAuthnPublicKeyCredentialId: string }) {
+    const { webAuthnPublicKeyCredentialId } = opts;
 
     const keyPair = generateKeyPairSync('ec', {
       namedCurve: 'P-256',
     });
 
-    this.keyPairStore[webAuthnCredentialId] = keyPair;
+    this.keyPairStore[webAuthnPublicKeyCredentialId] = keyPair;
 
     const credentialPublicKey = new JsonWebKey(
       keyPair.publicKey.export({ format: 'jwk' }),
@@ -59,11 +59,11 @@ export class MockKeyProvider implements IKeyProvider {
 
   async sign(opts: {
     data: Uint8Array;
-    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
+    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
-    const { data, webAuthnCredential } = opts;
+    const { data, webAuthnPublicKeyCredential } = opts;
 
-    const keyPair = this.keyPairStore[webAuthnCredential.id]!;
+    const keyPair = this.keyPairStore[webAuthnPublicKeyCredential.id]!;
 
     const signature = createSign('sha256')
       .update(data)

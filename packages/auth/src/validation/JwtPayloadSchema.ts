@@ -24,7 +24,7 @@ export const JwtPayloadSchema = Schema.extend(
       Schema.Struct({
         tokenType: Schema.Literal(TokenType.API_KEY),
         apiKeyId: ApiKeySchema.fields.id,
-        createdWebAuthnCredentialCount: Schema.Number,
+        createdWebAuthnPublicKeyCredentialCount: Schema.Number,
       }),
     ),
   ),

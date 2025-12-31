@@ -57,11 +57,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
   const prisma = new PrismaClient();
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
-  const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
+  const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
   const authenticator = new VirtualAuthenticator({
-    webAuthnRepository: webAuthnCredentialRepository,
+    webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
   });
   const agent = new VirtualAuthenticatorAgent({ authenticator });
@@ -74,8 +74,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   };
 
   let registrationInfo: {
-    webAuthnCredentialId: string;
-    webAuthnCredentialIdBytes: Uint8Array;
+    webAuthnPublicKeyCredentialId: string;
+    webAuthnPublicKeyCredentialIdBytes: Uint8Array;
     publicKey: Uint8Array<ArrayBuffer>;
     counter: number;
   };
@@ -129,8 +129,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
     registrationInfo = {
       publicKey:
         registrationVerification.registrationInfo!.credential.publicKey,
-      webAuthnCredentialId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
-      webAuthnCredentialIdBytes: publicKeyCredential.rawId,
+      webAuthnPublicKeyCredentialId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+      webAuthnPublicKeyCredentialIdBytes: publicKeyCredential.rawId,
       counter: registrationVerification.registrationInfo!.credential.counter,
     };
   });
@@ -141,8 +141,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   test('should produce a verifiable assertion', async () => {
     const {
-      webAuthnCredentialIdBytes,
-      webAuthnCredentialId,
+      webAuthnPublicKeyCredentialIdBytes,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
     } = registrationInfo;
@@ -153,7 +153,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       },
@@ -162,7 +162,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await performPublicKeyCredentialRequestAndVerify({
       agent,
       publicKeyCredentialRequestOptions,
-      webAuthnCredentialId,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
     });
@@ -174,7 +174,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
    * use discoverable credentials associated with the RP ID
    */
   test('should produce a verifiable assertion without allowCredentials', async () => {
-    const { webAuthnCredentialId, publicKey, counter } = registrationInfo;
+    const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
 
     const publicKeyCredentialRequestOptions = set(
       PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
@@ -186,7 +186,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await performPublicKeyCredentialRequestAndVerify({
       agent,
       publicKeyCredentialRequestOptions,
-      webAuthnCredentialId,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
     });
@@ -199,8 +199,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   test('should produce a verifiable assertion with redundant allowCredentials', async () => {
     const {
-      webAuthnCredentialId,
-      webAuthnCredentialIdBytes,
+      webAuthnPublicKeyCredentialId,
+      webAuthnPublicKeyCredentialIdBytes,
       publicKey,
       counter,
     } = registrationInfo;
@@ -212,7 +212,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           { id: generateRandomUUIDBytes(), type: 'public-key' },
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       },
@@ -221,7 +221,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await performPublicKeyCredentialRequestAndVerify({
       agent,
       publicKeyCredentialRequestOptions,
-      webAuthnCredentialId,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
     });
@@ -234,8 +234,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   test('should fail when RP ID differ from Origin', async () => {
     const {
-      webAuthnCredentialId,
-      webAuthnCredentialIdBytes,
+      webAuthnPublicKeyCredentialId,
+      webAuthnPublicKeyCredentialIdBytes,
       publicKey,
       counter,
     } = registrationInfo;
@@ -249,7 +249,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       },
@@ -260,7 +260,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
         }),
@@ -269,8 +269,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
   test('should fail with different user ID', async () => {
     const {
-      webAuthnCredentialIdBytes,
-      webAuthnCredentialId,
+      webAuthnPublicKeyCredentialIdBytes,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
     } = registrationInfo;
@@ -283,7 +283,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       },
@@ -294,7 +294,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
           userId,
@@ -303,7 +303,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   });
 
   test('should fail with wrong allowCredentials', async () => {
-    const { webAuthnCredentialId, publicKey, counter } = registrationInfo;
+    const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
 
     const wrongCredentialId = generateRandomUUIDBytes();
     const publicKeyCredentialRequestOptions = set(
@@ -318,7 +318,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
         }),
@@ -352,8 +352,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
     ])('With userVerification $userVerification', ({ userVerification }) => {
       test('should produce a verifiable assertion', async () => {
         const {
-          webAuthnCredentialIdBytes,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialIdBytes,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
         } = registrationInfo;
@@ -364,7 +364,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             allowCredentials: [
               {
                 type: PublicKeyCredentialType.PUBLIC_KEY,
-                id: webAuthnCredentialIdBytes,
+                id: webAuthnPublicKeyCredentialIdBytes,
               },
             ],
             userVerification,
@@ -375,7 +375,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
             requireUserVerification:
@@ -393,8 +393,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should throw type mismatch when userVerification is not in enum', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -405,7 +405,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           userVerification:
@@ -418,7 +418,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -438,8 +438,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('Step 10: AuthenticatorData Flags', () => {
     test('should set UV flag when userVerification is required', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -450,7 +450,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           userVerification: UserVerificationRequirement.REQUIRED,
@@ -461,7 +461,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
           requireUserVerification: true,
@@ -477,8 +477,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should set UP flag for all assertions', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -489,7 +489,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           userVerification: UserVerificationRequirement.DISCOURAGED,
@@ -500,7 +500,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
           requireUserVerification: false,
@@ -513,8 +513,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should not set AT flag in assertion (only in registration)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -525,7 +525,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -535,7 +535,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
         });
@@ -564,8 +564,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
       { timeout: 300000 },
     ])('should work with timeout $timeout', async ({ timeout }) => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -576,7 +576,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           timeout,
@@ -586,7 +586,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -604,7 +604,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('PublicKeyCredentialRequestOptions.allowCredentials variations', () => {
     test('should work with allowCredentials as empty array', async () => {
-      const { webAuthnCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
 
       const publicKeyCredentialRequestOptions = set(
         PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
@@ -616,7 +616,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -624,8 +624,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should work with multiple allowCredentials including the correct one', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -638,7 +638,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             { id: generateRandomUUIDBytes(), type: 'public-key' },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
             { id: generateRandomUUIDBytes(), type: 'public-key' },
           ],
@@ -648,7 +648,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -667,8 +667,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('PublicKeyCredentialRequestOptions.rpId', () => {
     test('should work with explicit rpId matching the origin', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -679,7 +679,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           rpId: RP_ID,
@@ -689,7 +689,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -697,8 +697,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should throw type mismatch when rpId is not a string', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -709,7 +709,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           rpId: 12345 as unknown as string,
@@ -721,7 +721,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -740,8 +740,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('PublicKeyCredentialRequestOptions.challenge', () => {
     test('should work with challenge exactly 16 bytes (minimum recommended)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -753,7 +753,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       };
@@ -761,7 +761,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
@@ -770,8 +770,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should fail with challenge less than 16 bytes (spec recommends at least 16)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -784,7 +784,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           challenge,
@@ -796,7 +796,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -805,8 +805,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should fail with empty challenge (0 bytes)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -819,7 +819,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           challenge,
@@ -831,7 +831,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -840,8 +840,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should work with very large challenge (1024 bytes)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -853,7 +853,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       };
@@ -861,7 +861,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
@@ -870,8 +870,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should fail when challenge is not Uint8Array', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -882,7 +882,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           challenge: 'not-a-uint8array' as unknown as Uint8Array,
@@ -894,7 +894,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -910,8 +910,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      */
     test('should create valid signature with minimum challenge size (16 bytes)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -923,7 +923,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       };
@@ -932,7 +932,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
           expectedChallenge: Buffer.from(minChallenge).toString('base64url'),
@@ -944,8 +944,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should create valid signature with large challenge size (512 bytes)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -957,7 +957,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         allowCredentials: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
       };
@@ -966,7 +966,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         await performPublicKeyCredentialRequestAndVerify({
           agent,
           publicKeyCredentialRequestOptions,
-          webAuthnCredentialId,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
           expectedChallenge: Buffer.from(largeChallenge).toString('base64url'),
@@ -988,8 +988,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('PublicKeyCredentialRequestOptions.extensions', () => {
     test('should work with undefined extensions', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1000,7 +1000,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: undefined,
@@ -1010,7 +1010,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1018,8 +1018,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should work with empty extensions object', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1030,7 +1030,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {},
@@ -1040,7 +1040,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1052,8 +1052,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      */
     test('should work with appid extension', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1064,7 +1064,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {
@@ -1076,7 +1076,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1088,8 +1088,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      */
     test('should work with hmac-secret extension', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1100,7 +1100,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {
@@ -1115,7 +1115,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1127,8 +1127,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      */
     test('should work with largeBlob extension (read)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1139,7 +1139,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {
@@ -1153,7 +1153,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1161,8 +1161,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should work with largeBlob extension (write)', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1173,7 +1173,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {
@@ -1187,7 +1187,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1199,8 +1199,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      */
     test('should ignore unknown/unsupported extensions', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1211,7 +1211,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {
@@ -1225,7 +1225,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1233,8 +1233,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should work with multiple extensions combined', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1245,7 +1245,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           extensions: {
@@ -1261,7 +1261,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1282,7 +1282,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Optional fields: timeout, rpId, allowCredentials, userVerification, extensions
      */
     test('should work with minimal valid options (only required field)', async () => {
-      const { webAuthnCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
 
       const challenge = new Uint8Array(randomBytes(32));
 
@@ -1294,7 +1294,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
         requireUserVerification: false,
@@ -1311,8 +1311,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      */
     test('Should fail with malformed credential IDs in allowCredentials', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1328,7 +1328,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes, // Valid credential
+              id: webAuthnPublicKeyCredentialIdBytes, // Valid credential
             },
           ],
         },
@@ -1340,7 +1340,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -1352,7 +1352,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 3)
      */
     test('Should fail when allowCredentials contains only non-matching credential IDs', async () => {
-      const { webAuthnCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
 
       const publicKeyCredentialRequestOptions = set(
         PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
@@ -1377,7 +1377,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -1386,8 +1386,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should work with all fields at maximum complexity', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1409,7 +1409,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           },
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            id: webAuthnCredentialIdBytes,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
         userVerification: UserVerificationRequirement.REQUIRED,
@@ -1425,7 +1425,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
         expectedChallenge: Buffer.from(largeChallenge).toString('base64url'),
@@ -1433,7 +1433,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
 
     test('should fail with completely malformed options', async () => {
-      const { webAuthnCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
 
       const malformedOptions = {
         notValid: 'options',
@@ -1445,7 +1445,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             agent,
             publicKeyCredentialRequestOptions:
               malformedOptions as unknown as PublicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -1454,8 +1454,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should fail with null in required field', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1466,7 +1466,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           challenge: null as unknown as Uint8Array,
@@ -1478,7 +1478,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -1487,8 +1487,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should fail with missing challenge', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1499,7 +1499,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
           challenge: undefined as unknown as Uint8Array,
@@ -1511,7 +1511,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
           }),
@@ -1530,8 +1530,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('Signature Counter Verification', () => {
     test('should increment counter with each assertion', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1542,7 +1542,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -1552,7 +1552,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       const firstResult = await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1565,7 +1565,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       const secondResult = await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter: firstCounter,
       });
@@ -1578,7 +1578,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       const thirdResult = await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter: secondCounter,
       });
@@ -1598,8 +1598,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('meta.userId', () => {
     test('should throw error when userId is invalid UUID', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1610,7 +1610,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -1621,7 +1621,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
             userId: 'INVALID_USER_ID',
@@ -1631,8 +1631,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should throw error when userId is null', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1643,7 +1643,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -1654,7 +1654,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
             userId: null as unknown as string,
@@ -1664,8 +1664,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should throw error when userId is empty string', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1676,7 +1676,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -1687,7 +1687,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
             userId: '',
@@ -1705,8 +1705,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('meta.origin', () => {
     test('should work with valid origin matching RP ID', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1717,7 +1717,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -1726,7 +1726,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await performPublicKeyCredentialRequestAndVerify({
         agent,
         publicKeyCredentialRequestOptions,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       });
@@ -1734,8 +1734,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     test('should fail verification with mismatched origin', async () => {
       const {
-        webAuthnCredentialIdBytes,
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
       } = registrationInfo;
@@ -1746,7 +1746,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: webAuthnCredentialIdBytes,
+              id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
         },
@@ -1759,7 +1759,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           await performPublicKeyCredentialRequestAndVerify({
             agent,
             publicKeyCredentialRequestOptions,
-            webAuthnCredentialId,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
             origin: wrongOrigin,

@@ -17,7 +17,7 @@ export const ApiKeySchema = z
     permissions: z.array(PermissionSchema),
 
     metadata: z.object({
-      createdWebAuthnCredentialCount: z.int().nonnegative(),
+      createdWebAuthnPublicKeyCredentialCount: z.int().nonnegative(),
     }),
 
     // Internal fields

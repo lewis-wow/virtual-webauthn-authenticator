@@ -259,13 +259,13 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
    */
   private async _handleAttestationPacked(opts: {
-    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
+    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
     data: {
       clientDataHash: Uint8Array;
       authData: Uint8Array;
     };
   }): Promise<Map<string, Uint8Array | number>> {
-    const { webAuthnCredential, data } = opts;
+    const { webAuthnPublicKeyCredential, data } = opts;
 
     const dataToSign = this._createDataToSign(data);
 
@@ -273,7 +273,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     const { signature, alg } = await this.keyProvider
       .sign({
         data: dataToSign,
-        webAuthnCredential,
+        webAuthnPublicKeyCredential,
       })
       .catch((error) => {
         throw new SignatureFailed({
@@ -323,13 +323,13 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-generating-an-attestation-object
    */
   private async _generateAttestationObject(opts: {
-    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
+    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
 
     attestationFormat: Fmt;
     authData: Uint8Array;
     hash: Uint8Array;
   }): Promise<Map<string, unknown>> {
-    const { webAuthnCredential, attestationFormat, authData, hash } = opts;
+    const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } = opts;
 
     let attStmt: Map<string, Uint8Array | number>;
 
@@ -341,7 +341,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       case Fmt.PACKED:
         // For "packed" attestation, create self-attestation with signature
         attStmt = await this._handleAttestationPacked({
-          webAuthnCredential,
+          webAuthnPublicKeyCredential,
           data: { clientDataHash: hash, authData },
         });
         break;
@@ -471,12 +471,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     // a new credential object
     // Step 7.1: Let (publicKey, privateKey) be a new pair of cryptographic
     // keys using the FIRST supported algorithm
-    const webAuthnCredentialId = randomUUID();
-    const rawCredentialID = UUIDMapper.UUIDtoBytes(webAuthnCredentialId);
+    const webAuthnPublicKeyCredentialId = randomUUID();
+    const rawCredentialID = UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialId);
 
-    const webAuthnCredentialPublicKey = await this.keyProvider
+    const webAuthnPublicKeyCredentialPublicKey = await this.keyProvider
       .generateKeyPair({
-        webAuthnCredentialId,
+        webAuthnPublicKeyCredentialId,
         pubKeyCredParams: selectedCredTypeAndAlg,
       })
       .catch((error) => {
@@ -484,7 +484,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       });
 
     assertSchema(
-      webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
+      webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
       z.enum(WebAuthnPublicKeyCredentialKeyMetaType),
     );
 
@@ -508,9 +508,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Let credentialId be the result of serializing and encrypting credentialSource.
     // NOTE: In this implementation, we always store credentials in the
     // repository (backend database).
-    const webAuthnCredentialWithMeta = await match({
+    const webAuthnPublicKeyCredentialWithMeta = await match({
       webAuthnPublicKeyCredentialKeyMetaType:
-        webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
+        webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
     })
       .returnType<Promise<WebAuthnPublicKeyCredentialWithMeta>>()
       .with(
@@ -519,18 +519,18 @@ export class VirtualAuthenticator implements IAuthenticator {
             WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
         },
         async () => {
-          const webAuthnCredentialWithKeyVaultMeta =
-            await this.webAuthnRepository.createKeyVaultWebAuthnCredential({
-              id: webAuthnCredentialId,
+          const webAuthnPublicKeyCredentialWithKeyVaultMeta =
+            await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential({
+              id: webAuthnPublicKeyCredentialId,
               webAuthnPublicKeyCredentialKeyVaultKeyMeta:
-                webAuthnCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
-              COSEPublicKey: webAuthnCredentialPublicKey.COSEPublicKey,
+                webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
+              COSEPublicKey: webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
               rpId: rpEntity.id,
               userId: userHandle,
               apiKeyId: context.apiKeyId,
             });
 
-          return webAuthnCredentialWithKeyVaultMeta;
+          return webAuthnPublicKeyCredentialWithKeyVaultMeta;
         },
       )
       .exhaustive();
@@ -565,7 +565,7 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     const attestedCredentialData = await this._createAttestedCredentialData({
       credentialID: rawCredentialID,
-      COSEPublicKey: webAuthnCredentialWithMeta.COSEPublicKey,
+      COSEPublicKey: webAuthnPublicKeyCredentialWithMeta.COSEPublicKey,
     });
 
     // Step 13: Let authenticatorData be the byte array specified in §6.1
@@ -573,7 +573,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // processedExtensions (if any).
     const authenticatorData = await this._createAuthenticatorData({
       rpId: rpEntity.id,
-      counter: webAuthnCredentialWithMeta.counter,
+      counter: webAuthnPublicKeyCredentialWithMeta.counter,
       attestedCredentialData,
       requireUserVerification,
       // Virtual authenticator is always capable of user verification and user presence
@@ -584,7 +584,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 14: Create an attestation object for the new credential using
     // the procedure specified in §6.5.4 Generating an Attestation Object.
     const attestationObject = await this._generateAttestationObject({
-      webAuthnCredential: webAuthnCredentialWithMeta,
+      webAuthnPublicKeyCredential: webAuthnPublicKeyCredentialWithMeta,
 
       attestationFormat,
       hash,
@@ -679,7 +679,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     //   The counter is incremented by 1 for each assertion operation.
     //
     // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (steps 3-7, 9)
-    const webAuthnCredentialWithMeta =
+    const webAuthnPublicKeyCredentialWithMeta =
       await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
         {
           userId: meta.userId,
@@ -706,7 +706,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       // excluding attestedCredentialData
       attestedCredentialData: undefined,
       rpId,
-      counter: webAuthnCredentialWithMeta.counter,
+      counter: webAuthnPublicKeyCredentialWithMeta.counter,
       requireUserVerification,
       // Virtual authenticator is always capable of user verification and user presence
       userVerificationEnabled: true,
@@ -725,7 +725,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     const { signature } = await this.keyProvider
       .sign({
         data: dataToSign,
-        webAuthnCredential: webAuthnCredentialWithMeta,
+        webAuthnPublicKeyCredential: webAuthnPublicKeyCredentialWithMeta,
       })
       .catch((error) => {
         // Step 12: If any error occurred while generating the assertion signature:
@@ -742,9 +742,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // selectedCredential.userHandle.
     // NOTE: If, within allowCredentialDescriptorList, the client supplied exactly one credential and it was successfully employed, then its credential ID is not returned since the client already knows it.
 
-    const credentialId = UUIDMapper.UUIDtoBytes(webAuthnCredentialWithMeta.id);
+    const credentialId = UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialWithMeta.id);
     const userHandle = UUIDMapper.UUIDtoBytes(
-      webAuthnCredentialWithMeta.userId,
+      webAuthnPublicKeyCredentialWithMeta.userId,
     );
 
     return {

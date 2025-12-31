@@ -4,5 +4,5 @@ import type { WebAuthnPublicKeyCredentialWithMeta } from './WebAuthnPublicKeyCre
 
 export type SignFunc = (args: {
   data: Uint8Array;
-  webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
+  webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
 }) => Promise<{ signature: Uint8Array; alg: COSEKeyAlgorithm }>;

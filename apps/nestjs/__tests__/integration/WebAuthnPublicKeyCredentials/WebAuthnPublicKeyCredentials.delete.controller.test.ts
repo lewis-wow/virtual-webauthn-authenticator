@@ -7,8 +7,8 @@ import {
 } from '@repo/auth/__tests__/helpers';
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
-  upsertTestingWebAuthnCredential,
-  WEBAUTHN_CREDENTIAL_ID,
+  upsertTestingWebAuthnPublicKeyCredential,
+  WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
@@ -24,7 +24,7 @@ import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
 
-const API_PATH = `/api/webauthn-public-key-credentials/${WEBAUTHN_CREDENTIAL_ID}`;
+const API_PATH = `/api/webauthn-public-key-credentials/${WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID}`;
 
 const prisma = PrismaClientExtended.createInstance();
 
@@ -74,7 +74,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
     };
 
     await upsertTestingUser({ prisma });
-    await upsertTestingWebAuthnCredential({ prisma });
+    await upsertTestingWebAuthnPublicKeyCredential({ prisma });
 
     await app.init();
   });
@@ -145,14 +145,14 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
     });
 
     test('Should work as authenticated user', async () => {
-      const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
+      const listWebAuthnPublicKeyCredentialsResponse = await request(app.getHttpServer())
         .delete(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(listWebAuthnCredentialsResponse.body).toMatchInlineSnapshot(`
+      expect(listWebAuthnPublicKeyCredentialsResponse.body).toMatchInlineSnapshot(`
         {
           "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
           "counter": 0,
@@ -178,7 +178,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
       const webAuthnPublicKeyCredential =
         await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
-            id: WEBAUTHN_CREDENTIAL_ID,
+            id: WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
           },
         });
 

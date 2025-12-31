@@ -1,3 +1,3 @@
 export * from './MockKeyProvider';
 export * from './consts';
-export * from './upsertTestingWebAuthnCredential';
+export * from './upsertTestingWebAuthnPublicKeyCredential';

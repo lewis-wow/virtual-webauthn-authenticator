@@ -5,9 +5,9 @@ import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
-  DeleteWebAuthnCredentialResponseSchema,
-  GetWebAuthnCredentialResponseSchema,
-  ListWebAuthnCredentialsResponseSchema,
+  DeleteWebAuthnPublicKeyCredentialResponseSchema,
+  GetWebAuthnPublicKeyCredentialResponseSchema,
+  ListWebAuthnPublicKeyCredentialsResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { Forbidden } from '@repo/exception/http';
@@ -15,7 +15,7 @@ import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { Prisma, WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
-import { WebAuthnCredential } from '@repo/virtual-authenticator/zod-validation';
+import { WebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';
@@ -42,12 +42,12 @@ export class WebAuthnPublicKeyCredentialsController {
       async ({ query }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
+        if (!permissions.includes(Permission['WebAuthnPublicKeyCredential.read'])) {
           throw new Forbidden();
         }
 
         const pagination = new Pagination(async ({ pagination }) => {
-          const webAuthnCredentials =
+          const webAuthnPublicKeyCredentials =
             await this.prisma.webAuthnPublicKeyCredential.findMany({
               where: {
                 userId: userId,
@@ -60,7 +60,7 @@ export class WebAuthnPublicKeyCredentialsController {
               ...pagination,
             });
 
-          return webAuthnCredentials as WebAuthnPublicKeyCredentialWithMeta[];
+          return webAuthnPublicKeyCredentials as WebAuthnPublicKeyCredentialWithMeta[];
         });
 
         const result = await pagination.fetch({
@@ -70,7 +70,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         return {
           status: 200,
-          body: ListWebAuthnCredentialsResponseSchema.encode(result),
+          body: ListWebAuthnPublicKeyCredentialsResponseSchema.encode(result),
         };
       },
     );
@@ -84,7 +84,7 @@ export class WebAuthnPublicKeyCredentialsController {
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['WebAuthnCredential.read'])) {
+        if (!permissions.includes(Permission['WebAuthnPublicKeyCredential.read'])) {
           throw new Forbidden();
         }
 
@@ -105,8 +105,8 @@ export class WebAuthnPublicKeyCredentialsController {
 
         return {
           status: 200,
-          body: GetWebAuthnCredentialResponseSchema.encode(
-            webAuthnPublicKeyCredential as WebAuthnCredential,
+          body: GetWebAuthnPublicKeyCredentialResponseSchema.encode(
+            webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential,
           ),
         };
       },
@@ -121,7 +121,7 @@ export class WebAuthnPublicKeyCredentialsController {
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['WebAuthnCredential.delete'])) {
+        if (!permissions.includes(Permission['WebAuthnPublicKeyCredential.delete'])) {
           throw new Forbidden();
         }
 
@@ -148,8 +148,8 @@ export class WebAuthnPublicKeyCredentialsController {
           throw e;
         }
 
-        this.logger.debug('Removing WebAuthnCredential.', {
-          webAuthnCredential: webAuthnPublicKeyCredential,
+        this.logger.debug('Removing WebAuthnPublicKeyCredential.', {
+          webAuthnPublicKeyCredential: webAuthnPublicKeyCredential,
           userId: userId,
         });
 
@@ -167,7 +167,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         await this.activityLog.audit({
           action: LogAction.DELETE,
-          entity: LogEntity.WEBAUTHN_CREDENTIAL,
+          entity: LogEntity.WEBAUTHN_PUBLIC_KEY_CREDENTIAL,
 
           apiKeyId:
             jwtPayload.tokenType === TokenType.API_KEY
@@ -178,8 +178,8 @@ export class WebAuthnPublicKeyCredentialsController {
 
         return {
           status: 200,
-          body: DeleteWebAuthnCredentialResponseSchema.encode(
-            webAuthnPublicKeyCredential as WebAuthnCredential,
+          body: DeleteWebAuthnPublicKeyCredentialResponseSchema.encode(
+            webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential,
           ),
         };
       },

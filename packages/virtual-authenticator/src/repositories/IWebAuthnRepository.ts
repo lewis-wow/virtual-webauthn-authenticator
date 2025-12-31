@@ -20,7 +20,7 @@ export interface IWebAuthnRepository {
     credentialIds: string[];
   }): Promise<WebAuthnPublicKeyCredentialWithMeta[]>;
 
-  createKeyVaultWebAuthnCredential(
+  createKeyVaultWebAuthnPublicKeyCredential(
     data: CreateKeyVaultDataArgs,
   ): Promise<WebAuthnPublicKeyCredentialWithMeta>;
 

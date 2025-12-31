@@ -11,7 +11,7 @@ import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/zod-vali
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
-import { UnexpectedWebAuthnCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnCredentialKeyMetaType';
+import { UnexpectedWebAuthnPublicKeyCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';
 
 export type KeyPayload = {
   jwk: JsonWebKey;
@@ -105,16 +105,16 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
   }
 
   async generateKeyPair(opts: {
-    webAuthnCredentialId: string;
+    webAuthnPublicKeyCredentialId: string;
     pubKeyCredParams: PubKeyCredParamStrict;
   }) {
-    const { webAuthnCredentialId, pubKeyCredParams } = opts;
+    const { webAuthnPublicKeyCredentialId, pubKeyCredParams } = opts;
 
     const {
       jwk,
       meta: { keyVaultKey },
     } = await this._createKey({
-      keyName: webAuthnCredentialId,
+      keyName: webAuthnPublicKeyCredentialId,
       supportedPubKeyCredParam: pubKeyCredParams,
     });
 
@@ -134,22 +134,22 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
   async sign(opts: {
     data: Uint8Array;
-    webAuthnCredential: WebAuthnPublicKeyCredentialWithMeta;
+    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
-    const { data, webAuthnCredential } = opts;
+    const { data, webAuthnPublicKeyCredential } = opts;
 
     if (
-      webAuthnCredential.webAuthnPublicKeyCredentialKeyMetaType !==
+      webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyMetaType !==
       WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT
     ) {
-      throw new UnexpectedWebAuthnCredentialKeyMetaType();
+      throw new UnexpectedWebAuthnPublicKeyCredentialKeyMetaType();
     }
 
     const {
       meta: { keyVaultKey },
     } = await this._getKey({
       keyName:
-        webAuthnCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta
+        webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta
           .keyVaultKeyName,
     });
 

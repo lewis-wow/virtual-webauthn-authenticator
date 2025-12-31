@@ -1,16 +1,16 @@
 import type { PickDeep } from 'type-fest';
 
 import type { PubKeyCredParamStrict } from '../zod-validation/PubKeyCredParamSchema';
-import type { WebAuthnCredentialMeta } from './WebAuthnPublicKeyCredentialMeta';
+import type { WebAuthnPublicKeyCredentialMeta } from './WebAuthnPublicKeyCredentialMeta';
 
 export type GenerateKeyPairFunc = (args: {
-  webAuthnCredentialId: string;
+  webAuthnPublicKeyCredentialId: string;
   pubKeyCredParams: PubKeyCredParamStrict;
 }) => Promise<
   {
     COSEPublicKey: Uint8Array;
   } & PickDeep<
-    WebAuthnCredentialMeta,
+    WebAuthnPublicKeyCredentialMeta,
     | 'webAuthnPublicKeyCredentialKeyMetaType'
     | 'webAuthnPublicKeyCredentialKeyVaultKeyMeta.keyVaultKeyId'
     | 'webAuthnPublicKeyCredentialKeyVaultKeyMeta.keyVaultKeyName'

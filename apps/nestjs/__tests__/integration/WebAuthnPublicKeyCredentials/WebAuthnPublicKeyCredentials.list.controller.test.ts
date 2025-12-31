@@ -6,7 +6,7 @@ import {
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
-import { upsertTestingWebAuthnCredential } from '@repo/virtual-authenticator/__tests__/helpers';
+import { upsertTestingWebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
@@ -71,7 +71,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
     };
 
     await upsertTestingUser({ prisma });
-    await upsertTestingWebAuthnCredential({ prisma });
+    await upsertTestingWebAuthnPublicKeyCredential({ prisma });
 
     await app.init();
   });
@@ -124,7 +124,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         userId: WRONG_UUID,
       });
 
-      const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
+      const listWebAuthnPublicKeyCredentialsResponse = await request(app.getHttpServer())
         .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
@@ -132,7 +132,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         // The API server do not check if the user exists but response should be empty
         .expect(200);
 
-      expect(listWebAuthnCredentialsResponse.body).toMatchInlineSnapshot(`
+      expect(listWebAuthnPublicKeyCredentialsResponse.body).toMatchInlineSnapshot(`
         {
           "data": [],
           "meta": {

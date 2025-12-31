@@ -31,7 +31,7 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
 export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
   publicKeyCredential: PublicKeyCredential;
   registrationVerification: VerifiedRegistrationResponse;
-  webAuthnCredentialId: string;
+  webAuthnPublicKeyCredentialId: string;
 };
 
 export const performPublicKeyCredentialRegistrationAndVerify = async (
@@ -89,13 +89,13 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     requireUserPresence: requireUserPresence ?? true,
   });
 
-  const webAuthnCredentialId = UUIDMapper.bytesToUUID(
+  const webAuthnPublicKeyCredentialId = UUIDMapper.bytesToUUID(
     publicKeyCredential.rawId,
   );
 
   return {
     publicKeyCredential,
     registrationVerification,
-    webAuthnCredentialId,
+    webAuthnPublicKeyCredentialId,
   };
 };

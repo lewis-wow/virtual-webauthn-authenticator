@@ -7,8 +7,8 @@ import {
 } from '@repo/auth/__tests__/helpers';
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
-  upsertTestingWebAuthnCredential,
-  WEBAUTHN_CREDENTIAL_ID,
+  upsertTestingWebAuthnPublicKeyCredential,
+  WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
@@ -24,7 +24,7 @@ import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
 
-const API_PATH = `/api/webauthn-public-key-credentials/${WEBAUTHN_CREDENTIAL_ID}`;
+const API_PATH = `/api/webauthn-public-key-credentials/${WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID}`;
 
 const prisma = PrismaClientExtended.createInstance();
 
@@ -74,7 +74,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
     };
 
     await upsertTestingUser({ prisma });
-    await upsertTestingWebAuthnCredential({ prisma });
+    await upsertTestingWebAuthnPublicKeyCredential({ prisma });
 
     await app.init();
   });

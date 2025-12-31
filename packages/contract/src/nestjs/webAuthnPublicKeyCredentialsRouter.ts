@@ -1,17 +1,17 @@
 import { initContract } from '@ts-rest/core';
 
 import {
-  DeleteWebAuthnCredentialParamsSchema,
-  DeleteWebAuthnCredentialResponseSchema,
-} from '../dto/webauthn-credentials/DeleteWebAuthnCredential';
+  DeleteWebAuthnPublicKeyCredentialParamsSchema,
+  DeleteWebAuthnPublicKeyCredentialResponseSchema,
+} from '../dto/webauthn-public-key-credentials/DeleteWebAuthnPublicKeyCredential';
 import {
-  GetWebAuthnCredentialParamsSchema,
-  GetWebAuthnCredentialResponseSchema,
-} from '../dto/webauthn-credentials/GetWebAuthnCredential';
+  GetWebAuthnPublicKeyCredentialParamsSchema,
+  GetWebAuthnPublicKeyCredentialResponseSchema,
+} from '../dto/webauthn-public-key-credentials/GetWebAuthnPublicKeyCredential';
 import {
-  ListWebAuthnCredentialsQuerySchema,
-  ListWebAuthnCredentialsResponseSchema,
-} from '../dto/webauthn-credentials/ListWebAuthnCredentials';
+  ListWebAuthnPublicKeyCredentialsQuerySchema,
+  ListWebAuthnPublicKeyCredentialsResponseSchema,
+} from '../dto/webauthn-public-key-credentials/ListWebAuthnPublicKeyCredentials';
 
 const c = initContract();
 
@@ -19,27 +19,27 @@ export const webAuthnPublicKeyCredentialsRouter = c.router({
   list: {
     method: 'GET',
     path: '/webauthn-public-key-credentials',
-    query: ListWebAuthnCredentialsQuerySchema,
+    query: ListWebAuthnPublicKeyCredentialsQuerySchema,
     responses: {
-      200: ListWebAuthnCredentialsResponseSchema,
+      200: ListWebAuthnPublicKeyCredentialsResponseSchema,
     },
     summary: 'List all WebAuthn credentials',
   },
   get: {
     method: 'GET',
     path: '/webauthn-public-key-credentials/:id',
-    pathParams: GetWebAuthnCredentialParamsSchema,
+    pathParams: GetWebAuthnPublicKeyCredentialParamsSchema,
     responses: {
-      200: GetWebAuthnCredentialResponseSchema,
+      200: GetWebAuthnPublicKeyCredentialResponseSchema,
     },
     summary: 'Get a single WebAuthn credential',
   },
   delete: {
     method: 'DELETE',
     path: '/webauthn-public-key-credentials/:id',
-    pathParams: DeleteWebAuthnCredentialParamsSchema,
+    pathParams: DeleteWebAuthnPublicKeyCredentialParamsSchema,
     responses: {
-      200: DeleteWebAuthnCredentialResponseSchema,
+      200: DeleteWebAuthnPublicKeyCredentialResponseSchema,
     },
     summary: 'Delete a WebAuthn credential',
   },

@@ -29,7 +29,7 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
 export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
   response: Response;
   verification?: VerifiedRegistrationResponse;
-  webAuthnCredentialId?: string;
+  webAuthnPublicKeyCredentialId?: string;
 };
 
 export const performPublicKeyCredentialRegistrationAndVerify = async (
@@ -76,7 +76,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });
 
-  const webAuthnCredentialId = UUIDMapper.bytesToUUID(
+  const webAuthnPublicKeyCredentialId = UUIDMapper.bytesToUUID(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     Buffer.from(response.body.id, 'base64url'),
   );
@@ -84,6 +84,6 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   return {
     response,
     verification,
-    webAuthnCredentialId,
+    webAuthnPublicKeyCredentialId,
   };
 };

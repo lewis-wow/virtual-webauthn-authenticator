@@ -36,7 +36,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       return [];
     }
 
-    const webAuthnCredentialWithMetaList =
+    const webAuthnPublicKeyCredentialWithMetaList =
       await this.prisma.webAuthnPublicKeyCredential.findMany({
         where: {
           rpId: rpId,
@@ -49,14 +49,14 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         },
       });
 
-    return webAuthnCredentialWithMetaList as WebAuthnPublicKeyCredentialWithMeta[];
+    return webAuthnPublicKeyCredentialWithMetaList as WebAuthnPublicKeyCredentialWithMeta[];
   }
 
-  async createKeyVaultWebAuthnCredential(
+  async createKeyVaultWebAuthnPublicKeyCredential(
     data: CreateKeyVaultDataArgs,
   ): Promise<WebAuthnPublicKeyCredentialWithMeta> {
     try {
-      const createdWebAuthnCredentialWithMeta =
+      const createdWebAuthnPublicKeyCredentialWithMeta =
         await this.prisma.webAuthnPublicKeyCredential.create({
           data: {
             id: data.id,
@@ -78,7 +78,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
           include: { webAuthnPublicKeyCredentialKeyVaultKeyMeta: true },
         });
 
-      return createdWebAuthnCredentialWithMeta as WebAuthnPublicKeyCredentialWithMeta;
+      return createdWebAuthnPublicKeyCredentialWithMeta as WebAuthnPublicKeyCredentialWithMeta;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         // P2003 is the error code for "Foreign key constraint failed"
@@ -121,20 +121,20 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       };
     }
 
-    const updatedWebAuthnCredential = await this.prisma.$transaction(
+    const updatedWebAuthnPublicKeyCredential = await this.prisma.$transaction(
       async (tx) => {
-        const webAuthnCredential =
+        const webAuthnPublicKeyCredential =
           await tx.webAuthnPublicKeyCredential.findFirst({
             where,
           });
 
-        if (webAuthnCredential === null) {
+        if (webAuthnPublicKeyCredential === null) {
           throw new CredentialNotFound();
         }
 
         return await tx.webAuthnPublicKeyCredential.update({
           where: {
-            id: webAuthnCredential.id,
+            id: webAuthnPublicKeyCredential.id,
           },
           data: {
             counter: {
@@ -148,6 +148,6 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       },
     );
 
-    return updatedWebAuthnCredential as WebAuthnPublicKeyCredentialWithMeta;
+    return updatedWebAuthnPublicKeyCredential as WebAuthnPublicKeyCredentialWithMeta;
   }
 }

@@ -10,7 +10,7 @@ export const USER_PERMISSIONS = Object.values(Permission);
 
 export const API_KEY_ID = 'f84468a3-f383-41ce-83e2-5aab4a712c16';
 export const API_KEY_METADATA = {
-  createdWebAuthnCredentialCount: 0,
+  createdWebAuthnPublicKeyCredentialCount: 0,
 } as const;
 
 export const USER_JWT_PAYLOAD = {

@@ -34,7 +34,7 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
 export type PerformPublicKeyCredentialRequestAndVerifyResult = {
   response: Response;
   verification?: VerifiedAuthenticationResponse;
-  webAuthnCredentialId?: string;
+  webAuthnPublicKeyCredentialId?: string;
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -50,7 +50,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   } = opts;
 
   const {
-    id: webAuthnCredentialId,
+    id: webAuthnPublicKeyCredentialId,
     publicKey: credentialPublicKey,
     counter,
   } = registrationVerification.registrationInfo!.credential;
@@ -76,7 +76,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
     credential: {
-      id: webAuthnCredentialId,
+      id: webAuthnPublicKeyCredentialId,
       publicKey: credentialPublicKey,
       counter,
     },
@@ -108,5 +108,5 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });
 
-  return { response, verification, webAuthnCredentialId };
+  return { response, verification, webAuthnPublicKeyCredentialId };
 };
