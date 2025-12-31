@@ -329,7 +329,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     authData: Uint8Array;
     hash: Uint8Array;
   }): Promise<Map<string, unknown>> {
-    const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } = opts;
+    const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } =
+      opts;
 
     let attStmt: Map<string, Uint8Array | number>;
 
@@ -420,14 +421,13 @@ export class VirtualAuthenticator implements IAuthenticator {
       excludeCredentialDescriptorList.length > 0
     ) {
       const credentialIds = excludeCredentialDescriptorList
-        .map((excludeCredentialDescriptor) => {
-          try {
-            return UUIDMapper.bytesToUUID(excludeCredentialDescriptor.id);
-          } catch {
-            return undefined;
-          }
-        })
-        .filter((credentialId) => credentialId !== undefined);
+        .map((excludeCredentialDescriptor) =>
+          UUIDMapper.tryBytesToUUID(excludeCredentialDescriptor.id),
+        )
+        .filter(
+          (excludeCredentialDescriptorId) =>
+            excludeCredentialDescriptorId !== null,
+        );
 
       // Step 3.1: If looking up descriptor.id in this authenticator returns non-null:
       // Collect an authorization gesture confirming user consent for creating a new credential.
@@ -472,7 +472,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 7.1: Let (publicKey, privateKey) be a new pair of cryptographic
     // keys using the FIRST supported algorithm
     const webAuthnPublicKeyCredentialId = randomUUID();
-    const rawCredentialID = UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialId);
+    const rawCredentialID = UUIDMapper.UUIDtoBytes(
+      webAuthnPublicKeyCredentialId,
+    );
 
     const webAuthnPublicKeyCredentialPublicKey = await this.keyProvider
       .generateKeyPair({
@@ -520,15 +522,18 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
         async () => {
           const webAuthnPublicKeyCredentialWithKeyVaultMeta =
-            await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential({
-              id: webAuthnPublicKeyCredentialId,
-              webAuthnPublicKeyCredentialKeyVaultKeyMeta:
-                webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
-              COSEPublicKey: webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
-              rpId: rpEntity.id,
-              userId: userHandle,
-              apiKeyId: context.apiKeyId,
-            });
+            await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential(
+              {
+                id: webAuthnPublicKeyCredentialId,
+                webAuthnPublicKeyCredentialKeyVaultKeyMeta:
+                  webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
+                COSEPublicKey:
+                  webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
+                rpId: rpEntity.id,
+                userId: userHandle,
+                apiKeyId: context.apiKeyId,
+              },
+            );
 
           return webAuthnPublicKeyCredentialWithKeyVaultMeta;
         },
@@ -742,7 +747,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // selectedCredential.userHandle.
     // NOTE: If, within allowCredentialDescriptorList, the client supplied exactly one credential and it was successfully employed, then its credential ID is not returned since the client already knows it.
 
-    const credentialId = UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialWithMeta.id);
+    const credentialId = UUIDMapper.UUIDtoBytes(
+      webAuthnPublicKeyCredentialWithMeta.id,
+    );
     const userHandle = UUIDMapper.UUIDtoBytes(
       webAuthnPublicKeyCredentialWithMeta.userId,
     );

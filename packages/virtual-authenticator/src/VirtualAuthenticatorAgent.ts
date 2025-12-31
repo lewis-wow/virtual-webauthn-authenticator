@@ -134,18 +134,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const webAuthnPublicKeyCredentialWithMetaList =
         await authenticator.webAuthnRepository.findAllByRpIdAndCredentialIds({
           rpId,
-          credentialIds: pkOptions.allowCredentials.map((allowCredential) =>
-            UUIDMapper.bytesToUUID(allowCredential.id),
-          ),
+          credentialIds: pkOptions.allowCredentials
+            .map((allowCredential) =>
+              UUIDMapper.tryBytesToUUID(allowCredential.id),
+            )
+            .filter((allowCredentialId) => allowCredentialId !== null),
         });
 
-      allowCredentialDescriptorList = webAuthnPublicKeyCredentialWithMetaList.map(
-        (webAuthnPublicKeyCredentialWithMeta) => ({
-          id: UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialWithMeta.id),
-          type: PublicKeyCredentialType.PUBLIC_KEY,
-          transports: webAuthnPublicKeyCredentialWithMeta.transports,
-        }),
-      );
+      allowCredentialDescriptorList =
+        webAuthnPublicKeyCredentialWithMetaList.map(
+          (webAuthnPublicKeyCredentialWithMeta) => ({
+            id: UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialWithMeta.id),
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            transports: webAuthnPublicKeyCredentialWithMeta.transports,
+          }),
+        );
 
       // Step 3.3: If allowCredentialDescriptorList is empty, return false.
       // NOTE: As we have single authenticator, we can throw CredentialNotFound error

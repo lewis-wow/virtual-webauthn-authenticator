@@ -1,12 +1,10 @@
 import { createEnv } from '@t3-oss/env-core';
+import z from 'zod';
 
 export const defineEnv: typeof createEnv = (options) => {
-  const skipValidation =
-    (typeof process !== 'undefined' &&
-      process.env?.SKIP_ENV_VALIDATION === 'true') ||
-    (typeof import.meta !== 'undefined' &&
-      // @ts-expect-error - import.meta might not be typed in all environments
-      import.meta.env?.SKIP_ENV_VALIDATION === 'true');
+  const { data: skipValidation = false } = z.coerce
+    .boolean()
+    .safeParse(options.runtimeEnv?.SKIP_ENV_VALIDATION);
 
   return createEnv({
     ...options,

@@ -17,6 +17,10 @@ export class ExceptionFilter implements NestjsExceptionFilter {
   constructor(private readonly logger: Logger) {}
 
   async catch(error: unknown, host: ArgumentsHost) {
+    if (error instanceof Error) {
+      this.logger.exception(error);
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<ExpressResponse>();
 
@@ -30,10 +34,6 @@ export class ExceptionFilter implements NestjsExceptionFilter {
       });
     } else {
       exception = new InternalServerError();
-
-      if (error instanceof Error) {
-        this.logger.exception(error);
-      }
     }
 
     const webResponse = ExceptionMapper.exceptionToResponse(exception);
