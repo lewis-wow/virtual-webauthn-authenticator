@@ -15,10 +15,10 @@ import {
 
 const c = initContract();
 
-export const webAuthnCredentialsRouter = c.router({
+export const webAuthnPublicKeyCredentialsRouter = c.router({
   list: {
     method: 'GET',
-    path: '/webauthn-credentials',
+    path: '/webauthn-public-key-credentials',
     query: ListWebAuthnCredentialsQuerySchema,
     responses: {
       200: ListWebAuthnCredentialsResponseSchema,
@@ -27,7 +27,7 @@ export const webAuthnCredentialsRouter = c.router({
   },
   get: {
     method: 'GET',
-    path: '/webauthn-credentials/:id',
+    path: '/webauthn-public-key-credentials/:id',
     pathParams: GetWebAuthnCredentialParamsSchema,
     responses: {
       200: GetWebAuthnCredentialResponseSchema,
@@ -36,7 +36,7 @@ export const webAuthnCredentialsRouter = c.router({
   },
   delete: {
     method: 'DELETE',
-    path: '/webauthn-credentials/:id',
+    path: '/webauthn-public-key-credentials/:id',
     pathParams: DeleteWebAuthnCredentialParamsSchema,
     responses: {
       200: DeleteWebAuthnCredentialResponseSchema,

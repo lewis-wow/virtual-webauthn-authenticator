@@ -21,6 +21,8 @@ import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
 
+const API_PATH = '/api/webauthn-public-key-credentials';
+
 const prisma = PrismaClientExtended.createInstance();
 
 const jwtIssuer = new JwtIssuer({
@@ -36,7 +38,7 @@ const cleanupWebAuthnPublicKeyCredentials = async () => {
   ]);
 };
 
-describe('WebAuthnCredentialsController', () => {
+describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public-key-credentials', () => {
   let app: INestApplication;
   let token: string;
 
@@ -85,7 +87,7 @@ describe('WebAuthnCredentialsController', () => {
   describe('Authorization', () => {
     test('Should not work when unauthorized', async () => {
       await request(app.getHttpServer())
-        .get('/api/webauthn-credentials')
+        .get(API_PATH)
         .send()
         .expect('Content-Type', /json/)
         .expect(401);
@@ -95,7 +97,7 @@ describe('WebAuthnCredentialsController', () => {
       const token = 'INVALID_TOKEN';
 
       await request(app.getHttpServer())
-        .get('/api/webauthn-credentials')
+        .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)
@@ -109,7 +111,7 @@ describe('WebAuthnCredentialsController', () => {
       });
 
       await request(app.getHttpServer())
-        .get('/api/webauthn-credentials')
+        .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)
@@ -123,7 +125,7 @@ describe('WebAuthnCredentialsController', () => {
       });
 
       const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
-        .get('/api/webauthn-credentials')
+        .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)
@@ -143,7 +145,7 @@ describe('WebAuthnCredentialsController', () => {
 
     test('Should work as authenticated user', async () => {
       const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
-        .get('/api/webauthn-credentials')
+        .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)

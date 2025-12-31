@@ -25,7 +25,7 @@ import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
 @UseFilters(new ExceptionFilter())
-export class WebAuthnCredentialsController {
+export class WebAuthnPublicKeyCredentialsController {
   constructor(
     private readonly prisma: PrismaService,
     private readonly keyClient: KeyClient,
@@ -33,11 +33,11 @@ export class WebAuthnCredentialsController {
     private readonly activityLog: ActivityLog,
   ) {}
 
-  @TsRestHandler(nestjsContract.api.webAuthnCredentials.list)
+  @TsRestHandler(nestjsContract.api.webAuthnPublicKeyCredentials.list)
   @UseGuards(AuthenticatedGuard)
-  async listWebAuthnCredentials(@Jwt() jwtPayload: JwtPayload) {
+  async listWebAuthnPublicKeyCredentials(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.webAuthnCredentials.list,
+      nestjsContract.api.webAuthnPublicKeyCredentials.list,
       async ({ query }) => {
         const { userId, permissions } = jwtPayload;
 
@@ -75,11 +75,11 @@ export class WebAuthnCredentialsController {
     );
   }
 
-  @TsRestHandler(nestjsContract.api.webAuthnCredentials.get)
+  @TsRestHandler(nestjsContract.api.webAuthnPublicKeyCredentials.get)
   @UseGuards(AuthenticatedGuard)
-  async getWebAuthnCredential(@Jwt() jwtPayload: JwtPayload) {
+  async getWebAuthnPublicKeyCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.webAuthnCredentials.get,
+      nestjsContract.api.webAuthnPublicKeyCredentials.get,
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
@@ -108,11 +108,11 @@ export class WebAuthnCredentialsController {
     );
   }
 
-  @TsRestHandler(nestjsContract.api.webAuthnCredentials.delete)
+  @TsRestHandler(nestjsContract.api.webAuthnPublicKeyCredentials.delete)
   @UseGuards(AuthenticatedGuard)
-  async deleteWebAuthnCredential(@Jwt() jwtPayload: JwtPayload) {
+  async deleteWebAuthnPublicKeyCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.webAuthnCredentials.delete,
+      nestjsContract.api.webAuthnPublicKeyCredentials.delete,
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
