@@ -5,6 +5,7 @@ import { ErrorMapper } from '@repo/core/mappers';
 import { extensionMessaging } from '../messaging/extensionMessaging';
 
 const LOG_PREFIX = 'BACKGROUND';
+console.log(`[${LOG_PREFIX}]`, 'Init');
 
 export default defineBackground(() => {
   console.log(`[${LOG_PREFIX}]`, 'Init', {

@@ -11,10 +11,9 @@ import {
 } from '@repo/contract/dto';
 
 const LOG_PREFIX = 'MAIN';
+console.log(`[${LOG_PREFIX}]`, 'Init');
 
 export default defineUnlistedScript(() => {
-  console.log(`[${LOG_PREFIX}]`, 'Init');
-
   const fallbackNavigatorCredentialsCreate = navigator.credentials.create;
   navigator.credentials.create = async (opts?: CredentialCreationOptions) => {
     console.log(
