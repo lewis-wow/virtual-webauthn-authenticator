@@ -13,12 +13,13 @@ import { nestjsContract } from '@repo/contract/nestjs';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
+import { Prisma, WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';
+import { WebAuthnPublicKeyCredentialNotFound } from '../exceptions/WebAuthnPublicKeyCredentialNotFound';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
@@ -87,8 +88,8 @@ export class WebAuthnPublicKeyCredentialsController {
           throw new Forbidden();
         }
 
-        const webAuthnCredential =
-          await this.prisma.webAuthnPublicKeyCredential.findUniqueOrThrow({
+        const webAuthnPublicKeyCredential =
+          await this.prisma.webAuthnPublicKeyCredential.findUnique({
             where: {
               id: params.id,
               userId: userId,
@@ -98,10 +99,14 @@ export class WebAuthnPublicKeyCredentialsController {
             },
           });
 
+        if (webAuthnPublicKeyCredential === null) {
+          throw new WebAuthnPublicKeyCredentialNotFound();
+        }
+
         return {
           status: 200,
           body: GetWebAuthnCredentialResponseSchema.encode(
-            webAuthnCredential as WebAuthnCredential,
+            webAuthnPublicKeyCredential as WebAuthnCredential,
           ),
         };
       },
@@ -120,29 +125,41 @@ export class WebAuthnPublicKeyCredentialsController {
           throw new Forbidden();
         }
 
-        const webAuthnCredential =
-          await this.prisma.webAuthnPublicKeyCredential.delete({
-            where: {
-              id: params.id,
-              userId: userId,
-            },
-            include: {
-              webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
-            },
-          });
+        let webAuthnPublicKeyCredential;
+        try {
+          webAuthnPublicKeyCredential =
+            await this.prisma.webAuthnPublicKeyCredential.delete({
+              where: {
+                id: params.id,
+                userId: userId,
+              },
+              include: {
+                webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
+              },
+            });
+        } catch (e) {
+          if (e instanceof Prisma.PrismaClientKnownRequestError) {
+            if (e.code === 'P2025') {
+              throw new WebAuthnPublicKeyCredentialNotFound();
+            }
+          }
+
+          // Handle other errors (db connection issues, etc.)
+          throw e;
+        }
 
         this.logger.debug('Removing WebAuthnCredential.', {
-          webAuthnCredential,
+          webAuthnCredential: webAuthnPublicKeyCredential,
           userId: userId,
         });
 
         if (
-          webAuthnCredential.webAuthnPublicKeyCredentialKeyMetaType ===
+          webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyMetaType ===
           WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT
         ) {
           const pollOperation = await this.keyClient.beginDeleteKey(
-            webAuthnCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta!
-              .keyVaultKeyName,
+            webAuthnPublicKeyCredential
+              .webAuthnPublicKeyCredentialKeyVaultKeyMeta!.keyVaultKeyName,
           );
 
           await pollOperation.pollUntilDone();
@@ -162,7 +179,7 @@ export class WebAuthnPublicKeyCredentialsController {
         return {
           status: 200,
           body: DeleteWebAuthnCredentialResponseSchema.encode(
-            webAuthnCredential as WebAuthnCredential,
+            webAuthnPublicKeyCredential as WebAuthnCredential,
           ),
         };
       },

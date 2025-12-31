@@ -6,7 +6,10 @@ import {
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
-import { upsertTestingWebAuthnCredential } from '@repo/virtual-authenticator/__tests__/helpers';
+import {
+  upsertTestingWebAuthnCredential,
+  WEBAUTHN_CREDENTIAL_ID,
+} from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
@@ -21,7 +24,7 @@ import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
 
-const API_PATH = '/api/webauthn-public-key-credentials';
+const API_PATH = `/api/webauthn-public-key-credentials/${WEBAUTHN_CREDENTIAL_ID}`;
 
 const prisma = PrismaClientExtended.createInstance();
 
@@ -38,7 +41,7 @@ const cleanupWebAuthnPublicKeyCredentials = async () => {
   ]);
 };
 
-describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public-key-credentials', () => {
+describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-key-credentials/:id', () => {
   let app: INestApplication;
   let token: string;
 
@@ -124,21 +127,19 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         userId: WRONG_UUID,
       });
 
-      const listWebAuthnCredentialsResponse = await request(app.getHttpServer())
+      const response = await request(app.getHttpServer())
         .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)
         // The API server do not check if the user exists but response should be empty
-        .expect(200);
+        .expect(404);
 
-      expect(listWebAuthnCredentialsResponse.body).toMatchInlineSnapshot(`
+      expect(response.body).toMatchInlineSnapshot(`
         {
-          "data": [],
-          "meta": {
-            "hasNext": false,
-            "nextCursor": null,
-          },
+          "code": "WEBAUTHN_PUBLIC_KEY_CREDENTIAL_NOT_FOUND",
+          "message": "WebAuthn Public Key Credential Not Found.",
+          "name": "WebAuthnPublicKeyCredentialNotFound",
         }
       `);
     });
@@ -153,31 +154,23 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
 
       expect(response.body).toMatchInlineSnapshot(`
         {
-          "data": [
-            {
-              "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
-              "counter": 0,
-              "createdAt": "1970-01-01T00:00:00.000Z",
-              "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
-              "name": null,
-              "rpId": "example.com",
-              "transports": [],
-              "updatedAt": "1970-01-01T00:00:00.000Z",
-              "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
-              "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
-              "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {
-                "createdAt": "1970-01-01T00:00:00.000Z",
-                "hsm": false,
-                "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
-                "keyVaultKeyId": "4b45595f5641554c545f4b45595f4944",
-                "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
-                "updatedAt": "1970-01-01T00:00:00.000Z",
-              },
-            },
-          ],
-          "meta": {
-            "hasNext": false,
-            "nextCursor": null,
+          "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
+          "counter": 0,
+          "createdAt": "1970-01-01T00:00:00.000Z",
+          "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
+          "name": null,
+          "rpId": "example.com",
+          "transports": [],
+          "updatedAt": "1970-01-01T00:00:00.000Z",
+          "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
+          "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
+          "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {
+            "createdAt": "1970-01-01T00:00:00.000Z",
+            "hsm": false,
+            "id": "2721c4a0-1581-49f2-8fcc-8677a84e717d",
+            "keyVaultKeyId": "4b45595f5641554c545f4b45595f4944",
+            "keyVaultKeyName": "4b45595f5641554c545f4b45595f4e414d45",
+            "updatedAt": "1970-01-01T00:00:00.000Z",
           },
         }
       `);
