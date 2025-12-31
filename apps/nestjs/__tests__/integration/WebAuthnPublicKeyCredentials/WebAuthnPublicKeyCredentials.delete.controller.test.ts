@@ -174,6 +174,15 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
           },
         }
       `);
+
+      const webAuthnPublicKeyCredential =
+        await prisma.webAuthnPublicKeyCredential.findUnique({
+          where: {
+            id: WEBAUTHN_CREDENTIAL_ID,
+          },
+        });
+
+      expect(webAuthnPublicKeyCredential).toBe(null);
     });
   });
 });
