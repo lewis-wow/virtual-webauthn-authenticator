@@ -61,7 +61,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
         },
       )
       .catch((error) => {
-        console.error(error);
         throw error;
       });
 

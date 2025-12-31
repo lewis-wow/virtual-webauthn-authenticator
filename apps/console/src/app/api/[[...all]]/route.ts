@@ -32,20 +32,14 @@ const handler = async (request: Request): Promise<Response> => {
 
         const { token } = await response.json();
 
-        console.log('TOKEN', token);
-
         return `Bearer ${token}`;
       }
 
-      const headers = Object.fromEntries(request.headers.entries());
-      console.log({ headers });
       const { data } = await authClient.token({
         fetchOptions: {
           headers: request.headers,
         },
       });
-
-      console.log({ data });
 
       if (!data) {
         return undefined;

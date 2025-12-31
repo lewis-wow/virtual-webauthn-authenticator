@@ -34,7 +34,6 @@ beforeAll(async () => {
   await new Promise<void>((resolve) => {
     targetServer = serve({ fetch: targetApp.fetch, port: 0 }, (info) => {
       targetBaseURL = `http://localhost:${info.port}`;
-      console.log(`Target server listening on ${targetBaseURL}`);
       resolve();
     });
   });

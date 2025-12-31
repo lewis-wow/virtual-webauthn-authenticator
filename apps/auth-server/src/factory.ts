@@ -4,6 +4,8 @@ import { InternalServerError } from '@repo/exception/http';
 import { ExceptionMapper } from '@repo/exception/mappers';
 import { createFactory } from 'hono/factory';
 
+import { logger } from './lib/logger';
+
 export const factory = createFactory<{
   Variables: {
     user: typeof auth.$Infer.Session.user | null;
@@ -12,7 +14,7 @@ export const factory = createFactory<{
 }>({
   initApp: (app) => {
     app.onError((error) => {
-      console.error(error);
+      logger.exception(error);
 
       const exception =
         error instanceof Exception ? error : new InternalServerError();

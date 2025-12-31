@@ -796,6 +796,9 @@ importers:
 
   packages/activity-log:
     dependencies:
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../logger
       '@repo/pagination':
         specifier: workspace:*
         version: link:../pagination

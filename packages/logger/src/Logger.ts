@@ -121,11 +121,11 @@ export class Logger {
    *
    * @param error - The Error object to log.
    */
-  public exception(error: Error): void {
+  public exception(error: Error, message?: string): void {
     // We pass the error.message as the main message,
     // and the error itself as an object in the 'meta' array.
     // Your 'splat' logic will find it and 'util.inspect' it.
-    this.logger.error(error.message, { exception: error });
+    this.logger.error(message ?? error.message, { exception: error });
   }
 
   /**

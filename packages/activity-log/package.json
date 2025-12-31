@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@repo/prisma": "workspace:*",
+    "@repo/logger": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/pagination": "workspace:*",
     "effect": "^3.19.4",

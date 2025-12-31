@@ -32,7 +32,7 @@ export const WebAuthnCredentialsPage = () => {
     });
 
   // 3. Run the Query
-  const credentialsQuery = $api.api.webAuthnCredentials.list.useQuery({
+  const credentialsQuery = $api.api.webAuthnPublicKeyCredentials.list.useQuery({
     queryKey: [
       'api',
       'webAuthnCredentials',
