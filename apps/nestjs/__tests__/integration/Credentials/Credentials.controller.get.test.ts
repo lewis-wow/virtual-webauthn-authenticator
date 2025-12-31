@@ -37,13 +37,13 @@ import {
 } from 'vitest';
 import z from 'zod';
 
-import { AppModule } from '../../src/app.module';
-import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
-import { PrismaService } from '../../src/services/Prisma.service';
-import { JWT_CONFIG } from '../helpers/consts';
-import { performPublicKeyCredentialRegistrationAndVerify } from '../helpers/performPublicKeyCredentialRegistrationAndVerify';
-import { performPublicKeyCredentialRequestAndVerify } from '../helpers/performPublicKeyCredentialRequestAndVerify';
-import { prisma } from '../helpers/prisma';
+import { AppModule } from '../../../src/app.module';
+import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
+import { PrismaService } from '../../../src/services/Prisma.service';
+import { JWT_CONFIG } from '../../helpers/consts';
+import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
+import { performPublicKeyCredentialRequestAndVerify } from '../../helpers/performPublicKeyCredentialRequestAndVerify';
+import { prisma } from '../../helpers/prisma';
 
 /**
  * Reusable request body for POST /api/credentials

@@ -17,13 +17,13 @@ import { JwtAudience, JwtIssuer } from '@repo/auth';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
-import { AppModule } from '../../src/app.module';
-import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
-import { PrismaService } from '../../src/services/Prisma.service';
-import { JWT_CONFIG } from '../helpers/consts';
-import { prisma } from '../helpers/prisma';
+import { AppModule } from '../../../src/app.module';
+import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
+import { PrismaService } from '../../../src/services/Prisma.service';
+import { JWT_CONFIG } from '../../helpers/consts';
+import { prisma } from '../../helpers/prisma';
 
-describe('WebAuthnCredentialsController', () => {
+describe('WebAuthnCredentialsController List - GET /webauthn-credentials', () => {
   let app: INestApplication;
   let token: string;
 

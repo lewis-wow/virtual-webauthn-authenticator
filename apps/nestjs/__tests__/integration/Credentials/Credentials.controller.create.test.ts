@@ -28,13 +28,13 @@ import { afterEach } from 'node:test';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';
 import z from 'zod';
 
-import { CredentialTypesNotSupported } from '../../../../packages/virtual-authenticator/src/exceptions/CredentialTypesNotSupported';
-import { AppModule } from '../../src/app.module';
-import { JwtMiddleware } from '../../src/middlewares/jwt.middleware';
-import { PrismaService } from '../../src/services/Prisma.service';
-import { JWT_CONFIG } from '../helpers/consts';
-import { performPublicKeyCredentialRegistrationAndVerify } from '../helpers/performPublicKeyCredentialRegistrationAndVerify';
-import { prisma } from '../helpers/prisma';
+import { CredentialTypesNotSupported } from '../../../../../packages/virtual-authenticator/src/exceptions/CredentialTypesNotSupported';
+import { AppModule } from '../../../src/app.module';
+import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
+import { PrismaService } from '../../../src/services/Prisma.service';
+import { JWT_CONFIG } from '../../helpers/consts';
+import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
+import { prisma } from '../../helpers/prisma';
 
 /**
  * Reusable request body for POST /api/credentials
