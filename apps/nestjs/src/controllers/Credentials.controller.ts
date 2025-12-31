@@ -23,7 +23,7 @@ import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 
 @Controller()
-@UseFilters(new ExceptionFilter())
+@UseFilters(ExceptionFilter)
 export class CredentialsController {
   constructor(
     private readonly virtualAuthenticatorAgent: VirtualAuthenticatorAgent,

@@ -85,13 +85,13 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         if (error.code === 'P2003') {
           // Prisma usually provides the field that failed in 'meta.field_name'
           // Note: The format of this field depends on your specific database (Postgres/MySQL/etc)
-          const failedField = error.meta?.field_name as string;
+          const failedConstraint = error.meta?.constraint as string;
 
-          if (failedField?.includes('userId')) {
+          if (failedConstraint?.includes('userId')) {
             throw new UserNotExists();
           }
 
-          if (failedField?.includes('apiKeyId')) {
+          if (failedConstraint?.includes('apiKeyId')) {
             throw new ApiKeyNotExists();
           }
         }

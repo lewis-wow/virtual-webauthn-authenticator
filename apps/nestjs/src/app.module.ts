@@ -7,6 +7,7 @@ import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { LogsController } from './controllers/Logs.controller';
 import { ProfileController } from './controllers/Profile.controller';
 import { WebAuthnPublicKeyCredentialsController } from './controllers/WebAuthnPublicKeyCredentials.controller';
+import { ExceptionFilter } from './filters/Exception.filter';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
 import { ActivityLogProvider } from './services/ActivityLog.provider';
@@ -36,6 +37,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     LogsController,
   ],
   providers: [
+    ExceptionFilter,
     PrismaService,
     AzureCredentialProvider,
     CryptographyClientFactoryProvider,

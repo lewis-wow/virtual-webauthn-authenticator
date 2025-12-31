@@ -2,15 +2,20 @@ import {
   ExceptionFilter as NestjsExceptionFilter,
   Catch,
   ArgumentsHost,
+  Injectable,
 } from '@nestjs/common';
 import { Exception, RequestValidationFailed } from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
 import { ExceptionMapper } from '@repo/exception/mappers';
+import { Logger } from '@repo/logger';
 import { TsRestRequestValidationError } from '@ts-rest/nest';
 import type { Response as ExpressResponse } from 'express';
 
 @Catch()
+@Injectable()
 export class ExceptionFilter implements NestjsExceptionFilter {
+  constructor(private readonly logger: Logger) {}
+
   async catch(error: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<ExpressResponse>();
@@ -25,6 +30,10 @@ export class ExceptionFilter implements NestjsExceptionFilter {
       });
     } else {
       exception = new InternalServerError();
+
+      if (error instanceof Error) {
+        this.logger.exception(error);
+      }
     }
 
     const webResponse = ExceptionMapper.exceptionToResponse(exception);

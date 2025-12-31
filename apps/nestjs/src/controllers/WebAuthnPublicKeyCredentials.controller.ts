@@ -25,7 +25,7 @@ import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
-@UseFilters(new ExceptionFilter())
+@UseFilters(ExceptionFilter)
 export class WebAuthnPublicKeyCredentialsController {
   constructor(
     private readonly prisma: PrismaService,

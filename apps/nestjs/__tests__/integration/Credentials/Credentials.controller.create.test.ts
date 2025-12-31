@@ -3,7 +3,7 @@ import {
   upsertTestingUser,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { set } from '@repo/core/__tests__/helpers';
+import { set, WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -21,9 +21,12 @@ import {
   Attestation,
   PublicKeyCredentialType,
 } from '@repo/virtual-authenticator/enums';
-import { AttestationNotSupported } from '@repo/virtual-authenticator/exceptions';
+import {
+  AttestationNotSupported,
+  UserNotExists,
+} from '@repo/virtual-authenticator/exceptions';
 import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/zod-validation';
-import { randomBytes, randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { afterEach } from 'node:test';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';
 import z from 'zod';
@@ -149,15 +152,20 @@ describe('CredentialsController - POST /api/credentials/create', () => {
     });
 
     test('Should not work when token is for user that does not exists', async () => {
-      await performPublicKeyCredentialRegistrationAndVerify({
-        app: app.getHttpServer(),
-        token: await jwtIssuer.sign({
-          ...USER_JWT_PAYLOAD,
-          userId: randomUUID(),
-        }),
-        payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        expectStatus: 403,
-      });
+      const { response } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token: await jwtIssuer.sign({
+            ...USER_JWT_PAYLOAD,
+            userId: WRONG_UUID,
+          }),
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: 404,
+        });
+
+      expect(response.body).toStrictEqual(
+        ExceptionMapper.exceptionToResponseBody(new UserNotExists()),
+      );
     });
   });
 
