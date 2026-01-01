@@ -1,5 +1,15 @@
 # Virtual WebAuthn Authenticator
 
+## WebAuthn spec
+
+<https://www.w3.org/TR/webauthn-3/>
+
+## Architecture
+
+![Architecture image](.architecture/export/architecture.svg)
+
+## Key Vault
+
 [Azure Key Vault - TypeScript](https://learn.microsoft.com/en-us/azure/key-vault/secrets/quick-create-node?tabs=azure-cli%2Cwindows&pivots=programming-language-typescript)
 
 [LowKey Vault for development](https://github.com/nagyesta/lowkey-vault)
@@ -7,10 +17,6 @@
 ## WebAuthn official demo
 
 <https://webauthn.io/>
-
-## Architecture
-
-![Architecture image](.architecture/export/architecture.svg)
 
 ### Icons
 
