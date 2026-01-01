@@ -1312,10 +1312,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Step 3: Tests for allowCredentialDescriptorList credential lookup
      * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 3)
      *
-     * Per spec: For each descriptor in allowCredentialDescriptorList, lookup credential by ID
-     * Note: Current implementation requires valid UUID format for credential IDs
+     * The malformed credential IDs are simply ommited.
      */
-    test('Should fail with malformed credential IDs in allowCredentials', async () => {
+    test('Should work with malformed credential IDs in allowCredentials', async () => {
       const {
         webAuthnPublicKeyCredentialIdBytes,
         webAuthnPublicKeyCredentialId,
@@ -1340,17 +1339,18 @@ describe('VirtualAuthenticator.getCredential()', () => {
         },
       );
 
-      // Current implementation throws TypeAssertionError for malformed UUIDs
-      await expect(
-        async () =>
-          await performPublicKeyCredentialRequestAndVerify({
-            agent,
-            publicKeyCredentialRequestOptions,
-            webAuthnPublicKeyCredentialId,
-            publicKey,
-            counter,
-          }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+        });
+
+      expect(authenticationVerification.authenticationInfo.credentialID).toBe(
+        webAuthnPublicKeyCredentialId,
+      );
     });
 
     /**
