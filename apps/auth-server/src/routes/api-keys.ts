@@ -1,9 +1,4 @@
 import { factory } from '@/factory';
-import { activityLog } from '@/lib/activityLog';
-import { apiKeyManager } from '@/lib/apiKeyManager';
-import { auth } from '@/lib/auth';
-import { jwtIssuer } from '@/lib/jwtIssuer';
-import { prisma } from '@/lib/prisma';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
@@ -26,6 +21,11 @@ apiKey.on(
   [authServerContract.api.auth.apiKeys.getToken.method],
   authServerContract.api.auth.apiKeys.getToken.path,
   async (ctx) => {
+    const container = ctx.get('container');
+    const apiKeyManager = container.resolve('apiKeyManager');
+    const jwtIssuer = container.resolve('jwtIssuer');
+    const prisma = container.resolve('prisma');
+
     const bearerToken = ctx.req.header('Authorization');
     const plaintextKey = bearerToken?.replace('Bearer ', '');
 
@@ -65,6 +65,10 @@ apiKey.post(
   requireAuthMiddleware,
   sValidator('json', authServerContract.api.auth.apiKeys.create.body),
   async (ctx) => {
+    const container = ctx.get('container');
+    const apiKeyManager = container.resolve('apiKeyManager');
+    const activityLog = container.resolve('activityLog');
+
     const json = ctx.req.valid('json');
 
     const expiresAt = json.expiresAt ? add(new Date(), json.expiresAt) : null;
@@ -99,6 +103,9 @@ apiKey.get(
   authServerContract.api.auth.apiKeys.list.path,
   requireAuthMiddleware,
   async (ctx) => {
+    const container = ctx.get('container');
+    const apiKeyManager = container.resolve('apiKeyManager');
+
     const apiKeys = await apiKeyManager.list({
       userId: ctx.var.user!.id,
     });
@@ -112,6 +119,9 @@ apiKey.get(
   requireAuthMiddleware,
   sValidator('param', authServerContract.api.auth.apiKeys.get.pathParams),
   async (ctx) => {
+    const container = ctx.get('container');
+    const apiKeyManager = container.resolve('apiKeyManager');
+
     const param = ctx.req.valid('param');
 
     const apiKey = await apiKeyManager.get({
@@ -129,6 +139,10 @@ apiKey.put(
   sValidator('param', authServerContract.api.auth.apiKeys.update.pathParams),
   sValidator('json', authServerContract.api.auth.apiKeys.update.body),
   async (ctx) => {
+    const container = ctx.get('container');
+    const apiKeyManager = container.resolve('apiKeyManager');
+    const activityLog = container.resolve('activityLog');
+
     const param = ctx.req.valid('param');
     const json = ctx.req.valid('json');
 
@@ -167,6 +181,10 @@ apiKey.delete(
   requireAuthMiddleware,
   sValidator('param', authServerContract.api.auth.apiKeys.delete.pathParams),
   async (ctx) => {
+    const container = ctx.get('container');
+    const apiKeyManager = container.resolve('apiKeyManager');
+    const activityLog = container.resolve('activityLog');
+
     const param = ctx.req.valid('param');
 
     const apiKey = await apiKeyManager.delete({

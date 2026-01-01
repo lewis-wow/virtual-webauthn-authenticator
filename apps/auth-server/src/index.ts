@@ -1,14 +1,10 @@
 import { serve } from '@hono/node-server';
-import { Logger } from '@repo/logger';
 
+import { container } from './container';
 import { env } from './env';
 import { app } from './routes';
 
-const LOG_PREFIX = 'AUTH-SERVER';
-
-const log = new Logger({
-  prefix: LOG_PREFIX,
-});
+const log = container.resolve('logger');
 
 serve(
   {

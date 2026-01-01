@@ -1,10 +1,12 @@
+import { container } from '@/container';
 import { factory } from '@/factory';
-import { auth } from '@/lib/auth';
-import { jwtIssuer } from '@/lib/jwtIssuer';
 
 import { apiKey } from './api-keys';
 
 export const app = factory.createApp().use('*', async (ctx, next) => {
+  ctx.set('container', container);
+
+  const auth = container.resolve('auth');
   const session = await auth.api.getSession({ headers: ctx.req.raw.headers });
 
   if (!session) {
@@ -23,9 +25,11 @@ export const app = factory.createApp().use('*', async (ctx, next) => {
 app.route('/', apiKey);
 
 app.get('/.well-known/jwks.json', async (c) => {
+  const jwtIssuer = c.get('container').resolve('jwtIssuer');
   return c.json(await jwtIssuer.jsonWebKeySet());
 });
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
+  const auth = c.get('container').resolve('auth');
   return auth.handler(c.req.raw);
 });
