@@ -1,11 +1,30 @@
 import { serve } from '@hono/node-server';
 import { proxy } from '@repo/proxy';
+import { cors } from 'hono/cors';
 
 import { container } from './container';
 import { env } from './env';
 import { factory } from './factory';
 
 const app = factory.createApp();
+
+app.use(
+  '*',
+  cors({
+    origin: (origin) => {
+      // Allow requests from browser extensions
+      if (
+        origin.startsWith('chrome-extension://') ||
+        origin.startsWith('moz-extension://')
+      ) {
+        return origin;
+      }
+    },
+    credentials: true,
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Auth-Type'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  }),
+);
 
 app.use(async (ctx, next) => {
   const container = ctx.get('container');
@@ -20,6 +39,8 @@ app.use(async (ctx, next) => {
   await next();
 
   logger.info('Proxy response', {
+    url: ctx.req.url,
+    method: ctx.req.method,
     status: ctx.res.status,
     headers: Object.fromEntries(ctx.res.headers.entries()),
   });
@@ -33,6 +54,14 @@ app.all('/api/auth/*', async (ctx) => {
   return response;
 });
 
+// app.all('/api/*', async (ctx) => {
+//   const response = await proxy('http://localhost:3001', ctx.req.raw);
+
+//   console.log(response);
+
+//   return response;
+// });
+
 serve(
   {
     fetch: app.fetch,
@@ -40,6 +69,6 @@ serve(
   },
   (info) => {
     const log = container.resolve('logger');
-    log.info(`BFF server is running on http://localhost:${info.port}`);
+    log.info(`Server is running on http://localhost:${info.port}`);
   },
 );
