@@ -35,6 +35,11 @@ export class DependencyContainer<
   resolve<TName extends keyof TDependencyContainerMap>(
     name: TName,
   ): TDependencyContainerMap[TName] {
-    return this.container.resolve(name);
+    try {
+      return this.container.resolve(name);
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 }

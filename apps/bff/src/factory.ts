@@ -6,8 +6,6 @@ import { createFactory } from 'hono/factory';
 
 export const factory = createFactory<{
   Variables: {
-    user: typeof container.$dependencies.auth.$Infer.Session.user | null;
-    session: typeof container.$dependencies.auth.$Infer.Session.session | null;
     container: typeof container;
   };
 }>({

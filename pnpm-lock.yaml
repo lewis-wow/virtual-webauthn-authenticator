@@ -184,6 +184,136 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
 
+  apps/bff:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.19.5
+        version: 1.19.5(hono@4.9.10)
+      '@hono/standard-validator':
+        specifier: ^0.1.5
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)
+      '@repo/activity-log':
+        specifier: workspace:*
+        version: link:../../packages/activity-log
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
+      '@repo/contract':
+        specifier: workspace:*
+        version: link:../../packages/contract
+      '@repo/dependency-container':
+        specifier: workspace:*
+        version: link:../../packages/dependency-container
+      '@repo/env-config':
+        specifier: workspace:*
+        version: link:../../packages/env-config
+      '@repo/exception':
+        specifier: workspace:*
+        version: link:../../packages/exception
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
+      '@repo/proxy':
+        specifier: workspace:*
+        version: link:../../packages/proxy
+      '@t3-oss/env-core':
+        specifier: ^0.13.8
+        version: 0.13.8(typescript@5.9.2)(zod@4.1.12)
+      better-auth:
+        specifier: ^1.3.27
+        version: 1.4.10(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(svelte@4.2.2)(vitest@3.2.4)
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      effect:
+        specifier: ^3.19.4
+        version: 3.19.4
+      hono:
+        specifier: ^4.9.10
+        version: 4.9.10
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@rollup/plugin-commonjs':
+        specifier: ^28.0.6
+        version: 28.0.6(rollup@4.52.4)
+      '@rollup/plugin-esm-shim':
+        specifier: ^0.1.8
+        version: 0.1.8(rollup@4.52.4)
+      '@rollup/plugin-json':
+        specifier: ^6.1.0
+        version: 6.1.0(rollup@4.52.4)
+      '@rollup/plugin-node-resolve':
+        specifier: ^16.0.2
+        version: 16.0.2(rollup@4.52.4)
+      '@rollup/plugin-run':
+        specifier: ^3.1.0
+        version: 3.1.0(rollup@4.52.4)
+      '@rollup/plugin-swc':
+        specifier: ^0.4.0
+        version: 0.4.0(@swc/core@1.13.5)(rollup@4.52.4)
+      '@simplewebauthn/server':
+        specifier: ^13.2.2
+        version: 13.2.2
+      '@swc/core':
+        specifier: ^1.13.5
+        version: 1.13.5
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.19.17
+      rollup:
+        specifier: ^4.52.4
+        version: 4.52.4
+      rollup-plugin-copy:
+        specifier: ^3.5.0
+        version: 3.5.0
+      rollup-plugin-delete:
+        specifier: ^3.0.1
+        version: 3.0.1(rollup@4.52.4)
+      rollup-plugin-execute:
+        specifier: ^1.1.1
+        version: 1.1.1
+      rollup-plugin-node-externals:
+        specifier: ^8.1.1
+        version: 8.1.1(rollup@4.52.4)
+      rollup-plugin-shell:
+        specifier: ^1.0.9
+        version: 1.0.9
+      rollup-plugin-tsconfig-paths:
+        specifier: ^1.5.2
+        version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.2
+      vite-tsconfig-paths:
+        specifier: ^5.1.4
+        version: 5.1.4(typescript@5.9.2)(vite@5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))
+      yaml:
+        specifier: ^2.8.1
+        version: 2.8.1
+
   apps/console:
     dependencies:
       '@hookform/resolvers':
@@ -587,6 +717,9 @@ importers:
       '@webext-core/proxy-service':
         specifier: ^1.2.1
         version: 1.2.1(@webext-core/messaging@2.3.0)(webextension-polyfill@0.10.0)
+      better-auth:
+        specifier: ^1.4.10
+        version: 1.4.10(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(next@15.5.4(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(svelte@4.2.2)(vitest@3.2.4)
       effect:
         specifier: ^3.19.4
         version: 3.19.4
@@ -647,7 +780,7 @@ importers:
     dependencies:
       '@better-auth/passkey':
         specifier: ^1.4.5
-        version: 1.4.5(@better-auth/core@1.4.5(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.4(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-auth@1.4.5(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2))(better-call@1.1.4(zod@4.1.12))(nanostores@1.0.1)
+        version: 1.4.5(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.5(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2))(better-call@1.1.7(zod@4.1.12))(nanostores@1.0.1)
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.66.0(react@19.1.0))
@@ -1653,6 +1786,9 @@ importers:
       react-hook-form:
         specifier: ^7.66.0
         version: 7.66.0(react@19.1.0)
+      react-icons:
+        specifier: ^5.5.0
+        version: 5.5.0(react@19.1.0)
       recharts:
         specifier: 2.15.4
         version: 2.15.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1678,6 +1814,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -2074,6 +2213,16 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
+  '@better-auth/core@1.4.10':
+    resolution: {integrity: sha512-AThrfb6CpG80wqkanfrbN2/fGOYzhGladHFf3JhaWt/3/Vtf4h084T6PJLrDE7M/vCCGYvDI1DkvP3P1OB2HAg==}
+    peerDependencies:
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
+      better-call: 1.1.7
+      jose: ^6.1.0
+      kysely: ^0.28.5
+      nanostores: ^1.0.1
+
   '@better-auth/core@1.4.5':
     resolution: {integrity: sha512-dQ3hZOkUJzeBXfVEPTm2LVbzmWwka1nqd9KyWmB2OMlMfjr7IdUeBX4T7qJctF67d7QDhlX95jMoxu6JG0Eucw==}
     peerDependencies:
@@ -2094,6 +2243,11 @@ packages:
       better-call: 1.1.4
       nanostores: ^1.0.1
 
+  '@better-auth/telemetry@1.4.10':
+    resolution: {integrity: sha512-Dq4XJX6EKsUu0h3jpRagX739p/VMOTcnJYWRrLtDYkqtZFg+sFiFsSWVcfapZoWpRSUGYX9iKwl6nDHn6Ju2oQ==}
+    peerDependencies:
+      '@better-auth/core': 1.4.10
+
   '@better-auth/telemetry@1.4.5':
     resolution: {integrity: sha512-r3NyksbaBYA10SC86JA6QwmZfHwFutkUGcphgWGfu6MVx1zutYmZehIeC8LxTjOWZqqF9FI8vLjglWBHvPQeTg==}
     peerDependencies:
@@ -2104,6 +2258,9 @@ packages:
 
   '@better-fetch/fetch@1.1.18':
     resolution: {integrity: sha512-rEFOE1MYIsBmoMJtQbl32PGHHXuG2hDxvEd7rUHE0vCBoFQVSDqaVs9hkZEtHCxRoY+CljXKFCOuJ8uxqw1LcA==}
+
+  '@better-fetch/fetch@1.1.21':
+    resolution: {integrity: sha512-/ImESw0sskqlVR94jB+5+Pxjf+xBwDZF/N5+y2/q4EqD7IARUTSpPfIo8uf39SYpCxyOCtbyYpUrZ3F/k0zT4A==}
 
   '@borewit/text-codec@0.1.1':
     resolution: {integrity: sha512-5L/uBxmjaCIX5h8Z+uu+kA9BQLkc/Wl06UGR5ajNRxu+/XjonB5i8JpgFMrPj3LXTCPA0pv8yxUvbUi+QthGGA==}
@@ -5316,6 +5473,65 @@ packages:
     resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
 
+  better-auth@1.4.10:
+    resolution: {integrity: sha512-0kqwEBJLe8eyFzbUspRG/htOriCf9uMLlnpe34dlIJGdmDfPuQISd4shShvUrvIVhPxsY1dSTXdXPLpqISYOYg==}
+    peerDependencies:
+      '@lynx-js/react': '*'
+      '@prisma/client': ^5.0.0 || ^6.0.0 || ^7.0.0
+      '@sveltejs/kit': ^2.0.0
+      '@tanstack/react-start': ^1.0.0
+      better-sqlite3: ^12.0.0
+      drizzle-kit: '>=0.31.4'
+      drizzle-orm: '>=0.41.0'
+      mongodb: ^6.0.0 || ^7.0.0
+      mysql2: ^3.0.0
+      next: ^14.0.0 || ^15.0.0 || ^16.0.0
+      pg: ^8.0.0
+      prisma: ^5.0.0 || ^6.0.0 || ^7.0.0
+      react: ^18.0.0 || ^19.0.0
+      react-dom: ^18.0.0 || ^19.0.0
+      solid-js: ^1.0.0
+      svelte: ^4.0.0 || ^5.0.0
+      vitest: ^2.0.0 || ^3.0.0 || ^4.0.0
+      vue: ^3.0.0
+    peerDependenciesMeta:
+      '@lynx-js/react':
+        optional: true
+      '@prisma/client':
+        optional: true
+      '@sveltejs/kit':
+        optional: true
+      '@tanstack/react-start':
+        optional: true
+      better-sqlite3:
+        optional: true
+      drizzle-kit:
+        optional: true
+      drizzle-orm:
+        optional: true
+      mongodb:
+        optional: true
+      mysql2:
+        optional: true
+      next:
+        optional: true
+      pg:
+        optional: true
+      prisma:
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+      solid-js:
+        optional: true
+      svelte:
+        optional: true
+      vitest:
+        optional: true
+      vue:
+        optional: true
+
   better-auth@1.4.5:
     resolution: {integrity: sha512-pHV2YE0OogRHvoA6pndHXCei4pcep/mjY7psSaHVrRgjBtumVI68SV1g9U9XPRZ4KkoGca9jfwuv+bB2UILiFw==}
     peerDependencies:
@@ -5350,6 +5566,14 @@ packages:
 
   better-call@1.1.4:
     resolution: {integrity: sha512-NJouLY6IVKv0nDuFoc6FcbKDFzEnmgMNofC9F60Mwx1Ecm7X6/Ecyoe5b+JSVZ42F/0n46/M89gbYP1ZCVv8xQ==}
+    peerDependencies:
+      zod: ^4.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
+  better-call@1.1.7:
+    resolution: {integrity: sha512-6gaJe1bBIEgVebQu/7q9saahVzvBsGaByEnE8aDVncZEDiJO7sdNB28ot9I6iXSbR25egGmmZ6aIURXyQHRraQ==}
     peerDependencies:
       zod: ^4.0.0
     peerDependenciesMeta:
@@ -10018,6 +10242,17 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
+  '@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)':
+    dependencies:
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
+      '@standard-schema/spec': 1.0.0
+      better-call: 1.1.7(zod@4.1.12)
+      jose: 6.1.0
+      kysely: 0.28.8
+      nanostores: 1.0.1
+      zod: 4.1.12
+
   '@better-auth/core@1.4.5(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.4(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)':
     dependencies:
       '@better-auth/utils': 0.3.0
@@ -10029,17 +10264,23 @@ snapshots:
       nanostores: 1.0.1
       zod: 4.1.12
 
-  '@better-auth/passkey@1.4.5(@better-auth/core@1.4.5(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.4(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-auth@1.4.5(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2))(better-call@1.1.4(zod@4.1.12))(nanostores@1.0.1)':
+  '@better-auth/passkey@1.4.5(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-auth@1.4.5(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2))(better-call@1.1.7(zod@4.1.12))(nanostores@1.0.1)':
     dependencies:
-      '@better-auth/core': 1.4.5(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.4(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
+      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
       '@better-auth/utils': 0.3.0
-      '@better-fetch/fetch': 1.1.18
+      '@better-fetch/fetch': 1.1.21
       '@simplewebauthn/browser': 13.2.2
       '@simplewebauthn/server': 13.2.2
       better-auth: 1.4.5(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2)
-      better-call: 1.1.4(zod@4.1.12)
+      better-call: 1.1.7(zod@4.1.12)
       nanostores: 1.0.1
       zod: 4.1.12
+
+  '@better-auth/telemetry@1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))':
+    dependencies:
+      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
 
   '@better-auth/telemetry@1.4.5(@better-auth/core@1.4.5(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.4(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))':
     dependencies:
@@ -10050,6 +10291,8 @@ snapshots:
   '@better-auth/utils@0.3.0': {}
 
   '@better-fetch/fetch@1.1.18': {}
+
+  '@better-fetch/fetch@1.1.21': {}
 
   '@borewit/text-codec@0.1.1': {}
 
@@ -12614,6 +12857,14 @@ snapshots:
       chai: 5.3.3
       tinyrainbow: 2.0.0
 
+  '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
+    dependencies:
+      '@vitest/spy': 3.2.4
+      estree-walker: 3.0.3
+      magic-string: 0.30.19
+    optionalDependencies:
+      vite: 5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
       '@vitest/spy': 3.2.4
@@ -12659,7 +12910,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -13130,6 +13381,52 @@ snapshots:
 
   bcryptjs@3.0.3: {}
 
+  better-auth@1.4.10(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(next@15.5.4(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(svelte@4.2.2)(vitest@3.2.4):
+    dependencies:
+      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
+      '@better-auth/telemetry': 1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
+      '@noble/ciphers': 2.0.1
+      '@noble/hashes': 2.0.1
+      better-call: 1.1.7(zod@4.1.12)
+      defu: 6.1.4
+      jose: 6.1.0
+      kysely: 0.28.8
+      nanostores: 1.0.1
+      zod: 4.1.12
+    optionalDependencies:
+      '@prisma/client': 6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2)
+      next: 15.5.4(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2)
+      prisma: 6.16.3(magicast@0.3.5)(typescript@5.9.2)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      svelte: 4.2.2
+      vitest: 3.2.4(@types/node@24.10.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
+  better-auth@1.4.10(@prisma/client@6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2))(next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2))(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(svelte@4.2.2)(vitest@3.2.4):
+    dependencies:
+      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
+      '@better-auth/telemetry': 1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1))
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
+      '@noble/ciphers': 2.0.1
+      '@noble/hashes': 2.0.1
+      better-call: 1.1.7(zod@4.1.12)
+      defu: 6.1.4
+      jose: 6.1.0
+      kysely: 0.28.8
+      nanostores: 1.0.1
+      zod: 4.1.12
+    optionalDependencies:
+      '@prisma/client': 6.16.3(prisma@6.16.3(magicast@0.3.5)(typescript@5.9.2))(typescript@5.9.2)
+      next: 15.5.4(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2)
+      prisma: 6.16.3(magicast@0.3.5)(typescript@5.9.2)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      svelte: 4.2.2
+      vitest: 3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
   better-auth@1.4.5(next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(svelte@4.2.2):
     dependencies:
       '@better-auth/core': 1.4.5(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.18)(better-call@1.1.4(zod@4.1.12))(jose@6.1.0)(kysely@0.28.8)(nanostores@1.0.1)
@@ -13167,7 +13464,7 @@ snapshots:
       nanostores: 1.0.1
       zod: 4.1.12
     optionalDependencies:
-      next: 15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2)
+      next: 15.5.4(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2)
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
       svelte: 4.2.2
@@ -13176,6 +13473,15 @@ snapshots:
     dependencies:
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.18
+      rou3: 0.7.10
+      set-cookie-parser: 2.7.1
+    optionalDependencies:
+      zod: 4.1.12
+
+  better-call@1.1.7(zod@4.1.12):
+    dependencies:
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
       rou3: 0.7.10
       set-cookie-parser: 2.7.1
     optionalDependencies:
@@ -15735,6 +16041,31 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
+  next@15.5.4(@babel/core@7.28.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2):
+    dependencies:
+      '@next/env': 15.5.4
+      '@swc/helpers': 0.5.15
+      caniuse-lite: 1.0.30001745
+      postcss: 8.4.31
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+      styled-jsx: 5.1.6(@babel/core@7.28.5)(react@19.2.0)
+    optionalDependencies:
+      '@next/swc-darwin-arm64': 15.5.4
+      '@next/swc-darwin-x64': 15.5.4
+      '@next/swc-linux-arm64-gnu': 15.5.4
+      '@next/swc-linux-arm64-musl': 15.5.4
+      '@next/swc-linux-x64-gnu': 15.5.4
+      '@next/swc-linux-x64-musl': 15.5.4
+      '@next/swc-win32-arm64-msvc': 15.5.4
+      '@next/swc-win32-x64-msvc': 15.5.4
+      sass: 1.93.2
+      sharp: 0.34.4
+    transitivePeerDependencies:
+      - '@babel/core'
+      - babel-plugin-macros
+    optional: true
+
   next@15.5.4(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(sass@1.93.2):
     dependencies:
       '@next/env': 15.5.4
@@ -15758,31 +16089,6 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
-
-  next@15.5.4(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(sass@1.93.2):
-    dependencies:
-      '@next/env': 15.5.4
-      '@swc/helpers': 0.5.15
-      caniuse-lite: 1.0.30001745
-      postcss: 8.4.31
-      react: 19.2.0
-      react-dom: 19.2.0(react@19.2.0)
-      styled-jsx: 5.1.6(react@19.2.0)
-    optionalDependencies:
-      '@next/swc-darwin-arm64': 15.5.4
-      '@next/swc-darwin-x64': 15.5.4
-      '@next/swc-linux-arm64-gnu': 15.5.4
-      '@next/swc-linux-arm64-musl': 15.5.4
-      '@next/swc-linux-x64-gnu': 15.5.4
-      '@next/swc-linux-x64-musl': 15.5.4
-      '@next/swc-win32-arm64-msvc': 15.5.4
-      '@next/swc-win32-x64-msvc': 15.5.4
-      sass: 1.93.2
-      sharp: 0.34.4
-    transitivePeerDependencies:
-      - '@babel/core'
-      - babel-plugin-macros
-    optional: true
 
   nice-try@1.0.5: {}
 
@@ -17049,16 +17355,18 @@ snapshots:
 
   stubborn-utils@1.0.2: {}
 
+  styled-jsx@5.1.6(@babel/core@7.28.5)(react@19.2.0):
+    dependencies:
+      client-only: 0.0.1
+      react: 19.2.0
+    optionalDependencies:
+      '@babel/core': 7.28.5
+    optional: true
+
   styled-jsx@5.1.6(react@19.1.0):
     dependencies:
       client-only: 0.0.1
       react: 19.1.0
-
-  styled-jsx@5.1.6(react@19.2.0):
-    dependencies:
-      client-only: 0.0.1
-      react: 19.2.0
-    optional: true
 
   superagent@10.2.3:
     dependencies:
@@ -17616,6 +17924,24 @@ snapshots:
       d3-time: 3.1.0
       d3-timer: 3.0.1
 
+  vite-node@3.2.4(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
+    dependencies:
+      cac: 6.7.14
+      debug: 4.4.1(supports-color@10.2.2)
+      es-module-lexer: 1.7.0
+      pathe: 2.0.3
+      vite: 5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+    transitivePeerDependencies:
+      - '@types/node'
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+
   vite-node@3.2.4(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
       cac: 6.7.14
@@ -17686,7 +18012,6 @@ snapshots:
       lightningcss: 1.30.2
       sass: 1.93.2
       terser: 5.44.0
-    optional: true
 
   vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -17719,6 +18044,45 @@ snapshots:
       ts-essentials: 10.1.1(typescript@5.9.2)
       typescript: 5.9.2
       vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
+  vitest@3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
+    dependencies:
+      '@types/chai': 5.2.2
+      '@vitest/expect': 3.2.4
+      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))
+      '@vitest/pretty-format': 3.2.4
+      '@vitest/runner': 3.2.4
+      '@vitest/snapshot': 3.2.4
+      '@vitest/spy': 3.2.4
+      '@vitest/utils': 3.2.4
+      chai: 5.3.3
+      debug: 4.4.1(supports-color@10.2.2)
+      expect-type: 1.2.2
+      magic-string: 0.30.19
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinyglobby: 0.2.15
+      tinypool: 1.1.1
+      tinyrainbow: 2.0.0
+      vite: 5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      vite-node: 3.2.4(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 20.19.17
+      '@vitest/ui': 3.2.4(vitest@3.2.4)
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
 
   vitest@3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:

@@ -1,17 +1,16 @@
 'use client';
 
-import { authClient } from '@/lib/authClient';
+import type { MaybePromise } from '@repo/types';
 import { Button } from '@repo/ui/components/Button';
 import { FaGithub } from 'react-icons/fa';
 
-export const GithubSigninButton = () => {
-  const handleGithubSignIn = async () => {
-    await authClient.signIn.social({
-      provider: 'github',
-      callbackURL: 'http://localhost:3000/',
-    });
-  };
+export type GithubSigninButtonProps = {
+  handleGithubSignIn: () => MaybePromise<void>;
+};
 
+export const GithubSignInButton = ({
+  handleGithubSignIn,
+}: GithubSigninButtonProps) => {
   return (
     <Button
       onClick={handleGithubSignIn}
