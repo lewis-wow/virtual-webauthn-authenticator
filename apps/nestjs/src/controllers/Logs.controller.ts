@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseFilters } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import { ListLogsResponseSchema } from '@repo/contract/dto';
@@ -6,8 +6,10 @@ import { nestjsContract } from '@repo/contract/nestjs';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';
+import { ExceptionFilter } from '../filters/Exception.filter';
 
 @Controller()
+@UseFilters(ExceptionFilter)
 export class LogsController {
   constructor(private readonly activityLog: ActivityLog) {}
 

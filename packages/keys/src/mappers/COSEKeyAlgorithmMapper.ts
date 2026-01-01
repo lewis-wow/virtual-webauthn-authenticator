@@ -1,13 +1,16 @@
+import { assertSchema, guardSchema } from '@repo/assert';
 import { swapKeysAndValues } from '@repo/utils';
 import { match } from 'ts-pattern';
-import { assert, isEnum } from 'typanion';
+import z from 'zod';
 
 import { COSEKeyAlgorithm } from '../enums/COSEKeyAlgorithm';
 import { KeyAlgorithm } from '../enums/KeyAlgorithm';
-import { KeyCurveAlgorithm } from '../enums/KeyCurveAlgorithm';
 import { KeyCurveName } from '../enums/KeyCurveName';
-import { KeyRsaAlgorithm } from '../enums/KeyRsaAlgorithm';
 import { KeyType } from '../enums/KeyType';
+import {
+  KeyCurveAlgorithmSchema,
+  KeyRsaAlgorithmSchema,
+} from '../zod-validation';
 
 export class COSEKeyAlgorithmMapper {
   static keyAlgorithmToCOSEKeyAlgorithm(
@@ -30,9 +33,9 @@ export class COSEKeyAlgorithmMapper {
     const keyAlgorithm =
       COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyAlgorithm(coseKeyAlgorithm);
 
-    assert(
+    assertSchema(
       keyAlgorithm,
-      isEnum([KeyAlgorithm.ES256, KeyAlgorithm.ES384, KeyAlgorithm.ES512]),
+      z.enum([KeyAlgorithm.ES256, KeyAlgorithm.ES384, KeyAlgorithm.ES512]),
     );
 
     switch (keyAlgorithm) {
@@ -52,8 +55,8 @@ export class COSEKeyAlgorithmMapper {
       COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyAlgorithm(coseKeyAlgorithm);
 
     return match(keyAlgorithm)
-      .when(isEnum(KeyCurveAlgorithm), () => KeyType.EC)
-      .when(isEnum(KeyRsaAlgorithm), () => KeyType.RSA)
+      .when(guardSchema(KeyCurveAlgorithmSchema), () => KeyType.EC)
+      .when(guardSchema(KeyRsaAlgorithmSchema), () => KeyType.RSA)
       .exhaustive();
   }
 }

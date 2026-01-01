@@ -12,8 +12,13 @@ import { PublicKeyCredentialTypeSchema } from './enums/PublicKeyCredentialTypeSc
 export const PublicKeyCredentialDescriptorSchema = z
   .object({
     type: PublicKeyCredentialTypeSchema,
-    id: BytesSchema.meta({
-      description: 'The credential ID of the public key credential.',
+    id: BytesSchema.refine((buf) => buf.length <= 1023, {
+      message: `Credential ID length must not exceed 1023 bytes. ${see(
+        'https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data',
+      )}`,
+    }).meta({
+      description:
+        'The credential ID of the public key credential (max 1023 bytes).',
     }),
     /**
      * This OPTIONAL member contains a hint as to how the client might communicate

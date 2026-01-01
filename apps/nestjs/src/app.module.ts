@@ -6,7 +6,8 @@ import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { LogsController } from './controllers/Logs.controller';
 import { ProfileController } from './controllers/Profile.controller';
-import { WebAuthnCredentialsController } from './controllers/WebAuthnCredentials.controller';
+import { WebAuthnPublicKeyCredentialsController } from './controllers/WebAuthnPublicKeyCredentials.controller';
+import { ExceptionFilter } from './filters/Exception.filter';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
 import { ActivityLogProvider } from './services/ActivityLog.provider';
@@ -20,6 +21,7 @@ import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
 import { PrismaWebAuthnRepositoryProvider } from './services/PrismaWebAuthnRepository.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
+import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticatorAgent.provider';
 
 @Module({
   imports: [
@@ -31,10 +33,11 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     HealthcheckController,
     ProfileController,
     CredentialsController,
-    WebAuthnCredentialsController,
+    WebAuthnPublicKeyCredentialsController,
     LogsController,
   ],
   providers: [
+    ExceptionFilter,
     PrismaService,
     AzureCredentialProvider,
     CryptographyClientFactoryProvider,
@@ -44,6 +47,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     AzureKeyVaultKeyProviderProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
+    VirtualAuthenticatorAgentProvider,
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
@@ -58,6 +62,7 @@ import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.pr
     AzureKeyVaultKeyProviderProvider,
     LoggerProvider,
     VirtualAuthenticatorProvider,
+    VirtualAuthenticatorAgentProvider,
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,

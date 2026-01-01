@@ -2,16 +2,16 @@ import type { KeyClient, KeyVaultKey, SignResult } from '@azure/keyvault-keys';
 import { JsonWebKey } from '@repo/keys';
 import { KeyAlgorithm, KeyOperation } from '@repo/keys/enums';
 import { COSEKeyAlgorithmMapper, COSEKeyMapper } from '@repo/keys/mappers';
-import { WebAuthnCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
-  WebAuthnCredentialWithMeta,
+  WebAuthnPublicKeyCredentialWithMeta,
 } from '@repo/virtual-authenticator/types';
 import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/zod-validation';
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
-import { UnexpectedWebAuthnCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnCredentialKeyMetaType';
+import { UnexpectedWebAuthnPublicKeyCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';
 
 export type KeyPayload = {
   jwk: JsonWebKey;
@@ -61,7 +61,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
         },
       )
       .catch((error) => {
-        console.error(error);
         throw error;
       });
 
@@ -106,16 +105,16 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
   }
 
   async generateKeyPair(opts: {
-    webAuthnCredentialId: string;
+    webAuthnPublicKeyCredentialId: string;
     pubKeyCredParams: PubKeyCredParamStrict;
   }) {
-    const { webAuthnCredentialId, pubKeyCredParams } = opts;
+    const { webAuthnPublicKeyCredentialId, pubKeyCredParams } = opts;
 
     const {
       jwk,
       meta: { keyVaultKey },
     } = await this._createKey({
-      keyName: webAuthnCredentialId,
+      keyName: webAuthnPublicKeyCredentialId,
       supportedPubKeyCredParam: pubKeyCredParams,
     });
 
@@ -123,8 +122,9 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     return {
       COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
-      webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-      webAuthnCredentialKeyVaultKeyMeta: {
+      webAuthnPublicKeyCredentialKeyMetaType:
+        WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
+      webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId: keyVaultKey.id ?? null,
         keyVaultKeyName: keyVaultKey.name,
         hsm: false,
@@ -134,22 +134,23 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
   async sign(opts: {
     data: Uint8Array;
-    webAuthnCredential: WebAuthnCredentialWithMeta;
+    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
-    const { data, webAuthnCredential } = opts;
+    const { data, webAuthnPublicKeyCredential } = opts;
 
     if (
-      webAuthnCredential.webAuthnCredentialKeyMetaType !==
-      WebAuthnCredentialKeyMetaType.KEY_VAULT
+      webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyMetaType !==
+      WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT
     ) {
-      throw new UnexpectedWebAuthnCredentialKeyMetaType();
+      throw new UnexpectedWebAuthnPublicKeyCredentialKeyMetaType();
     }
 
     const {
       meta: { keyVaultKey },
     } = await this._getKey({
       keyName:
-        webAuthnCredential.webAuthnCredentialKeyVaultKeyMeta.keyVaultKeyName,
+        webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta
+          .keyVaultKeyName,
     });
 
     const keyAlgorithm = KeyAlgorithm.ES256;

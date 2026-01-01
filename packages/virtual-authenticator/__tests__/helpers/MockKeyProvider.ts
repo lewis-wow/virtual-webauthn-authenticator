@@ -4,12 +4,12 @@ import { COSEKeyMapper } from '@repo/keys/mappers';
 import {
   createSign,
   generateKeyPairSync,
-  KeyPairKeyObjectResult,
+  type KeyPairKeyObjectResult,
 } from 'node:crypto';
 
-import { WebAuthnCredentialKeyMetaType } from '../../src/enums/WebAuthnCredentialKeyMetaType';
-import { IKeyProvider } from '../../src/types/IKeyProvider';
-import { WebAuthnCredentialWithMeta } from '../../src/types/WebAuthnCredentialWithMeta';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../src/enums/WebAuthnPublicKeyCredentialKeyMetaType';
+import type { IKeyProvider } from '../../src/types/IKeyProvider';
+import type { WebAuthnPublicKeyCredentialWithMeta } from '../../src/types/WebAuthnPublicKeyCredentialWithMeta';
 import { KeyVaultKeyIdGenerator } from './KeyVaultKeyIdGenerator';
 
 export type MockKeyProviderOptions = {
@@ -25,14 +25,14 @@ export class MockKeyProvider implements IKeyProvider {
     this.keyVaultKeyIdGenerator = opts.keyVaultKeyIdGenerator;
   }
 
-  async generateKeyPair(opts: { webAuthnCredentialId: string }) {
-    const { webAuthnCredentialId } = opts;
+  async generateKeyPair(opts: { webAuthnPublicKeyCredentialId: string }) {
+    const { webAuthnPublicKeyCredentialId } = opts;
 
     const keyPair = generateKeyPairSync('ec', {
       namedCurve: 'P-256',
     });
 
-    this.keyPairStore[webAuthnCredentialId] = keyPair;
+    this.keyPairStore[webAuthnPublicKeyCredentialId] = keyPair;
 
     const credentialPublicKey = new JsonWebKey(
       keyPair.publicKey.export({ format: 'jwk' }),
@@ -47,8 +47,9 @@ export class MockKeyProvider implements IKeyProvider {
 
     return {
       COSEPublicKey,
-      webAuthnCredentialKeyMetaType: WebAuthnCredentialKeyMetaType.KEY_VAULT,
-      webAuthnCredentialKeyVaultKeyMeta: {
+      webAuthnPublicKeyCredentialKeyMetaType:
+        WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
+      webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId,
         keyVaultKeyName,
         hsm: false,
@@ -58,11 +59,11 @@ export class MockKeyProvider implements IKeyProvider {
 
   async sign(opts: {
     data: Uint8Array;
-    webAuthnCredential: WebAuthnCredentialWithMeta;
+    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
-    const { data, webAuthnCredential } = opts;
+    const { data, webAuthnPublicKeyCredential } = opts;
 
-    const keyPair = this.keyPairStore[webAuthnCredential.id]!;
+    const keyPair = this.keyPairStore[webAuthnPublicKeyCredential.id]!;
 
     const signature = createSign('sha256')
       .update(data)

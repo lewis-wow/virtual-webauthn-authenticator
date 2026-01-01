@@ -1,5 +1,6 @@
+import { assertSchema } from '@repo/assert';
 import * as crypto from 'node:crypto';
-import { assert, isString, isTuple } from 'typanion';
+import z from 'zod';
 
 import { Hash } from './Hash';
 
@@ -46,7 +47,7 @@ export class Encryption {
     const { key, encryptedText } = opts;
     const parts = encryptedText.split(':');
 
-    assert(parts, isTuple([isString(), isString(), isString()]));
+    assertSchema(parts, z.tuple([z.string(), z.string(), z.string()]));
 
     const iv = Buffer.from(parts[0], 'hex');
     const authTag = Buffer.from(parts[1], 'hex');

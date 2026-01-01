@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 
 type RequestWithHeaders =
@@ -26,5 +25,5 @@ export const getRequestId = (req: RequestWithHeaders): string => {
     }
   }
 
-  return requestId ?? randomUUID();
+  return requestId ?? crypto.randomUUID();
 };

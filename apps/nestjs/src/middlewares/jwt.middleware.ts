@@ -31,11 +31,10 @@ export class JwtMiddleware implements NestMiddleware {
 
         req.user = jwtPayload;
       } catch (error) {
-        this.logger.error(
-          'Invalid JWT',
-          (error as Error).message,
-          JwtMiddleware.name,
-        );
+        if (error instanceof Error) {
+          this.logger.exception(error);
+        }
+
         req.user = null;
       }
     } else {

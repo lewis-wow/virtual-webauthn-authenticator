@@ -1,7 +1,8 @@
+import { assertSchema } from '@repo/assert';
 import { Logger } from '@repo/logger';
 import type { MaybePromise } from '@repo/types';
 import { parse, type Cookies } from 'cookie';
-import { assert, isOptional, isString } from 'typanion';
+import z from 'zod';
 
 export type RewriteHeaders = (opts: {
   headers: Headers;
@@ -50,8 +51,8 @@ export class Proxy {
   private readonly authorization?: GetAuthorization;
 
   constructor(opts: ProxyOptions) {
-    assert(opts.targetBaseURL, isString());
-    assert(opts.proxyName, isOptional(isString()));
+    assertSchema(opts.targetBaseURL, z.string());
+    assertSchema(opts.proxyName, z.string().optional());
 
     this.targetBaseURL = opts.targetBaseURL;
     this.proxyName = opts.proxyName;

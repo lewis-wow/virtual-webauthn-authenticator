@@ -35,7 +35,6 @@
     "@repo/keys": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
-    "ecdsa-sig-formatter": "^1.0.11",
-    "typanion": "^3.14.0"
+    "ecdsa-sig-formatter": "^1.0.11"
   }
 }

@@ -5,7 +5,7 @@ import { CollectedClientDataTypeSchema } from './enums/CollectedClientDataTypeSc
 import { TokenBindingStatusSchema } from './enums/TokenBindingStatusSchema';
 
 /**
- * @see https://www.w3.org/TR/webauthn/#dictdef-collectedclientdata
+ * @see https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata
  *
  * The CollectedClientData may be extended in the future.
  * Therefore it’s critical when parsing to be tolerant of unknown keys and of any reordering of the keys.
@@ -38,8 +38,16 @@ export const CollectedClientDataSchema = z
       description:
         'The inverse of the `sameOriginWithAncestors` argument value',
     }),
-    /**
-     * This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party.
+    /**     * This OPTIONAL member contains the serialization of the top-level origin.
+     * Present if and only if crossOrigin is true (i.e., sameOriginWithAncestors is false).
+     *
+     * @see https://www.w3.org/TR/webauthn-3/#dom-collectedclientdata-toporigin
+     */
+    topOrigin: z.string().optional().meta({
+      description:
+        'The serialization of the top-level origin if crossOrigin is true',
+    }),
+    /**     * This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party.
      * Its absence indicates that the client doesn’t support token binding.
      *
      * @see https://datatracker.ietf.org/doc/html/rfc8471#section-1

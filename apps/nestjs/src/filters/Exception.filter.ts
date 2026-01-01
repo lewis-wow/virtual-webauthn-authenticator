@@ -2,29 +2,32 @@ import {
   ExceptionFilter as NestjsExceptionFilter,
   Catch,
   ArgumentsHost,
+  Injectable,
 } from '@nestjs/common';
 import { Exception, RequestValidationFailed } from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
 import { ExceptionMapper } from '@repo/exception/mappers';
-import { isAnyPrismaError } from '@repo/prisma';
-import { PrismaErrorMapper } from '@repo/prisma/mappers';
+import { Logger } from '@repo/logger';
 import { TsRestRequestValidationError } from '@ts-rest/nest';
 import type { Response as ExpressResponse } from 'express';
 
 @Catch()
+@Injectable()
 export class ExceptionFilter implements NestjsExceptionFilter {
+  constructor(private readonly logger: Logger) {}
+
   async catch(error: unknown, host: ArgumentsHost) {
+    if (error instanceof Error) {
+      this.logger.exception(error);
+    }
+
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<ExpressResponse>();
 
     let exception: Exception;
 
-    if (Exception.isException(error)) {
+    if (error instanceof Exception) {
       exception = error;
-    } else if (isAnyPrismaError(error)) {
-      exception =
-        PrismaErrorMapper.prismaErrorToException(error) ??
-        new InternalServerError();
     } else if (error instanceof TsRestRequestValidationError) {
       exception = new RequestValidationFailed({
         cause: error,
@@ -32,8 +35,6 @@ export class ExceptionFilter implements NestjsExceptionFilter {
     } else {
       exception = new InternalServerError();
     }
-
-    console.log('error', exception, error);
 
     const webResponse = ExceptionMapper.exceptionToResponse(exception);
 

@@ -13,16 +13,17 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/vitest-config": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@types/node": "^22.5.2",
     "type-fest": "^5.0.1",
     "typescript": "^5.5.4",
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "typanion": "^3.14.0"
+    "@repo/assert": "workspace:*",
+    "zod": "^4.1.12"
   }
 }

@@ -1,11 +1,17 @@
+import { assertSchema } from '@repo/assert';
 import { Buffer } from 'buffer';
-import { assert, isArray, isEnum, isOptional } from 'typanion';
+import z from 'zod';
 
 import { KeyAlgorithm } from './enums/KeyAlgorithm';
 import { KeyCurveName } from './enums/KeyCurveName';
 import { KeyOperation } from './enums/KeyOperation';
 import { KeyType } from './enums/KeyType';
 import { CannotParseJsonWebKey } from './exceptions/CannotParseJsonWebKey';
+import {
+  KeyCurveNameSchema,
+  KeyOperationSchema,
+  KeyTypeSchema,
+} from './zod-validation';
 
 export type JsonWebKeyOptions = {
   /**
@@ -220,9 +226,12 @@ export class JsonWebKey {
     crv?: KeyCurveName;
   } {
     try {
-      assert(looseJsonWebKey.kty, isOptional(isEnum(KeyType)));
-      assert(looseJsonWebKey.keyOps, isOptional(isArray(isEnum(KeyOperation))));
-      assert(looseJsonWebKey.crv, isOptional(isEnum(KeyCurveName)));
+      assertSchema(looseJsonWebKey.kty, KeyTypeSchema.optional());
+      assertSchema(
+        looseJsonWebKey.keyOps,
+        z.array(KeyOperationSchema).optional(),
+      );
+      assertSchema(looseJsonWebKey.crv, KeyCurveNameSchema.optional());
 
       return true;
     } catch {

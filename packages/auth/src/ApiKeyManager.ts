@@ -160,7 +160,7 @@ export class ApiKeyManager {
       plaintextKey,
       apiKey: {
         ...apiKey,
-        metadata: { createdWebAuthnCredentialCount: 0 },
+        metadata: { createdWebAuthnPublicKeyCredentialCount: 0 },
       } as ApiKey,
     };
   }
@@ -189,7 +189,7 @@ export class ApiKeyManager {
       include: {
         _count: {
           select: {
-            webAuthnCredentials: true,
+            webAuthnPublicKeyCredentials: true,
           },
         },
       },
@@ -238,7 +238,8 @@ export class ApiKeyManager {
     return {
       ...apiKey,
       metadata: {
-        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        createdWebAuthnPublicKeyCredentialCount:
+          apiKey._count.webAuthnPublicKeyCredentials,
       },
     } as ApiKey;
   }
@@ -257,7 +258,7 @@ export class ApiKeyManager {
         include: {
           _count: {
             select: {
-              webAuthnCredentials: true,
+              webAuthnPublicKeyCredentials: true,
             },
           },
         },
@@ -267,7 +268,8 @@ export class ApiKeyManager {
       return {
         ...apiKey,
         metadata: {
-          createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+          createdWebAuthnPublicKeyCredentialCount:
+            apiKey._count.webAuthnPublicKeyCredentials,
         },
       } as ApiKey;
     } catch {
@@ -293,7 +295,7 @@ export class ApiKeyManager {
       include: {
         _count: {
           select: {
-            webAuthnCredentials: true,
+            webAuthnPublicKeyCredentials: true,
           },
         },
       },
@@ -302,7 +304,8 @@ export class ApiKeyManager {
     return {
       ...apiKey,
       metadata: {
-        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        createdWebAuthnPublicKeyCredentialCount:
+          apiKey._count.webAuthnPublicKeyCredentials,
       },
     } as ApiKey;
   }
@@ -320,7 +323,7 @@ export class ApiKeyManager {
         include: {
           _count: {
             select: {
-              webAuthnCredentials: true,
+              webAuthnPublicKeyCredentials: true,
             },
           },
         },
@@ -337,7 +340,8 @@ export class ApiKeyManager {
     return {
       ...apiKey,
       metadata: {
-        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        createdWebAuthnPublicKeyCredentialCount:
+          apiKey._count.webAuthnPublicKeyCredentials,
       },
     } as ApiKey;
   }
@@ -354,7 +358,7 @@ export class ApiKeyManager {
         ...PUBLIC_API_KEY_SELECT,
         _count: {
           select: {
-            webAuthnCredentials: true,
+            webAuthnPublicKeyCredentials: true,
           },
         },
       },
@@ -367,7 +371,8 @@ export class ApiKeyManager {
     return {
       ...apiKey,
       metadata: {
-        createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+        createdWebAuthnPublicKeyCredentialCount:
+          apiKey._count.webAuthnPublicKeyCredentials,
       },
     } as ApiKey;
   }
@@ -389,7 +394,7 @@ export class ApiKeyManager {
           ...PUBLIC_API_KEY_SELECT,
           _count: {
             select: {
-              webAuthnCredentials: true,
+              webAuthnPublicKeyCredentials: true,
             },
           },
         },
@@ -400,7 +405,8 @@ export class ApiKeyManager {
       return apiKeys.map((apiKey) => ({
         ...apiKey,
         metadata: {
-          createdWebAuthnCredentialCount: apiKey._count.webAuthnCredentials,
+          createdWebAuthnPublicKeyCredentialCount:
+            apiKey._count.webAuthnPublicKeyCredentials,
         },
       })) as ApiKey[];
     });

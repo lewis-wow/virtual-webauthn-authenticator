@@ -17,7 +17,6 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/utils": "workspace:*",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.5.2",
     "jose": "^6.1.0",
@@ -28,6 +27,8 @@
   "dependencies": {
     "buffer": "^6.0.3",
     "effect": "^3.19.4",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "@repo/utils": "workspace:*",
+    "@repo/assert": "workspace:*"
   }
 }

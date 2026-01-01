@@ -1,4 +1,4 @@
-import { serve, ServerType } from '@hono/node-server';
+import { serve, type ServerType } from '@hono/node-server';
 import { Hono } from 'hono';
 import { vi, describe, it, expect, beforeAll, afterAll } from 'vitest';
 
@@ -34,7 +34,6 @@ beforeAll(async () => {
   await new Promise<void>((resolve) => {
     targetServer = serve({ fetch: targetApp.fetch, port: 0 }, (info) => {
       targetBaseURL = `http://localhost:${info.port}`;
-      console.log(`Target server listening on ${targetBaseURL}`);
       resolve();
     });
   });

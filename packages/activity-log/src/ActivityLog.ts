@@ -1,3 +1,4 @@
+import type { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import type { SortDirection } from '@repo/pagination/enums';
 import type { PaginationResult } from '@repo/pagination/zod-validation';
@@ -9,13 +10,16 @@ import type { Log } from './zod-validation/LogSchema';
 
 export type ActivityLogOptions = {
   prisma: PrismaClient;
+  logger: Logger;
 };
 
 export class ActivityLog {
-  private prisma: PrismaClient;
+  private readonly prisma: PrismaClient;
+  private readonly logger: Logger;
 
-  constructor({ prisma }: ActivityLogOptions) {
-    this.prisma = prisma;
+  constructor(opts: ActivityLogOptions) {
+    this.prisma = opts.prisma;
+    this.logger = opts.logger;
   }
 
   /**
@@ -44,8 +48,10 @@ export class ActivityLog {
       });
     } catch (error) {
       // CRITICAL: Never let a logging failure crash the main application flow.
-      // In production, you might send this specific error to Sentry/Datadog.
-      console.error('Failed to write event log:', error);
+
+      if (error instanceof Error) {
+        this.logger.exception(error, 'Failed to write event log.');
+      }
     }
   }
 

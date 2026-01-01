@@ -1,99 +1,48 @@
 import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
+import { set } from '@repo/core/__tests__/helpers';
 
+import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { PrismaClient } from '@repo/prisma';
 import {
-  verifyAuthenticationResponse,
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
-  type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import { IKeyProvider } from '../../../src/types/IKeyProvider';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/zod-validation/PublicKeyCredentialRequestOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
   CHALLENGE_BASE64URL,
+  CHALLENGE_BYTES,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   RP_ORIGIN,
 } from '../../helpers/consts';
-import { createPublicKeyCredentialRequestOptions } from '../../helpers/createPublicKeyCredentialRequestOptions';
+import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
+import { performPublicKeyCredentialRequestAndVerify } from '../../helpers/performPublicKeyCredentialRequestAndVerify';
 
-const prisma = new PrismaClient();
-
-/**
- * Helper function to de-duplicate the authentication and verification logic.
- * It uses and updates the `currentCounter` from the describe block's scope.
- */
-const performAndVerifyAuth = async (opts: {
-  authenticator: VirtualAuthenticator;
-  requestOptions: PublicKeyCredentialRequestOptions;
-  id: string;
-  publicKey: Uint8Array<ArrayBuffer>;
-  counter: number;
-  expectedNewCounter: number;
-}) => {
-  const {
-    authenticator,
-    requestOptions,
-    id,
-    publicKey,
-    counter,
-    expectedNewCounter,
-  } = opts;
-
-  const publicKeyCredential = await authenticator.getCredential({
-    publicKeyCredentialRequestOptions: requestOptions,
-    meta: {
-      userId: USER_ID,
-      origin: RP_ORIGIN,
-    },
-    context: {
-      apiKeyId: undefined,
-    },
-  });
-
-  const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialDtoSchema.encode(
-      publicKeyCredential,
-    ) as AuthenticationResponseJSON,
-    expectedChallenge: CHALLENGE_BASE64URL,
-    expectedOrigin: RP_ORIGIN,
-    expectedRPID: RP_ID,
-    credential: {
-      id,
-      publicKey,
-      counter,
-    },
-    requireUserVerification: true,
-  });
-
-  // The most important check: confirm that the authentication was successful.
-  expect(authenticationVerification.verified).toBe(true);
-
-  // A critical security check: ensure the signature counter has incremented.
-  expect(authenticationVerification.authenticationInfo.newCounter).toBe(
-    expectedNewCounter,
-  );
-};
-
-const cleanup = async () => {
-  await prisma.$transaction([
-    prisma.user.deleteMany(),
-    prisma.webAuthnCredential.deleteMany(),
-    prisma.webAuthnCredentialKeyVaultKeyMeta.deleteMany(),
-  ]);
-};
+const PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS = {
+  challenge: CHALLENGE_BYTES,
+  rpId: RP_ID,
+} as PublicKeyCredentialRequestOptions;
 
 /**
  * Tests for VirtualAuthenticator.getCredential() method
@@ -105,39 +54,58 @@ const cleanup = async () => {
  * authentication ceremony.
  */
 describe('VirtualAuthenticator.getCredential()', () => {
-  let keyProvider: IKeyProvider;
-  let authenticator: VirtualAuthenticator;
-  const webAuthnCredentialRepository = new PrismaWebAuthnRepository({
+  const prisma = new PrismaClient();
+  const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+  const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
+  const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+  const authenticator = new VirtualAuthenticator({
+    webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    keyProvider,
+  });
+  const agent = new VirtualAuthenticatorAgent({ authenticator });
 
-  let credentialID: string;
-  let credentialRawID: Uint8Array;
-  let counter: number;
-  let publicKey: Uint8Array<ArrayBuffer>;
+  const cleanupWebAuthnPublicKeyCredentials = async () => {
+    await prisma.$transaction([
+      prisma.webAuthnPublicKeyCredential.deleteMany(),
+      prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
+    ]);
+  };
+
+  let registrationInfo: {
+    webAuthnPublicKeyCredentialId: string;
+    webAuthnPublicKeyCredentialIdBytes: Uint8Array;
+    publicKey: Uint8Array<ArrayBuffer>;
+    counter: number;
+  };
 
   beforeAll(async () => {
-    await cleanup();
-
-    // Ensure the standard testing user exists in the database.
     await upsertTestingUser({ prisma });
+  });
 
-    const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
-    keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
+  afterAll(async () => {
+    await prisma.user.deleteMany();
+    await cleanupWebAuthnPublicKeyCredentials();
+  });
 
-    // Initialize the VirtualAuthenticator instance, passing in the Prisma client
-    // for database interactions.
-    authenticator = new VirtualAuthenticator({
-      webAuthnRepository: webAuthnCredentialRepository,
-      keyProvider,
-    });
+  afterEach(async () => {
+    // Clean up credentials after each test to ensure a fresh state for the next test
+    await cleanupWebAuthnPublicKeyCredentials();
+  });
 
+  beforeEach(async () => {
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
     // specified options, public key, and key vault metadata.
-    const publicKeyCredential = await authenticator.createCredential({
-      publicKeyCredentialCreationOptions:
-        PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+    const publicKeyCredential = await agent.createCredential({
+      origin: RP_ORIGIN,
+      options: {
+        publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+      },
+      sameOriginWithAncestors: true,
+
+      // Internal options
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
@@ -155,18 +123,18 @@ describe('VirtualAuthenticator.getCredential()', () => {
       expectedChallenge: CHALLENGE_BASE64URL,
       expectedOrigin: RP_ORIGIN,
       expectedRPID: RP_ID,
-      requireUserVerification: true, // Authenticator does perform UV
-      requireUserPresence: false, // Authenticator does NOT perform UP
+      requireUserVerification: false,
     });
 
-    publicKey = registrationVerification.registrationInfo!.credential.publicKey;
-    credentialID = registrationVerification.registrationInfo!.credential.id;
-    counter = registrationVerification.registrationInfo!.credential.counter;
-    credentialRawID = publicKeyCredential.rawId;
-  });
-
-  afterAll(async () => {
-    await cleanup();
+    registrationInfo = {
+      publicKey:
+        registrationVerification.registrationInfo!.credential.publicKey,
+      webAuthnPublicKeyCredentialId: UUIDMapper.bytesToUUID(
+        publicKeyCredential.rawId,
+      ),
+      webAuthnPublicKeyCredentialIdBytes: publicKeyCredential.rawId,
+      counter: registrationVerification.registrationInfo!.credential.counter,
+    };
   });
 
   /**
@@ -174,17 +142,31 @@ describe('VirtualAuthenticator.getCredential()', () => {
    * Per spec: The authenticator should produce a valid assertion that can be verified
    */
   test('should produce a verifiable assertion', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
-
-    await performAndVerifyAuth({
-      authenticator,
-      requestOptions,
-      id: credentialID,
+    const {
+      webAuthnPublicKeyCredentialIdBytes,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
-      expectedNewCounter: 1,
+    } = registrationInfo;
+
+    const publicKeyCredentialRequestOptions = set(
+      PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+      {
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+      },
+    );
+
+    await performPublicKeyCredentialRequestAndVerify({
+      agent,
+      publicKeyCredentialRequestOptions,
+      webAuthnPublicKeyCredentialId,
+      publicKey,
+      counter,
     });
   });
 
@@ -194,20 +176,22 @@ describe('VirtualAuthenticator.getCredential()', () => {
    * use discoverable credentials associated with the RP ID
    */
   test('should produce a verifiable assertion without allowCredentials', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
+    const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+      registrationInfo;
 
-    await performAndVerifyAuth({
-      authenticator,
-      requestOptions: {
-        ...requestOptions,
+    const publicKeyCredentialRequestOptions = set(
+      PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+      {
         allowCredentials: undefined,
       },
-      id: credentialID,
+    );
+
+    await performPublicKeyCredentialRequestAndVerify({
+      agent,
+      publicKeyCredentialRequestOptions,
+      webAuthnPublicKeyCredentialId,
       publicKey,
       counter,
-      expectedNewCounter: 2,
     });
   });
 
@@ -217,23 +201,32 @@ describe('VirtualAuthenticator.getCredential()', () => {
    * allowCredentials contains additional non-matching credential IDs
    */
   test('should produce a verifiable assertion with redundant allowCredentials', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
-
-    await performAndVerifyAuth({
-      authenticator,
-      requestOptions: {
-        ...requestOptions,
-        allowCredentials: [
-          { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
-          ...(requestOptions.allowCredentials ?? []),
-        ],
-      },
-      id: credentialID,
+    const {
+      webAuthnPublicKeyCredentialId,
+      webAuthnPublicKeyCredentialIdBytes,
       publicKey,
       counter,
-      expectedNewCounter: 3,
+    } = registrationInfo;
+
+    const publicKeyCredentialRequestOptions = set(
+      PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+      {
+        allowCredentials: [
+          { id: generateRandomUUIDBytes(), type: 'public-key' },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+      },
+    );
+
+    await performPublicKeyCredentialRequestAndVerify({
+      agent,
+      publicKeyCredentialRequestOptions,
+      webAuthnPublicKeyCredentialId,
+      publicKey,
+      counter,
     });
   });
 
@@ -242,111 +235,98 @@ describe('VirtualAuthenticator.getCredential()', () => {
    * @see https://www.w3.org/TR/webauthn-3/#relying-party-identifier
    * Per spec: The RP ID must match the credential's RP ID for authentication to succeed
    */
-  test('should fail with different RP ID', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
+  test('should fail when RP ID differ from Origin', async () => {
+    const {
+      webAuthnPublicKeyCredentialId,
+      webAuthnPublicKeyCredentialIdBytes,
+      publicKey,
+      counter,
+    } = registrationInfo;
 
-    const rpId = 'WRONG_RP_ID';
+    const rpId = 'different-example.com';
 
-    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+    const publicKeyCredentialRequestOptions = set(
+      PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
       {
-        ...requestOptions,
         rpId,
-      };
-
-    await expect(() =>
-      authenticator.getCredential({
-        publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      }),
-    ).to.rejects.toThrowError(
-      new CredentialNotFound({
-        data: {
-          userId: USER_ID,
-          rpId,
-          allowCredentialIds: requestOptions.allowCredentials.map(
-            (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
-          ),
-        },
-      }),
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+      },
     );
+
+    await expect(
+      async () =>
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+        }),
+    ).to.rejects.toThrowError(new TypeAssertionError());
   });
 
   test('should fail with different user ID', async () => {
-    const publicKeyCredentialRequestOptions =
-      createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+    const {
+      webAuthnPublicKeyCredentialIdBytes,
+      webAuthnPublicKeyCredentialId,
+      publicKey,
+      counter,
+    } = registrationInfo;
 
     const userId = 'WRONG_USER_ID';
 
-    await expect(() =>
-      authenticator.getCredential({
-        publicKeyCredentialRequestOptions,
-        meta: {
-          userId,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      }),
-    ).to.rejects.toThrowError(
-      new CredentialNotFound({
-        data: {
-          userId,
-          rpId: RP_ID,
-          allowCredentialIds:
-            publicKeyCredentialRequestOptions.allowCredentials.map(
-              (allowCredential) => UUIDMapper.bytesToUUID(allowCredential.id),
-            ),
-        },
-      }),
+    const publicKeyCredentialRequestOptions = set(
+      PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+      {
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+      },
     );
+
+    await expect(
+      async () =>
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+          userId,
+        }),
+    ).to.rejects.toThrowError(new CredentialNotFound());
   });
 
   test('should fail with wrong allowCredentials', async () => {
-    const requestOptions = createPublicKeyCredentialRequestOptions({
-      credentialID: credentialRawID,
-    });
+    const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+      registrationInfo;
 
-    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+    const wrongCredentialId = generateRandomUUIDBytes();
+    const publicKeyCredentialRequestOptions = set(
+      PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
       {
-        ...requestOptions,
-        allowCredentials: [
-          { id: Buffer.from('WRONG_CREDENTIAL_ID'), type: 'public-key' },
-        ],
-      };
-
-    await expect(() =>
-      authenticator.getCredential({
-        publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      }),
-    ).to.rejects.toThrowError(
-      new CredentialNotFound({
-        data: {
-          userId: USER_ID,
-          rpId: RP_ID,
-          allowCredentialIds: [
-            UUIDMapper.bytesToUUID(Buffer.from('WRONG_CREDENTIAL_ID')),
-          ],
-        },
-      }),
+        allowCredentials: [{ id: wrongCredentialId, type: 'public-key' }],
+      },
     );
+
+    await expect(
+      async () =>
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+        }),
+    ).to.rejects.toThrowError(new CredentialNotFound());
   });
 
   /**
@@ -375,44 +355,36 @@ describe('VirtualAuthenticator.getCredential()', () => {
       },
     ])('With userVerification $userVerification', ({ userVerification }) => {
       test('should produce a verifiable assertion', async () => {
-        const requestOptions = createPublicKeyCredentialRequestOptions({
-          credentialID: credentialRawID,
-        });
+        const {
+          webAuthnPublicKeyCredentialIdBytes,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+        } = registrationInfo;
 
-        const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
           {
-            ...requestOptions,
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: webAuthnPublicKeyCredentialIdBytes,
+              },
+            ],
             userVerification,
-          };
-
-        const publicKeyCredential = await authenticator.getCredential({
-          publicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
           },
-          context: {
-            apiKeyId: undefined,
-          },
-        });
+        );
 
-        const authenticationVerification = await verifyAuthenticationResponse({
-          response: PublicKeyCredentialDtoSchema.encode(
-            publicKeyCredential,
-          ) as AuthenticationResponseJSON,
-          expectedChallenge: CHALLENGE_BASE64URL,
-          expectedOrigin: RP_ORIGIN,
-          expectedRPID: RP_ID,
-          credential: {
-            id: credentialID,
+        const { authenticationVerification } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
-          },
-          requireUserVerification:
-            userVerification === UserVerificationRequirement.REQUIRED,
-        });
-
-        expect(authenticationVerification.verified).toBe(true);
+            requireUserVerification:
+              userVerification === UserVerificationRequirement.REQUIRED,
+          });
 
         // Per spec, if userVerification is 'required', the UV flag must be set
         if (userVerification === UserVerificationRequirement.REQUIRED) {
@@ -424,28 +396,158 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
 
     test('should throw type mismatch when userVerification is not in enum', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        userVerification: 'INVALID_USER_VERIFICATION',
-      };
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          userVerification:
+            'INVALID_USER_VERIFICATION' as UserVerificationRequirement,
+        },
+      ) as unknown as PublicKeyCredentialRequestOptions;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions:
-            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
+    });
+  });
+
+  /**
+   * Step 10: Tests for authenticatorData flags (UP and UV bits)
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 10)
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
+   *
+   * Per spec: authenticatorData must include correct flags for User Present (UP) and User Verified (UV)
+   * Bit 0 (UP): User Present - set when user presence test succeeds
+   * Bit 2 (UV): User Verified - set when user verification succeeds
+   */
+  describe('Step 10: AuthenticatorData Flags', () => {
+    test('should set UV flag when userVerification is required', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          userVerification: UserVerificationRequirement.REQUIRED,
+        },
+      );
+
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+          requireUserVerification: true,
+        });
+
+      // Per spec: UV flag (bit 2) must be set when userVerification is required
+      expect(authenticationVerification.authenticationInfo.userVerified).toBe(
+        true,
+      );
+      // UP flag (bit 0) should also be set as user presence is implicit
+      expect(authenticationVerification.verified).toBe(true);
+    });
+
+    test('should set UP flag for all assertions', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          userVerification: UserVerificationRequirement.DISCOURAGED,
+        },
+      );
+
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+          requireUserVerification: false,
+        });
+
+      // Per spec: UP flag (bit 0) should always be set for valid assertions
+      // (user presence is required for all WebAuthn operations)
+      expect(authenticationVerification.verified).toBe(true);
+    });
+
+    test('should not set AT flag in assertion (only in registration)', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+        },
+      );
+
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+        });
+
+      // Per spec: AT flag (bit 6) should NOT be set in assertion authenticatorData
+      // (attested credential data is only included during registration)
+      expect(authenticationVerification.verified).toBe(true);
+      // The authenticatorData should not contain attested credential data
     });
   });
 
@@ -465,43 +567,33 @@ describe('VirtualAuthenticator.getCredential()', () => {
       { timeout: 120000 },
       { timeout: 300000 },
     ])('should work with timeout $timeout', async ({ timeout }) => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           timeout,
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
   });
 
@@ -516,88 +608,55 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('PublicKeyCredentialRequestOptions.allowCredentials variations', () => {
     test('should work with allowCredentials as empty array', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
           allowCredentials: [],
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should work with multiple allowCredentials including the correct one', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
           allowCredentials: [
-            { id: Buffer.from('WRONG_CREDENTIAL_ID_1'), type: 'public-key' },
-            { id: Buffer.from('WRONG_CREDENTIAL_ID_2'), type: 'public-key' },
-            ...(requestOptions.allowCredentials ?? []),
-            { id: Buffer.from('WRONG_CREDENTIAL_ID_3'), type: 'public-key' },
+            { id: generateRandomUUIDBytes(), type: 'public-key' },
+            { id: generateRandomUUIDBytes(), type: 'public-key' },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+            { id: generateRandomUUIDBytes(), type: 'public-key' },
           ],
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
   });
 
@@ -612,67 +671,65 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('PublicKeyCredentialRequestOptions.rpId', () => {
     test('should work with explicit rpId matching the origin', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           rpId: RP_ID,
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should throw type mismatch when rpId is not a string', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        rpId: 12345,
-      };
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          rpId: 12345 as unknown as string,
+        },
+      ) as unknown as PublicKeyCredentialRequestOptions;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions:
-            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
     });
   });
@@ -687,167 +744,241 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('PublicKeyCredentialRequestOptions.challenge', () => {
     test('should work with challenge exactly 16 bytes (minimum recommended)', async () => {
-      const challenge = new Uint8Array(16);
-      crypto.getRandomValues(challenge);
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const challenge = new Uint8Array(randomBytes(16));
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
-        {
-          ...requestOptions,
-          challenge,
-        };
+      const publicKeyCredentialRequestOptions = {
+        challenge,
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+      };
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
       });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should fail with challenge less than 16 bytes (spec recommends at least 16)', async () => {
-      const challenge = new Uint8Array(15);
-      crypto.getRandomValues(challenge);
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const challenge = new Uint8Array(randomBytes(15));
 
-      const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        challenge,
-      };
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          challenge,
+        },
+      );
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
     });
 
     test('should fail with empty challenge (0 bytes)', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
       const challenge = new Uint8Array(0);
 
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          challenge,
+        },
+      );
 
-      const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        challenge,
-      };
-
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
     });
 
     test('should work with very large challenge (1024 bytes)', async () => {
-      const challenge = new Uint8Array(1024);
-      crypto.getRandomValues(challenge);
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const challenge = new Uint8Array(randomBytes(1024));
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
-        {
-          ...requestOptions,
-          challenge,
-        };
+      const publicKeyCredentialRequestOptions = {
+        challenge,
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+      };
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
       });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should fail when challenge is not Uint8Array', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          challenge: 'not-a-uint8array' as unknown as Uint8Array,
+        },
+      ) as unknown as PublicKeyCredentialRequestOptions;
+
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
+      ).rejects.toThrowError();
+    });
+
+    /**
+     * Step 11: Test signature creation with various challenge sizes
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 11)
+     *
+     * Per spec: Signature is created from concatenation of authenticatorData || hash
+     * This tests that signature verification works correctly with different challenge sizes
+     */
+    test('should create valid signature with minimum challenge size (16 bytes)', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const minChallenge = new Uint8Array(randomBytes(16));
 
       const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        challenge: 'not-a-uint8array',
+        challenge: minChallenge,
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
       };
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions:
-            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+          expectedChallenge: Buffer.from(minChallenge).toString('base64url'),
+        });
+
+      // Verify signature was correctly created and verified
+      expect(authenticationVerification.verified).toBe(true);
+    });
+
+    test('should create valid signature with large challenge size (512 bytes)', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const largeChallenge = new Uint8Array(randomBytes(512));
+
+      const publicKeyCredentialRequestOptions = {
+        challenge: largeChallenge,
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
           },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
-      ).rejects.toThrowError();
+        ],
+      };
+
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+          expectedChallenge: Buffer.from(largeChallenge).toString('base64url'),
+        });
+
+      // Verify signature was correctly created and verified
+      expect(authenticationVerification.verified).toBe(true);
     });
   });
 
@@ -861,83 +992,63 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('PublicKeyCredentialRequestOptions.extensions', () => {
     test('should work with undefined extensions', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: undefined,
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should work with empty extensions object', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {},
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     /**
@@ -945,45 +1056,35 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Per spec: appid extension allows authentication with credentials registered with FIDO U2F
      */
     test('should work with appid extension', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {
             appid: 'https://example.com/appid.json',
           },
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     /**
@@ -991,48 +1092,38 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Per CTAP2: hmac-secret extension for symmetric secret operations
      */
     test('should work with hmac-secret extension', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {
             'hmac-secret': {
               salt1: new Uint8Array(32),
               salt2: new Uint8Array(32),
             },
           },
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     /**
@@ -1040,91 +1131,71 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Per spec: largeBlob extension for reading/writing large blob data
      */
     test('should work with largeBlob extension (read)', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {
             largeBlob: {
               read: true,
             },
           },
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should work with largeBlob extension (write)', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {
             largeBlob: {
               write: new Uint8Array([1, 2, 3, 4, 5]),
             },
           },
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     /**
@@ -1132,57 +1203,56 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Per spec: "Authenticators MUST ignore any extensions that they do not recognize."
      */
     test('should ignore unknown/unsupported extensions', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {
             unknownExtension: 'some-value',
             anotherUnknown: { complex: 'object' },
           },
-        };
-
-      const publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
         },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
+      );
 
       // Per spec, unknown extensions should be ignored, not cause errors
-      expect(authenticationVerification.verified).toBe(true);
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      });
     });
 
     test('should work with multiple extensions combined', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          ...requestOptions,
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
           extensions: {
             appid: 'https://example.com/appid.json',
             largeBlob: {
@@ -1190,35 +1260,16 @@ describe('VirtualAuthenticator.getCredential()', () => {
             },
             unknownExtension: 'ignored',
           },
-        };
+        },
+      );
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
   });
 
@@ -1236,176 +1287,242 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Optional fields: timeout, rpId, allowCredentials, userVerification, extensions
      */
     test('should work with minimal valid options (only required field)', async () => {
-      const challenge = new Uint8Array(32);
-      crypto.getRandomValues(challenge);
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
+
+      const challenge = new Uint8Array(randomBytes(32));
 
       // Only required field per spec is challenge
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
-        {
-          challenge,
-          rpId: RP_ID,
-          // All optional fields omitted: timeout, allowCredentials, userVerification, extensions
-        };
+      const publicKeyCredentialRequestOptions = {
+        challenge,
+      };
 
-      const publicKeyCredential = await authenticator.getCredential({
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
         publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
-
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: Buffer.from(challenge).toString('base64url'),
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
         requireUserVerification: false,
+        expectedChallenge: Buffer.from(challenge).toString('base64url'),
       });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
-    test('should work with all fields at maximum complexity', async () => {
-      const largeChallenge = new Uint8Array(1024);
-      crypto.getRandomValues(largeChallenge);
+    /**
+     * Step 3: Tests for allowCredentialDescriptorList credential lookup
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 3)
+     *
+     * The malformed credential IDs are simply ommited.
+     */
+    test('Should work with malformed credential IDs in allowCredentials', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
-
-      const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
+      // Malformed ID that is not a valid UUID will cause an error
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
-          challenge: largeChallenge,
-          rpId: RP_ID,
-          timeout: 300000,
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: Buffer.from('WRONG_CREDENTIAL_ID_1'),
+              id: new Uint8Array([1, 2, 3]), // Malformed - not a valid UUID
             },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: Buffer.from('WRONG_CREDENTIAL_ID_2'),
+              id: webAuthnPublicKeyCredentialIdBytes, // Valid credential
             },
-            ...(requestOptions.allowCredentials ?? []),
           ],
-          userVerification: UserVerificationRequirement.REQUIRED,
-          extensions: {
-            appid: 'https://example.com/appid.json',
-            largeBlob: {
-              read: true,
-            },
-            unknownExtension: 'ignored',
-          },
-        };
-
-      const publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
         },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
+      );
 
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: Buffer.from(largeChallenge).toString('base64url'),
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
+      const { authenticationVerification } =
+        await performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
-        },
-        requireUserVerification: true,
-      });
+        });
 
-      expect(authenticationVerification.verified).toBe(true);
+      expect(authenticationVerification.authenticationInfo.credentialID).toBe(
+        webAuthnPublicKeyCredentialId,
+      );
+    });
+
+    /**
+     * Step 3: Test that allowCredentials filters correctly with non-matching IDs
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 3)
+     */
+    test('Should fail when allowCredentials contains only non-matching credential IDs', async () => {
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: UUIDMapper.UUIDtoBytes(
+                '00000000-0000-0000-0000-000000000000',
+              ),
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: generateRandomUUIDBytes(),
+            },
+          ],
+        },
+      );
+
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
+      ).rejects.toThrowError(new CredentialNotFound());
+    });
+
+    test('should work with all fields at maximum complexity', async () => {
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const largeChallenge = new Uint8Array(randomBytes(1024));
+
+      const publicKeyCredentialRequestOptions = {
+        challenge: largeChallenge,
+        rpId: RP_ID,
+        timeout: 300000,
+        allowCredentials: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: generateRandomUUIDBytes(),
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: generateRandomUUIDBytes(),
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: webAuthnPublicKeyCredentialIdBytes,
+          },
+        ],
+        userVerification: UserVerificationRequirement.REQUIRED,
+        extensions: {
+          appid: 'https://example.com/appid.json',
+          largeBlob: {
+            read: true,
+          },
+          unknownExtension: 'ignored',
+        },
+      };
+
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+        expectedChallenge: Buffer.from(largeChallenge).toString('base64url'),
+      });
     });
 
     test('should fail with completely malformed options', async () => {
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
+
       const malformedOptions = {
         notValid: 'options',
       };
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions:
-            malformedOptions as unknown as PublicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions:
+              malformedOptions as unknown as PublicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
     });
 
     test('should fail with null in required field', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        challenge: null,
-      };
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          challenge: null as unknown as Uint8Array,
+        },
+      ) as unknown as PublicKeyCredentialRequestOptions;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions:
-            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
     });
 
     test('should fail with missing challenge', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredentialRequestOptions = {
-        ...requestOptions,
-        challenge: undefined,
-      };
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+          challenge: undefined as unknown as Uint8Array,
+        },
+      ) as unknown as PublicKeyCredentialRequestOptions;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions:
-            publicKeyCredentialRequestOptions as unknown as PublicKeyCredentialRequestOptions,
-          meta: {
-            userId: USER_ID,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
+          }),
       ).rejects.toThrowError();
     });
   });
@@ -1420,104 +1537,62 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('Signature Counter Verification', () => {
     test('should increment counter with each assertion', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+        },
+      );
 
       // First assertion
-      let publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+      const firstResult = await performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
 
-      let authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
       const firstCounter =
-        authenticationVerification.authenticationInfo.newCounter;
+        firstResult.authenticationVerification.authenticationInfo.newCounter;
       expect(firstCounter).toBeGreaterThan(counter);
 
       // Second assertion - counter should increment again
-      publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+      const secondResult = await performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter: firstCounter,
       });
 
-      authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter: firstCounter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
       const secondCounter =
-        authenticationVerification.authenticationInfo.newCounter;
+        secondResult.authenticationVerification.authenticationInfo.newCounter;
       expect(secondCounter).toBeGreaterThan(firstCounter);
 
       // Third assertion - counter should increment yet again
-      publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
+      const thirdResult = await performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter: secondCounter,
       });
 
-      authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter: secondCounter,
-        },
-        requireUserVerification: true,
-      });
-
-      expect(authenticationVerification.verified).toBe(true);
       const thirdCounter =
-        authenticationVerification.authenticationInfo.newCounter;
+        thirdResult.authenticationVerification.authenticationInfo.newCounter;
       expect(thirdCounter).toBeGreaterThan(secondCounter);
     });
   });
@@ -1530,59 +1605,101 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('meta.userId', () => {
     test('should throw error when userId is invalid UUID', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions: requestOptions,
-          meta: {
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+        },
+      );
+
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
             userId: 'INVALID_USER_ID',
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+          }),
       ).rejects.toThrowError();
     });
 
     test('should throw error when userId is null', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions: requestOptions,
-          meta: {
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+        },
+      );
+
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
             userId: null as unknown as string,
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+          }),
       ).rejects.toThrowError();
     });
 
     test('should throw error when userId is empty string', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      await expect(async () =>
-        authenticator.getCredential({
-          publicKeyCredentialRequestOptions: requestOptions,
-          meta: {
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+        },
+      );
+
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
+            publicKey,
+            counter,
             userId: '',
-            origin: RP_ORIGIN,
-          },
-          context: {
-            apiKeyId: undefined,
-          },
-        }),
+          }),
       ).rejects.toThrowError();
     });
   });
@@ -1595,73 +1712,66 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('meta.origin', () => {
     test('should work with valid origin matching RP ID', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
 
-      const publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
         },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
+      );
 
-      const authenticationVerification = await verifyAuthenticationResponse({
-        response: PublicKeyCredentialDtoSchema.encode(
-          publicKeyCredential,
-        ) as AuthenticationResponseJSON,
-        expectedChallenge: CHALLENGE_BASE64URL,
-        expectedOrigin: RP_ORIGIN,
-        expectedRPID: RP_ID,
-        credential: {
-          id: credentialID,
-          publicKey,
-          counter,
-        },
-        requireUserVerification: true,
+      await performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
       });
-
-      expect(authenticationVerification.verified).toBe(true);
     });
 
     test('should fail verification with mismatched origin', async () => {
-      const requestOptions = createPublicKeyCredentialRequestOptions({
-        credentialID: credentialRawID,
-      });
+      const {
+        webAuthnPublicKeyCredentialIdBytes,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+      } = registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              id: webAuthnPublicKeyCredentialIdBytes,
+            },
+          ],
+        },
+      );
 
       const wrongOrigin = 'https://evil.com';
 
-      const publicKeyCredential = await authenticator.getCredential({
-        publicKeyCredentialRequestOptions: requestOptions,
-        meta: {
-          userId: USER_ID,
-          origin: wrongOrigin,
-        },
-        context: {
-          apiKeyId: undefined,
-        },
-      });
-
-      // The credential is created, but verification should fail due to origin mismatch
-      await expect(async () =>
-        verifyAuthenticationResponse({
-          response: PublicKeyCredentialDtoSchema.encode(
-            publicKeyCredential,
-          ) as AuthenticationResponseJSON,
-          expectedChallenge: CHALLENGE_BASE64URL,
-          expectedOrigin: RP_ORIGIN, // Expecting correct origin
-          expectedRPID: RP_ID,
-          credential: {
-            id: credentialID,
+      await expect(
+        async () =>
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
-          },
-          requireUserVerification: true,
-        }),
+            origin: wrongOrigin,
+          }),
       ).rejects.toThrowError();
     });
   });

@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { see } from '../meta/see';
 import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema';
-import { UserHandleSchema } from './UserHandleSchema';
+import { UserIdSchema } from './UserIdSchema';
 
 // Represents the user creating the credential
 
@@ -11,7 +11,7 @@ import { UserHandleSchema } from './UserHandleSchema';
  */
 export const PublicKeyCredentialUserEntitySchema =
   PublicKeyCredentialEntitySchema.extend({
-    id: UserHandleSchema,
+    id: UserIdSchema,
     displayName: z.string().meta({
       description: "A human-friendly name for the user's account.",
       examples: ['John Doe'],

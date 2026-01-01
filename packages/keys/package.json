@@ -32,13 +32,13 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/assert": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/utils": "workspace:*",
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
     "effect": "^3.19.4",
     "ts-pattern": "^5.8.0",
-    "typanion": "^3.14.0",
     "uint8array-extras": "^1.5.0",
     "zod": "^4.1.12"
   }

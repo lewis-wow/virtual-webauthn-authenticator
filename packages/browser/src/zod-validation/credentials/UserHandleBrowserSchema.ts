@@ -5,10 +5,12 @@ import z from 'zod';
 import { ArrayBufferBrowserSchema } from '../ArrayBufferBrowserSchema';
 
 export const UserHandleBrowserSchema = z.codec(
-  ArrayBufferBrowserSchema,
+  ArrayBufferBrowserSchema.nullable(),
   UserHandleSchema,
   {
-    decode: BytesMapper.arrayBufferToBytes,
-    encode: BytesMapper.bytesToArrayBuffer,
+    decode: (value) =>
+      value === null ? null : BytesMapper.arrayBufferToBytes(value),
+    encode: (value) =>
+      value === null ? null : BytesMapper.bytesToArrayBuffer(value),
   },
 );

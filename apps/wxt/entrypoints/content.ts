@@ -2,6 +2,7 @@ import { extensionMessaging } from '@/messaging/extensionMessaging';
 import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
 
 const LOG_PREFIX = 'CONTENT';
+console.log(`[${LOG_PREFIX}]`, 'Init');
 
 export default defineContentScript({
   matches: ['<all_urls>'],

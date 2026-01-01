@@ -2,6 +2,7 @@
   "extends": "@repo/typescript-config/base.json",
   "include": [
     "src",
+    "__tests__",
     "../key-vault/src/types",
     "../key-vault/src/CredentialSignerFactory.ts",
     "../types/src/CredentialSigner.ts",

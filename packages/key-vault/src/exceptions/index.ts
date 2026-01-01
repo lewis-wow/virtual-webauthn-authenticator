@@ -1,1 +1,1 @@
-export * from './UnexpectedWebAuthnCredentialKeyMetaType';
+export * from './UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';

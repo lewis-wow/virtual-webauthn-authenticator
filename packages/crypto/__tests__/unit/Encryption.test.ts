@@ -15,7 +15,7 @@ describe('Encryption', () => {
     // Ensure the output is in the correct format "iv:authTag:encryptedData"
     const parts = encryptedText.split(':');
     expect(parts).toHaveLength(3);
-    expect(Buffer.from(parts[0], 'hex').length).toBe(Encryption.IV_LENGTH);
+    expect(Buffer.from(parts[0]!, 'hex').length).toBe(Encryption.IV_LENGTH);
 
     const decryptedText = Encryption.decrypt({ key: testKey, encryptedText });
 
@@ -54,7 +54,7 @@ describe('Encryption', () => {
 
     // Generate random (and thus incorrect) data of the same length
     const tamperedData = crypto
-      .randomBytes(Buffer.from(parts[2], 'hex').length)
+      .randomBytes(Buffer.from(parts[2]!, 'hex').length)
       .toString('hex');
     const tamperedEncryptedText = `${parts[0]}:${parts[1]}:${tamperedData}`;
 

@@ -7,11 +7,11 @@ export const Permission = {
   [`${PermissionEntity.Credential}.create` as const]: `${PermissionEntity.Credential}.create`,
   [`${PermissionEntity.Credential}.get` as const]: `${PermissionEntity.Credential}.get`,
 
-  // WebAuthnCredential
-  [`${PermissionEntity.WebAuthnCredential}.create` as const]: `${PermissionEntity.WebAuthnCredential}.create`,
-  [`${PermissionEntity.WebAuthnCredential}.read` as const]: `${PermissionEntity.WebAuthnCredential}.read`,
-  [`${PermissionEntity.WebAuthnCredential}.write` as const]: `${PermissionEntity.WebAuthnCredential}.write`,
-  [`${PermissionEntity.WebAuthnCredential}.delete` as const]: `${PermissionEntity.WebAuthnCredential}.delete`,
+  // WebAuthnPublicKeyCredential
+  [`${PermissionEntity.WebAuthnPublicKeyCredential}.create` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.create`,
+  [`${PermissionEntity.WebAuthnPublicKeyCredential}.read` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.read`,
+  [`${PermissionEntity.WebAuthnPublicKeyCredential}.write` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.write`,
+  [`${PermissionEntity.WebAuthnPublicKeyCredential}.delete` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.delete`,
 
   // ApiKey
   [`${PermissionEntity.ApiKey}.create` as const]: `${PermissionEntity.ApiKey}.create`,
