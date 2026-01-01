@@ -10,7 +10,7 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { COSEKeyAlgorithm, KeyAlgorithm } from '@repo/keys/enums';
 import { COSEKeyMapper } from '@repo/keys/mappers';
 import { PrismaClient } from '@repo/prisma';
-import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
+import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
@@ -150,7 +150,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
         expect(jwk).toMatchObject(
           keyProvider
             .getKeyPairStore()
-            [webAuthnPublicKeyCredentialId].publicKey.export({ format: 'jwk' }),
+            [
+              webAuthnPublicKeyCredentialId
+            ]!.publicKey.export({ format: 'jwk' }),
         );
       });
 
@@ -1012,7 +1014,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
         expect(jwk).toMatchObject(
           keyProvider
             .getKeyPairStore()
-            [webAuthnPublicKeyCredentialId].publicKey.export({ format: 'jwk' }),
+            [
+              webAuthnPublicKeyCredentialId
+            ]!.publicKey.export({ format: 'jwk' }),
         );
       });
     });

@@ -1,4 +1,4 @@
-import { serve, ServerType } from '@hono/node-server';
+import { serve, type ServerType } from '@hono/node-server';
 import { Hono } from 'hono';
 import { vi, describe, it, expect, beforeAll, afterAll } from 'vitest';
 

@@ -1,14 +1,14 @@
 import { USER_ID } from '../../../auth/__tests__/helpers';
 
 import {
-  AuthenticationResponseJSON,
+  type AuthenticationResponseJSON,
   verifyAuthenticationResponse,
 } from '@simplewebauthn/server';
 import { expect } from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialRequestOptions } from '../../src/zod-validation';
+import type { PublicKeyCredentialRequestOptions } from '../../src/zod-validation';
 import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {

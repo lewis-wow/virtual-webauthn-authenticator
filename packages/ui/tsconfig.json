@@ -1,6 +1,6 @@
 {
   "extends": "@repo/typescript-config/react-library.json",
-  "include": ["src"],
+  "include": ["src", "__tests__"],
   "exclude": ["node_modules"],
   "compilerOptions": {
     "paths": {

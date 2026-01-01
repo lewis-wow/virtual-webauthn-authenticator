@@ -2,19 +2,19 @@ import { USER_ID } from '../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import {
-  RegistrationResponseJSON,
-  VerifiedRegistrationResponse,
+  type RegistrationResponseJSON,
+  type VerifiedRegistrationResponse,
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import {
+import type {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
 } from '../../src/zod-validation';
-import { AuthenticatorAgentContextArgs } from '../../src/zod-validation/AuthenticatorAgentContextArgsSchema';
-import { AuthenticatorAgentMetaArgs } from '../../src/zod-validation/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentContextArgs } from '../../src/zod-validation/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../../src/zod-validation/AuthenticatorAgentMetaArgsSchema';
 import { RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {

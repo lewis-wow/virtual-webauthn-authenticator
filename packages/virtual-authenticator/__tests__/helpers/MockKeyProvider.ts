@@ -4,12 +4,12 @@ import { COSEKeyMapper } from '@repo/keys/mappers';
 import {
   createSign,
   generateKeyPairSync,
-  KeyPairKeyObjectResult,
+  type KeyPairKeyObjectResult,
 } from 'node:crypto';
 
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../src/enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { IKeyProvider } from '../../src/types/IKeyProvider';
-import { WebAuthnPublicKeyCredentialWithMeta } from '../../src/types/WebAuthnPublicKeyCredentialWithMeta';
+import type { IKeyProvider } from '../../src/types/IKeyProvider';
+import type { WebAuthnPublicKeyCredentialWithMeta } from '../../src/types/WebAuthnPublicKeyCredentialWithMeta';
 import { KeyVaultKeyIdGenerator } from './KeyVaultKeyIdGenerator';
 
 export type MockKeyProviderOptions = {
