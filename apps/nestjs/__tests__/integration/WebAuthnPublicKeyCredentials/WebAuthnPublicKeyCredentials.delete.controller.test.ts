@@ -145,14 +145,17 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
     });
 
     test('Should work as authenticated user', async () => {
-      const listWebAuthnPublicKeyCredentialsResponse = await request(app.getHttpServer())
+      const listWebAuthnPublicKeyCredentialsResponse = await request(
+        app.getHttpServer(),
+      )
         .delete(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(listWebAuthnPublicKeyCredentialsResponse.body).toMatchInlineSnapshot(`
+      expect(listWebAuthnPublicKeyCredentialsResponse.body)
+        .toMatchInlineSnapshot(`
         {
           "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
           "counter": 0,

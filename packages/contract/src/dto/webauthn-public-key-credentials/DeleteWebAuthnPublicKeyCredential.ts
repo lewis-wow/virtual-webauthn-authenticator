@@ -16,7 +16,9 @@ export const DELETE_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS = {
 // -------------------------------------
 
 export const DeleteWebAuthnPublicKeyCredentialFormSchema =
-  WebAuthnPublicKeyCredentialBaseDtoSchema.pick(DELETE_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS);
+  WebAuthnPublicKeyCredentialBaseDtoSchema.pick(
+    DELETE_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS,
+  );
 
 export const DeleteWebAuthnPublicKeyCredentialParamsSchema =
   WebAuthnPublicKeyCredentialBaseDtoSchema.pick(

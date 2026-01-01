@@ -15,7 +15,8 @@ export const RP_ID = 'example.com';
 export const RP_NAME = 'example.com';
 export const RP_ORIGIN = 'https://example.com';
 
-export const WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID = '0cc9f49f-2967-404e-b45c-3dc7110681c5';
+export const WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID =
+  '0cc9f49f-2967-404e-b45c-3dc7110681c5';
 export const WEBAUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID =
   '2721c4a0-1581-49f2-8fcc-8677a84e717d';
 

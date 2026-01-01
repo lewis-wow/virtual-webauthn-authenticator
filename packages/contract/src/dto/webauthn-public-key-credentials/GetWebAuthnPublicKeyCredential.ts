@@ -14,13 +14,18 @@ export const GET_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS = {
 // -------------------------------------
 
 export const GetWebAuthnPublicKeyCredentialFormSchema =
-  WebAuthnPublicKeyCredentialBaseDtoSchema.pick(GET_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS);
+  WebAuthnPublicKeyCredentialBaseDtoSchema.pick(
+    GET_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS,
+  );
 
 export const GetWebAuthnPublicKeyCredentialParamsSchema =
-  WebAuthnPublicKeyCredentialBaseDtoSchema.pick(GET_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS);
+  WebAuthnPublicKeyCredentialBaseDtoSchema.pick(
+    GET_WEBAUTHN_PUBLIC_KEY_CREDENTIAL_FIELDS,
+  );
 
 // -------------------------------------
 // Outputs
 // -------------------------------------
 
-export const GetWebAuthnPublicKeyCredentialResponseSchema = WebAuthnPublicKeyCredentialDtoSchema;
+export const GetWebAuthnPublicKeyCredentialResponseSchema =
+  WebAuthnPublicKeyCredentialDtoSchema;

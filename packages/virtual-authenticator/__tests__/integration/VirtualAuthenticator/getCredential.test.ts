@@ -129,7 +129,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
     registrationInfo = {
       publicKey:
         registrationVerification.registrationInfo!.credential.publicKey,
-      webAuthnPublicKeyCredentialId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
+      webAuthnPublicKeyCredentialId: UUIDMapper.bytesToUUID(
+        publicKeyCredential.rawId,
+      ),
       webAuthnPublicKeyCredentialIdBytes: publicKeyCredential.rawId,
       counter: registrationVerification.registrationInfo!.credential.counter,
     };
@@ -174,7 +176,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
    * use discoverable credentials associated with the RP ID
    */
   test('should produce a verifiable assertion without allowCredentials', async () => {
-    const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
+    const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+      registrationInfo;
 
     const publicKeyCredentialRequestOptions = set(
       PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
@@ -303,7 +306,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
   });
 
   test('should fail with wrong allowCredentials', async () => {
-    const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
+    const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+      registrationInfo;
 
     const wrongCredentialId = generateRandomUUIDBytes();
     const publicKeyCredentialRequestOptions = set(
@@ -604,7 +608,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
    */
   describe('PublicKeyCredentialRequestOptions.allowCredentials variations', () => {
     test('should work with allowCredentials as empty array', async () => {
-      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
 
       const publicKeyCredentialRequestOptions = set(
         PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
@@ -1282,7 +1287,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * Optional fields: timeout, rpId, allowCredentials, userVerification, extensions
      */
     test('should work with minimal valid options (only required field)', async () => {
-      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
 
       const challenge = new Uint8Array(randomBytes(32));
 
@@ -1352,7 +1358,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (step 3)
      */
     test('Should fail when allowCredentials contains only non-matching credential IDs', async () => {
-      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
 
       const publicKeyCredentialRequestOptions = set(
         PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
@@ -1433,7 +1440,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
     });
 
     test('should fail with completely malformed options', async () => {
-      const { webAuthnPublicKeyCredentialId, publicKey, counter } = registrationInfo;
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
 
       const malformedOptions = {
         notValid: 'options',

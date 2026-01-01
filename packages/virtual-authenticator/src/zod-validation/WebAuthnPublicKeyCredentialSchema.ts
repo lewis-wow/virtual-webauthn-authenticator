@@ -16,4 +16,6 @@ export const WebAuthnPublicKeyCredentialSchema =
         WEBAUTHN_PUBLIC_KEY_CREDENTIAL_VARIANTS,
       );
 
-export type WebAuthnPublicKeyCredential = z.infer<typeof WebAuthnPublicKeyCredentialSchema>;
+export type WebAuthnPublicKeyCredential = z.infer<
+  typeof WebAuthnPublicKeyCredentialSchema
+>;

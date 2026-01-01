@@ -124,7 +124,9 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         userId: WRONG_UUID,
       });
 
-      const listWebAuthnPublicKeyCredentialsResponse = await request(app.getHttpServer())
+      const listWebAuthnPublicKeyCredentialsResponse = await request(
+        app.getHttpServer(),
+      )
         .get(API_PATH)
         .set('Authorization', `Bearer ${token}`)
         .send()
@@ -132,7 +134,8 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         // The API server do not check if the user exists but response should be empty
         .expect(200);
 
-      expect(listWebAuthnPublicKeyCredentialsResponse.body).toMatchInlineSnapshot(`
+      expect(listWebAuthnPublicKeyCredentialsResponse.body)
+        .toMatchInlineSnapshot(`
         {
           "data": [],
           "meta": {

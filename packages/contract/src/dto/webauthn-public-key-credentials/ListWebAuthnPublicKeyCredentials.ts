@@ -21,6 +21,5 @@ export const ListWebAuthnPublicKeyCredentialsQuerySchema =
 // Outputs
 // -------------------------------------
 
-export const ListWebAuthnPublicKeyCredentialsResponseSchema = PaginationResultSchema(
-  WebAuthnPublicKeyCredentialDtoSchema,
-);
+export const ListWebAuthnPublicKeyCredentialsResponseSchema =
+  PaginationResultSchema(WebAuthnPublicKeyCredentialDtoSchema);
