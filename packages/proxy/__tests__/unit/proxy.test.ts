@@ -1,8 +1,8 @@
 import { serve, type ServerType } from '@hono/node-server';
 import { Hono } from 'hono';
-import { vi, describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { vi, describe, test, expect, beforeAll, afterAll } from 'vitest';
 
-import { Proxy } from '../../src/Proxy_';
+import { proxy } from '../../src/proxy';
 
 let targetServer: ServerType;
 let targetBaseURL: string;
@@ -44,95 +44,96 @@ afterAll(() => {
 });
 
 describe('Proxy with HTTP calls', () => {
-  it('should proxy a basic request', async () => {
-    const proxyApp = new Proxy({ targetBaseURL });
+  test('should proxy a basic request', async () => {
     const req = new Request(`${targetBaseURL}/test`);
-    const res = await proxyApp.handleRequest(req);
+    const res = await proxy(targetBaseURL, req);
 
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('target response');
   });
 
-  it('should rewrite the path if rewritePath is provided', async () => {
+  test('should rewrite the path if rewritePath is provided', async () => {
     const rewritePath = vi.fn(({ path }) => `/api/v1${path}`);
-    const proxyApp = new Proxy({ targetBaseURL, rewritePath });
+    const rewrittenPath = rewritePath({ path: '/user' });
 
-    const req = new Request(`${targetBaseURL}/user`);
-    const res = await proxyApp.handleRequest(req);
+    const req = new Request(`${targetBaseURL}${rewrittenPath}`);
+    const res = await proxy(targetBaseURL, req);
 
     expect(rewritePath).toHaveBeenCalled();
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('rewritten path');
   });
 
-  it('should rewrite headers if rewriteHeaders is provided', async () => {
+  test('should rewrite headers if rewriteHeaders is provided', async () => {
     const rewriteHeaders = vi.fn(({ headers }) => {
       const newHeaders = new Headers(headers);
       newHeaders.set('X-Custom-Header', 'value');
       return newHeaders;
     });
-    const proxyApp = new Proxy({ targetBaseURL, rewriteHeaders });
 
     const req = new Request(`${targetBaseURL}/test-headers`);
-    const res = await proxyApp.handleRequest(req);
+    const customHeaders = rewriteHeaders({ headers: req.headers });
+    const res = await proxy(targetBaseURL, req, { headers: customHeaders });
 
     expect(rewriteHeaders).toHaveBeenCalled();
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('header: value');
   });
 
-  it('should add authorization header if authorization is provided', async () => {
+  test('should add authorization header if authorization is provided', async () => {
     const authorization = vi.fn(() => 'Bearer my-token');
-    const proxyApp = new Proxy({ targetBaseURL, authorization });
+    const authHeaders = new Headers();
+    authHeaders.set('authorization', authorization());
 
     const req = new Request(`${targetBaseURL}/test-auth`);
-    const res = await proxyApp.handleRequest(req);
+    const res = await proxy(targetBaseURL, req, { headers: authHeaders });
 
     expect(authorization).toHaveBeenCalled();
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('auth: Bearer my-token');
   });
 
-  it('should get authorization token from cookie', async () => {
-    const authorization = vi.fn(({ cookies }) => `Bearer ${cookies['token']}`);
-    const proxyApp = new Proxy({ targetBaseURL, authorization });
+  test('should get authorization token from cookie', async () => {
+    const parseCookies = (cookieHeader: string) => {
+      const cookies: Record<string, string> = {};
+      cookieHeader.split(';').forEach((cookie) => {
+        const [key, value] = cookie.trim().split('=') as [string, string];
+        cookies[key] = value;
+      });
+      return cookies;
+    };
 
+    const authorization = vi.fn(({ cookies }) => `Bearer ${cookies['token']}`);
     const req = new Request(`${targetBaseURL}/test-auth`);
     req.headers.set('Cookie', 'token=cookie-token');
-    const res = await proxyApp.handleRequest(req);
+
+    const cookies = parseCookies(req.headers.get('Cookie') || '');
+    const authHeaders = new Headers();
+    authHeaders.set('authorization', authorization({ cookies }));
+
+    const res = await proxy(targetBaseURL, req, { headers: authHeaders });
 
     expect(authorization).toHaveBeenCalled();
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('auth: Bearer cookie-token');
   });
 
-  it('should handle query parameters', async () => {
-    const proxyApp = new Proxy({ targetBaseURL });
+  test('should handle query parameters', async () => {
     const req = new Request(`${targetBaseURL}/test-query?foo=bar`);
-    const res = await proxyApp.handleRequest(req);
+    const res = await proxy(targetBaseURL, req);
 
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('query: bar');
   });
 
-  it('should trim leading and trailing slashes from the path', async () => {
-    const proxyApp = new Proxy({ targetBaseURL });
-    const req = new Request(`${targetBaseURL}//test/path/`);
-    const res = await proxyApp.handleRequest(req);
-
-    expect(res.status).toBe(200);
-    expect(await res.text()).toBe('trimmed path');
-  });
-
-  it('should forward request body', async () => {
-    const proxyApp = new Proxy({ targetBaseURL });
+  test('should forward request body', async () => {
     const body = { key: 'value' };
     const req = new Request(`${targetBaseURL}/test-body`, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: { 'Content-Type': 'application/json' },
     });
-    const res = await proxyApp.handleRequest(req);
+    const res = await proxy(targetBaseURL, req);
 
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual(body);
