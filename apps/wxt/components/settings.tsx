@@ -49,23 +49,21 @@ export const Settings = () => {
     await authClient.signIn.social(
       {
         provider: 'github',
-        // Don't specify callbackURL - better-auth will use current origin
-        // which is automatically trusted via CORS configuration
       },
-      {
-        onRequest: () => {
-          setIsAuthenticating(true);
-        },
-        onSuccess: async () => {
-          setIsAuthenticating(false);
-          // Refetch session after successful signin
-          refetch();
-        },
-        onError: (ctx) => {
-          console.error('Failed to initiate GitHub sign-in:', ctx.error);
-          setIsAuthenticating(false);
-        },
-      },
+      // {
+      //   onRequest: () => {
+      //     setIsAuthenticating(true);
+      //   },
+      //   onSuccess: async () => {
+      //     setIsAuthenticating(false);
+      //     // Refetch session after successful signin
+      //     refetch();
+      //   },
+      //   onError: (ctx) => {
+      //     console.error('Failed to initiate GitHub sign-in:', ctx.error);
+      //     setIsAuthenticating(false);
+      //   },
+      // },
     );
   };
 

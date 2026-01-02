@@ -58,7 +58,8 @@
     "ts-pattern": "^5.8.0",
     "zod": "^4.1.12",
     "@repo/pagination": "workspace:*",
-    "@repo/env-config": "workspace:*"
+    "@repo/env-config": "workspace:*",
+    "@repo/utils": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

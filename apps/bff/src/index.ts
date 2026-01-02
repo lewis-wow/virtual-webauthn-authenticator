@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server';
 import { proxy } from '@repo/proxy';
+import { omitUndefined } from '@repo/utils';
 import { cors } from 'hono/cors';
 
 import { container } from './container';
@@ -11,18 +12,7 @@ const app = factory.createApp();
 app.use(
   '*',
   cors({
-    origin: (origin) => {
-      // Allow requests from browser extensions
-      if (
-        origin.startsWith('chrome-extension://') ||
-        origin.startsWith('moz-extension://')
-      ) {
-        return origin;
-      }
-    },
-    credentials: true,
-    allowHeaders: ['Content-Type', 'Authorization', 'X-Auth-Type'],
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: '*',
   }),
 );
 
@@ -46,21 +36,43 @@ app.use(async (ctx, next) => {
   });
 });
 
-app.all('/api/auth/*', async (ctx) => {
-  const response = await proxy('http://localhost:3002', ctx.req.raw);
+app.all('/api/*', async (ctx) => {
+  const authorizationHeader = ctx.req.header('Authorization');
+  const apiKey = authorizationHeader?.replace('Bearer ', '');
+  let jwt: string | undefined = undefined;
+
+  if (apiKey !== undefined) {
+    const response = await fetch(
+      `http://localhost:3002/api/auth/api-keys/token`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      return undefined;
+    }
+
+    const { token } = (await response.json()) as { token: string };
+
+    jwt = token;
+  }
+
+  const response = await proxy('http://localhost:3001', ctx.req.raw, {
+    headers: new Headers(
+      omitUndefined({
+        Authorization: jwt ? `Bearer ${jwt}` : undefined,
+      }),
+    ),
+  });
 
   console.log(response);
 
   return response;
 });
-
-// app.all('/api/*', async (ctx) => {
-//   const response = await proxy('http://localhost:3001', ctx.req.raw);
-
-//   console.log(response);
-
-//   return response;
-// });
 
 serve(
   {

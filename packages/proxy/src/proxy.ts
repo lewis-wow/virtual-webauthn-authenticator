@@ -4,6 +4,9 @@ import z from 'zod';
 export const proxy = async (
   targetBaseUrl: string,
   request: Request,
+  options?: {
+    headers?: Headers;
+  },
 ): Promise<Response> => {
   assertSchema(targetBaseUrl, z.url());
 
@@ -14,8 +17,12 @@ export const proxy = async (
   const targetURL = new URL(`${targetBaseUrl}${requestPathname}`);
   targetURL.search = requestSearchParams.toString();
 
-  const headers = new Headers(request.headers);
-  headers.delete('host');
+  const requestHeadersCopy = new Headers(request.headers);
+  requestHeadersCopy.delete('host');
+
+  const headersOverwrite = new Headers(options?.headers);
+
+  const headers = new Headers([...requestHeadersCopy, ...headersOverwrite]);
 
   const targetRequestInit: RequestInit & { duplex: 'half' } = {
     method: request.method,

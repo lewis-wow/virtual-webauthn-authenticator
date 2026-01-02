@@ -1,6 +1,6 @@
 import { env } from '@/env';
-import { AuthType } from '@repo/auth/enums';
-import { Proxy } from '@repo/proxy';
+import { proxy } from '@repo/proxy';
+import { omitUndefined } from '@repo/utils';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
 import { nextCookies } from 'better-auth/next-js';
@@ -11,45 +11,26 @@ const handler = async (request: Request): Promise<Response> => {
     baseURL: env.AUTH_BASE_URL,
   });
 
-  const proxy = new Proxy({
-    proxyName: 'API-Proxy',
-    targetBaseURL: 'http://localhost:3001',
-    authorization: async ({ request }) => {
-      const xAuthTypeHeader = request.headers.get('X-Auth-Type');
-
-      if (xAuthTypeHeader === AuthType.API_KEY) {
-        const response = await fetch(
-          `http://localhost:3002/api/auth/api-keys/token`,
-          {
-            method: 'GET',
-            headers: request.headers,
-          },
-        );
-
-        if (!response.ok) {
-          return undefined;
-        }
-
-        const { token } = await response.json();
-
-        return `Bearer ${token}`;
-      }
-
-      const { data } = await authClient.token({
-        fetchOptions: {
-          headers: request.headers,
-        },
-      });
-
-      if (!data) {
-        return undefined;
-      }
-
-      return `Bearer ${data.token}`;
+  const { data } = await authClient.token({
+    fetchOptions: {
+      headers: request.headers,
     },
   });
 
-  return await proxy.handleRequest(request);
+  let Authorization: string | undefined = undefined;
+  if (data !== null) {
+    Authorization = `Bearer ${data.token}`;
+  }
+
+  const response = await proxy('http://localhost:3001', request, {
+    headers: new Headers(
+      omitUndefined({
+        Authorization,
+      }),
+    ),
+  });
+
+  return response;
 };
 
 export const GET = handler;

@@ -1,13 +1,10 @@
 import { env } from '@/env';
-import { Proxy } from '@repo/proxy';
+import { proxy } from '@repo/proxy';
 
 const handler = async (request: Request): Promise<Response> => {
-  const proxy = new Proxy({
-    proxyName: 'Auth-Proxy',
-    targetBaseURL: env.AUTH_BASE_URL,
-  });
+  const response = await proxy(env.AUTH_BASE_URL, request);
 
-  return await proxy.handleRequest(request);
+  return response;
 };
 
 export const GET = handler;
