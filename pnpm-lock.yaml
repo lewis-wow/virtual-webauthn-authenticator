@@ -77,6 +77,9 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@repo/dependency-container':
         specifier: workspace:*
         version: link:../../packages/dependency-container
@@ -126,30 +129,15 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@repo/rollup-config':
+        specifier: workspace:*
+        version: link:../../packages/rollup-config
       '@repo/types':
         specifier: workspace:*
         version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
-      '@rollup/plugin-commonjs':
-        specifier: ^28.0.6
-        version: 28.0.6(rollup@4.52.4)
-      '@rollup/plugin-esm-shim':
-        specifier: ^0.1.8
-        version: 0.1.8(rollup@4.52.4)
-      '@rollup/plugin-json':
-        specifier: ^6.1.0
-        version: 6.1.0(rollup@4.52.4)
-      '@rollup/plugin-node-resolve':
-        specifier: ^16.0.2
-        version: 16.0.2(rollup@4.52.4)
-      '@rollup/plugin-run':
-        specifier: ^3.1.0
-        version: 3.1.0(rollup@4.52.4)
-      '@rollup/plugin-swc':
-        specifier: ^0.4.0
-        version: 0.4.0(@swc/core@1.13.5)(rollup@4.52.4)
       '@simplewebauthn/server':
         specifier: ^13.2.2
         version: 13.2.2
@@ -165,24 +153,6 @@ importers:
       rollup:
         specifier: ^4.52.4
         version: 4.52.4
-      rollup-plugin-copy:
-        specifier: ^3.5.0
-        version: 3.5.0
-      rollup-plugin-delete:
-        specifier: ^3.0.1
-        version: 3.0.1(rollup@4.52.4)
-      rollup-plugin-execute:
-        specifier: ^1.1.1
-        version: 1.1.1
-      rollup-plugin-node-externals:
-        specifier: ^8.1.1
-        version: 8.1.1(rollup@4.52.4)
-      rollup-plugin-shell:
-        specifier: ^1.0.9
-        version: 1.0.9
-      rollup-plugin-tsconfig-paths:
-        specifier: ^1.5.2
-        version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -213,6 +183,9 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@repo/dependency-container':
         specifier: workspace:*
         version: link:../../packages/dependency-container
@@ -253,30 +226,15 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@repo/rollup-config':
+        specifier: workspace:*
+        version: link:../../packages/rollup-config
       '@repo/types':
         specifier: workspace:*
         version: link:../../packages/types
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
-      '@rollup/plugin-commonjs':
-        specifier: ^28.0.6
-        version: 28.0.6(rollup@4.52.4)
-      '@rollup/plugin-esm-shim':
-        specifier: ^0.1.8
-        version: 0.1.8(rollup@4.52.4)
-      '@rollup/plugin-json':
-        specifier: ^6.1.0
-        version: 6.1.0(rollup@4.52.4)
-      '@rollup/plugin-node-resolve':
-        specifier: ^16.0.2
-        version: 16.0.2(rollup@4.52.4)
-      '@rollup/plugin-run':
-        specifier: ^3.1.0
-        version: 3.1.0(rollup@4.52.4)
-      '@rollup/plugin-swc':
-        specifier: ^0.4.0
-        version: 0.4.0(@swc/core@1.13.5)(rollup@4.52.4)
       '@simplewebauthn/server':
         specifier: ^13.2.2
         version: 13.2.2
@@ -292,24 +250,6 @@ importers:
       rollup:
         specifier: ^4.52.4
         version: 4.52.4
-      rollup-plugin-copy:
-        specifier: ^3.5.0
-        version: 3.5.0
-      rollup-plugin-delete:
-        specifier: ^3.0.1
-        version: 3.0.1(rollup@4.52.4)
-      rollup-plugin-execute:
-        specifier: ^1.1.1
-        version: 1.1.1
-      rollup-plugin-node-externals:
-        specifier: ^8.1.1
-        version: 8.1.1(rollup@4.52.4)
-      rollup-plugin-shell:
-        specifier: ^1.0.9
-        version: 1.0.9
-      rollup-plugin-tsconfig-paths:
-        specifier: ^1.5.2
-        version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1535,6 +1475,9 @@ importers:
 
   packages/logger:
     dependencies:
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       winston:
         specifier: ^3.18.3
         version: 3.18.3
@@ -1695,6 +1638,67 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
+  packages/rollup-config:
+    dependencies:
+      '@rollup/plugin-commonjs':
+        specifier: ^28.0.6
+        version: 28.0.6(rollup@4.52.4)
+      '@rollup/plugin-esm-shim':
+        specifier: ^0.1.8
+        version: 0.1.8(rollup@4.52.4)
+      '@rollup/plugin-json':
+        specifier: ^6.1.0
+        version: 6.1.0(rollup@4.52.4)
+      '@rollup/plugin-node-resolve':
+        specifier: ^16.0.2
+        version: 16.0.2(rollup@4.52.4)
+      '@rollup/plugin-run':
+        specifier: ^3.1.0
+        version: 3.1.0(rollup@4.52.4)
+      '@rollup/plugin-swc':
+        specifier: ^0.4.0
+        version: 0.4.0(@swc/core@1.13.5)(rollup@4.52.4)
+      rollup:
+        specifier: ^4.52.4
+        version: 4.52.4
+      rollup-plugin-copy:
+        specifier: ^3.5.0
+        version: 3.5.0
+      rollup-plugin-delete:
+        specifier: ^3.0.1
+        version: 3.0.1(rollup@4.52.4)
+      rollup-plugin-execute:
+        specifier: ^1.1.1
+        version: 1.1.1
+      rollup-plugin-node-externals:
+        specifier: ^8.1.1
+        version: 8.1.1(rollup@4.52.4)
+      rollup-plugin-shell:
+        specifier: ^1.0.9
+        version: 1.0.9
+      rollup-plugin-tsconfig-paths:
+        specifier: ^1.5.2
+        version: 1.5.2(rollup@4.52.4)(typescript@5.9.2)
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
 
   packages/shared-dts:
     devDependencies:

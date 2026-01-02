@@ -1,3 +1,4 @@
+import { isError } from '@repo/utils';
 import util from 'util';
 import * as winston from 'winston';
 
@@ -136,5 +137,14 @@ export class Logger {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public debug(message: string, ...meta: any[]): void {
     this.logger.debug(message, ...meta);
+  }
+
+  public catch(exception: unknown, message: string) {
+    if (isError(exception)) {
+      this.exception(exception, message);
+      return;
+    }
+
+    this.logger.error(message, { exception });
   }
 }

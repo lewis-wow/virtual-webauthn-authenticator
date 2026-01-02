@@ -1,0 +1,36 @@
+{
+  "name": "@repo/rollup-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.5.2",
+    "type-fest": "^5.0.1",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-esm-shim": "^0.1.8",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.2",
+    "@rollup/plugin-run": "^3.1.0",
+    "@rollup/plugin-swc": "^0.4.0",
+    "rollup": "^4.52.4",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-delete": "^3.0.1",
+    "rollup-plugin-execute": "^1.1.1",
+    "rollup-plugin-node-externals": "^8.1.1",
+    "rollup-plugin-shell": "^1.0.9",
+    "rollup-plugin-tsconfig-paths": "^1.5.2"
+  }
+}

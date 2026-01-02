@@ -51,12 +51,7 @@ export class ActivityLog {
       });
     } catch (auditError) {
       // CRITICAL: Never let a logging failure crash the main application flow.
-
-      if (auditError instanceof Error) {
-        this.logger.exception(auditError, 'Failed to write event log.');
-      } else {
-        this.logger.error('Unknown error writing event log', { auditError });
-      }
+      this.logger.catch(auditError, 'Failed to write event log.');
     }
   }
 
