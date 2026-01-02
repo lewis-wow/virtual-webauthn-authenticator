@@ -37,36 +37,19 @@ app.use(async (ctx, next) => {
 
 app.all('/api/*', async (ctx) => {
   const logger = ctx.get('container').resolve('logger');
+  const jwtFetcher = ctx.get('container').resolve('jwtFetcher');
 
   const authorizationHeader = ctx.req.header('Authorization');
   const apiKey = authorizationHeader?.replace('Bearer ', '');
-  let jwt: string | undefined = undefined;
 
-  logger.info('API key', { apiKey });
+  let jwt: string | null = null;
 
   if (apiKey !== undefined) {
-    const response = await fetch(
-      `http://localhost:3002/api/auth/api-keys/token`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-      },
-    );
+    logger.info('API key', { apiKey });
 
-    if (!response.ok) {
-      logger.error('Failed to get JWT from auth-server', {
-        status: response.status,
-        statusText: response.statusText,
-      });
-      return ctx.text('Unauthorized', 401);
-    }
+    jwt = await jwtFetcher.fetchJwtToken(apiKey);
 
-    const { token } = (await response.json()) as { token: string };
-
-    jwt = token;
-    logger.info('JWT received from auth-server', { jwt });
+    logger.info('JWT received', { jwt });
   }
 
   const response = await proxy('http://localhost:3001', ctx.req.raw, {
