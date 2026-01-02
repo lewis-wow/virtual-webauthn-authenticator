@@ -7,8 +7,9 @@ export const env = defineEnv({
     PORT: z.coerce.number(),
     BASE_URL: z.url(),
 
-    // AUTH_BASE_URL: z.url(),
-    // API_BASE_URL: z.url(),
+    // Other apps
+    AUTH_BASE_URL: z.url(),
+    API_BASE_URL: z.url(),
   },
   runtimeEnv: process.env,
 });

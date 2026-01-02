@@ -3,6 +3,8 @@ import { DependencyContainer } from '@repo/dependency-container';
 import { Logger } from '@repo/logger';
 import { LRUCache } from 'lru-cache';
 
+import { env } from './env';
+
 const LOG_PREFIX = 'BFF';
 
 export const container = new DependencyContainer()
@@ -27,7 +29,7 @@ export const container = new DependencyContainer()
       cache,
       fetch: async (opts: { apiKey: string }) => {
         const response = await fetch(
-          'http://localhost:3002/api/auth/api-keys/token',
+          `${env.AUTH_BASE_URL}/api/auth/api-keys/token`,
           {
             method: 'GET',
             headers: {

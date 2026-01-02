@@ -9,7 +9,7 @@
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
-    "./abilities": "./src/abilities/index.ts",
+    "./mappers": "./src/mappers/index.ts",
     "./repositories": "./src/repositories/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@hono/node-server": "^1.19.5",
     "@repo/core": "workspace:*",
+    "@repo/assert": "workspace:*",
     "@repo/pagination": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",

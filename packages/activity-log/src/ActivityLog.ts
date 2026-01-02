@@ -1,12 +1,15 @@
 import type { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import type { SortDirection } from '@repo/pagination/enums';
+import { SortDirection } from '@repo/pagination/enums';
 import type { PaginationResult } from '@repo/pagination/zod-validation';
 import { PrismaClient, Prisma } from '@repo/prisma';
 import type { MakeNullableOptional } from '@repo/types';
 
 import type { LogSortKeys } from './enums/LogSortKeys';
 import type { Log } from './zod-validation/LogSchema';
+
+const DEFAULT_HISTORY_LIMIT = 20;
+const DEFAULT_SORT_ORDER = SortDirection.DESC;
 
 export type ActivityLogOptions = {
   prisma: PrismaClient;
@@ -46,22 +49,32 @@ export class ActivityLog {
             : Prisma.DbNull,
         },
       });
-    } catch (error) {
+    } catch (auditError) {
       // CRITICAL: Never let a logging failure crash the main application flow.
 
-      if (error instanceof Error) {
-        this.logger.exception(error, 'Failed to write event log.');
+      if (auditError instanceof Error) {
+        this.logger.exception(auditError, 'Failed to write event log.');
+      } else {
+        this.logger.error('Unknown error writing event log', { auditError });
       }
     }
   }
 
+  /**
+   * Retrieves the activity log history for a specific user.
+   * @param opts.userId - The user ID to fetch history for
+   * @param opts.limit - Maximum number of records to return
+   * @param opts.cursor - Pagination cursor
+   * @param opts.orderBy - Sort order for results
+   * @returns Paginated log results
+   */
   async getUserHistory(opts: {
     userId: string;
     limit?: number;
     cursor?: string;
     orderBy?: Record<LogSortKeys, SortDirection>;
   }): Promise<PaginationResult<Log>> {
-    const { userId, limit = 20, cursor, orderBy } = opts;
+    const { userId, limit = DEFAULT_HISTORY_LIMIT, cursor, orderBy } = opts;
 
     const pagination = new Pagination(async ({ pagination }) => {
       const logs = await this.prisma.log.findMany({
@@ -69,7 +82,7 @@ export class ActivityLog {
           userId,
         },
         orderBy: orderBy ?? {
-          createdAt: 'desc',
+          createdAt: DEFAULT_SORT_ORDER,
         },
         ...pagination,
       });
@@ -77,8 +90,8 @@ export class ActivityLog {
       return logs as Log[];
     });
 
-    const result = await pagination.fetch({ limit, cursor });
+    const paginationResult = await pagination.fetch({ limit, cursor });
 
-    return result;
+    return paginationResult;
   }
 }

@@ -18,6 +18,12 @@ export class DependencyContainer<
     injectionMode: awilix.InjectionMode.PROXY,
   });
 
+  /**
+   * Registers a new dependency in the container.
+   * @param name - The name of the dependency
+   * @param factory - Factory function that creates the dependency
+   * @returns Updated DependencyContainer with the new dependency registered
+   */
   register<
     TName extends string,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -32,14 +38,15 @@ export class DependencyContainer<
     return this;
   }
 
+  /**
+   * Resolves a dependency from the container.
+   * @param name - The name of the dependency to resolve
+   * @returns The resolved dependency instance
+   * @throws Error if the dependency cannot be resolved
+   */
   resolve<TName extends keyof TDependencyContainerMap>(
     name: TName,
   ): TDependencyContainerMap[TName] {
-    try {
-      return this.container.resolve(name);
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
+    return this.container.resolve(name);
   }
 }

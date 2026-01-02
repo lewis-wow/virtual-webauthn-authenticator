@@ -14,6 +14,7 @@ import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { Prisma, WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
+import { PrismaErrorCode } from '@repo/prisma/enums';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
@@ -145,15 +146,15 @@ export class WebAuthnPublicKeyCredentialsController {
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
               },
             });
-        } catch (e) {
-          if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === 'P2025') {
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === PrismaErrorCode.RECORDS_NOT_FOUND) {
               throw new WebAuthnPublicKeyCredentialNotFound();
             }
           }
 
           // Handle other errors (db connection issues, etc.)
-          throw e;
+          throw error;
         }
 
         this.logger.debug('Removing WebAuthnPublicKeyCredential.', {

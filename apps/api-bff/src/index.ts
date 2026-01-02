@@ -1,4 +1,5 @@
 import { serve } from '@hono/node-server';
+import { BearerTokenMapper } from '@repo/auth/mappers';
 import { proxy } from '@repo/proxy';
 import { cors } from 'hono/cors';
 
@@ -6,12 +7,15 @@ import { container } from './container';
 import { env } from './env';
 import { factory } from './factory';
 
+const CORS_ALLOW_ORIGINS = '*';
+const API_ROUTE_PATTERN = '/api/*';
+
 const app = factory.createApp();
 
 app.use(
   '*',
   cors({
-    origin: '*',
+    origin: CORS_ALLOW_ORIGINS,
   }),
 );
 
@@ -26,27 +30,32 @@ app.use(async (ctx, next) => {
   bffLogger.logResponse(ctx.req.raw, ctx.res);
 });
 
-app.all('/api/*', async (ctx) => {
+/**
+ * Proxies API requests to the backend service.
+ * Converts API keys to JWT tokens for authentication.
+ */
+app.all(API_ROUTE_PATTERN, async (ctx) => {
   const logger = ctx.get('container').resolve('logger');
   const tokenFetch = ctx.get('container').resolve('tokenFetch');
 
   const authorizationHeader = ctx.req.header('Authorization');
-  const apiKey = authorizationHeader?.replace('Bearer ', '');
+  const apiKey = BearerTokenMapper.tryFromBearerToken(authorizationHeader);
 
-  let jwt: string | null = null;
-
-  if (apiKey !== undefined) {
+  const headers = new Headers();
+  if (apiKey !== null) {
     logger.debug('API key', { apiKey });
 
-    jwt = await tokenFetch.fetchToken(apiKey, { apiKey });
+    const jwt = await tokenFetch.fetchToken(apiKey, { apiKey });
 
     logger.debug('JWT received', { jwt });
+
+    if (jwt !== null) {
+      headers.set('Authorization', BearerTokenMapper.toBearerToken(jwt));
+    }
   }
 
-  const response = await proxy('http://localhost:3001', ctx.req.raw, {
-    headers: new Headers({
-      Authorization: `Bearer ${jwt}`,
-    }),
+  const response = await proxy(env.API_BASE_URL, ctx.req.raw, {
+    headers,
   });
 
   return response;

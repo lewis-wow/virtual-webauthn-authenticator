@@ -2,6 +2,11 @@ import { decodeJwt } from 'jose';
 import type { LRUCache } from 'lru-cache';
 import EventEmitter from 'node:events';
 
+// Default TTL for tokens without expiration claim (1 hour in milliseconds)
+const DEFAULT_TOKEN_TTL_MS = 3600000;
+// Conversion factor from seconds to milliseconds
+const SECONDS_TO_MILLISECONDS = 1000;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TokenFetchFn = (...args: any[]) => Promise<string | null>;
 
@@ -21,7 +26,16 @@ export class TokenFetch<T extends TokenFetchFn> extends EventEmitter {
     this.fetch = opts.fetch;
   }
 
-  async fetchToken(key: string, ...args: Parameters<T>) {
+  /**
+   * Fetches a token from cache or retrieves a new one.
+   * @param key - Cache key for the token
+   * @param args - Arguments to pass to the fetch function
+   * @returns The token string or null if unavailable
+   */
+  async fetchToken(
+    key: string,
+    ...args: Parameters<T>
+  ): Promise<string | null> {
     const cachedToken = this.cache.get(key);
 
     if (cachedToken !== undefined) {
@@ -38,9 +52,12 @@ export class TokenFetch<T extends TokenFetchFn> extends EventEmitter {
       const claims = decodeJwt(token);
 
       // exp is in seconds since epoch, calculate TTL in milliseconds
+      const currentTimeInSeconds = Math.floor(
+        Date.now() / SECONDS_TO_MILLISECONDS,
+      );
       const ttl = claims.exp
-        ? (claims.exp - Math.floor(Date.now() / 1000)) * 1000
-        : 3600000; // fallback to 1 hour if no exp claim
+        ? (claims.exp - currentTimeInSeconds) * SECONDS_TO_MILLISECONDS
+        : DEFAULT_TOKEN_TTL_MS;
 
       // Cache the token
       this.cache.set(key, token, {

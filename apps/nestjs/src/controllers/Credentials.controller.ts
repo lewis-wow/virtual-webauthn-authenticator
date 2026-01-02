@@ -31,6 +31,31 @@ export class CredentialsController {
     private readonly activityLog: ActivityLog,
   ) {}
 
+  /**
+   * Logs a credential audit event.
+   * @param action - The action performed (CREATE or GET)
+   * @param credentialRawId - The raw ID of the credential
+   * @param jwtPayload - The JWT payload containing user and API key information
+   */
+  private async _auditCredentialAction(opts: {
+    action: LogAction;
+    publicKeyCredentialRawId: Uint8Array;
+    jwtPayload: JwtPayload;
+  }): Promise<void> {
+    const { action, publicKeyCredentialRawId, jwtPayload } = opts;
+
+    await this.activityLog.audit({
+      action,
+      entity: LogEntity.CREDENTIAL,
+      entityId: UUIDMapper.bytesToUUID(publicKeyCredentialRawId),
+      apiKeyId:
+        jwtPayload.tokenType === TokenType.API_KEY
+          ? jwtPayload.apiKeyId
+          : undefined,
+      userId: jwtPayload.userId,
+    });
+  }
+
   @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
@@ -80,16 +105,10 @@ export class CredentialsController {
             },
           });
 
-        await this.activityLog.audit({
+        await this._auditCredentialAction({
           action: LogAction.CREATE,
-          entity: LogEntity.CREDENTIAL,
-          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          publicKeyCredentialRawId: publicKeyCredential.rawId,
+          jwtPayload,
         });
 
         return {
@@ -134,16 +153,10 @@ export class CredentialsController {
             context: { apiKeyId },
           });
 
-        await this.activityLog.audit({
+        await this._auditCredentialAction({
           action: LogAction.GET,
-          entity: LogEntity.CREDENTIAL,
-          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          publicKeyCredentialRawId: publicKeyCredential.rawId,
+          jwtPayload,
         });
 
         return {
