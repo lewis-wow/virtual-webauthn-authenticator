@@ -50,7 +50,9 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
     displayName: USER_DISPLAY_NAME,
   },
   challenge: CHALLENGE_BYTES,
-  pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+  pubKeyCredParams: [
+    { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
+  ],
   timeout: 60000,
 } as PublicKeyCredentialCreationOptions;
 
@@ -1224,7 +1226,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
             id: credId2,
-            transports: ['internal' as const],
+            transports: [AuthenticatorTransport.INTERNAL],
           },
         ],
       } satisfies PublicKeyCredentialCreationOptions;
@@ -2482,8 +2484,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions: {
               ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
               pubKeyCredParams: [
-                { type: PublicKeyCredentialType.PUBLIC_KEY, alg: -7 }, // ES256
-                { type: PublicKeyCredentialType.PUBLIC_KEY, alg: -257 }, // RS256
+                {
+                  type: PublicKeyCredentialType.PUBLIC_KEY,
+                  alg: COSEKeyAlgorithm.ES256,
+                },
+                {
+                  type: PublicKeyCredentialType.PUBLIC_KEY,
+                  alg: COSEKeyAlgorithm.RS256,
+                },
               ],
             },
           });
@@ -2498,8 +2506,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions: {
               ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
               pubKeyCredParams: [
-                { type: 'unsupported-type', alg: -7 } as never,
-                { type: PublicKeyCredentialType.PUBLIC_KEY, alg: -7 },
+                {
+                  type: 'unsupported-type',
+                  alg: COSEKeyAlgorithm.ES256,
+                } as never,
+                {
+                  type: PublicKeyCredentialType.PUBLIC_KEY,
+                  alg: COSEKeyAlgorithm.ES256,
+                },
               ],
             },
           });
@@ -2514,7 +2528,10 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions: {
               ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
               pubKeyCredParams: [
-                { type: 'unsupported-type', alg: -7 } as never,
+                {
+                  type: 'unsupported-type',
+                  alg: COSEKeyAlgorithm.ES256,
+                } as never,
               ],
             },
           }),

@@ -1,7 +1,9 @@
 import { USER_ID, USER_NAME } from '../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 
+import { PublicKeyCredentialType } from '../../src/enums/PublicKeyCredentialType';
 import type { PublicKeyCredentialCreationOptions } from '../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
 
 export const CHALLENGE_BASE64URL = 'YN0gtCsuhL8HedwLHBEqmQ';
@@ -31,6 +33,8 @@ export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
     displayName: USER_DISPLAY_NAME,
   },
   challenge: CHALLENGE_BYTES,
-  pubKeyCredParams: [{ type: 'public-key', alg: -7 }],
+  pubKeyCredParams: [
+    { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
+  ],
   timeout: 60000,
 } as PublicKeyCredentialCreationOptions;

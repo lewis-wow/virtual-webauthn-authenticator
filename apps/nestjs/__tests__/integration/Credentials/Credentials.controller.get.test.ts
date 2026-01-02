@@ -55,9 +55,11 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
       id: RP_ID,
       name: RP_ID,
     },
-    pubKeyCredParams: [{ alg: COSEKeyAlgorithm.ES256, type: 'public-key' }],
+    pubKeyCredParams: [
+      { alg: COSEKeyAlgorithm.ES256, type: PublicKeyCredentialType.PUBLIC_KEY },
+    ],
     authenticatorSelection: {
-      userVerification: 'required' as const,
+      userVerification: UserVerificationRequirement.REQUIRED,
     },
   },
   meta: {
