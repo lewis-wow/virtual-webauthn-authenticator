@@ -1,34 +1,30 @@
-import { env } from '@/env';
+import { container } from '@/container';
 import { proxy } from '@repo/proxy';
-import { omitUndefined } from '@repo/utils';
-import { createAuthClient } from 'better-auth/client';
-import { jwtClient } from 'better-auth/client/plugins';
-import { nextCookies } from 'better-auth/next-js';
+import { cookies } from 'next/headers';
 
 const handler = async (request: Request): Promise<Response> => {
-  const authClient = createAuthClient({
-    plugins: [jwtClient(), nextCookies()],
-    baseURL: env.AUTH_BASE_URL,
-  });
+  const bffLogger = container.resolve('bffLogger');
+  const tokenFetch = container.resolve('tokenFetch');
 
-  const { data } = await authClient.token({
-    fetchOptions: {
+  bffLogger.logRequest(request);
+
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get('session_token');
+
+  let jwt: string | null = null;
+  if (sessionToken !== undefined) {
+    jwt = await tokenFetch.fetchToken(sessionToken.value, {
       headers: request.headers,
-    },
-  });
-
-  let Authorization: string | undefined = undefined;
-  if (data !== null) {
-    Authorization = `Bearer ${data.token}`;
+    });
   }
 
   const response = await proxy('http://localhost:3001', request, {
-    headers: new Headers(
-      omitUndefined({
-        Authorization,
-      }),
-    ),
+    headers: new Headers({
+      Authorization: `Bearer ${jwt}`,
+    }),
   });
+
+  bffLogger.logResponse(request, response);
 
   return response;
 };

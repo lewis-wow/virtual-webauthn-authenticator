@@ -17,27 +17,18 @@ app.use(
 
 app.use(async (ctx, next) => {
   const container = ctx.get('container');
-  const logger = container.resolve('logger');
+  const bffLogger = container.resolve('bffLogger');
 
-  logger.debug('Proxy request', {
-    url: ctx.req.url,
-    method: ctx.req.method,
-    headers: Object.fromEntries(ctx.req.raw.headers.entries()),
-  });
+  bffLogger.logRequest(ctx.req.raw);
 
   await next();
 
-  logger.debug('Proxy response', {
-    url: ctx.req.url,
-    method: ctx.req.method,
-    status: ctx.res.status,
-    headers: Object.fromEntries(ctx.res.headers.entries()),
-  });
+  bffLogger.logResponse(ctx.req.raw, ctx.res);
 });
 
 app.all('/api/*', async (ctx) => {
   const logger = ctx.get('container').resolve('logger');
-  const jwtFetcher = ctx.get('container').resolve('jwtFetcher');
+  const tokenFetch = ctx.get('container').resolve('tokenFetch');
 
   const authorizationHeader = ctx.req.header('Authorization');
   const apiKey = authorizationHeader?.replace('Bearer ', '');
@@ -47,7 +38,7 @@ app.all('/api/*', async (ctx) => {
   if (apiKey !== undefined) {
     logger.debug('API key', { apiKey });
 
-    jwt = await jwtFetcher.fetchJwtToken(apiKey);
+    jwt = await tokenFetch.fetchToken(apiKey, { apiKey });
 
     logger.debug('JWT received', { jwt });
   }
