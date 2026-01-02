@@ -19,7 +19,7 @@ app.use(async (ctx, next) => {
   const container = ctx.get('container');
   const logger = container.resolve('logger');
 
-  logger.info('Proxy request', {
+  logger.debug('Proxy request', {
     url: ctx.req.url,
     method: ctx.req.method,
     headers: Object.fromEntries(ctx.req.raw.headers.entries()),
@@ -27,7 +27,7 @@ app.use(async (ctx, next) => {
 
   await next();
 
-  logger.info('Proxy response', {
+  logger.debug('Proxy response', {
     url: ctx.req.url,
     method: ctx.req.method,
     status: ctx.res.status,
@@ -45,11 +45,11 @@ app.all('/api/*', async (ctx) => {
   let jwt: string | null = null;
 
   if (apiKey !== undefined) {
-    logger.info('API key', { apiKey });
+    logger.debug('API key', { apiKey });
 
     jwt = await jwtFetcher.fetchJwtToken(apiKey);
 
-    logger.info('JWT received', { jwt });
+    logger.debug('JWT received', { jwt });
   }
 
   const response = await proxy('http://localhost:3001', ctx.req.raw, {
