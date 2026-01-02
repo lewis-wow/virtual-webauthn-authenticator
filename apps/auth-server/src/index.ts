@@ -12,6 +12,6 @@ serve(
     port: env.PORT,
   },
   (info) => {
-    log.info(`Auth server is running on http://localhost:${info.port}`);
+    log.info(`Server is running on http://localhost:${info.port}`);
   },
 );

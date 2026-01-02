@@ -99,7 +99,6 @@ export const container = new DependencyContainer()
           session_token: {
             name: 'session_token',
             attributes: {
-              sameSite: 'none',
               secure: process.env.NODE_ENV === 'production',
             },
           },

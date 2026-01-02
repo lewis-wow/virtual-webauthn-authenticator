@@ -8,7 +8,7 @@ export const SignupPage = () => {
   const handleGithubSignIn = async () => {
     await authClient.signIn.social({
       provider: 'github',
-      callbackURL: '/',
+      callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}`,
     });
   };
 
