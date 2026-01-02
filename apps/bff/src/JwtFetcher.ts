@@ -1,3 +1,4 @@
+import { decodeJwt } from 'jose';
 import type { LRUCache } from 'lru-cache';
 import EventEmitter from 'node:events';
 
@@ -47,8 +48,17 @@ export class JwtFetcher extends EventEmitter {
 
       const { token } = (await response.json()) as { token: string };
 
+      const claims = decodeJwt(token);
+
+      // exp is in seconds since epoch, calculate TTL in milliseconds
+      const ttl = claims.exp
+        ? (claims.exp - Math.floor(Date.now() / 1000)) * 1000
+        : 3600000; // fallback to 1 hour if no exp claim
+
       // Cache the token
-      this.cache.set(apiKey, token);
+      this.cache.set(apiKey, token, {
+        ttl,
+      });
 
       return token;
     } catch (error) {
