@@ -37,9 +37,13 @@ app.use(async (ctx, next) => {
 });
 
 app.all('/api/*', async (ctx) => {
+  const logger = ctx.get('container').resolve('logger');
+
   const authorizationHeader = ctx.req.header('Authorization');
   const apiKey = authorizationHeader?.replace('Bearer ', '');
   let jwt: string | undefined = undefined;
+
+  logger.info('API key', { apiKey });
 
   if (apiKey !== undefined) {
     const response = await fetch(
@@ -60,6 +64,8 @@ app.all('/api/*', async (ctx) => {
 
     jwt = token;
   }
+
+  logger.info('Token', { jwt });
 
   const response = await proxy('http://localhost:3001', ctx.req.raw, {
     headers: new Headers(
