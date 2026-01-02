@@ -1,6 +1,5 @@
 import { serve } from '@hono/node-server';
 import { proxy } from '@repo/proxy';
-import { omitUndefined } from '@repo/utils';
 import { cors } from 'hono/cors';
 
 import { container } from './container';
