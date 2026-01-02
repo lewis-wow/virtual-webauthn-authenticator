@@ -2,6 +2,7 @@ import z from 'zod';
 
 import { PublicKeyCredentialCreationOptionsDtoSchema } from './components/PublicKeyCredentialCreationOptionsDtoSchema';
 import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDtoSchema';
+import { PublicKeyCredentialUserEntityDtoSchema } from './components/PublicKeyCredentialUserEntityDtoSchema';
 
 // =============================================================================
 // OPERATION: CREATE
@@ -13,11 +14,18 @@ import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDt
 
 export const CreateCredentialBodySchema = z.object({
   publicKeyCredentialCreationOptions:
-    PublicKeyCredentialCreationOptionsDtoSchema.omit({
+    PublicKeyCredentialCreationOptionsDtoSchema.extend({
       /**
        * User is infered from token.
        */
-      user: true,
+      user: PublicKeyCredentialUserEntityDtoSchema.extend({
+        displayName: z.string().optional(),
+      })
+        .omit({
+          id: true,
+          name: true,
+        })
+        .optional(),
     }),
   meta: z.object({
     origin: z.url(),

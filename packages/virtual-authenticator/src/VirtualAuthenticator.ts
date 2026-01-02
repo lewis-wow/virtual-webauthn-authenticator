@@ -525,6 +525,7 @@ export class VirtualAuthenticator implements IAuthenticator {
             await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential(
               {
                 id: webAuthnPublicKeyCredentialId,
+                name: userEntity.displayName,
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta:
                   webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
                 COSEPublicKey:

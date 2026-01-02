@@ -2,6 +2,7 @@ import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPubli
 
 export type CreateKeyVaultDataArgs = {
   id: string;
+  name?: string;
   COSEPublicKey: Uint8Array;
   rpId: string;
   userId: string;

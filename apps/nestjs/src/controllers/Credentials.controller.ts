@@ -47,7 +47,8 @@ export class CredentialsController {
         const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
           id: UUIDMapper.UUIDtoBytes(userId),
           name: name,
-          displayName: name,
+          displayName:
+            publicKeyCredentialCreationOptions.user?.displayName ?? name,
         };
 
         const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
