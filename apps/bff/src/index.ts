@@ -57,25 +57,24 @@ app.all('/api/*', async (ctx) => {
     );
 
     if (!response.ok) {
-      return undefined;
+      logger.error('Failed to get JWT from auth-server', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      return ctx.text('Unauthorized', 401);
     }
 
     const { token } = (await response.json()) as { token: string };
 
     jwt = token;
+    logger.info('JWT received from auth-server', { jwt });
   }
 
-  logger.info('Token', { jwt });
-
   const response = await proxy('http://localhost:3001', ctx.req.raw, {
-    headers: new Headers(
-      omitUndefined({
-        Authorization: jwt ? `Bearer ${jwt}` : undefined,
-      }),
-    ),
+    headers: new Headers({
+      Authorization: `Bearer ${jwt}`,
+    }),
   });
-
-  console.log(response);
 
   return response;
 });

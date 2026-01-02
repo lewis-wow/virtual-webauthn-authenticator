@@ -17,12 +17,14 @@ export const proxy = async (
   const targetURL = new URL(`${targetBaseUrl}${requestPathname}`);
   targetURL.search = requestSearchParams.toString();
 
-  const requestHeadersCopy = new Headers(request.headers);
-  requestHeadersCopy.delete('host');
+  const headers = new Headers(request.headers);
+  headers.delete('host');
 
-  const headersOverwrite = new Headers(options?.headers);
-
-  const headers = new Headers([...requestHeadersCopy, ...headersOverwrite]);
+  if (options?.headers) {
+    for (const [header, value] of options.headers.entries()) {
+      headers.set(header, value);
+    }
+  }
 
   const targetRequestInit: RequestInit & { duplex: 'half' } = {
     method: request.method,
