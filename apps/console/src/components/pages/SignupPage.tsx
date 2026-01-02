@@ -1,3 +1,5 @@
+'use client';
+
 import { authClient } from '@/lib/authClient';
 import { GithubSignInButton } from '@repo/ui/components/GithubSignInButton';
 import Link from 'next/link';
