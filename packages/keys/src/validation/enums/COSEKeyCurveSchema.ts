@@ -1,7 +1,7 @@
-import { Schema } from 'effect';
+import { COSEKeyCurve } from '../../___enums/COSEKeyCurve';
+import { KeyCurveName } from '../../___enums/KeyCurveName';
 
-import { COSEKeyCurve } from '../../enums/COSEKeyCurve';
-import { KeyCurveName } from '../../enums/KeyCurveName';
+import { Schema } from 'effect';
 
 export const COSEKeyCurveSchema = Schema.Enums(COSEKeyCurve).annotations({
   description: 'COSE Key Curve',

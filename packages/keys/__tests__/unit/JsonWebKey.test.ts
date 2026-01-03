@@ -1,10 +1,11 @@
+import { KeyAlgorithm } from '../../src/___enums/KeyAlgorithm';
+import { KeyCurveName } from '../../src/___enums/KeyCurveName';
+import { KeyOperation } from '../../src/___enums/KeyOperation';
+import { KeyType } from '../../src/___enums/KeyType';
+
 import { describe, expect, test } from 'vitest';
 
 import { JsonWebKey, type JsonWebKeyOptions } from '../../src/JsonWebKey';
-import { KeyAlgorithm } from '../../src/enums/KeyAlgorithm';
-import { KeyCurveName } from '../../src/enums/KeyCurveName';
-import { KeyOperation } from '../../src/enums/KeyOperation';
-import { KeyType } from '../../src/enums/KeyType';
 import { CannotParseJsonWebKey } from '../../src/jwk/exceptions/CannotParseJsonWebKey';
 
 // --- Test Data ---

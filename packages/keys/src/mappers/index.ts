@@ -1,2 +1,2 @@
 export * from './COSEKeyAlgorithmMapper';
-export * from './COSEKeyMapper';
+export * from './KeyMapper';

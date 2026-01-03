@@ -1,13 +1,11 @@
 import { assertSchema } from '@repo/assert';
+import * as cbor from 'cbor2';
 import z from 'zod';
 
 import type { IKey } from '../IKey';
 import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
-import {
-  COSEKeyAlgorithmSchema,
-  COSEKeyCurveSchema,
-  COSEKeyTypeSchema,
-} from '../zod-validation';
+import { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
+import { COSEKeyCurveName } from './enums/COSEKeyCurveName';
 import { COSEKeyParam } from './enums/COSEKeyParam';
 import { COSEKeyType } from './enums/COSEKeyType';
 import { COSEKeyTypeParam } from './enums/COSEKeyTypeParam';
@@ -24,6 +22,15 @@ export class COSEKey implements IKey {
     }
 
     this.map = map;
+  }
+
+  toBytes(): Uint8Array {
+    return cbor.encode(this.map);
+  }
+
+  static fromBytes(bytes: Uint8Array): COSEKey {
+    const decoded = cbor.decode<COSEKeyMap>(bytes);
+    return new COSEKey(decoded);
   }
 
   // --- Common Parameters ---
@@ -230,15 +237,15 @@ export class COSEKey implements IKey {
   public static canParse(map: COSEKeyMap): boolean {
     try {
       const kty = map.get(COSEKeyParam.kty);
-      assertSchema(kty, COSEKeyTypeSchema);
+      assertSchema(kty, z.enum(COSEKeyType));
 
       const alg = map.get(COSEKeyParam.alg);
-      assertSchema(alg, COSEKeyAlgorithmSchema);
+      assertSchema(alg, z.enum(COSEKeyAlgorithm));
 
       switch (kty) {
         case COSEKeyType.EC2: {
           const crv = map.get(COSEKeyTypeParam.EC2_crv);
-          assertSchema(crv, COSEKeyCurveSchema);
+          assertSchema(crv, z.enum(COSEKeyCurveName));
 
           const x = map.get(COSEKeyTypeParam.EC2_x);
           assertSchema(x, z.instanceof(Uint8Array));
@@ -255,7 +262,7 @@ export class COSEKey implements IKey {
         }
         case COSEKeyType.OKP: {
           const crv = map.get(COSEKeyTypeParam.OKP_crv);
-          assertSchema(crv, COSEKeyCurveSchema); // Assuming same curve schema applies or define OKPCurveSchema
+          assertSchema(crv, z.enum(COSEKeyCurveName)); // Assuming same curve schema applies or define OKPCurveSchema
 
           const x = map.get(COSEKeyTypeParam.OKP_x);
           assertSchema(x, z.instanceof(Uint8Array));

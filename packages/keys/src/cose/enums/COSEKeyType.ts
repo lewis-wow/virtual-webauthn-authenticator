@@ -27,6 +27,11 @@ export const COSEKeyType = {
   EC2: 2,
 
   /**
+   * Alias for EC2
+   */
+  EC: 2,
+
+  /**
    * RSA Key.
    */
   RSA: 3,

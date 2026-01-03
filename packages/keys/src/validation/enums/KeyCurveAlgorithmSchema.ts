@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { KeyCurveAlgorithm } from '../../___enums/KeyCurveAlgorithm';
 
-import { KeyCurveAlgorithm } from '../../enums/KeyCurveAlgorithm';
+import { Schema } from 'effect';
 
 export const KeyCurveAlgorithmSchema = Schema.Enums(
   KeyCurveAlgorithm,

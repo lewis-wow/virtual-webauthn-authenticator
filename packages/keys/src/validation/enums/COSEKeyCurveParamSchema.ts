@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { COSEKeyCurveParam } from '../../___enums/COSEKeyCurveParam';
 
-import { COSEKeyCurveParam } from '../../enums/COSEKeyCurveParam';
+import { Schema } from 'effect';
 
 export const COSEKeyCurveParamSchema = Schema.Enums(
   COSEKeyCurveParam,

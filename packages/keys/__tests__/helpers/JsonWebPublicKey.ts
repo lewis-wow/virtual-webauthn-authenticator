@@ -1,5 +1,6 @@
+import { KeyCurveName, KeyType } from '../../src/___enums';
+
 import { JsonWebKey } from '../../src/JsonWebKey';
-import { KeyCurveName, KeyType } from '../../src/enums';
 
 export const JsonWebPublicKey = new JsonWebKey({
   kty: KeyType.EC,

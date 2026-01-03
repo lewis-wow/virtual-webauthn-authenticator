@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { KeyRsaAlgorithm } from '../../___enums/KeyRsaAlgorithm';
 
-import { KeyRsaAlgorithm } from '../../enums/KeyRsaAlgorithm';
+import { Schema } from 'effect';
 
 export const KeyRsaAlgorithmSchema = Schema.Enums(KeyRsaAlgorithm).annotations({
   description: 'Key RSA Algorithm',

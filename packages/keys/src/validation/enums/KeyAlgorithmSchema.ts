@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { KeyAlgorithm } from '../../___enums/KeyAlgorithm';
 
-import { KeyAlgorithm } from '../../enums/KeyAlgorithm';
+import { Schema } from 'effect';
 
 export const KeyAlgorithmSchema = Schema.Enums(KeyAlgorithm).annotations({
   description: 'Key Algorithm',
