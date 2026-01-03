@@ -1,15 +1,22 @@
 import { container } from '@/container';
 import { env } from '@/env';
+import { RequestLogFormatter } from '@repo/bff';
 import { proxy } from '@repo/proxy';
 
 const handler = async (request: Request): Promise<Response> => {
-  const bffLogger = container.resolve('bffLogger');
+  const logger = container.resolve('logger');
 
-  bffLogger.logRequest(request);
+  logger.debug('Request', RequestLogFormatter.logRequestInfo({ request }));
 
   const response = await proxy(env.AUTH_BASE_URL, request);
 
-  bffLogger.logResponse(request, response);
+  logger.debug(
+    'Response',
+    RequestLogFormatter.logResponseInfo({
+      request,
+      response,
+    }),
+  );
 
   return response;
 };

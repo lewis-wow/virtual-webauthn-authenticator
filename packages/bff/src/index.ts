@@ -1,2 +1,2 @@
-export * from './BFFLogger';
+export * from './RequestLogFormatter';
 export * from './TokenFetch';

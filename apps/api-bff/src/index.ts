@@ -1,5 +1,6 @@
 import { serve } from '@hono/node-server';
 import { BearerTokenMapper } from '@repo/auth/mappers';
+import { RequestLogFormatter } from '@repo/bff';
 import { proxy } from '@repo/proxy';
 import { cors } from 'hono/cors';
 
@@ -21,13 +22,22 @@ app.use(
 
 app.use(async (ctx, next) => {
   const container = ctx.get('container');
-  const bffLogger = container.resolve('bffLogger');
+  const logger = container.resolve('logger');
 
-  bffLogger.logRequest(ctx.req.raw);
+  logger.debug(
+    'Request',
+    RequestLogFormatter.logRequestInfo({ request: ctx.req.raw }),
+  );
 
   await next();
 
-  bffLogger.logResponse(ctx.req.raw, ctx.res);
+  logger.debug(
+    'Response',
+    RequestLogFormatter.logResponseInfo({
+      request: ctx.req.raw,
+      response: ctx.res,
+    }),
+  );
 });
 
 /**

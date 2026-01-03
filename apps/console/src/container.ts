@@ -1,4 +1,4 @@
-import { BFFLogger, TokenFetch } from '@repo/bff';
+import { TokenFetch } from '@repo/bff';
 import { DependencyContainer } from '@repo/dependency-container';
 import { Logger } from '@repo/logger';
 import { createAuthClient } from 'better-auth/client';
@@ -14,11 +14,6 @@ export const container = new DependencyContainer()
   .register('logger', () => {
     return new Logger({
       prefix: LOG_PREFIX,
-    });
-  })
-  .register('bffLogger', ({ logger }) => {
-    return new BFFLogger({
-      logger,
     });
   })
   .register('authClient', () => {

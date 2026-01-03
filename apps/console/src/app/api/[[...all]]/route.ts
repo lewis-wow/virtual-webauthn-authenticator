@@ -1,13 +1,14 @@
 import { container } from '@/container';
 import { BearerTokenMapper } from '@repo/auth/mappers';
+import { RequestLogFormatter } from '@repo/bff';
 import { proxy } from '@repo/proxy';
 import { cookies } from 'next/headers';
 
 const handler = async (request: Request): Promise<Response> => {
-  const bffLogger = container.resolve('bffLogger');
+  const logger = container.resolve('logger');
   const tokenFetch = container.resolve('tokenFetch');
 
-  bffLogger.logRequest(request);
+  logger.debug('Request', RequestLogFormatter.logRequestInfo({ request }));
 
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get('session_token');
@@ -25,7 +26,13 @@ const handler = async (request: Request): Promise<Response> => {
     },
   });
 
-  bffLogger.logResponse(request, response);
+  logger.debug(
+    'Response',
+    RequestLogFormatter.logResponseInfo({
+      request,
+      response,
+    }),
+  );
 
   return response;
 };
