@@ -41,21 +41,19 @@ app.all(API_ROUTE_PATTERN, async (ctx) => {
   const authorizationHeader = ctx.req.header('Authorization');
   const apiKey = BearerTokenMapper.tryFromBearerToken(authorizationHeader);
 
-  const headers = new Headers();
+  let jwt: string | null = null;
   if (apiKey !== null) {
     logger.debug('API key', { apiKey });
 
-    const jwt = await tokenFetch.fetchToken(apiKey, { apiKey });
+    jwt = await tokenFetch.fetchToken(apiKey, { apiKey });
 
     logger.debug('JWT received', { jwt });
-
-    if (jwt !== null) {
-      headers.set('Authorization', BearerTokenMapper.toBearerToken(jwt));
-    }
   }
 
   const response = await proxy(env.API_BASE_URL, ctx.req.raw, {
-    headers,
+    headers: {
+      Authorization: jwt ? BearerTokenMapper.toBearerToken(jwt) : null,
+    },
   });
 
   return response;

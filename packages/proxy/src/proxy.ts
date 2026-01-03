@@ -5,7 +5,7 @@ export const proxy = async (
   targetBaseUrl: string,
   request: Request,
   options?: {
-    headers?: Headers;
+    headers?: Record<string, string | undefined | null>;
   },
 ): Promise<Response> => {
   assertSchema(targetBaseUrl, z.url());
@@ -21,7 +21,19 @@ export const proxy = async (
   headers.delete('host');
 
   if (options?.headers) {
-    for (const [header, value] of options.headers.entries()) {
+    for (const [header, value] of Object.entries(options.headers)) {
+      // Skip if value is undefined - leave header unchanged
+      if (value === undefined) {
+        continue;
+      }
+
+      // Delete header if value is explicitly null
+      if (value === null) {
+        headers.delete(header);
+        continue;
+      }
+
+      // Set header to the provided value
       headers.set(header, value);
     }
   }

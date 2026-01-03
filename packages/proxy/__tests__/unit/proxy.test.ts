@@ -64,58 +64,56 @@ describe('Proxy with HTTP calls', () => {
     expect(await res.text()).toBe('rewritten path');
   });
 
-  test('should rewrite headers if rewriteHeaders is provided', async () => {
-    const rewriteHeaders = vi.fn(({ headers }) => {
-      const newHeaders = new Headers(headers);
-      newHeaders.set('X-Custom-Header', 'value');
-      return newHeaders;
+  test('should set custom headers', async () => {
+    const req = new Request(`${targetBaseURL}/test-headers`);
+    const res = await proxy(targetBaseURL, req, {
+      headers: {
+        'X-Custom-Header': 'value',
+      },
     });
 
-    const req = new Request(`${targetBaseURL}/test-headers`);
-    const customHeaders = rewriteHeaders({ headers: req.headers });
-    const res = await proxy(targetBaseURL, req, { headers: customHeaders });
-
-    expect(rewriteHeaders).toHaveBeenCalled();
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('header: value');
   });
 
-  test('should add authorization header if authorization is provided', async () => {
-    const authorization = vi.fn(() => 'Bearer my-token');
-    const authHeaders = new Headers();
-    authHeaders.set('authorization', authorization());
-
+  test('should add authorization header', async () => {
     const req = new Request(`${targetBaseURL}/test-auth`);
-    const res = await proxy(targetBaseURL, req, { headers: authHeaders });
+    const res = await proxy(targetBaseURL, req, {
+      headers: {
+        authorization: 'Bearer my-token',
+      },
+    });
 
-    expect(authorization).toHaveBeenCalled();
     expect(res.status).toBe(200);
     expect(await res.text()).toBe('auth: Bearer my-token');
   });
 
-  test('should get authorization token from cookie', async () => {
-    const parseCookies = (cookieHeader: string) => {
-      const cookies: Record<string, string> = {};
-      cookieHeader.split(';').forEach((cookie) => {
-        const [key, value] = cookie.trim().split('=') as [string, string];
-        cookies[key] = value;
-      });
-      return cookies;
-    };
+  test('should skip header when value is undefined', async () => {
+    const req = new Request(`${targetBaseURL}/test-headers`);
+    req.headers.set('X-Custom-Header', 'original-value');
 
-    const authorization = vi.fn(({ cookies }) => `Bearer ${cookies['token']}`);
-    const req = new Request(`${targetBaseURL}/test-auth`);
-    req.headers.set('Cookie', 'token=cookie-token');
+    const res = await proxy(targetBaseURL, req, {
+      headers: {
+        'X-Custom-Header': undefined, // Should leave the original header unchanged
+      },
+    });
 
-    const cookies = parseCookies(req.headers.get('Cookie') || '');
-    const authHeaders = new Headers();
-    authHeaders.set('authorization', authorization({ cookies }));
-
-    const res = await proxy(targetBaseURL, req, { headers: authHeaders });
-
-    expect(authorization).toHaveBeenCalled();
     expect(res.status).toBe(200);
-    expect(await res.text()).toBe('auth: Bearer cookie-token');
+    expect(await res.text()).toBe('header: original-value');
+  });
+
+  test('should delete header when value is null', async () => {
+    const req = new Request(`${targetBaseURL}/test-headers`);
+    req.headers.set('X-Custom-Header', 'should-be-deleted');
+
+    const res = await proxy(targetBaseURL, req, {
+      headers: {
+        'X-Custom-Header': null, // Should delete the header
+      },
+    });
+
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe('header: undefined');
   });
 
   test('should handle query parameters', async () => {
