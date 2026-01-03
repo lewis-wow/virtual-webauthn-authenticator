@@ -2022,6 +2022,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       cbor2:
         specifier: ^2.0.1
         version: 2.0.1

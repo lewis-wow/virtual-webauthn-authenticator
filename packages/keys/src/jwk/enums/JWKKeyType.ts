@@ -13,7 +13,7 @@ import type { ValueOfEnum } from '@repo/types';
  * @see https://datatracker.ietf.org/doc/html/rfc7518#section-6.1
  * @see https://datatracker.ietf.org/doc/html/rfc8037#section-2
  */
-export const KeyType = {
+export const JWKKeyType = {
   /**
    * Elliptic Curve.
    * used with curves like P-256, P-384, P-521.
@@ -41,4 +41,4 @@ export const KeyType = {
   OKP: 'OKP',
 } as const;
 
-export type KeyType = ValueOfEnum<typeof KeyType>;
+export type JWKKeyType = ValueOfEnum<typeof JWKKeyType>;

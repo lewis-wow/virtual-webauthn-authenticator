@@ -1,2 +1,2 @@
-export * from './COSEKey';
+export * from './cose/COSEKey';
 export * from './JsonWebKey';

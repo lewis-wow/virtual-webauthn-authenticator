@@ -8,7 +8,7 @@ import type { ValueOfEnum } from '@repo/types';
  *
  * @see https://datatracker.ietf.org/doc/html/rfc7518#section-3.1
  */
-export const KeyAlgorithm = {
+export const JWKKeyAlgorithm = {
   /**
    * HMAC using SHA-256.
    * Implementation: Required (for JWS conformance)
@@ -91,4 +91,4 @@ export const KeyAlgorithm = {
   NONE: 'none',
 } as const;
 
-export type KeyAlgorithm = ValueOfEnum<typeof KeyAlgorithm>;
+export type JWKKeyAlgorithm = ValueOfEnum<typeof JWKKeyAlgorithm>;

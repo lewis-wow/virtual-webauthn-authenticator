@@ -4,8 +4,8 @@ import * as cbor from 'cbor2';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras';
 import z from 'zod';
 
-import { COSEKey, type COSEKeyMap } from '../COSEKey';
 import { JsonWebKey, type JsonWebKeyOptions } from '../JsonWebKey';
+import { COSEKey, type COSEKeyMap } from '../cose/COSEKey';
 import { COSEKeyAlgorithm } from '../enums/COSEKeyAlgorithm';
 import { COSEKeyCurve } from '../enums/COSEKeyCurve';
 import { COSEKeyCurveParam } from '../enums/COSEKeyCurveParam';

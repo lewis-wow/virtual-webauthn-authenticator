@@ -25,6 +25,7 @@
   "dependencies": {
     "cbor2": "^2.0.1",
     "zod": "^4.1.12",
-    "@repo/assert": "workspace:*"
+    "@repo/assert": "workspace:*",
+    "@repo/keys": "workspace:*"
   }
 }

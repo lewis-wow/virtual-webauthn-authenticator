@@ -22,7 +22,7 @@ export class AttestationObjectParser {
 
     // Attestation statement
     const attStmt = decodedAttestationObjectMap.get('attStmt');
-    assertSchema(attStmt, z.record(z.string(), z.unknown()));
+    assertSchema(attStmt, z.instanceof(Map));
 
     // Authenticator data: [RPIDHash (32)] [Flags (1)] [Counter (4)] [Attested credential data (Variable length)] [Extensions (Variable length)]
     // @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
