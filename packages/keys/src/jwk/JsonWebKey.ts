@@ -5,7 +5,6 @@ import z from 'zod';
 import type { IKey } from '../IKey';
 // Assuming this enum exists based on your imports
 import { KeyOperation } from '../enums/KeyOperation';
-import { CannotParseJsonWebKey } from '../exceptions/CannotParseJsonWebKey';
 import {
   KeyCurveNameSchema,
   KeyOperationSchema,
@@ -16,6 +15,7 @@ import { JWKKeyCurveName } from './enums/JWKKeyCurveName';
 import { JWKKeyParam } from './enums/JWKKeyParam';
 import { JWKKeyType } from './enums/JWKKeyType';
 import { JWKKeyTypeParam } from './enums/JWKKeyTypeParam';
+import { CannotParseJsonWebKey } from './exceptions/CannotParseJsonWebKey';
 
 /**
  * Input options for creating a JsonWebKey.

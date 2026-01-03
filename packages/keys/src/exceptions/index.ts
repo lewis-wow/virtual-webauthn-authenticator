@@ -1,2 +1,2 @@
-export * from './CannotParseCOSEKey';
-export * from './CannotParseJsonWebKey';
+export * from '../cose/exceptions/CannotParseCOSEKey';
+export * from '../jwk/exceptions/CannotParseJsonWebKey';

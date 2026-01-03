@@ -6,7 +6,7 @@ import { KeyAlgorithm } from './enums/KeyAlgorithm';
 import { KeyCurveName } from './enums/KeyCurveName';
 import { KeyOperation } from './enums/KeyOperation';
 import { KeyType } from './enums/KeyType';
-import { CannotParseJsonWebKey } from './exceptions/CannotParseJsonWebKey';
+import { CannotParseJsonWebKey } from './jwk/exceptions/CannotParseJsonWebKey';
 import {
   KeyCurveNameSchema,
   KeyOperationSchema,

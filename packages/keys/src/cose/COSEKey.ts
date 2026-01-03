@@ -2,7 +2,6 @@ import { assertSchema } from '@repo/assert';
 import z from 'zod';
 
 import type { IKey } from '../IKey';
-import { CannotParseCOSEKey } from '../exceptions/CannotParseCOSEKey';
 import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
 import {
   COSEKeyAlgorithmSchema,
@@ -12,6 +11,7 @@ import {
 import { COSEKeyParam } from './enums/COSEKeyParam';
 import { COSEKeyType } from './enums/COSEKeyType';
 import { COSEKeyTypeParam } from './enums/COSEKeyTypeParam';
+import { CannotParseCOSEKey } from './exceptions/CannotParseCOSEKey';
 
 export type COSEKeyMap = Map<number, unknown>;
 
