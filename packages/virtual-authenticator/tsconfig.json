@@ -6,7 +6,8 @@
     "../key-vault/src/types",
     "../key-vault/src/CredentialSignerFactory.ts",
     "../types/src/CredentialSigner.ts",
-    "../core/src/mappers"
+    "../core/src/mappers",
+    "../virtual-authenticator-parser/src/AttestationObjectParser.ts"
   ],
   "exclude": ["node_modules"]
 }

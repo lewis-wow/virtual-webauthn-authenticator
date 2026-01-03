@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { KeyCurveName } from '../../___enums/KeyCurveName';
 
-import { KeyCurveName } from '../../enums/KeyCurveName';
+import { Schema } from 'effect';
 
 export const KeyCurveNameSchema = Schema.Enums(KeyCurveName).annotations({
   description: 'Key Curve Name',

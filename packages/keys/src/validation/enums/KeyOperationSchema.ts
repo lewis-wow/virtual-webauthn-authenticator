@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { KeyOperation } from '../../___enums/KeyOperation';
 
-import { KeyOperation } from '../../enums/KeyOperation';
+import { Schema } from 'effect';
 
 export const KeyOperationSchema = Schema.Enums(KeyOperation).annotations({
   description: 'Key operation',

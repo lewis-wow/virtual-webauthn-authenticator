@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { COSEKeyParam } from '../../___enums/COSEKeyParam';
 
-import { COSEKeyParam } from '../../enums/COSEKeyParam';
+import { Schema } from 'effect';
 
 export const COSEKeyParamSchema = Schema.Enums(COSEKeyParam).annotations({
   description: 'COSE key param',

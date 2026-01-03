@@ -1,2 +1,3 @@
-export * from './COSEKeyAlgorithmMapper';
-export * from './COSEKeyMapper';
+// TODO: Create COSEKeyAlgorithmMapper file
+// export * from './COSEKeyAlgorithmMapper';
+export * from './KeyMapper';

@@ -1,6 +1,6 @@
-import { Schema } from 'effect';
+import { KeyType } from '../../___enums/KeyType';
 
-import { KeyType } from '../../enums/KeyType';
+import { Schema } from 'effect';
 
 export const KeyTypeSchema = Schema.Enums(KeyType).annotations({
   description: 'Key type',

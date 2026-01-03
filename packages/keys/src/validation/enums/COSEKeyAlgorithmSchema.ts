@@ -1,7 +1,7 @@
-import { Schema } from 'effect';
+import { COSEKeyAlgorithm } from '../../___enums/COSEKeyAlgorithm';
+import { KeyAlgorithm } from '../../___enums/KeyAlgorithm';
 
-import { COSEKeyAlgorithm } from '../../enums/COSEKeyAlgorithm';
-import { KeyAlgorithm } from '../../enums/KeyAlgorithm';
+import { Schema } from 'effect';
 
 export const COSEKeyAlgorithmSchema = Schema.Enums(
   COSEKeyAlgorithm,
