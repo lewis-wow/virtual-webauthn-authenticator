@@ -1,4 +1,4 @@
-import { COSEKeyMapper } from '../../src/mappers/KeyMapper';
+import { KeyMapper } from '../../src/mappers/KeyMapper';
 import { JsonWebPublicKey } from './JsonWebPublicKey';
 
-export const COSEPublicKey = COSEKeyMapper.jwkToCOSEKey(JsonWebPublicKey);
+export const COSEPublicKey = KeyMapper.JWKToCOSE(JsonWebPublicKey);

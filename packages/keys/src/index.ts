@@ -1,2 +1,3 @@
 export * from './cose/COSEKey';
-export * from './JsonWebKey';
+export * from './jwk/JsonWebKey';
+export * from './IKey';

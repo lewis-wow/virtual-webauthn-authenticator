@@ -1,5 +1,3 @@
-import { KeyType } from '../___enums/KeyType';
-
 import { assertSchema } from '@repo/assert';
 import { swapKeysAndValues } from '@repo/utils';
 import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras';
@@ -14,7 +12,7 @@ import { COSEKeyTypeParam } from '../cose/enums/COSEKeyTypeParam';
 import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
 import { JsonWebKey, type JsonWebKeyOptions } from '../jwk/JsonWebKey';
 import { JWKKeyCurveName } from '../jwk/enums/JWKKeyCurveName';
-import { COSEKeyCurveSchema, COSEKeyTypeSchema } from '../zod-validation';
+import { JWKKeyType } from '../jwk/enums/JWKKeyType';
 
 export class KeyMapper {
   static JWKToCOSE(jwk: JsonWebKey): COSEKey {
@@ -28,7 +26,7 @@ export class KeyMapper {
     coseMap.set(COSEKeyParam.alg, coseAlgorithm);
 
     switch (jwk.kty) {
-      case KeyType.EC: {
+      case JWKKeyType.EC: {
         const kty = jwk.kty;
         assertSchema(jwk.crv, z.enum(JWKKeyCurveName));
         const crv = COSEKeyCurveName[jwk.crv];
@@ -45,7 +43,7 @@ export class KeyMapper {
           coseMap.set(COSEKeyTypeParam.EC2_d, base64ToUint8Array(jwk.d));
         break;
       }
-      case KeyType.RSA: {
+      case JWKKeyType.RSA: {
         const kty = jwk.kty;
 
         assertSchema(jwk.n, z.string());
@@ -75,7 +73,7 @@ export class KeyMapper {
     for (const [key, value] of coseKey.map.entries()) {
       switch (key) {
         case COSEKeyParam.kty: // kty
-          assertSchema(value, COSEKeyTypeSchema);
+          assertSchema(value, z.enum(COSEKeyType));
 
           jwk.kty = COSE_TO_JWK_KTY[value];
           break;
@@ -83,10 +81,10 @@ export class KeyMapper {
         // Key-specific parameters
         default:
           // EC params
-          if (jwk.kty === KeyType.EC) {
+          if (jwk.kty === JWKKeyType.EC) {
             switch (key) {
               case COSEKeyTypeParam.EC2_crv: // crv
-                assertSchema(value, COSEKeyCurveSchema);
+                assertSchema(value, z.enum(COSEKeyCurveName));
 
                 jwk.crv = COSE_TO_JWK_CRV[value];
                 break;
@@ -105,7 +103,7 @@ export class KeyMapper {
             }
           }
           // RSA params
-          if (jwk.kty === KeyType.RSA) {
+          if (jwk.kty === JWKKeyType.RSA) {
             switch (key) {
               case COSEKeyTypeParam.RSA_n: // n (modulus)
                 if (value instanceof Uint8Array)

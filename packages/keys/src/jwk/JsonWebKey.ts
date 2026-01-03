@@ -1,16 +1,8 @@
-// Assuming this enum exists based on your imports
-import { KeyOperation } from '../___enums/KeyOperation';
-
 import { assertSchema } from '@repo/assert';
 import { Buffer } from 'buffer';
 import z from 'zod';
 
 import type { IKey } from '../IKey';
-import {
-  KeyCurveNameSchema,
-  KeyOperationSchema,
-  KeyTypeSchema,
-} from '../zod-validation';
 import { JWKKeyAlgorithm } from './enums/JWKKeyAlgorithm';
 import { JWKKeyCurveName } from './enums/JWKKeyCurveName';
 import { JWKKeyParam } from './enums/JWKKeyParam';
@@ -119,7 +111,7 @@ export class JsonWebKey implements IKey {
   // --- Common Parameters ---
   public kid?: string;
   public kty?: JWKKeyType;
-  public keyOps?: KeyOperation[];
+  public keyOps?: string[];
 
   // --- EC / OKP Parameters ---
   public crv?: string;
@@ -150,8 +142,7 @@ export class JsonWebKey implements IKey {
     // Common
     if (opts[JWKKeyParam.kid]) this.kid = opts[JWKKeyParam.kid];
     if (opts[JWKKeyParam.kty]) this.kty = opts[JWKKeyParam.kty] as JWKKeyType;
-    if (opts[JWKKeyParam.key_ops])
-      this.keyOps = opts[JWKKeyParam.key_ops] as KeyOperation[];
+    if (opts[JWKKeyParam.key_ops]) this.keyOps = opts[JWKKeyParam.key_ops];
 
     // EC
     if (opts[JWKKeyTypeParam.EC_crv]) this.crv = opts[JWKKeyTypeParam.EC_crv];
@@ -379,16 +370,13 @@ export class JsonWebKey implements IKey {
   ): looseJsonWebKey is JsonWebKeyOptions {
     try {
       // Validate Key Type
-      assertSchema(looseJsonWebKey.kty, KeyTypeSchema.optional());
+      assertSchema(looseJsonWebKey.kty, z.enum(JWKKeyType).optional());
 
       // Validate Key Operations
-      assertSchema(
-        looseJsonWebKey.key_ops,
-        z.array(KeyOperationSchema).optional(),
-      );
+      assertSchema(looseJsonWebKey.key_ops, z.array(z.string()).optional());
 
       // Validate Curve
-      assertSchema(looseJsonWebKey.crv, KeyCurveNameSchema.optional());
+      assertSchema(looseJsonWebKey.crv, z.enum(JWKKeyCurveName).optional());
 
       // Additional structural checks could be added here (e.g., ensuring 'x' and 'y' exist if kty='EC')
 
