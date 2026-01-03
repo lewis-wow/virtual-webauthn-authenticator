@@ -67,13 +67,13 @@ export class AttestationObjectParser {
     // Bit 7 (ED - Extension data included): Indicates if extension data
     // is included in the authenticator data.
     // Length (in bytes): 1
+
+    // authData.slice(pointer, pointer + 1);
     const flags = authData[pointer]!;
     pointer += 1;
 
     // [Counter (4)]
     const counterBuffer = authData.slice(pointer, pointer + 4);
-    pointer += 4;
-
     // Note: Parsing counter to number usually requires a DataView
     // Big-Endian
     const counter = new DataView(
@@ -81,6 +81,7 @@ export class AttestationObjectParser {
       counterBuffer.byteOffset,
       counterBuffer.length,
     ).getUint32(0, false);
+    pointer += 4;
 
     // 4. Parse flags
 
@@ -94,56 +95,80 @@ export class AttestationObjectParser {
 
     // 5. Handle Variable Length Data
 
-    let attestedCredentialData = null;
-    let extensionsData = null;
+    let aaguid: Uint8Array | null = null;
+    let credentialIdLength: number | null = null;
+    let credentialId: Uint8Array | null = null;
+    let publicKey: Uint8Array | null = null;
+    let extensions: Uint8Array | null = null;
 
+    // Attested credential data: [AAGUID (16)] [Credential ID length (2)] [Credential ID (L)] [Credential public key (Variable length)]
     if (attestationDataIncludedFlag) {
-      const result = this._parseAttestedCredentialData({
-        authData,
-        pointer,
-      });
+      // [AAGUID (16)]
+      aaguid = authData.slice(pointer, pointer + 16);
+      pointer += 16;
 
-      pointer = result.newPointer;
-      attestedCredentialData = result.attestedCredentialData;
+      // [Credential ID length (2)]
+      const credentialIdLengthBuffer = authData.slice(pointer, pointer + 2);
+      // Big-Endian
+      credentialIdLength = new DataView(
+        credentialIdLengthBuffer.buffer,
+        credentialIdLengthBuffer.byteOffset,
+        credentialIdLengthBuffer.length,
+      ).getUint16(0, false);
+      pointer += 2;
+
+      // [Credential ID (L)]
+      credentialId = authData.slice(pointer, pointer + credentialIdLength);
+      pointer += credentialIdLength;
+
+      // [Credential public key (Variable length)] - COSE Key (Variable Length CBOR)
     }
 
-    if (extensionsDataIncludedFlag) {
-      const result = this._parseExtensionsData({
-        authData,
-        pointer,
-      });
+    if (attestationDataIncludedFlag || extensionsDataIncludedFlag) {
+      // We slice from the current pointer to the end.
+      // The decoder must be able to decode ONE item and ignore the rest (if extensions exist).
 
-      pointer = result.newPointer;
-      extensionsData = result.extensionsData;
+      // At this point, 'pointer' is at the start of the Public Key (if present),
+      // or the start of Extensions (if present and no Key), or the end of the buffer.
+      const remainingBuffer = authData.slice(pointer);
+
+      // decodeSequence will read all consecutive CBOR items found in the buffer
+      const decodedItems = Array.from(
+        cbor.decodeSequence<Uint8Array>(remainingBuffer, {
+          saveOriginal: true,
+        }),
+      );
+
+      let itemIndex = 0;
+
+      if (attestationDataIncludedFlag) {
+        if (itemIndex >= decodedItems.length) {
+          throw new Error();
+        }
+
+        publicKey = decodedItems[itemIndex]!;
+        itemIndex++;
+      }
+
+      if (extensionsDataIncludedFlag) {
+        if (itemIndex >= decodedItems.length) {
+          throw new Error();
+        }
+
+        extensions = decodedItems[itemIndex]!;
+        itemIndex++;
+      }
     }
-  }
-
-  private _parseAttestedCredentialData(opts: {
-    authData: Uint8Array;
-    pointer: number;
-  }): { attestedCredentialData: unknown; newPointer: number } {
-    const { authData, pointer } = opts;
-
-    // Attested credential data: [AAGUID (16)] [L (2)] [Credential ID (L)] [Credential public key (Variable length)]
 
     return {
-      attestedCredentialData: null,
-      newPointer: pointer,
-    };
-  }
-
-  private _parseExtensionsData(opts: {
-    authData: Uint8Array;
-    pointer: number;
-  }): { extensionsData: unknown; newPointer: number } {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { authData: _authData, pointer } = opts;
-
-    // NOTE: Not implemented
-
-    return {
-      extensionsData: null,
-      newPointer: pointer,
+      rpIdHash,
+      flags,
+      counter,
+      aaguid,
+      credentialIdLength,
+      credentialId,
+      publicKey,
+      extensions,
     };
   }
 }
