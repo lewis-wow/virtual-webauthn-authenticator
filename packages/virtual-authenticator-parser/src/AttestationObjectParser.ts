@@ -2,18 +2,6 @@ import { assertSchema } from '@repo/assert';
 import * as cbor from 'cbor2';
 import z from 'zod';
 
-import { AuthenticatorDataTooShort } from './exceptions/AuthenticatorDataTooShort';
-
-export type DecodedAttestationObject = {
-  authData: Uint8Array;
-  fmt: string;
-  attStmt: Record<string, unknown>;
-};
-
-export type AttestationObjectParserOptions = {
-  attestationObject: Uint8Array;
-};
-
 /**
  * @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
  */
@@ -39,13 +27,11 @@ export class AttestationObjectParser {
     // Authenticator data: [RPIDHash (32)] [Flags (1)] [Counter (4)] [Attested credential data (Variable length)] [Extensions (Variable length)]
     // @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
     const authData = decodedAttestationObjectMap.get('authData');
-    assertSchema(authData, z.instanceof(Uint8Array));
-
-    // 2. Validate Fixed Header Length
-    // [RPIDHash (32)] [Flags (1)] [Counter (4)] are required fields
-    if (authData.length < 32 + 1 + 4) {
-      throw new AuthenticatorDataTooShort();
-    }
+    assertSchema(
+      authData,
+      // [RPIDHash (32)] [Flags (1)] [Counter (4)] are required fields
+      z.instanceof(Uint8Array).refine((value) => value.length >= 32 + 1 + 4),
+    );
 
     // 3. Parse Fixed Headers
     // We use a pointer to track where we are in the buffer
@@ -53,6 +39,10 @@ export class AttestationObjectParser {
 
     // [RPIDHash (32)]
     const rpIdHash = authData.slice(pointer, pointer + 32);
+    assertSchema(
+      rpIdHash,
+      z.instanceof(Uint8Array).refine((value) => value.length === 32),
+    );
     pointer += 32;
 
     // [Flags (1)]
@@ -70,10 +60,12 @@ export class AttestationObjectParser {
 
     // authData.slice(pointer, pointer + 1);
     const flags = authData[pointer]!;
+    assertSchema(flags, z.number());
     pointer += 1;
 
     // [Counter (4)]
     const counterBuffer = authData.slice(pointer, pointer + 4);
+    assertSchema(counterBuffer, z.instanceof(Uint8Array));
     // Note: Parsing counter to number usually requires a DataView
     // Big-Endian
     const counter = new DataView(
@@ -81,6 +73,7 @@ export class AttestationObjectParser {
       counterBuffer.byteOffset,
       counterBuffer.length,
     ).getUint32(0, false);
+    assertSchema(counter, z.number());
     pointer += 4;
 
     // 4. Parse flags
@@ -105,20 +98,35 @@ export class AttestationObjectParser {
     if (attestationDataIncludedFlag) {
       // [AAGUID (16)]
       aaguid = authData.slice(pointer, pointer + 16);
+      assertSchema(
+        aaguid,
+        z.instanceof(Uint8Array).refine((value) => value.length === 16),
+      );
       pointer += 16;
 
       // [Credential ID length (2)]
       const credentialIdLengthBuffer = authData.slice(pointer, pointer + 2);
+      assertSchema(
+        credentialIdLengthBuffer,
+        z.instanceof(Uint8Array).refine((value) => value.length === 2),
+      );
       // Big-Endian
       credentialIdLength = new DataView(
         credentialIdLengthBuffer.buffer,
         credentialIdLengthBuffer.byteOffset,
         credentialIdLengthBuffer.length,
       ).getUint16(0, false);
+      assertSchema(credentialIdLength, z.number());
       pointer += 2;
 
       // [Credential ID (L)]
       credentialId = authData.slice(pointer, pointer + credentialIdLength);
+      assertSchema(
+        credentialId,
+        z
+          .instanceof(Uint8Array)
+          .refine((value) => value.length === credentialIdLength),
+      );
       pointer += credentialIdLength;
 
       // [Credential public key (Variable length)] - COSE Key (Variable Length CBOR)
@@ -169,6 +177,10 @@ export class AttestationObjectParser {
       credentialId,
       publicKey,
       extensions,
+
+      fmt,
+      attStmt,
+      authData,
     };
   }
 }
