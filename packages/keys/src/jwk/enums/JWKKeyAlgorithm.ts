@@ -1,5 +1,7 @@
 import type { ValueOfEnum } from '@repo/types';
 
+import { SharedKeyAlgorithm } from '../../shared/enums/SharedKeyAlgorithm';
+
 /**
  * JSON Web Algorithms (alg).
  *
@@ -34,55 +36,55 @@ export const JWKKeyAlgorithm = {
    * RSASSA-PKCS1-v1_5 w/ SHA-256.
    * Implementation: Recommended (for JWS conformance)
    */
-  RS256: 'RS256',
+  [SharedKeyAlgorithm.RS256]: SharedKeyAlgorithm.RS256,
 
   /**
    * RSASSA-PKCS1-v1_5 w/ SHA-384.
    * Implementation: Optional (for JWS conformance)
    */
-  RS384: 'RS384',
+  [SharedKeyAlgorithm.RS384]: SharedKeyAlgorithm.RS384,
 
   /**
    * RSASSA-PKCS1-v1_5 w/ SHA-512.
    * Implementation: Optional (for JWS conformance)
    */
-  RS512: 'RS512',
+  [SharedKeyAlgorithm.RS512]: SharedKeyAlgorithm.RS512,
 
   /**
    * ECDSA w/ SHA-256.
    * Implementation: Recommended+ (for JWS conformance)
    */
-  ES256: 'ES256',
+  [SharedKeyAlgorithm.ES256]: SharedKeyAlgorithm.ES256,
 
   /**
    * ECDSA w/ SHA-384.
    * Implementation: Optional (for JWS conformance)
    */
-  ES384: 'ES384',
+  [SharedKeyAlgorithm.ES384]: SharedKeyAlgorithm.ES384,
 
   /**
    * ECDSA w/ SHA-512.
    * Implementation: Optional (for JWS conformance)
    */
-  ES512: 'ES512',
+  [SharedKeyAlgorithm.ES512]: SharedKeyAlgorithm.ES512,
 
   /**
    * RSASSA-PSS w/ SHA-256.
    * Implementation: Optional (for JWS conformance)
    */
-  PS256: 'PS256',
+  [SharedKeyAlgorithm.PS256]: SharedKeyAlgorithm.PS256,
 
   /**
    * RSASSA-PSS w/ SHA-384.
    * Implementation: Optional (for JWS conformance)
    */
-  PS384: 'PS384',
+  [SharedKeyAlgorithm.PS384]: SharedKeyAlgorithm.PS384,
 
   /**
    * RSASSA-PSS w/ SHA-512.
    * Implementation: Optional (for JWS conformance)
    */
-  PS512: 'PS512',
+  [SharedKeyAlgorithm.PS512]: SharedKeyAlgorithm.PS512,
 
   /**
    * No digital signature or MAC performed.

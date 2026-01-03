@@ -11,7 +11,10 @@ import { COSEKeyType } from '../cose/enums/COSEKeyType';
 import { COSEKeyTypeParam } from '../cose/enums/COSEKeyTypeParam';
 import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
 import { JsonWebKey, type JsonWebKeyOptions } from '../jwk/JsonWebKey';
-import { JWKKeyCurveName } from '../jwk/enums/JWKKeyCurveName';
+import {
+  JWKKeyCurveName,
+  JWKKeyCurveNameToShared,
+} from '../jwk/enums/JWKKeyCurveName';
 import { JWKKeyType } from '../jwk/enums/JWKKeyType';
 
 export class KeyMapper {
@@ -74,11 +77,18 @@ export class KeyMapper {
     jwk: JsonWebKey,
     coseMap: Map<number, number | Uint8Array>,
   ): void {
-    assertSchema(jwk.crv, z.enum(JWKKeyCurveName));
+    assertSchema(jwk.crv, z.string());
     assertSchema(jwk.x, z.string());
     assertSchema(jwk.y, z.string());
 
-    const crv = COSEKeyCurveName[jwk.crv];
+    // Map JWK curve value (e.g., "P-256") to SharedKeyCurveName (e.g., "P256")
+    const sharedCurveName = JWKKeyCurveNameToShared[jwk.crv];
+    if (!sharedCurveName) {
+      throw new UnsupportedKeyType();
+    }
+
+    const crv =
+      COSEKeyCurveName[sharedCurveName as keyof typeof COSEKeyCurveName];
     assertSchema(crv, z.number());
 
     coseMap.set(COSEKeyTypeParam.EC2_crv, crv);

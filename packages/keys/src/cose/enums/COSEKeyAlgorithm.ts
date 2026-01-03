@@ -1,5 +1,7 @@
 import type { ValueOfEnum } from '@repo/types';
 
+import { SharedKeyAlgorithm } from '../../shared/enums/SharedKeyAlgorithm';
+
 /**
  * COSE Algorithm Identifiers (alg).
  *
@@ -139,7 +141,7 @@ export const COSEKeyAlgorithm = {
    * ECDSA w/ SHA-256.
    * Status: Deprecated (in some contexts, but widely used in WebAuthn).
    */
-  ES256: -7,
+  [SharedKeyAlgorithm.ES256]: -7,
 
   /**
    * EdDSA (Ed25519).
@@ -258,28 +260,28 @@ export const COSEKeyAlgorithm = {
    * ECDSA w/ SHA-384.
    * Status: Deprecated (in IETF context).
    */
-  ES384: -35,
+  [SharedKeyAlgorithm.ES384]: -35,
 
   /**
    * ECDSA w/ SHA-512.
    * Status: Deprecated (in IETF context).
    */
-  ES512: -36,
+  [SharedKeyAlgorithm.ES512]: -36,
 
   /**
    * RSASSA-PSS w/ SHA-256.
    */
-  PS256: -37,
+  [SharedKeyAlgorithm.PS256]: -37,
 
   /**
    * RSASSA-PSS w/ SHA-384.
    */
-  PS384: -38,
+  [SharedKeyAlgorithm.PS384]: -38,
 
   /**
    * RSASSA-PSS w/ SHA-512.
    */
-  PS512: -39,
+  [SharedKeyAlgorithm.PS512]: -39,
 
   /**
    * RSAES-OAEP w/ SHA-1 (RFC 8017 default parameters).
@@ -356,19 +358,19 @@ export const COSEKeyAlgorithm = {
    * RSASSA-PKCS1-v1_5 using SHA-256.
    * Status: No (IESG).
    */
-  RS256: -257,
+  [SharedKeyAlgorithm.RS256]: -257,
 
   /**
    * RSASSA-PKCS1-v1_5 using SHA-384.
    * Status: No (IESG).
    */
-  RS384: -258,
+  [SharedKeyAlgorithm.RS384]: -258,
 
   /**
    * RSASSA-PKCS1-v1_5 using SHA-512.
    * Status: No (IESG).
    */
-  RS512: -259,
+  [SharedKeyAlgorithm.RS512]: -259,
 
   /**
    * WalnutDSA signature.

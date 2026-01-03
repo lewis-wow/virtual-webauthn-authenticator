@@ -1,5 +1,7 @@
 import type { ValueOfEnum } from '@repo/types';
 
+import { SharedKeyType } from '../../shared/enums/SharedKeyType';
+
 /**
  * JSON Web Key Types (kty).
  *
@@ -18,19 +20,19 @@ export const JWKKeyType = {
    * Elliptic Curve.
    * used with curves like P-256, P-384, P-521.
    */
-  EC: 'EC',
+  [SharedKeyType.EC]: SharedKeyType.EC,
 
   /**
    * RSA.
    * Used with algorithms like RS256, PS256.
    */
-  RSA: 'RSA',
+  [SharedKeyType.RSA]: SharedKeyType.RSA,
 
   /**
    * Octet Sequence (Symmetric).
    * Used for symmetric keys (HMAC, AES).
    */
-  Oct: 'Oct',
+  [SharedKeyType.Oct]: SharedKeyType.Oct,
 
   /**
    * Octet Key Pair.
@@ -38,7 +40,7 @@ export const JWKKeyType = {
    *
    * @see https://datatracker.ietf.org/doc/html/rfc8037#section-2
    */
-  OKP: 'OKP',
+  [SharedKeyType.OKP]: SharedKeyType.OKP,
 } as const;
 
 export type JWKKeyType = ValueOfEnum<typeof JWKKeyType>;

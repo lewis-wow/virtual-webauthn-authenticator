@@ -1,5 +1,7 @@
 import type { ValueOfEnum } from '@repo/types';
 
+import { SharedKeyType } from '../../shared/enums/SharedKeyType';
+
 /**
  * COSE Key Types (kty).
  *
@@ -19,7 +21,7 @@ export const COSEKeyType = {
   /**
    * Octet Key Pair.
    */
-  OKP: 1,
+  [SharedKeyType.OKP]: 1,
 
   /**
    * Elliptic Curve Keys w/ x- and y-coordinate pair.
@@ -29,17 +31,17 @@ export const COSEKeyType = {
   /**
    * Alias for EC2
    */
-  EC: 2,
+  [SharedKeyType.EC]: 2,
 
   /**
    * RSA Key.
    */
-  RSA: 3,
+  [SharedKeyType.RSA]: 3,
 
   /**
    * Symmetric Keys.
    */
-  Oct: 4,
+  [SharedKeyType.Oct]: 4,
 
   /**
    * Public key for HSS/LMS hash-based digital signature.
