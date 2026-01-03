@@ -44,7 +44,9 @@ export class WebAuthnPublicKeyCredentialsController {
         const { userId, permissions } = jwtPayload;
 
         if (
-          !permissions.includes(Permission['WebAuthnPublicKeyCredential.read'])
+          !permissions.includes(
+            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+          )
         ) {
           throw new Forbidden();
         }
@@ -88,7 +90,9 @@ export class WebAuthnPublicKeyCredentialsController {
         const { userId, permissions } = jwtPayload;
 
         if (
-          !permissions.includes(Permission['WebAuthnPublicKeyCredential.read'])
+          !permissions.includes(
+            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+          )
         ) {
           throw new Forbidden();
         }
@@ -128,7 +132,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         if (
           !permissions.includes(
-            Permission['WebAuthnPublicKeyCredential.delete'],
+            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.DELETE'],
           )
         ) {
           throw new Forbidden();

@@ -145,8 +145,8 @@ export class ApiKeyManager {
         start,
         prefix: ApiKeyManager.KEY_PREFIX,
         permissions: [
-          Permission['Credential.create'],
-          Permission['Credential.get'],
+          Permission['CREDENTIAL.CREATE'],
+          Permission['CREDENTIAL.GET'],
         ],
       },
     });

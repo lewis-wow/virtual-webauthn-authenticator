@@ -65,7 +65,7 @@ export class CredentialsController {
         const { userId, apiKeyId, permissions, name } = jwtPayload;
         const { publicKeyCredentialCreationOptions, meta } = body;
 
-        if (!permissions.includes(Permission['Credential.create'])) {
+        if (!permissions.includes(Permission['CREDENTIAL.CREATE'])) {
           throw new Forbidden();
         }
 
@@ -128,7 +128,7 @@ export class CredentialsController {
         const { publicKeyCredentialRequestOptions, meta } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['Credential.get'])) {
+        if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
           throw new Forbidden();
         }
 
