@@ -37,8 +37,10 @@ export class Encryption {
 
   /**
    * Decrypts an AES-256-GCM string.
-   * @param encryptedText The encrypted string ("iv:authTag:encryptedData")
-   * @returns {string} The original plaintext.
+   * @param opts.key - The encryption key
+   * @param opts.encryptedText - The encrypted string ("iv:authTag:encryptedData")
+   * @returns The original plaintext
+   * @throws Error if the encrypted text format is invalid
    */
   static decrypt(opts: {
     key: crypto.BinaryLike;

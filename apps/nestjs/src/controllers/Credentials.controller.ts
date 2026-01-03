@@ -31,6 +31,31 @@ export class CredentialsController {
     private readonly activityLog: ActivityLog,
   ) {}
 
+  /**
+   * Logs a credential audit event.
+   * @param action - The action performed (CREATE or GET)
+   * @param credentialRawId - The raw ID of the credential
+   * @param jwtPayload - The JWT payload containing user and API key information
+   */
+  private async _auditCredentialAction(opts: {
+    action: LogAction;
+    publicKeyCredentialRawId: Uint8Array;
+    jwtPayload: JwtPayload;
+  }): Promise<void> {
+    const { action, publicKeyCredentialRawId, jwtPayload } = opts;
+
+    await this.activityLog.audit({
+      action,
+      entity: LogEntity.CREDENTIAL,
+      entityId: UUIDMapper.bytesToUUID(publicKeyCredentialRawId),
+      apiKeyId:
+        jwtPayload.tokenType === TokenType.API_KEY
+          ? jwtPayload.apiKeyId
+          : undefined,
+      userId: jwtPayload.userId,
+    });
+  }
+
   @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
   async createCredential(@Jwt() jwtPayload: JwtPayload) {
@@ -40,14 +65,15 @@ export class CredentialsController {
         const { userId, apiKeyId, permissions, name } = jwtPayload;
         const { publicKeyCredentialCreationOptions, meta } = body;
 
-        if (!permissions.includes(Permission['Credential.create'])) {
+        if (!permissions.includes(Permission['CREDENTIAL.CREATE'])) {
           throw new Forbidden();
         }
 
         const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
           id: UUIDMapper.UUIDtoBytes(userId),
           name: name,
-          displayName: name,
+          displayName:
+            publicKeyCredentialCreationOptions.user?.displayName ?? name,
         };
 
         const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
@@ -79,16 +105,10 @@ export class CredentialsController {
             },
           });
 
-        await this.activityLog.audit({
+        await this._auditCredentialAction({
           action: LogAction.CREATE,
-          entity: LogEntity.CREDENTIAL,
-          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          publicKeyCredentialRawId: publicKeyCredential.rawId,
+          jwtPayload,
         });
 
         return {
@@ -108,7 +128,7 @@ export class CredentialsController {
         const { publicKeyCredentialRequestOptions, meta } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['Credential.get'])) {
+        if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
           throw new Forbidden();
         }
 
@@ -133,16 +153,10 @@ export class CredentialsController {
             context: { apiKeyId },
           });
 
-        await this.activityLog.audit({
+        await this._auditCredentialAction({
           action: LogAction.GET,
-          entity: LogEntity.CREDENTIAL,
-          entityId: UUIDMapper.bytesToUUID(publicKeyCredential.rawId),
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          publicKeyCredentialRawId: publicKeyCredential.rawId,
+          jwtPayload,
         });
 
         return {

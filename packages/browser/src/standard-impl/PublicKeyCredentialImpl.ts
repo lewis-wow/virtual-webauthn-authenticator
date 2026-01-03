@@ -1,10 +1,11 @@
 import { BytesMapper } from '@repo/core/mappers';
+import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
 import { Buffer } from 'buffer';
 
 export class PublicKeyCredentialImpl implements PublicKeyCredential {
   readonly id: string;
   readonly rawId: ArrayBuffer;
-  readonly type: 'public-key';
+  readonly type: typeof PublicKeyCredentialType.PUBLIC_KEY;
   readonly response:
     | AuthenticatorAttestationResponse
     | AuthenticatorAssertionResponse;
@@ -18,7 +19,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
   }) {
     this.id = opts.id;
     this.rawId = opts.rawId;
-    this.type = 'public-key';
+    this.type = PublicKeyCredentialType.PUBLIC_KEY;
     this.response = opts.response;
     this.authenticatorAttachment = opts.authenticatorAttachment;
   }
@@ -113,7 +114,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
 export interface PublicKeyCredentialJSON {
   id: string;
   rawId: string;
-  type: 'public-key';
+  type: typeof PublicKeyCredentialType.PUBLIC_KEY;
   authenticatorAttachment: string | null;
   response: {
     clientDataJSON: string;

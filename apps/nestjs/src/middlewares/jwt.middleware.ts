@@ -1,5 +1,6 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { JwtAudience } from '@repo/auth';
+import { BearerTokenMapper } from '@repo/auth/mappers';
 import { Logger } from '@repo/logger';
 import { Request, Response, NextFunction } from 'express';
 
@@ -10,35 +11,30 @@ export class JwtMiddleware implements NestMiddleware {
     private readonly logger: Logger,
   ) {}
 
-  async use(req: Request, _res: Response, next: NextFunction) {
+  /**
+   * Middleware to validate JWT tokens from Authorization header.
+   * Sets req.user to the JWT payload if valid, null otherwise.
+   */
+  async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
     const authorizationHeader = req.headers['authorization'];
 
-    this.logger.debug(
-      `Authorization header: ${authorizationHeader}`,
-      JwtMiddleware.name,
-    );
+    const jwt = BearerTokenMapper.tryFromBearerToken(authorizationHeader);
 
-    const jwt = authorizationHeader?.replace('Bearer ', '');
+    if (jwt === null) {
+      req.user = null;
+      next();
+      return;
+    }
 
-    if (jwt) {
-      try {
-        const jwtPayload = await this.jwtAudience.validateToken(jwt);
+    try {
+      const jwtPayload = await this.jwtAudience.validateToken(jwt);
 
-        this.logger.debug(
-          `JWT Payload: ${JSON.stringify(jwtPayload)}`,
-          JwtMiddleware.name,
-        );
+      this.logger.debug('JWT', jwtPayload);
 
-        req.user = jwtPayload;
-      } catch (error) {
-        if (error instanceof Error) {
-          this.logger.exception(error);
-        }
+      req.user = jwtPayload;
+    } catch (error) {
+      this.logger.catch(error, 'JWT Payload error.');
 
-        req.user = null;
-      }
-    } else {
-      // No token provided
       req.user = null;
     }
 

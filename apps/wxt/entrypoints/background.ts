@@ -1,11 +1,26 @@
 import { env } from '@/env';
-import { AuthType } from '@repo/auth/enums';
 import { ErrorMapper } from '@repo/core/mappers';
 
 import { extensionMessaging } from '../messaging/extensionMessaging';
 
 const LOG_PREFIX = 'BACKGROUND';
+const API_CREDENTIALS_CREATE_PATH = '/api/credentials/create';
+const API_CREDENTIALS_GET_PATH = '/api/credentials/get';
+const CONTENT_TYPE = 'application/json';
+
 console.log(`[${LOG_PREFIX}]`, 'Init');
+
+/**
+ * Creates common HTTP headers for API requests.
+ * @param apiKey - The API key for authentication
+ * @returns Headers object with Authorization, Auth-Type, and Content-Type
+ */
+const createApiHeaders = (apiKey: string): Headers => {
+  return new Headers({
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': CONTENT_TYPE,
+  });
+};
 
 export default defineBackground(() => {
   console.log(`[${LOG_PREFIX}]`, 'Init', {
@@ -18,15 +33,14 @@ export default defineBackground(() => {
     let rawContent: string | undefined = undefined;
 
     try {
-      response = await fetch(`${env.WXT_API_BASE_URL}/api/credentials/create`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'X-Auth-Type': AuthType.API_KEY,
-          'Content-Type': 'application/json',
+      response = await fetch(
+        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
+        {
+          method: 'POST',
+          headers: createApiHeaders(apiKey),
+          body: JSON.stringify(req.data),
         },
-        body: JSON.stringify(req.data),
-      });
+      );
 
       rawContent = await response.text();
 
@@ -49,14 +63,10 @@ export default defineBackground(() => {
 
     try {
       const response = await fetch(
-        `${env.WXT_API_BASE_URL}/api/credentials/get`,
+        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
         {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'X-Auth-Type': AuthType.API_KEY,
-            'Content-Type': 'application/json',
-          },
+          headers: createApiHeaders(apiKey),
           body: JSON.stringify(req.data),
         },
       );

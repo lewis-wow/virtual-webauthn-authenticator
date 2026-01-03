@@ -190,7 +190,9 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Bit 2: User Verified (UV)
     // Set if user verification is required and the authenticator is capable
-    if (userVerificationEnabled && requireUserVerification) {
+    const shouldSetUserVerifiedFlag =
+      userVerificationEnabled && requireUserVerification;
+    if (shouldSetUserVerifiedFlag) {
       flagsInt |= 0b00000100;
     }
 
@@ -525,6 +527,7 @@ export class VirtualAuthenticator implements IAuthenticator {
             await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential(
               {
                 id: webAuthnPublicKeyCredentialId,
+                name: userEntity.displayName,
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta:
                   webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
                 COSEPublicKey:

@@ -1,11 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import { env } from './env';
 
-async function bootstrap() {
+/**
+ * Bootstraps the NestJS application.
+ * Initializes the application and starts listening on the configured port.
+ */
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
-  // eslint-disable-next-line turbo/no-undeclared-env-vars
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(env.PORT);
 }
 void bootstrap();

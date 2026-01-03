@@ -1,7 +1,9 @@
+import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
+
 export class PublicKeyCredentialDescriptorImpl
   implements PublicKeyCredentialDescriptor
 {
-  type: 'public-key';
+  type: typeof PublicKeyCredentialType.PUBLIC_KEY;
   id: BufferSource;
   transports?: AuthenticatorTransport[];
 
@@ -9,7 +11,7 @@ export class PublicKeyCredentialDescriptorImpl
     id: BufferSource;
     transports?: AuthenticatorTransport[];
   }) {
-    this.type = 'public-key';
+    this.type = PublicKeyCredentialType.PUBLIC_KEY;
     this.id = opts.id;
     this.transports = opts.transports;
   }

@@ -1,0 +1,49 @@
+{
+  "name": "@repo/api-bff",
+  "type": "module",
+  "scripts": {
+    "dev": "NODE_OPTIONS='--import tsx' pnpm dotenvx rollup -c --watch",
+    "build": "SKIP_ENV_VALIDATION=true NODE_OPTIONS='--import tsx' rollup -c",
+    "start": "pnpm dotenvx node dist/index.js",
+    "dotenvx": "../../scripts/dotenvx.sh"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "@hono/standard-validator": "^0.1.5",
+    "@repo/activity-log": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "@repo/bff": "workspace:*",
+    "@repo/contract": "workspace:*",
+    "@repo/core": "workspace:*",
+    "@repo/dependency-container": "workspace:*",
+    "@repo/env-config": "workspace:*",
+    "@repo/exception": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "@repo/prisma": "workspace:*",
+    "@repo/proxy": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@t3-oss/env-core": "^0.13.8",
+    "better-auth": "^1.3.27",
+    "date-fns": "^4.1.0",
+    "effect": "^3.19.4",
+    "hono": "^4.9.10",
+    "jose": "^6.1.0",
+    "lodash-es": "^4.17.21",
+    "lru-cache": "^11.2.4",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@repo/rollup-config": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@simplewebauthn/server": "^13.2.2",
+    "@swc/core": "^1.13.5",
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^20.11.17",
+    "rollup": "^4.52.4",
+    "type-fest": "^5.0.1",
+    "typescript": "^5.8.3",
+    "vite-tsconfig-paths": "^5.1.4",
+    "yaml": "^2.8.1"
+  }
+}

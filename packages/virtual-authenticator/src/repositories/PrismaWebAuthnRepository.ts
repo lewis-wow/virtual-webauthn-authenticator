@@ -60,6 +60,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         await this.prisma.webAuthnPublicKeyCredential.create({
           data: {
             id: data.id,
+            name: data.name,
 
             COSEPublicKey: data.COSEPublicKey,
             rpId: data.rpId,

@@ -1,55 +1,40 @@
-import { env } from '@/env';
-import { AuthType } from '@repo/auth/enums';
-import { Proxy } from '@repo/proxy';
-import { createAuthClient } from 'better-auth/client';
-import { jwtClient } from 'better-auth/client/plugins';
-import { nextCookies } from 'better-auth/next-js';
+import { container } from '@/container';
+import { BearerTokenMapper } from '@repo/auth/mappers';
+import { RequestLogFormatter } from '@repo/bff';
+import { proxy } from '@repo/proxy';
+import { cookies } from 'next/headers';
 
 const handler = async (request: Request): Promise<Response> => {
-  const authClient = createAuthClient({
-    plugins: [jwtClient(), nextCookies()],
-    baseURL: env.AUTH_BASE_URL,
-  });
+  const logger = container.resolve('logger');
+  const tokenFetch = container.resolve('tokenFetch');
 
-  const proxy = new Proxy({
-    proxyName: 'API-Proxy',
-    targetBaseURL: 'http://localhost:3001',
-    authorization: async ({ request }) => {
-      const xAuthTypeHeader = request.headers.get('X-Auth-Type');
+  logger.debug('Request', RequestLogFormatter.logRequestInfo({ request }));
 
-      if (xAuthTypeHeader === AuthType.API_KEY) {
-        const response = await fetch(
-          `http://localhost:3002/api/auth/api-keys/token`,
-          {
-            method: 'GET',
-            headers: request.headers,
-          },
-        );
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get('session_token');
 
-        if (!response.ok) {
-          return undefined;
-        }
+  let jwt: string | null = null;
+  if (sessionToken !== undefined) {
+    jwt = await tokenFetch.fetchToken(sessionToken.value, {
+      headers: request.headers,
+    });
+  }
 
-        const { token } = await response.json();
-
-        return `Bearer ${token}`;
-      }
-
-      const { data } = await authClient.token({
-        fetchOptions: {
-          headers: request.headers,
-        },
-      });
-
-      if (!data) {
-        return undefined;
-      }
-
-      return `Bearer ${data.token}`;
+  const response = await proxy('http://localhost:3001', request, {
+    headers: {
+      Authorization: jwt ? BearerTokenMapper.toBearerToken(jwt) : null,
     },
   });
 
-  return await proxy.handleRequest(request);
+  logger.debug(
+    'Response',
+    RequestLogFormatter.logResponseInfo({
+      request,
+      response,
+    }),
+  );
+
+  return response;
 };
 
 export const GET = handler;

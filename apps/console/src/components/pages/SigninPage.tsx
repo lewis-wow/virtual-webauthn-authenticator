@@ -1,7 +1,17 @@
-import { GithubSigninButton } from '@/components/GithubSigninButton';
+'use client';
+
+import { authClient } from '@/lib/authClient';
+import { GithubSignInButton } from '@repo/ui/components/GithubSignInButton';
 import Link from 'next/link';
 
 export const SigninPage = () => {
+  const handleGithubSignIn = async () => {
+    await authClient.signIn.social({
+      provider: 'github',
+      callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}`,
+    });
+  };
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
@@ -11,7 +21,7 @@ export const SigninPage = () => {
         <p className="mb-8 text-center text-gray-600">
           Welcome back! Please sign in using your GitHub account.
         </p>
-        <GithubSigninButton />
+        <GithubSignInButton handleGithubSignIn={handleGithubSignIn} />
         <p className="mt-6 text-center text-sm text-gray-600">
           Don&apos;t have an account?{' '}
           <Link

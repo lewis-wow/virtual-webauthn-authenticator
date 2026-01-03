@@ -1,18 +1,20 @@
 import { Provider } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
-import { Logger } from '@repo/logger';
+import EventEmitter from 'node:events';
 
 import { PrismaService } from './Prisma.service';
 
 export const ActivityLogProvider: Provider = {
   provide: ActivityLog,
-  useFactory: (prisma: PrismaService, logger: Logger) => {
+  useFactory: (prisma: PrismaService) => {
+    const eventEmitter = new EventEmitter();
+
     const activityLog = new ActivityLog({
       prisma,
-      logger,
+      eventEmitter,
     });
 
     return activityLog;
   },
-  inject: [PrismaService, Logger],
+  inject: [PrismaService],
 };

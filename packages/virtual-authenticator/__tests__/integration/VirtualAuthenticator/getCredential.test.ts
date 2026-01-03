@@ -313,7 +313,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
     const publicKeyCredentialRequestOptions = set(
       PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
       {
-        allowCredentials: [{ id: wrongCredentialId, type: 'public-key' }],
+        allowCredentials: [
+          { id: wrongCredentialId, type: PublicKeyCredentialType.PUBLIC_KEY },
+        ],
       },
     );
 
@@ -382,8 +384,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
             webAuthnPublicKeyCredentialId,
             publicKey,
             counter,
-            requireUserVerification:
-              userVerification === UserVerificationRequirement.REQUIRED,
           });
 
         // Per spec, if userVerification is 'required', the UV flag must be set
@@ -468,7 +468,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
           webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
-          requireUserVerification: true,
         });
 
       // Per spec: UV flag (bit 2) must be set when userVerification is required
@@ -507,7 +506,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
           webAuthnPublicKeyCredentialId,
           publicKey,
           counter,
-          requireUserVerification: false,
         });
 
       // Per spec: UP flag (bit 0) should always be set for valid assertions
@@ -639,13 +637,22 @@ describe('VirtualAuthenticator.getCredential()', () => {
         PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
         {
           allowCredentials: [
-            { id: generateRandomUUIDBytes(), type: 'public-key' },
-            { id: generateRandomUUIDBytes(), type: 'public-key' },
+            {
+              id: generateRandomUUIDBytes(),
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+            {
+              id: generateRandomUUIDBytes(),
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
               id: webAuthnPublicKeyCredentialIdBytes,
             },
-            { id: generateRandomUUIDBytes(), type: 'public-key' },
+            {
+              id: generateRandomUUIDBytes(),
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
           ],
         },
       );
@@ -1303,7 +1310,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnPublicKeyCredentialId,
         publicKey,
         counter,
-        requireUserVerification: false,
         expectedChallenge: Buffer.from(challenge).toString('base64url'),
       });
     });

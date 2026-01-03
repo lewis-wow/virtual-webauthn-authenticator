@@ -17,7 +17,7 @@ export const env = defineEnv({
     TRUSTED_ORIGINS: z
       .string()
       .transform((arg) => arg.split(';'))
-      .pipe(z.array(z.url())),
+      .pipe(z.array(z.string())),
 
     // JWT
     JWT_ISSUER: z.string(),

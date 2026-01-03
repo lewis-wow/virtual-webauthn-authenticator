@@ -1,6 +1,6 @@
 import type { KeyClient, KeyVaultKey, SignResult } from '@azure/keyvault-keys';
 import { JsonWebKey } from '@repo/keys';
-import { KeyAlgorithm, KeyOperation } from '@repo/keys/enums';
+import { COSEKeyAlgorithm, KeyAlgorithm, KeyOperation } from '@repo/keys/enums';
 import { COSEKeyAlgorithmMapper, COSEKeyMapper } from '@repo/keys/mappers';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
@@ -41,28 +41,30 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
   }
 
+  /**
+   * Creates a new cryptographic key in Azure Key Vault.
+   * @param opts.keyName - The name for the new key
+   * @param opts.supportedPubKeyCredParam - Public key credential parameters
+   * @returns KeyPayload containing the JWK and Key Vault metadata
+   */
   private async _createKey(opts: {
     keyName: string;
     supportedPubKeyCredParam: PubKeyCredParamStrict;
   }): Promise<KeyPayload> {
     const { keyName, supportedPubKeyCredParam } = opts;
 
-    const keyVaultKey = await this.keyClient
-      .createKey(
-        keyName,
-        COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyType(
+    const keyVaultKey = await this.keyClient.createKey(
+      keyName,
+      COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyType(
+        supportedPubKeyCredParam.alg,
+      ),
+      {
+        keyOps: [KeyOperation.SIGN],
+        curve: COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyCurveName(
           supportedPubKeyCredParam.alg,
         ),
-        {
-          keyOps: [KeyOperation.SIGN],
-          curve: COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyCurveName(
-            supportedPubKeyCredParam.alg,
-          ),
-        },
-      )
-      .catch((error) => {
-        throw error;
-      });
+      },
+    );
 
     return {
       jwk: new JsonWebKey(keyVaultKey.key!),
@@ -72,6 +74,11 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     };
   }
 
+  /**
+   * Retrieves an existing key from Azure Key Vault.
+   * @param opts.keyName - The name of the key to retrieve
+   * @returns KeyPayload containing the JWK and Key Vault metadata
+   */
   private async _getKey(opts: { keyName: string }): Promise<KeyPayload> {
     const { keyName } = opts;
     const keyVaultKey = await this.keyClient.getKey(keyName);
@@ -84,6 +91,13 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     };
   }
 
+  /**
+   * Signs data using a key from Azure Key Vault.
+   * @param opts.keyVaultKey - The Key Vault key to use for signing
+   * @param opts.algorithm - The signing algorithm
+   * @param opts.data - The data to sign
+   * @returns SignPayload containing the signature and metadata
+   */
   private async _sign(opts: {
     keyVaultKey: KeyVaultKey;
     algorithm: KeyAlgorithm;
@@ -104,10 +118,24 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     };
   }
 
+  /**
+   * Generates a new key pair for WebAuthn credentials.
+   * @param opts.webAuthnPublicKeyCredentialId - The credential ID
+   * @param opts.pubKeyCredParams - Public key credential parameters
+   * @returns Object containing COSE public key and Key Vault metadata
+   */
   async generateKeyPair(opts: {
     webAuthnPublicKeyCredentialId: string;
     pubKeyCredParams: PubKeyCredParamStrict;
-  }) {
+  }): Promise<{
+    COSEPublicKey: Uint8Array;
+    webAuthnPublicKeyCredentialKeyMetaType: WebAuthnPublicKeyCredentialKeyMetaType;
+    webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
+      keyVaultKeyId: string | null;
+      keyVaultKeyName: string;
+      hsm: boolean;
+    };
+  }> {
     const { webAuthnPublicKeyCredentialId, pubKeyCredParams } = opts;
 
     const {
@@ -132,10 +160,20 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     };
   }
 
+  /**
+   * Signs data using the private key associated with a WebAuthn credential.
+   * @param opts.data - The data to sign
+   * @param opts.webAuthnPublicKeyCredential - The WebAuthn credential with metadata
+   * @returns Object containing the signature and algorithm
+   * @throws UnexpectedWebAuthnPublicKeyCredentialKeyMetaType if credential is not KEY_VAULT type
+   */
   async sign(opts: {
     data: Uint8Array;
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
-  }) {
+  }): Promise<{
+    signature: Uint8Array;
+    alg: COSEKeyAlgorithm;
+  }> {
     const { data, webAuthnPublicKeyCredential } = opts;
 
     if (

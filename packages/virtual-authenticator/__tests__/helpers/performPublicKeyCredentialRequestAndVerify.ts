@@ -8,6 +8,7 @@ import { expect } from 'vitest';
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
+import { UserVerificationRequirement } from '../../src/enums/UserVerificationRequirement';
 import type { PublicKeyCredentialRequestOptions } from '../../src/zod-validation';
 import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
 
@@ -19,7 +20,6 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   publicKey: Uint8Array<ArrayBuffer>;
   counter: number;
   expectedNewCounter?: number;
-  requireUserVerification?: boolean;
   expectedChallenge?: string;
   userId?: string;
   origin?: string;
@@ -41,7 +41,6 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     publicKey,
     counter,
     expectedNewCounter,
-    requireUserVerification,
     expectedChallenge = CHALLENGE_BASE64URL,
     userId = USER_ID,
     origin = RP_ORIGIN,
@@ -77,8 +76,8 @@ export const performPublicKeyCredentialRequestAndVerify = async (
       counter,
     },
     requireUserVerification:
-      requireUserVerification ??
-      publicKeyCredentialRequestOptions.userVerification === 'required',
+      publicKeyCredentialRequestOptions.userVerification ===
+      UserVerificationRequirement.REQUIRED,
   });
 
   // The most important check: confirm that the authentication was successful.

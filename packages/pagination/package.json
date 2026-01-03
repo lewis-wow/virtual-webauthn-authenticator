@@ -8,16 +8,21 @@
     "./enums": "./src/enums/index.ts",
     "./validation": "./src/validation/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
-    "./hooks": "./src/hooks/index.ts"
+    "./hooks": "./src/hooks/index.ts",
+    "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
     "test": "vitest run --config __tests__/vitest.config.ts",
     "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.37.1",
     "@repo/eslint-config": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",

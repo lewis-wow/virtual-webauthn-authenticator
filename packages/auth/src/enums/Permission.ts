@@ -4,21 +4,21 @@ import { PermissionEntity } from './PermissionEntity';
 
 export const Permission = {
   // Credential
-  [`${PermissionEntity.Credential}.create` as const]: `${PermissionEntity.Credential}.create`,
-  [`${PermissionEntity.Credential}.get` as const]: `${PermissionEntity.Credential}.get`,
+  [`${PermissionEntity.CREDENTIAL}.CREATE` as const]: `${PermissionEntity.CREDENTIAL}.CREATE`,
+  [`${PermissionEntity.CREDENTIAL}.GET` as const]: `${PermissionEntity.CREDENTIAL}.GET`,
 
   // WebAuthnPublicKeyCredential
-  [`${PermissionEntity.WebAuthnPublicKeyCredential}.create` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.create`,
-  [`${PermissionEntity.WebAuthnPublicKeyCredential}.read` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.read`,
-  [`${PermissionEntity.WebAuthnPublicKeyCredential}.write` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.write`,
-  [`${PermissionEntity.WebAuthnPublicKeyCredential}.delete` as const]: `${PermissionEntity.WebAuthnPublicKeyCredential}.delete`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.CREATE` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.CREATE`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.READ` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.READ`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.WRITE` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.WRITE`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.DELETE` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.DELETE`,
 
   // ApiKey
-  [`${PermissionEntity.ApiKey}.create` as const]: `${PermissionEntity.ApiKey}.create`,
-  [`${PermissionEntity.ApiKey}.read` as const]: `${PermissionEntity.ApiKey}.read`,
-  [`${PermissionEntity.ApiKey}.write` as const]: `${PermissionEntity.ApiKey}.write`,
-  [`${PermissionEntity.ApiKey}.delete` as const]: `${PermissionEntity.ApiKey}.delete`,
-  [`${PermissionEntity.ApiKey}.revoke` as const]: `${PermissionEntity.ApiKey}.revoke`,
+  [`${PermissionEntity.API_KEY}.CREATE` as const]: `${PermissionEntity.API_KEY}.CREATE`,
+  [`${PermissionEntity.API_KEY}.READ` as const]: `${PermissionEntity.API_KEY}.READ`,
+  [`${PermissionEntity.API_KEY}.WRITE` as const]: `${PermissionEntity.API_KEY}.WRITE`,
+  [`${PermissionEntity.API_KEY}.DELETE` as const]: `${PermissionEntity.API_KEY}.DELETE`,
+  [`${PermissionEntity.API_KEY}.REVOKE` as const]: `${PermissionEntity.API_KEY}.REVOKE`,
 } as const;
 
 export type Permission = ValueOfEnum<typeof Permission>;

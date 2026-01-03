@@ -1,13 +1,24 @@
+import { container } from '@/container';
 import { env } from '@/env';
-import { Proxy } from '@repo/proxy';
+import { RequestLogFormatter } from '@repo/bff';
+import { proxy } from '@repo/proxy';
 
 const handler = async (request: Request): Promise<Response> => {
-  const proxy = new Proxy({
-    proxyName: 'Auth-Proxy',
-    targetBaseURL: env.AUTH_BASE_URL,
-  });
+  const logger = container.resolve('logger');
 
-  return await proxy.handleRequest(request);
+  logger.debug('Request', RequestLogFormatter.logRequestInfo({ request }));
+
+  const response = await proxy(env.AUTH_BASE_URL, request);
+
+  logger.debug(
+    'Response',
+    RequestLogFormatter.logResponseInfo({
+      request,
+      response,
+    }),
+  );
+
+  return response;
 };
 
 export const GET = handler;

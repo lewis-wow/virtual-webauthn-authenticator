@@ -1,19 +1,24 @@
-import type { auth } from '@/lib/auth';
+import { container } from '@/container';
 import { Exception } from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
 import { ExceptionMapper } from '@repo/exception/mappers';
 import { createFactory } from 'hono/factory';
 
-import { logger } from './lib/logger';
-
 export const factory = createFactory<{
   Variables: {
-    user: typeof auth.$Infer.Session.user | null;
-    session: typeof auth.$Infer.Session.session | null;
+    user: typeof container.$dependencies.auth.$Infer.Session.user | null;
+    session: typeof container.$dependencies.auth.$Infer.Session.session | null;
+    container: typeof container;
   };
 }>({
   initApp: (app) => {
-    app.onError((error) => {
+    app.use((ctx, next) => {
+      ctx.set('container', container);
+      return next();
+    });
+
+    app.onError((error, ctx) => {
+      const logger = ctx.get('container').resolve('logger');
       logger.exception(error);
 
       const exception =

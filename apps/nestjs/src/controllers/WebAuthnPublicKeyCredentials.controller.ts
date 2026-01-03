@@ -14,6 +14,7 @@ import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { Prisma, WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
+import { PrismaErrorCode } from '@repo/prisma/enums';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/zod-validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
@@ -43,7 +44,9 @@ export class WebAuthnPublicKeyCredentialsController {
         const { userId, permissions } = jwtPayload;
 
         if (
-          !permissions.includes(Permission['WebAuthnPublicKeyCredential.read'])
+          !permissions.includes(
+            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+          )
         ) {
           throw new Forbidden();
         }
@@ -87,7 +90,9 @@ export class WebAuthnPublicKeyCredentialsController {
         const { userId, permissions } = jwtPayload;
 
         if (
-          !permissions.includes(Permission['WebAuthnPublicKeyCredential.read'])
+          !permissions.includes(
+            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+          )
         ) {
           throw new Forbidden();
         }
@@ -127,7 +132,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         if (
           !permissions.includes(
-            Permission['WebAuthnPublicKeyCredential.delete'],
+            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.DELETE'],
           )
         ) {
           throw new Forbidden();
@@ -145,15 +150,15 @@ export class WebAuthnPublicKeyCredentialsController {
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
               },
             });
-        } catch (e) {
-          if (e instanceof Prisma.PrismaClientKnownRequestError) {
-            if (e.code === 'P2025') {
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === PrismaErrorCode.RECORDS_NOT_FOUND) {
               throw new WebAuthnPublicKeyCredentialNotFound();
             }
           }
 
           // Handle other errors (db connection issues, etc.)
-          throw e;
+          throw error;
         }
 
         this.logger.debug('Removing WebAuthnPublicKeyCredential.', {
@@ -175,7 +180,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         await this.activityLog.audit({
           action: LogAction.DELETE,
-          entity: LogEntity.WEBAUTHN_PUBLIC_KEY_CREDENTIAL,
+          entity: LogEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL,
 
           apiKeyId:
             jwtPayload.tokenType === TokenType.API_KEY

@@ -17,6 +17,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@repo/utils": "workspace:*",
     "winston": "^3.18.3"
   }
 }

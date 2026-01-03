@@ -4,5 +4,5 @@ import { Permission } from '../../enums/Permission';
 
 export const PermissionSchema = z.enum(Permission).meta({
   description: 'Permission',
-  examples: [Permission['ApiKey.create']],
+  examples: [Permission['API_KEY.CREATE']],
 });
