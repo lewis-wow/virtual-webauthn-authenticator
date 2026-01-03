@@ -1,2 +1,2 @@
-export * from './SortDirection';
+export * from './OrderByDirection';
 export * from './SortKeys';

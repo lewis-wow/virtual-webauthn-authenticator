@@ -4,3 +4,4 @@ export * from './PropertyKey';
 export * from './AddPrefix';
 export * from './ValueOfEnum';
 export * from './MakeNullableOptional';
+export * from './TypedEventEmitter';

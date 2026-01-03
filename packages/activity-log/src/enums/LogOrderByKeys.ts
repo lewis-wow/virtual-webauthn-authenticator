@@ -1,8 +1,8 @@
 import { SortKeys } from '@repo/pagination/enums';
 import type { ValueOfEnum } from '@repo/types';
 
-export const LogSortKeys = {
+export const LogOrderByKeys = {
   ...SortKeys,
 } as const;
 
-export type LogSortKeys = ValueOfEnum<typeof LogSortKeys>;
+export type LogOrderByKeys = ValueOfEnum<typeof LogOrderByKeys>;

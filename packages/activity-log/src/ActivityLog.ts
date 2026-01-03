@@ -1,28 +1,40 @@
-import type { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import { SortDirection } from '@repo/pagination/enums';
+import { OrderByDirection } from '@repo/pagination/enums';
 import type { PaginationResult } from '@repo/pagination/zod-validation';
 import { PrismaClient, Prisma } from '@repo/prisma';
-import type { MakeNullableOptional } from '@repo/types';
+import type { MakeNullableOptional, TypedEventEmitter } from '@repo/types';
+import type EventEmitter from 'node:events';
 
-import type { LogSortKeys } from './enums/LogSortKeys';
+import type { LogOrderByKeys } from './enums/LogOrderByKeys';
 import type { Log } from './zod-validation/LogSchema';
 
 const DEFAULT_HISTORY_LIMIT = 20;
-const DEFAULT_SORT_ORDER = SortDirection.DESC;
+const DEFAULT_SORT_ORDER = OrderByDirection.DESC;
+
+export type ActivityLogEventMap = {
+  error: (opts: { error: unknown }) => void;
+};
 
 export type ActivityLogOptions = {
   prisma: PrismaClient;
-  logger: Logger;
+  eventEmitter: EventEmitter;
 };
 
-export class ActivityLog {
+export class ActivityLog implements TypedEventEmitter<ActivityLogEventMap> {
   private readonly prisma: PrismaClient;
-  private readonly logger: Logger;
+  private readonly eventEmitter: EventEmitter;
 
   constructor(opts: ActivityLogOptions) {
     this.prisma = opts.prisma;
-    this.logger = opts.logger;
+    this.eventEmitter = opts.eventEmitter;
+  }
+
+  on<E extends keyof ActivityLogEventMap>(
+    event: E,
+    listener: ActivityLogEventMap[E],
+  ): this {
+    this.eventEmitter.on(event, listener);
+    return this;
   }
 
   /**
@@ -49,9 +61,9 @@ export class ActivityLog {
             : Prisma.DbNull,
         },
       });
-    } catch (auditError) {
+    } catch (error) {
       // CRITICAL: Never let a logging failure crash the main application flow.
-      this.logger.catch(auditError, 'Failed to write event log.');
+      this.eventEmitter.emit('error', { error });
     }
   }
 
@@ -67,23 +79,27 @@ export class ActivityLog {
     userId: string;
     limit?: number;
     cursor?: string;
-    orderBy?: Record<LogSortKeys, SortDirection>;
+    orderBy?: Partial<Record<LogOrderByKeys, OrderByDirection>>;
   }): Promise<PaginationResult<Log>> {
     const { userId, limit = DEFAULT_HISTORY_LIMIT, cursor, orderBy } = opts;
 
-    const pagination = new Pagination(async ({ pagination }) => {
-      const logs = await this.prisma.log.findMany({
-        where: {
-          userId,
-        },
-        orderBy: orderBy ?? {
-          createdAt: DEFAULT_SORT_ORDER,
-        },
-        ...pagination,
-      });
+    const pagination = new Pagination(
+      async ({ pagination, orderBy: idOrderBy }) => {
+        const logs = await this.prisma.log.findMany({
+          where: {
+            userId,
+          },
+          orderBy: [
+            ...(orderBy ? [orderBy] : [{ createdAt: DEFAULT_SORT_ORDER }]),
+            idOrderBy,
+          ],
+          ...pagination,
+          skip: pagination.cursor ? 1 : undefined,
+        });
 
-      return logs as Log[];
-    });
+        return logs as Log[];
+      },
+    );
 
     const paginationResult = await pagination.fetch({ limit, cursor });
 

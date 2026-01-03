@@ -10,6 +10,7 @@ import { PrismaClientExtended } from '@repo/prisma';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { jwt as jwtPlugin, bearer } from 'better-auth/plugins';
+import EventEmitter from 'node:events';
 
 const LOG_PREFIX = 'AUTH-SERVER';
 
@@ -37,10 +38,12 @@ export const container = new DependencyContainer()
       },
     });
   })
-  .register('activityLog', ({ prisma, logger }) => {
+  .register('activityLog', ({ prisma }) => {
+    const eventEmitter = new EventEmitter();
+
     return new ActivityLog({
       prisma,
-      logger,
+      eventEmitter,
     });
   })
   .register('auth', ({ prisma, jwtIssuer }) => {

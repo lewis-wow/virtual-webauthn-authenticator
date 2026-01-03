@@ -10,12 +10,13 @@
     "./zod-validation": "./src/zod-validation/index.ts"
   },
   "scripts": {
-    "test": "vitest run --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
+    "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.37.1",
     "@repo/eslint-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
