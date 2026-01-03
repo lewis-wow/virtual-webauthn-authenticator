@@ -8,7 +8,7 @@ import {
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
   upsertTestingWebAuthnPublicKeyCredential,
-  WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
+  WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
@@ -24,7 +24,7 @@ import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
 
-const API_PATH = `/api/webauthn-public-key-credentials/${WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID}`;
+const API_PATH = `/api/webauthn-public-key-credentials/${WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID}`;
 
 const prisma = PrismaClientExtended.createInstance();
 
@@ -137,7 +137,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
 
       expect(response.body).toMatchInlineSnapshot(`
         {
-          "code": "WEBAUTHN_PUBLIC_KEY_CREDENTIAL_NOT_FOUND",
+          "code": "WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_NOT_FOUND",
           "message": "WebAuthn Public Key Credential Not Found.",
           "name": "WebAuthnPublicKeyCredentialNotFound",
         }
@@ -181,7 +181,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
       const webAuthnPublicKeyCredential =
         await prisma.webAuthnPublicKeyCredential.findUnique({
           where: {
-            id: WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
+            id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
           },
         });
 

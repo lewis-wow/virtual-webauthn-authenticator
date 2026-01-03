@@ -164,7 +164,7 @@ describe('ActivityLog.audit() with Prisma', () => {
   test('Should create log entry without optional fields', async () => {
     await activityLog.audit({
       action: LogAction.LIST,
-      entity: LogEntity.WEBAUTHN_PUBLIC_KEY_CREDENTIAL,
+      entity: LogEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL,
       userId: testUserId,
     });
 
@@ -173,7 +173,7 @@ describe('ActivityLog.audit() with Prisma', () => {
       where: {
         userId: testUserId,
         action: LogAction.LIST,
-        entity: LogEntity.WEBAUTHN_PUBLIC_KEY_CREDENTIAL,
+        entity: LogEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL,
       },
       orderBy: {
         createdAt: 'desc',
@@ -187,7 +187,7 @@ describe('ActivityLog.audit() with Prisma', () => {
     createdLogIds.push(log.id);
 
     expect(log.action).toBe(LogAction.LIST);
-    expect(log.entity).toBe(LogEntity.WEBAUTHN_PUBLIC_KEY_CREDENTIAL);
+    expect(log.entity).toBe(LogEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL);
     expect(log.userId).toBe(testUserId);
     expect(log.entityId).toBeNull();
     expect(log.apiKeyId).toBeNull();

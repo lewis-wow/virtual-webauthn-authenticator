@@ -13,8 +13,8 @@ import {
 import { COSEKeyMapper } from '../../../keys/src/mappers/COSEKeyMapper';
 import {
   RP_ID,
-  WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
-  WEBAUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,
+  WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
+  WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,
 } from './consts';
 
 export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
@@ -24,11 +24,11 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
 
   return await prisma.webAuthnPublicKeyCredential.upsert({
     where: {
-      id: WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
+      id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
     },
     update: {},
     create: {
-      id: WEBAUTHN_PUBLIC_KEY_CREDENTIAL_ID,
+      id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
       userId: USER_ID,
       rpId: RP_ID,
       COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
@@ -36,7 +36,7 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         create: {
-          id: WEBAUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,
+          id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,
           keyVaultKeyName: KEY_VAULT_KEY_NAME,
           keyVaultKeyId: KEY_VAULT_KEY_ID,
           createdAt: new Date(0),

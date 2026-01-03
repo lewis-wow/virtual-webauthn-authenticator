@@ -180,7 +180,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         await this.activityLog.audit({
           action: LogAction.DELETE,
-          entity: LogEntity.WEBAUTHN_PUBLIC_KEY_CREDENTIAL,
+          entity: LogEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL,
 
           apiKeyId:
             jwtPayload.tokenType === TokenType.API_KEY
