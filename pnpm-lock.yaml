@@ -2017,6 +2017,43 @@ importers:
         specifier: ^3.1.0
         version: 3.1.0(typescript@5.9.2)(vitest@3.2.4)
 
+  packages/virtual-authenticator-parser:
+    dependencies:
+      '@repo/assert':
+        specifier: workspace:*
+        version: link:../assert
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@repo/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+
   packages/vitest-config:
     devDependencies:
       '@repo/eslint-config':
