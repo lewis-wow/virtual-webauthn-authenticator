@@ -912,6 +912,9 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
+      '@dotenvx/dotenvx':
+        specifier: ^1.37.1
+        version: 1.51.0
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
