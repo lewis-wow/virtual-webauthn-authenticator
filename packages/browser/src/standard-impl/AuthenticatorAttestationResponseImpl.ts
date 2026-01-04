@@ -1,13 +1,15 @@
 import { BytesMapper } from '@repo/core/mappers';
 import type { COSEKeyMap } from '@repo/keys/cose';
+import type { IAttestationObjectMap } from '@repo/virtual-authenticator/cbor';
 import * as cbor from 'cbor2';
 
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
-import { AttestationObjectMissingAuthData } from '../exceptions/AttestationObjectMissingAuthData';
 import { AuthenticatorDataTooShort } from '../exceptions/AuthenticatorDataTooShort';
-import { FailedToDecodeAttestationObject } from '../exceptions/FailedToDecodeAttestationObject';
 import { FailedToParseCosePublicKey } from '../exceptions/FailedToParseCosePublicKey';
-import { AuthenticatorResponseImpl } from './AuthenticatorResponseImpl';
+import {
+  AuthenticatorResponseImpl,
+  type AuthenticatorResponseImplOptions,
+} from './AuthenticatorResponseImpl';
 
 export type DecodedAttestationObject = {
   authData: Uint8Array;
@@ -15,25 +17,26 @@ export type DecodedAttestationObject = {
   attStmt: Record<string, unknown>;
 };
 
-export type AuthenticatorAttestationResponseImplOptions = {
-  attestationObject: ArrayBuffer;
-  clientDataJSON: ArrayBuffer;
-};
+export type AuthenticatorAttestationResponseImplOptions =
+  AuthenticatorResponseImplOptions & {
+    attestationObject: ArrayBuffer;
+  };
 
 export class AuthenticatorAttestationResponseImpl
   extends AuthenticatorResponseImpl
   implements AuthenticatorAttestationResponse
 {
-  readonly attestationObject: ArrayBuffer;
+  public readonly attestationObject: ArrayBuffer;
 
   // Caches to prevent repeated expensive parsing
-  private _decodedAttestationObject: DecodedAttestationObject | null = null;
-  private _authenticatorData: ArrayBuffer | null = null;
+  private _attestationObjectMap: IAttestationObjectMap | null = null;
+
   private _publicKey: ArrayBuffer | null = null;
   private _publicKeyAlgo: COSEAlgorithmIdentifier | undefined;
 
   constructor(opts: AuthenticatorAttestationResponseImplOptions) {
-    super(opts.clientDataJSON);
+    super({ clientDataJSON: opts.clientDataJSON });
+
     this.attestationObject = opts.attestationObject;
   }
 
@@ -41,8 +44,10 @@ export class AuthenticatorAttestationResponseImpl
    * Decodes the CBOR attestationObject and extracts the binary authData.
    */
   getAuthenticatorData(): ArrayBuffer {
-    if (this._authenticatorData) {
-      return this._authenticatorData;
+    if (this._attestationObjectMap?.has('authData')) {
+      return BytesMapper.bytesToArrayBuffer(
+        this._attestationObjectMap.get('authData')!,
+      );
     }
 
     // 1. Decode the top-level CBOR map
@@ -51,44 +56,17 @@ export class AuthenticatorAttestationResponseImpl
       this.attestationObject,
     );
 
-    let decodedAttestation: DecodedAttestationObject | Map<string, unknown>;
-    try {
-      // cbor.decode may return a Map or an object depending on options
-      decodedAttestation = cbor.decode(attestationBytes, {
-        preferMap: false, // Use false to get a plain object
-      }) as DecodedAttestationObject | Map<string, unknown>;
-    } catch (e) {
-      throw new FailedToDecodeAttestationObject({
-        cause: e,
-      });
-    }
-
-    // Handle both Map and object formats
-    let authDataBytes: Uint8Array | undefined;
-    if (decodedAttestation instanceof Map) {
-      this._decodedAttestationObject = {
-        authData: decodedAttestation.get('authData') as Uint8Array,
-        fmt: decodedAttestation.get('fmt') as string,
-        attStmt: decodedAttestation.get('attStmt') as Record<string, unknown>,
-      };
-      authDataBytes = this._decodedAttestationObject.authData;
-    } else {
-      this._decodedAttestationObject =
-        decodedAttestation as DecodedAttestationObject;
-      authDataBytes = this._decodedAttestationObject.authData;
-    }
-
-    // 2. Extract authData
-    // cbor usually returns Node Buffers for binary fields.
-    // We treat it as a generic BufferSource.
-    if (!authDataBytes) {
-      throw new AttestationObjectMissingAuthData();
-    }
+    this._attestationObjectMap = cbor.decode<IAttestationObjectMap>(
+      attestationBytes,
+      {
+        preferMap: true,
+      },
+    );
 
     // Normalize to Uint8Array using Mapper, then store the underlying ArrayBuffer
-    this._authenticatorData = BytesMapper.bytesToArrayBuffer(authDataBytes);
-
-    return this._authenticatorData!;
+    return BytesMapper.bytesToArrayBuffer(
+      this._attestationObjectMap.get('authData')!,
+    );
   }
 
   /**
