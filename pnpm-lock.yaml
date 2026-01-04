@@ -1444,9 +1444,6 @@ importers:
       ts-pattern:
         specifier: ^5.8.0
         version: 5.8.0
-      uint8array-extras:
-        specifier: ^1.5.0
-        version: 1.5.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
