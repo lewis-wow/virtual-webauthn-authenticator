@@ -10,6 +10,7 @@ import type {
   IAuthenticator,
 } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
+import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
 import {
   Attestation,
   AuthenticatorAttachment,
@@ -325,16 +326,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Decode the CBOR attestation object
     // Note: cbor.decode returns a Map when the CBOR data contains a map
-    const decodedAttestation = cbor.decode(attestationObjectResult);
-
-    // Ensure we're working with a Map (cbor2 should decode CBOR maps as
-    // JavaScript Maps)
-    const attestationObject =
-      decodedAttestation instanceof Map
-        ? decodedAttestation
-        : new Map(
-            Object.entries(decodedAttestation as Record<string, unknown>),
-          );
+    const attestationObject = cbor.decode<IAttestationObjectMap>(
+      attestationObjectResult,
+      { preferMap: true },
+    );
 
     // Step 22.SUCCESS.3.1: If
     // credentialCreationData.attestationConveyancePreferenceOption's value is
@@ -344,15 +339,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // non-identifying versions of the same:
 
       // Extract attestation object components
-      const fmt = attestationObject.get('fmt') as string;
+      const fmt = attestationObject.get('fmt');
       const attStmt = attestationObject.get('attStmt');
-      const authData = attestationObject.get('authData') as Uint8Array;
-
-      // Convert attStmt to Map if it's a plain object
-      const attStmtMap =
-        attStmt instanceof Map
-          ? attStmt
-          : new Map(Object.entries(attStmt as Record<string, unknown>));
+      const authData = attestationObject.get('authData');
 
       // Check if aaguid (in authData) is 16 zero bytes
       // AAGUID is located at bytes 37-52 in authData (after rpIdHash
@@ -366,7 +355,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // and credentialCreationData.attestationObjectResult.fmt is "packed"
       // and x5c is absent
       const isSelfAttestation =
-        isAaguidZeroed && fmt === Fmt.PACKED && !attStmtMap.has('x5c');
+        isAaguidZeroed && fmt === Fmt.PACKED && !attStmt.has('x5c');
 
       // then self attestation is being used and no further action is needed.
       if (isSelfAttestation) {
