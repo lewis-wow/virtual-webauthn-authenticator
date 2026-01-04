@@ -16,6 +16,8 @@ export const TokenBindingStatus = {
    * when communicating with the Relying Party.
    */
   SUPPORTED: 'supported',
+
+  NOT_SUPPORTED: 'not-supported',
 } as const;
 
 export type TokenBindingStatus = ValueOfEnum<typeof TokenBindingStatus>;

@@ -1,8 +1,8 @@
 import z from 'zod';
 
 import { see } from '../meta/see';
+import { TokenBindingSchema } from './TokenBindingSchema';
 import { CollectedClientDataTypeSchema } from './enums/CollectedClientDataTypeSchema';
-import { TokenBindingStatusSchema } from './enums/TokenBindingStatusSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata
@@ -11,7 +11,7 @@ import { TokenBindingStatusSchema } from './enums/TokenBindingStatusSchema';
  * Therefore it’s critical when parsing to be tolerant of unknown keys and of any reordering of the keys.
  */
 export const CollectedClientDataSchema = z
-  .looseObject({
+  .object({
     /**
      * This member contains the string "webauthn.create" when creating new credentials,
      * and "webauthn.get" when getting an assertion from an existing credential.
@@ -52,17 +52,7 @@ export const CollectedClientDataSchema = z
      *
      * @see https://datatracker.ietf.org/doc/html/rfc8471#section-1
      */
-    tokenBinding: z
-      .object({
-        status: TokenBindingStatusSchema,
-        id: z.string().optional(),
-      })
-      .optional()
-      .meta({
-        description: `This OPTIONAL member contains information about the state of the Token Binding protocol used when communicating with the Relying Party. ${see(
-          'https://datatracker.ietf.org/doc/html/rfc8471#section-1',
-        )}`,
-      }),
+    tokenBinding: TokenBindingSchema.optional(),
   })
   .meta({
     id: 'CollectedClientData',

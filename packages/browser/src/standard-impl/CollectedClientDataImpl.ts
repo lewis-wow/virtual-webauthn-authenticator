@@ -1,27 +1,18 @@
-export type TokenBindingStatus = 'present' | 'supported' | 'not-supported';
-
-export interface TokenBinding {
-  status: TokenBindingStatus;
-  id?: string;
-}
-
-export interface CollectedClientData {
-  type: 'webauthn.create' | 'webauthn.get';
-  challenge: string;
-  origin: string;
-  crossOrigin: boolean;
-  tokenBinding?: TokenBinding;
-}
+import type { CollectedClientDataType } from '@repo/virtual-authenticator/enums';
+import type {
+  CollectedClientData,
+  TokenBinding,
+} from '@repo/virtual-authenticator/validation';
 
 export class CollectedClientDataImpl implements CollectedClientData {
-  type: 'webauthn.create' | 'webauthn.get';
+  type: CollectedClientDataType;
   challenge: string;
   origin: string;
   crossOrigin: boolean;
   tokenBinding?: TokenBinding;
 
   constructor(opts: {
-    type: 'webauthn.create' | 'webauthn.get';
+    type: CollectedClientDataType;
     challenge: string;
     origin: string;
     crossOrigin: boolean;

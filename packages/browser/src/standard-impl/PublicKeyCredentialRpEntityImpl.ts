@@ -1,13 +1,21 @@
-import { PublicKeyCredentialEntityImpl } from './PublicKeyCredentialEntityImpl';
+import {
+  PublicKeyCredentialEntityImpl,
+  type PublicKeyCredentialEntityImplOptions,
+} from './PublicKeyCredentialEntityImpl';
+
+export type PublicKeyCredentialRpEntityImplOptions =
+  PublicKeyCredentialEntityImplOptions & {
+    id?: string;
+  };
 
 export class PublicKeyCredentialRpEntityImpl
   extends PublicKeyCredentialEntityImpl
   implements PublicKeyCredentialRpEntity
 {
-  id?: string;
+  public readonly id?: string;
 
-  constructor(opts: { name: string; id?: string }) {
-    super(opts.name);
+  constructor(opts: PublicKeyCredentialRpEntityImplOptions) {
+    super({ name: opts.name });
     this.id = opts.id;
   }
 }
