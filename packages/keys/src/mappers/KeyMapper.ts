@@ -1,6 +1,6 @@
 import { assertSchema } from '@repo/assert';
+import { EncodingMapper } from '@repo/core/mappers';
 import { swapKeysAndValues } from '@repo/utils';
-import { base64ToUint8Array, uint8ArrayToBase64 } from 'uint8array-extras';
 import z from 'zod';
 
 import { COSEKey } from '../cose/COSEKey';
@@ -11,10 +11,7 @@ import { COSEKeyType } from '../cose/enums/COSEKeyType';
 import { COSEKeyTypeParam } from '../cose/enums/COSEKeyTypeParam';
 import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
 import { JsonWebKey, type JsonWebKeyOptions } from '../jwk/JsonWebKey';
-import {
-  JWKKeyCurveName,
-  JWKKeyCurveNameToShared,
-} from '../jwk/enums/JWKKeyCurveName';
+import { JWKKeyCurveName } from '../jwk/enums/JWKKeyCurveName';
 import { JWKKeyType } from '../jwk/enums/JWKKeyType';
 
 export class KeyMapper {
@@ -77,26 +74,22 @@ export class KeyMapper {
     jwk: JsonWebKey,
     coseMap: Map<number, number | Uint8Array>,
   ): void {
-    assertSchema(jwk.crv, z.string());
+    assertSchema(jwk.crv, z.enum(JWKKeyCurveName));
     assertSchema(jwk.x, z.string());
     assertSchema(jwk.y, z.string());
 
-    // Map JWK curve value (e.g., "P-256") to SharedKeyCurveName (e.g., "P256")
-    const sharedCurveName = JWKKeyCurveNameToShared[jwk.crv];
-    if (!sharedCurveName) {
-      throw new UnsupportedKeyType();
-    }
-
-    const crv =
-      COSEKeyCurveName[sharedCurveName as keyof typeof COSEKeyCurveName];
+    const crv = COSEKeyCurveName[jwk.crv];
     assertSchema(crv, z.number());
 
-    coseMap.set(COSEKeyTypeParam.EC2_crv, crv);
-    coseMap.set(COSEKeyTypeParam.EC2_x, base64ToUint8Array(jwk.x));
-    coseMap.set(COSEKeyTypeParam.EC2_y, base64ToUint8Array(jwk.y));
+    coseMap.set(COSEKeyTypeParam.EC_crv, crv);
+    coseMap.set(COSEKeyTypeParam.EC_x, EncodingMapper.base64urlToBytes(jwk.x));
+    coseMap.set(COSEKeyTypeParam.EC_y, EncodingMapper.base64urlToBytes(jwk.y));
 
     if (jwk.d) {
-      coseMap.set(COSEKeyTypeParam.EC2_d, base64ToUint8Array(jwk.d));
+      coseMap.set(
+        COSEKeyTypeParam.EC_d,
+        EncodingMapper.base64urlToBytes(jwk.d),
+      );
     }
   }
 
@@ -107,11 +100,14 @@ export class KeyMapper {
     assertSchema(jwk.n, z.string());
     assertSchema(jwk.e, z.string());
 
-    coseMap.set(COSEKeyTypeParam.RSA_n, base64ToUint8Array(jwk.n));
-    coseMap.set(COSEKeyTypeParam.RSA_e, base64ToUint8Array(jwk.e));
+    coseMap.set(COSEKeyTypeParam.RSA_n, EncodingMapper.base64urlToBytes(jwk.n));
+    coseMap.set(COSEKeyTypeParam.RSA_e, EncodingMapper.base64urlToBytes(jwk.e));
 
     if (jwk.d) {
-      coseMap.set(COSEKeyTypeParam.RSA_d, base64ToUint8Array(jwk.d));
+      coseMap.set(
+        COSEKeyTypeParam.RSA_d,
+        EncodingMapper.base64urlToBytes(jwk.d),
+      );
     }
   }
 
@@ -120,7 +116,7 @@ export class KeyMapper {
     jwk: JsonWebKeyOptions,
   ): void {
     assertSchema(value, z.enum(COSEKeyType));
-    jwk.kty = this.COSE_TO_JWK_KTY[value];
+    jwk.kty = KeyMapper.COSE_TO_JWK_KTY[value];
   }
 
   private static mapECParameter(
@@ -129,23 +125,23 @@ export class KeyMapper {
     jwk: JsonWebKeyOptions,
   ): void {
     switch (key) {
-      case COSEKeyTypeParam.EC2_crv:
+      case COSEKeyTypeParam.EC_crv:
         assertSchema(value, z.enum(COSEKeyCurveName));
-        jwk.crv = this.COSE_TO_JWK_CRV[value];
+        jwk.crv = KeyMapper.COSE_TO_JWK_CRV[value];
         break;
-      case COSEKeyTypeParam.EC2_x:
+      case COSEKeyTypeParam.EC_x:
         if (value instanceof Uint8Array) {
-          jwk.x = uint8ArrayToBase64(value, { urlSafe: true });
+          jwk.x = EncodingMapper.bytesToBase64url(value);
         }
         break;
-      case COSEKeyTypeParam.EC2_y:
+      case COSEKeyTypeParam.EC_y:
         if (value instanceof Uint8Array) {
-          jwk.y = uint8ArrayToBase64(value, { urlSafe: true });
+          jwk.y = EncodingMapper.bytesToBase64url(value);
         }
         break;
-      case COSEKeyTypeParam.EC2_d:
+      case COSEKeyTypeParam.EC_d:
         if (value instanceof Uint8Array) {
-          jwk.d = uint8ArrayToBase64(value, { urlSafe: true });
+          jwk.d = EncodingMapper.bytesToBase64url(value);
         }
         break;
     }
@@ -159,17 +155,17 @@ export class KeyMapper {
     switch (key) {
       case COSEKeyTypeParam.RSA_n:
         if (value instanceof Uint8Array) {
-          jwk.n = uint8ArrayToBase64(value, { urlSafe: true });
+          jwk.n = EncodingMapper.bytesToBase64url(value);
         }
         break;
       case COSEKeyTypeParam.RSA_e:
         if (value instanceof Uint8Array) {
-          jwk.e = uint8ArrayToBase64(value, { urlSafe: true });
+          jwk.e = EncodingMapper.bytesToBase64url(value);
         }
         break;
       case COSEKeyTypeParam.RSA_d:
         if (value instanceof Uint8Array) {
-          jwk.d = uint8ArrayToBase64(value, { urlSafe: true });
+          jwk.d = EncodingMapper.bytesToBase64url(value);
         }
         break;
     }

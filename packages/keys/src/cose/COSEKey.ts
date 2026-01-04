@@ -95,18 +95,18 @@ export class COSEKey implements IKey {
 
   /** Returns EC2 Curve (crv) */
   public getEcCrv(): number | undefined {
-    return this.map.get(COSEKeyTypeParam.EC2_crv) as number | undefined;
+    return this.map.get(COSEKeyTypeParam.EC_crv) as number | undefined;
   }
 
   /** Returns EC2 X Coordinate (x) */
   public getEcX(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.EC2_x) as Uint8Array | undefined;
+    return this.map.get(COSEKeyTypeParam.EC_x) as Uint8Array | undefined;
   }
 
   /** Returns EC2 Y Coordinate (y) */
   public getEcY(): Uint8Array | boolean | undefined {
     // Note: y can be a boolean (sign bit) for compressed points
-    return this.map.get(COSEKeyTypeParam.EC2_y) as
+    return this.map.get(COSEKeyTypeParam.EC_y) as
       | Uint8Array
       | boolean
       | undefined;
@@ -114,7 +114,7 @@ export class COSEKey implements IKey {
 
   /** Returns EC2 Private Key (d) */
   public getEcD(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.EC2_d) as Uint8Array | undefined;
+    return this.map.get(COSEKeyTypeParam.EC_d) as Uint8Array | undefined;
   }
 
   // --- RSA Specific Properties ---
@@ -243,32 +243,19 @@ export class COSEKey implements IKey {
       assertSchema(alg, z.enum(COSEKeyAlgorithm));
 
       switch (kty) {
-        case COSEKeyType.EC2: {
-          const crv = map.get(COSEKeyTypeParam.EC2_crv);
+        case COSEKeyType.EC: {
+          const crv = map.get(COSEKeyTypeParam.EC_crv);
           assertSchema(crv, z.enum(COSEKeyCurveName));
 
-          const x = map.get(COSEKeyTypeParam.EC2_x);
+          const x = map.get(COSEKeyTypeParam.EC_x);
           assertSchema(x, z.instanceof(Uint8Array));
 
-          const y = map.get(COSEKeyTypeParam.EC2_y);
+          const y = map.get(COSEKeyTypeParam.EC_y);
           // Y can be bytes or boolean (compressed)
           assertSchema(y, z.union([z.instanceof(Uint8Array), z.boolean()]));
 
-          if (map.has(COSEKeyTypeParam.EC2_d)) {
-            const d = map.get(COSEKeyTypeParam.EC2_d);
-            assertSchema(d, z.instanceof(Uint8Array));
-          }
-          break;
-        }
-        case COSEKeyType.OKP: {
-          const crv = map.get(COSEKeyTypeParam.OKP_crv);
-          assertSchema(crv, z.enum(COSEKeyCurveName)); // Assuming same curve schema applies or define OKPCurveSchema
-
-          const x = map.get(COSEKeyTypeParam.OKP_x);
-          assertSchema(x, z.instanceof(Uint8Array));
-
-          if (map.has(COSEKeyTypeParam.OKP_d)) {
-            const d = map.get(COSEKeyTypeParam.OKP_d);
+          if (map.has(COSEKeyTypeParam.EC_d)) {
+            const d = map.get(COSEKeyTypeParam.EC_d);
             assertSchema(d, z.instanceof(Uint8Array));
           }
           break;
@@ -281,12 +268,6 @@ export class COSEKey implements IKey {
           assertSchema(e, z.instanceof(Uint8Array));
           break;
         }
-        case COSEKeyType.Oct: {
-          const k = map.get(COSEKeyTypeParam.Symmetric_k);
-          assertSchema(k, z.instanceof(Uint8Array));
-          break;
-        }
-        // Add other cases (HSS_LMS, WalnutDSA, AKP) as needed based on your validation strictness
         default:
           throw new UnsupportedKeyType();
       }

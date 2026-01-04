@@ -34,24 +34,32 @@ export const COSEKeyTypeParam = {
   /**
    * EC2: EC identifier (crv).
    * Taken from the "COSE Elliptic Curves" registry.
+   *
+   * NOTE: EC for compatibility.
    */
-  EC2_crv: -1,
+  EC_crv: -1,
 
   /**
    * EC2: x-coordinate (x).
+   *
+   * NOTE: EC for compatibility.
    */
-  EC2_x: -2,
+  EC_x: -2,
 
   /**
    * EC2: y-coordinate (y).
    * Value: bstr / bool.
+   *
+   * NOTE: EC for compatibility.
    */
-  EC2_y: -3,
+  EC_y: -3,
 
   /**
    * EC2: Private key (d).
+   *
+   * NOTE: EC for compatibility.
    */
-  EC2_d: -4,
+  EC_d: -4,
 
   // --- Key Type 3: RSA ---
 
