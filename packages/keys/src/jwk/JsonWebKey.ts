@@ -260,11 +260,11 @@ export class JsonWebKey implements IKey {
     switch (this.kty) {
       case JWKKeyType.EC:
         switch (this.crv) {
-          case JWKKeyCurveName.P256:
+          case JWKKeyCurveName['P-256']:
             return JWKKeyAlgorithm.ES256;
-          case JWKKeyCurveName.P384:
+          case JWKKeyCurveName['P-384']:
             return JWKKeyAlgorithm.ES384;
-          case JWKKeyCurveName.P521:
+          case JWKKeyCurveName['P-521']:
             return JWKKeyAlgorithm.ES512;
           default:
             return undefined;

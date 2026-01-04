@@ -3,9 +3,9 @@ import type { ValueOfEnum } from '@repo/types';
 import { SharedKeyCurveName } from '../../shared/enums/SharedKeyCurveName';
 
 export const JWKKeyCurveName = {
-  [SharedKeyCurveName.P256]: SharedKeyCurveName.P256,
-  [SharedKeyCurveName.P384]: SharedKeyCurveName.P384,
-  [SharedKeyCurveName.P521]: SharedKeyCurveName.P521,
+  [SharedKeyCurveName['P-256']]: SharedKeyCurveName['P-256'],
+  [SharedKeyCurveName['P-384']]: SharedKeyCurveName['P-384'],
+  [SharedKeyCurveName['P-521']]: SharedKeyCurveName['P-521'],
 
   /**
    * NOTE: Not implemented / supported.

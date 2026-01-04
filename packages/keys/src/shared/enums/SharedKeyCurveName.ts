@@ -16,21 +16,21 @@ export const SharedKeyCurveName = {
    * - COSE: 1
    * - JWK: 'P-256'
    */
-  P256: 'P-256',
+  'P-256': 'P-256',
 
   /**
    * NIST P-384 curve (secp384r1).
    * - COSE: 2
    * - JWK: 'P-384'
    */
-  P384: 'P-384',
+  'P-384': 'P-384',
 
   /**
    * NIST P-521 curve (secp521r1).
    * - COSE: 3
    * - JWK: 'P-521'
    */
-  P521: 'P-521',
+  'P-521': 'P-521',
 
   /**
    * Ed25519 curve for EdDSA.
