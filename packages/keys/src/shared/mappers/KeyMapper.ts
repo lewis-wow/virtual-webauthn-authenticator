@@ -3,16 +3,16 @@ import { EncodingMapper } from '@repo/core/mappers';
 import { swapKeysAndValues } from '@repo/utils';
 import z from 'zod';
 
-import { COSEKey } from '../cose/COSEKey';
-import { COSEKeyAlgorithm } from '../cose/enums/COSEKeyAlgorithm';
-import { COSEKeyCurveName } from '../cose/enums/COSEKeyCurveName';
-import { COSEKeyParam } from '../cose/enums/COSEKeyParam';
-import { COSEKeyType } from '../cose/enums/COSEKeyType';
-import { COSEKeyTypeParam } from '../cose/enums/COSEKeyTypeParam';
-import { JsonWebKey, type JsonWebKeyOptions } from '../jwk/JsonWebKey';
-import { JWKKeyCurveName } from '../jwk/enums/JWKKeyCurveName';
-import { JWKKeyType } from '../jwk/enums/JWKKeyType';
-import { UnsupportedKeyType } from '../shared/exceptions/UnsupportedKeyType';
+import { COSEKey } from '../../cose/COSEKey';
+import { COSEKeyAlgorithm } from '../../cose/enums/COSEKeyAlgorithm';
+import { COSEKeyCurveName } from '../../cose/enums/COSEKeyCurveName';
+import { COSEKeyParam } from '../../cose/enums/COSEKeyParam';
+import { COSEKeyType } from '../../cose/enums/COSEKeyType';
+import { COSEKeyTypeParam } from '../../cose/enums/COSEKeyTypeParam';
+import { JsonWebKey, type JsonWebKeyOptions } from '../../jwk/JsonWebKey';
+import { JWKKeyCurveName } from '../../jwk/enums/JWKKeyCurveName';
+import { JWKKeyType } from '../../jwk/enums/JWKKeyType';
+import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
 
 export class KeyMapper {
   private static readonly COSE_TO_JWK_KTY = swapKeysAndValues(COSEKeyType);

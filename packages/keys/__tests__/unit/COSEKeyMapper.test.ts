@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 
 import { COSEKey } from '../../src/cose/COSEKey';
 import { JsonWebKey } from '../../src/jwk/JsonWebKey';
-import { KeyMapper } from '../../src/mappers/KeyMapper';
+import { KeyMapper } from '../../src/shared/mappers/KeyMapper';
 
 // --- Test Data ---
 

@@ -8,6 +8,7 @@
     "./cose/enums": "./src/cose/enums/index.ts",
     "./cose/validation": "./src/cose/validation/index.ts",
     "./cose/exceptions": "./src/cose/exceptions/index.ts",
+    "./cose/mappers": "./src/cose/mappers/index.ts",
     "./jwk": "./src/jwk/index.ts",
     "./jwk/enums": "./src/jwk/enums/index.ts",
     "./jwk/validation": "./src/jwk/validation/index.ts",
@@ -15,7 +16,7 @@
     "./shared": "./src/shared/index.ts",
     "./shared/enums": "./src/shared/enums/index.ts",
     "./shared/exceptions": "./src/shared/exceptions/index.ts",
-    "./mappers": "./src/mappers/index.ts",
+    "./shared/mappers": "./src/shared/mappers/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {

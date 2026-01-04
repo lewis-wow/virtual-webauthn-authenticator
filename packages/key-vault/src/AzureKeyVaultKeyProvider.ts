@@ -1,7 +1,14 @@
-import type { KeyClient, KeyVaultKey, SignResult } from '@azure/keyvault-keys';
-import { JsonWebKey } from '@repo/keys';
-import { COSEKeyAlgorithm, KeyAlgorithm, KeyOperation } from '@repo/keys/enums';
-import { COSEKeyAlgorithmMapper, COSEKeyMapper } from '@repo/keys/mappers';
+import {
+  KnownKeyOperations,
+  type KeyClient,
+  type KeyVaultKey,
+  type SignResult,
+} from '@azure/keyvault-keys';
+import type { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithmMapper } from '@repo/keys/cose/mappers';
+import { JsonWebKey } from '@repo/keys/jwk';
+import { JWKKeyAlgorithm } from '@repo/keys/jwk/enums';
+import { KeyMapper } from '@repo/keys/shared/mappers';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
@@ -55,12 +62,12 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     const keyVaultKey = await this.keyClient.createKey(
       keyName,
-      COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyType(
+      COSEKeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyType(
         supportedPubKeyCredParam.alg,
       ),
       {
-        keyOps: [KeyOperation.SIGN],
-        curve: COSEKeyAlgorithmMapper.COSEKeyAlgorithmToKeyCurveName(
+        keyOps: [KnownKeyOperations.Sign],
+        curve: COSEKeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyCurveName(
           supportedPubKeyCredParam.alg,
         ),
       },
@@ -100,7 +107,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
    */
   private async _sign(opts: {
     keyVaultKey: KeyVaultKey;
-    algorithm: KeyAlgorithm;
+    algorithm: JWKKeyAlgorithm;
     data: Uint8Array;
   }): Promise<SignPayload> {
     const { keyVaultKey, algorithm, data } = opts;
@@ -146,10 +153,10 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       supportedPubKeyCredParam: pubKeyCredParams,
     });
 
-    const COSEPublicKey = COSEKeyMapper.jwkToCOSEKey(jwk);
+    const COSEPublicKey = KeyMapper.JWKToCOSE(jwk);
 
     return {
-      COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
+      COSEPublicKey: COSEPublicKey.toBytes(),
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
@@ -191,7 +198,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
           .keyVaultKeyName,
     });
 
-    const keyAlgorithm = KeyAlgorithm.ES256;
+    const keyAlgorithm = JWKKeyAlgorithm.ES256;
 
     const signature = await this._sign({
       algorithm: keyAlgorithm,
@@ -201,7 +208,9 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     return {
       signature: signature.signature,
-      alg: COSEKeyAlgorithmMapper.keyAlgorithmToCOSEKeyAlgorithm(keyAlgorithm),
+      alg: COSEKeyAlgorithmMapper.JWKKeyAlgorithmToCOSEKeyAlgorithm(
+        keyAlgorithm,
+      ),
     };
   }
 }
