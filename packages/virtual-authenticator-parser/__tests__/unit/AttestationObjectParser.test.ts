@@ -20,7 +20,7 @@ function createAuthData(options: {
   aaguid?: Uint8Array;
   credentialId?: Uint8Array;
   publicKey?: COSEKey;
-  extensions?: Map<string, unknown>;
+  extensions?: Record<string, unknown>;
 }): Uint8Array {
   const {
     rpIdHash = new Uint8Array(32).fill(0x01), // Default 32-byte hash
@@ -38,7 +38,7 @@ function createAuthData(options: {
         y: 'BQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQU',
       }),
     ),
-    extensions = new Map<string, unknown>([['example', 'value']]),
+    extensions = { example: 'value' },
   } = options;
 
   const parts: Uint8Array[] = [];
@@ -49,10 +49,10 @@ function createAuthData(options: {
   // [Flags (1)]
   let finalFlags = flags;
   if (includeAttestedCredentialData) {
-    finalFlags |= 0b00100000; // Set AT bit
+    finalFlags |= 0b01000000; // Set AT bit (bit 6)
   }
   if (includeExtensions) {
-    finalFlags |= 0b01000000; // Set ED bit
+    finalFlags |= 0b10000000; // Set ED bit (bit 7)
   }
   parts.push(new Uint8Array([finalFlags]));
 
@@ -226,7 +226,7 @@ describe('AttestationObjectParser', () => {
       const result = parser.parse(attestationObject);
 
       // AT flag is bit 6, so flags should have bit 6 set
-      expect(result.flags & 0b00100000).toBeTruthy();
+      expect(result.flags & 0b01000000).toBeTruthy();
       expect(result.aaguid).not.toBeNull();
     });
 
@@ -240,7 +240,7 @@ describe('AttestationObjectParser', () => {
       const result = parser.parse(attestationObject);
 
       // ED flag is bit 7, so flags should have bit 7 set
-      expect(result.flags & 0b01000000).toBeTruthy();
+      expect(result.flags & 0b10000000).toBeTruthy();
       expect(result.extensions).not.toBeNull();
     });
 
@@ -258,8 +258,8 @@ describe('AttestationObjectParser', () => {
       // Should have UP (bit 0), UV (bit 2), AT (bit 6), ED (bit 7)
       expect(result.flags & 0b00000001).toBeTruthy(); // UP
       expect(result.flags & 0b00000100).toBeTruthy(); // UV
-      expect(result.flags & 0b00100000).toBeTruthy(); // AT
-      expect(result.flags & 0b01000000).toBeTruthy(); // ED
+      expect(result.flags & 0b01000000).toBeTruthy(); // AT (bit 6)
+      expect(result.flags & 0b10000000).toBeTruthy(); // ED (bit 7)
     });
   });
 
@@ -463,7 +463,7 @@ describe('AttestationObjectParser', () => {
     test('should throw when AT flag is set but no public key data available', () => {
       // Create authData with AT flag set but insufficient data after credentialId
       const rpIdHash = new Uint8Array(32).fill(0x01);
-      const flags = 0b00100001; // AT flag set
+      const flags = 0b01000001; // AT flag (bit 6) and UP flag (bit 0) set
       const counter = 0;
       const aaguid = new Uint8Array(16).fill(0x02);
       const credentialIdLength = 3;

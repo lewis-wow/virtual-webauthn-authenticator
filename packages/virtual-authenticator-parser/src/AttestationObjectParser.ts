@@ -202,7 +202,9 @@ export class AttestationObjectParser {
 
       // decodeSequence will read all consecutive CBOR items found in the buffer
       // Note: With saveOriginal: true, this decodes the CBOR and returns the parsed objects
+      // NOTE: PreferMap should not be used, now the int keys objects are Maps, the string keys objects are records, which is correct.
       // COSE keys (number keys) become Maps, extensions (string keys) become plain objects
+
       const decodedItems = Array.from(
         cbor.decodeSequence<Map<number, unknown> | Record<string, unknown>>(
           remainingBuffer,
