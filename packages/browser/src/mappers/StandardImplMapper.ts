@@ -23,6 +23,7 @@ export class StandardImplMapper {
       rawId: publicKeyCredential.rawId.slice().buffer,
       response,
       authenticatorAttachment: null,
+      clientExtensionResults: publicKeyCredential.clientExtensionResults,
     });
   }
 
@@ -33,6 +34,7 @@ export class StandardImplMapper {
       return new AuthenticatorAttestationResponseImpl({
         attestationObject: response.attestationObject.slice().buffer,
         clientDataJSON: response.clientDataJSON.slice().buffer,
+        transports: response.transports,
       });
     }
 
