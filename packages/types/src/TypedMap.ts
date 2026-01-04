@@ -18,8 +18,8 @@ export class TypedMap<T extends TypedMapTypes> extends Map<
    * Returns the specific element associated with the specified key.
    * The return type is narrowed to the specific value type associated with K in T.
    */
-  public get<K extends keyof T>(key: K): T[K] | undefined {
-    return super.get(key) as T[K] | undefined;
+  public get<K extends keyof T>(key: K): T[K] {
+    return super.get(key) as T[K];
   }
 
   /**

@@ -14,7 +14,7 @@ export interface IAttestationStatementMap
      * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
      * @see https://www.w3.org/TR/webauthn-3/#sctn-tpm-attestation
      */
-    alg: number | undefined;
+    alg?: number | undefined;
 
     /**
      * - https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation:
@@ -23,7 +23,7 @@ export interface IAttestationStatementMap
      * - https://www.w3.org/TR/webauthn-3/#sctn-tpm-attestation:
      * The attestation signature, in the form of a TPMT_SIGNATURE structure as specified in https://www.w3.org/TR/webauthn-3/#biblio-tpmv2-part2 section 11.3.4.
      */
-    sig: Uint8Array | undefined;
+    sig?: Uint8Array | undefined;
 
     /**
      * - https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation:
@@ -36,7 +36,7 @@ export interface IAttestationStatementMap
      * aikCert followed by its certificate chain, in X.509 encoding.
      * - aikCert: The AIK certificate used for the attestation, in X.509 encoding.
      */
-    x5c: Uint8Array[] | undefined;
+    x5c?: Uint8Array[] | undefined;
 
     // Fields specific to "tpm" format
 
@@ -47,21 +47,21 @@ export interface IAttestationStatementMap
      * - https://www.w3.org/TR/webauthn-3/#sctn-android-safetynet-attestation:
      * The version number of Google Play Services responsible for providing the SafetyNet API.
      */
-    ver: string | undefined;
+    ver?: string | undefined;
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-tpm-attestation
      *
      * The TPMS_ATTEST structure over which the above signature was computed, as specified in https://www.w3.org/TR/webauthn-3/#biblio-tpmv2-part2 section 10.12.8.
      */
-    certInfo: Uint8Array | undefined;
+    certInfo?: Uint8Array | undefined;
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-tpm-attestation
      *
      * The TPMT_PUBLIC structure (see https://www.w3.org/TR/webauthn-3/#biblio-tpmv2-part2 section 12.2.4) used by the TPM to represent the credential public key.
      */
-    pubArea: Uint8Array | undefined;
+    pubArea?: Uint8Array | undefined;
 
     // Fields specific to "android-safetynet" format
 
@@ -70,5 +70,5 @@ export interface IAttestationStatementMap
      *
      * JSON Web Signature (JWS) string as bytes
      */
-    response: Uint8Array | undefined;
+    response?: Uint8Array | undefined;
   }> {}

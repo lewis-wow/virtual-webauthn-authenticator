@@ -363,7 +363,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
       // Otherwise: Set fmt to "none" and attStmt to empty CBOR map
       attestationObject.set('fmt', Fmt.NONE);
-      attestationObject.set('attStmt', new Map<string, unknown>());
+      attestationObject.set('attStmt', new Map<never, never>());
 
       // Re-encode the modified attestation object
       return new Uint8Array(cbor.encode(attestationObject));
