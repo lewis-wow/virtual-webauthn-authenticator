@@ -2,26 +2,31 @@ import { BytesMapper } from '@repo/core/mappers';
 import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
 import { Buffer } from 'buffer';
 
+export type PublicKeyCredentialImplOptions = {
+  id: string;
+  rawId: ArrayBuffer;
+  response: AuthenticatorAttestationResponse | AuthenticatorAssertionResponse;
+  authenticatorAttachment: string | null;
+  clientExtensionResults: Record<string, unknown>;
+};
+
 export class PublicKeyCredentialImpl implements PublicKeyCredential {
-  readonly id: string;
-  readonly rawId: ArrayBuffer;
-  readonly type: typeof PublicKeyCredentialType.PUBLIC_KEY;
-  readonly response:
+  public readonly id: string;
+  public readonly rawId: ArrayBuffer;
+  public readonly type: typeof PublicKeyCredentialType.PUBLIC_KEY;
+  public readonly response:
     | AuthenticatorAttestationResponse
     | AuthenticatorAssertionResponse;
-  readonly authenticatorAttachment: string | null;
+  public readonly authenticatorAttachment: string | null;
+  public readonly clientExtensionResults: Record<string, unknown>;
 
-  constructor(opts: {
-    id: string;
-    rawId: ArrayBuffer;
-    response: AuthenticatorAttestationResponse | AuthenticatorAssertionResponse;
-    authenticatorAttachment: string | null;
-  }) {
+  constructor(opts: PublicKeyCredentialImplOptions) {
     this.id = opts.id;
     this.rawId = opts.rawId;
     this.type = PublicKeyCredentialType.PUBLIC_KEY;
     this.response = opts.response;
     this.authenticatorAttachment = opts.authenticatorAttachment;
+    this.clientExtensionResults = opts.clientExtensionResults;
   }
 
   /**
@@ -58,9 +63,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
           attestationObject: Buffer.from(attestationObjectBytes).toString(
             'base64url',
           ),
-          transports: attestationResponse.getTransports
-            ? attestationResponse.getTransports()
-            : [],
+          transports: attestationResponse.getTransports(),
         },
         clientExtensionResults: this.getClientExtensionResults(),
       };
@@ -103,7 +106,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
   }
 
   getClientExtensionResults(): AuthenticationExtensionsClientOutputs {
-    return {};
+    return this.clientExtensionResults;
   }
 }
 

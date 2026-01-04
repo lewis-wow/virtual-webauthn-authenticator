@@ -5,11 +5,11 @@ import type {
 } from '@repo/virtual-authenticator/validation';
 
 export class CollectedClientDataImpl implements CollectedClientData {
-  type: CollectedClientDataType;
-  challenge: string;
-  origin: string;
-  crossOrigin: boolean;
-  tokenBinding?: TokenBinding;
+  public readonly type: CollectedClientDataType;
+  public readonly challenge: string;
+  public readonly origin: string;
+  public readonly crossOrigin: boolean;
+  public readonly tokenBinding?: TokenBinding;
 
   constructor(opts: {
     type: CollectedClientDataType;

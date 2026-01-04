@@ -3,6 +3,7 @@ import z from 'zod';
 import { see } from '../meta/see';
 import { AuthenticatorResponseSchema } from './AuthenticatorResponseSchema';
 import { BytesSchema } from './BytesSchema';
+import { AuthenticatorTransportSchema } from './enums/AuthenticatorTransportSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#authenticatorattestationresponse
@@ -17,6 +18,8 @@ export const AuthenticatorAttestationResponseSchema =
         'https://www.w3.org/TR/webauthn-2/#sctn-attestation-object',
       )}`,
     }),
+
+    transports: z.array(AuthenticatorTransportSchema),
   }).meta({
     id: 'AuthenticatorAttestationResponse',
     ref: 'AuthenticatorAttestationResponse',

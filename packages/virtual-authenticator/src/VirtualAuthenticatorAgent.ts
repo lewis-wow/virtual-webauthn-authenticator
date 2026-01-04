@@ -811,13 +811,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 22.SUCCESS.3: Return the result of running constructCredentialAlg
     // with the current global object.
-    const pubKeyCred = {
+    const pubKeyCred: PublicKeyCredential = {
       id: Buffer.from(credentialId).toString('base64url'),
       rawId: credentialId,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: clientDataJSON,
         attestationObject: processedAttestationObject,
+        transports: [],
       },
       clientExtensionResults: {},
     };

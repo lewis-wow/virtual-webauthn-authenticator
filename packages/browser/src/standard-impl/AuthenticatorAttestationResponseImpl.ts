@@ -4,6 +4,7 @@ import {
   AuthenticatorDataParser,
   type IAttestationObjectMap,
 } from '@repo/virtual-authenticator/cbor';
+import type { AuthenticatorTransport } from '@repo/virtual-authenticator/enums';
 import * as cbor from 'cbor2';
 
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
@@ -21,6 +22,7 @@ export type DecodedAttestationObject = {
 export type AuthenticatorAttestationResponseImplOptions =
   AuthenticatorResponseImplOptions & {
     attestationObject: ArrayBuffer;
+    transports: AuthenticatorTransport[];
   };
 
 export class AuthenticatorAttestationResponseImpl
@@ -28,6 +30,7 @@ export class AuthenticatorAttestationResponseImpl
   implements AuthenticatorAttestationResponse
 {
   public readonly attestationObject: ArrayBuffer;
+  public readonly transports: AuthenticatorTransport[];
 
   // Caches to prevent repeated expensive parsing
   private _attestationObjectMap?: IAttestationObjectMap;
@@ -38,11 +41,9 @@ export class AuthenticatorAttestationResponseImpl
     super({ clientDataJSON: opts.clientDataJSON });
 
     this.attestationObject = opts.attestationObject;
+    this.transports = opts.transports;
   }
 
-  /**
-   * Decodes the CBOR attestationObject and extracts the binary authData.
-   */
   getAuthenticatorData(): ArrayBuffer {
     if (this._attestationObjectMap?.has('authData')) {
       return BytesMapper.bytesToArrayBuffer(
@@ -69,9 +70,6 @@ export class AuthenticatorAttestationResponseImpl
     );
   }
 
-  /**
-   * Parses the binary authData to extract the COSE Public Key.
-   */
   getPublicKey(): ArrayBuffer | null {
     if (this._publicKey !== undefined) {
       return this._publicKey;
@@ -108,7 +106,6 @@ export class AuthenticatorAttestationResponseImpl
   }
 
   getTransports(): string[] {
-    // NOTE: Not implemented.
-    return [];
+    return this.transports;
   }
 }
