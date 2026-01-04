@@ -11,6 +11,7 @@
     "./mappers": "./src/mappers/index.ts",
     "./types": "./src/types/index.ts",
     "./repositories": "./src/repositories/index.ts",
+    "./cbor": "./src/cbor/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
