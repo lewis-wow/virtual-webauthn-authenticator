@@ -16,21 +16,21 @@ export const JWKKeyAlgorithm = {
    * Implementation: Required (for JWS conformance)
    * Note: This is a symmetric algorithm, not used for public key (asymmetric) signing.
    */
-  HS256: 'HS256',
+  // HS256: 'HS256',
 
   /**
    * HMAC using SHA-384.
    * Implementation: Optional (for JWS conformance)
    * Note: This is a symmetric algorithm, not used for public key (asymmetric) signing.
    */
-  HS384: 'HS384',
+  // HS384: 'HS384',
 
   /**
    * HMAC using SHA-512.
    * Implementation: Optional (for JWS conformance)
    * Note: This is a symmetric algorithm, not used for public key (asymmetric) signing.
    */
-  HS512: 'HS512',
+  // HS512: 'HS512',
 
   /**
    * RSASSA-PKCS1-v1_5 w/ SHA-256.
@@ -89,8 +89,10 @@ export const JWKKeyAlgorithm = {
   /**
    * No digital signature or MAC performed.
    * Implementation: Optional (for JWS conformance)
+   *
+   * NOTE: Not implemented / supported.
    */
-  NONE: 'none',
+  // NONE: 'none',
 } as const;
 
 export type JWKKeyAlgorithm = ValueOfEnum<typeof JWKKeyAlgorithm>;
