@@ -7,10 +7,10 @@ import { SharedKeyType } from '../../shared/enums/SharedKeyType';
  *
  * Defines the standard string values for the `kty` parameter in a JWK.
  *
- * * **EC** - Elliptic Curve (RFC 7518, Section 6.1).
- * * **RSA** - RSA (RFC 7518, Section 6.3).
- * * **oct** - Octet Sequence / Symmetric (RFC 7518, Section 6.4).
- * * **OKP** - Octet Key Pair (RFC 8037, Section 2).
+ * * EC - Elliptic Curve (RFC 7518, Section 6.1).
+ * * RSA - RSA (RFC 7518, Section 6.3).
+ * * oct - Octet Sequence / Symmetric (RFC 7518, Section 6.4).
+ * * OKP - Octet Key Pair (RFC 8037, Section 2).
  *
  * @see https://datatracker.ietf.org/doc/html/rfc7518#section-6.1
  * @see https://datatracker.ietf.org/doc/html/rfc8037#section-2
@@ -31,16 +31,20 @@ export const JWKKeyType = {
   /**
    * Octet Sequence (Symmetric).
    * Used for symmetric keys (HMAC, AES).
+   *
+   * NOTE: Not used. Is only for symmetric encryption.
    */
-  [SharedKeyType.Oct]: SharedKeyType.Oct,
+  // [SharedKeyType.Oct]: SharedKeyType.Oct,
 
   /**
    * Octet Key Pair.
    * Used with curves like Ed25519 or X25519.
    *
    * @see https://datatracker.ietf.org/doc/html/rfc8037#section-2
+   *
+   * NOTE: Not implemented / supported.
    */
-  [SharedKeyType.OKP]: SharedKeyType.OKP,
-} as const;
+  // [SharedKeyType.OKP]: SharedKeyType.OKP,
+} as const satisfies Record<SharedKeyType, unknown>;
 
 export type JWKKeyType = ValueOfEnum<typeof JWKKeyType>;

@@ -32,16 +32,20 @@ export const SharedKeyType = {
    * Used with curves like Ed25519 or X25519.
    * - COSE: 1
    * - JWK: 'OKP'
+   *
+   * NOTE: Not implemented / supported.
    */
-  OKP: 'OKP',
+  // OKP: 'OKP',
 
   /**
    * Octet Sequence (Symmetric).
    * Used for symmetric keys (HMAC, AES).
    * - COSE: 4
    * - JWK: 'Oct'
+   *
+   * NOTE: Not used. Is only for symmetric encryption.
    */
-  Oct: 'Oct',
+  // Oct: 'Oct',
 } as const;
 
 export type SharedKeyType = ValueOfEnum<typeof SharedKeyType>;
