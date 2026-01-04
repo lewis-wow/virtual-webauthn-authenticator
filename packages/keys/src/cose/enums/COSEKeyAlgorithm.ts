@@ -549,6 +549,6 @@ export const COSEKeyAlgorithm = {
    * NOTE: Not implemented / supported.
    */
   // RS1: -65535,
-} as const;
+} as const satisfies Record<SharedKeyAlgorithm, unknown>;
 
 export type COSEKeyAlgorithm = ValueOfEnum<typeof COSEKeyAlgorithm>;

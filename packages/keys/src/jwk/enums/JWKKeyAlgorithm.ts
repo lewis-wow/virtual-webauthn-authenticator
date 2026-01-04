@@ -93,6 +93,6 @@ export const JWKKeyAlgorithm = {
    * NOTE: Not implemented / supported.
    */
   // NONE: 'none',
-} as const;
+} as const satisfies Record<SharedKeyAlgorithm, unknown>;
 
 export type JWKKeyAlgorithm = ValueOfEnum<typeof JWKKeyAlgorithm>;
