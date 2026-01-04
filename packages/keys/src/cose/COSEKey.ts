@@ -2,8 +2,8 @@ import { assertSchema } from '@repo/assert';
 import * as cbor from 'cbor2';
 import z from 'zod';
 
-import type { IKey } from '../IKey';
-import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
+import type { IKey } from '../shared/IKey';
+import { UnsupportedKeyType } from '../shared/exceptions/UnsupportedKeyType';
 import { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
 import { COSEKeyCurveName } from './enums/COSEKeyCurveName';
 import { COSEKeyParam } from './enums/COSEKeyParam';

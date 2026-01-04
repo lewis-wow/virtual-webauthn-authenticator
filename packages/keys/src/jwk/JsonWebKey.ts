@@ -2,7 +2,7 @@ import { assertSchema } from '@repo/assert';
 import { Buffer } from 'buffer';
 import z from 'zod';
 
-import type { IKey } from '../IKey';
+import type { IKey } from '../shared/IKey';
 import { JWKKeyAlgorithm } from './enums/JWKKeyAlgorithm';
 import { JWKKeyCurveName } from './enums/JWKKeyCurveName';
 import { JWKKeyParam } from './enums/JWKKeyParam';

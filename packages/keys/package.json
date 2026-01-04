@@ -4,12 +4,18 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./enums": "./src/enums/index.ts",
-    "./exceptions": "./src/exceptions/index.ts",
+    "./cose": "./src/cose/index.ts",
+    "./cose/enums": "./src/cose/enums/index.ts",
+    "./cose/validation": "./src/cose/validation/index.ts",
+    "./cose/exceptions": "./src/cose/exceptions/index.ts",
+    "./jwk": "./src/jwk/index.ts",
+    "./jwk/enums": "./src/jwk/enums/index.ts",
+    "./jwk/validation": "./src/jwk/validation/index.ts",
+    "./jwk/exceptions": "./src/jwk/exceptions/index.ts",
+    "./shared": "./src/shared/index.ts",
+    "./shared/enums": "./src/shared/enums/index.ts",
+    "./shared/exceptions": "./src/shared/exceptions/index.ts",
     "./mappers": "./src/mappers/index.ts",
-    "./validation": "./src/validation/index.ts",
-    "./zod-validation": "./src/zod-validation/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {

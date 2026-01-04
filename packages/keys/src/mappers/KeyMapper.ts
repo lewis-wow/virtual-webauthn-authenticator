@@ -9,10 +9,10 @@ import { COSEKeyCurveName } from '../cose/enums/COSEKeyCurveName';
 import { COSEKeyParam } from '../cose/enums/COSEKeyParam';
 import { COSEKeyType } from '../cose/enums/COSEKeyType';
 import { COSEKeyTypeParam } from '../cose/enums/COSEKeyTypeParam';
-import { UnsupportedKeyType } from '../exceptions/UnsupportedKeyType';
 import { JsonWebKey, type JsonWebKeyOptions } from '../jwk/JsonWebKey';
 import { JWKKeyCurveName } from '../jwk/enums/JWKKeyCurveName';
 import { JWKKeyType } from '../jwk/enums/JWKKeyType';
+import { UnsupportedKeyType } from '../shared/exceptions/UnsupportedKeyType';
 
 export class KeyMapper {
   private static readonly COSE_TO_JWK_KTY = swapKeysAndValues(COSEKeyType);
