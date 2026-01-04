@@ -10,6 +10,7 @@ import type {
   IAuthenticator,
 } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
+import { AuthenticatorDataParser } from './cbor';
 import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
 import {
   Attestation,
@@ -343,13 +344,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const attStmt = attestationObject.get('attStmt');
       const authData = attestationObject.get('authData');
 
+      const authDataParser = new AuthenticatorDataParser(authData);
+
       // Check if aaguid (in authData) is 16 zero bytes
-      // AAGUID is located at bytes 37-52 in authData (after rpIdHash
-      // [32 bytes], flags [1 byte], signCount [4 bytes])
-      const aaguidStartIndex = 37;
-      const aaguidEndIndex = 53;
-      const aaguid = authData.slice(aaguidStartIndex, aaguidEndIndex);
-      const isAaguidZeroed = aaguid.every((byte) => byte === 0);
+      const aaguid = authDataParser.getAaguid();
+      const isAaguidZeroed = !!aaguid?.every((byte) => byte === 0);
 
       // If the aaguid in the attested credential data is 16 zero bytes
       // and credentialCreationData.attestationObjectResult.fmt is "packed"
