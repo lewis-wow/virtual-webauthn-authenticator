@@ -229,9 +229,6 @@ export class AuthenticatorDataParser {
     const decodedItems = Array.from(
       cbor.decodeSequence<Map<number, unknown> | Record<string, unknown>>(
         remainingBuffer,
-        {
-          saveOriginal: true,
-        },
       ),
     );
 
@@ -253,8 +250,26 @@ export class AuthenticatorDataParser {
       }
 
       const extensionsItem = decodedItems[itemIndex];
-      assertSchema(extensionsItem, z.record(z.string(), z.unknown()));
-      this._extensions = extensionsItem;
+
+      // Extensions can be either a plain object or a Map, depending on CBOR encoding
+      // When the extesions object is empty, it always fallback to Map, instead of Record.
+      // Convert Map to plain object if necessary
+      if (extensionsItem instanceof Map) {
+        const extensionsObj: Record<string, unknown> = {};
+        for (const [key, value] of extensionsItem) {
+          if (typeof key === 'string') {
+            extensionsObj[key] = value;
+          }
+        }
+        this._extensions = extensionsObj;
+      } else if (
+        typeof extensionsItem === 'object' &&
+        extensionsItem !== null
+      ) {
+        this._extensions = extensionsItem as Record<string, unknown>;
+      } else {
+        throw new Error('Invalid extensions format');
+      }
       itemIndex++;
     }
   }

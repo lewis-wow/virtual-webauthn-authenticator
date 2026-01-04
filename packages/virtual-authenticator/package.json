@@ -17,6 +17,8 @@
   "scripts": {
     "build": "run-p barrel:*",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation",
+    "test": "vitest run --config __tests__/vitest.config.ts",
+    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
     "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
