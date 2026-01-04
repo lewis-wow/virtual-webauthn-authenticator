@@ -1,7 +1,6 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { see } from '../meta/see';
-// Assuming these have also been converted to Effect Schemas
 import { AuthenticatorAttachmentSchema } from './enums/AuthenticatorAttachmentSchema';
 import { ResidentKeyRequirementSchema } from './enums/ResidentKeyRequirementSchema';
 import { UserVerificationRequirementSchema } from './enums/UserVerificationRequirementSchema';
@@ -12,42 +11,52 @@ import { UserVerificationRequirementSchema } from './enums/UserVerificationRequi
  *
  * @see https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria
  */
-export const AuthenticatorSelectionCriteriaSchema = Schema.Struct({
-  /**
-   * If this member is present, eligible authenticators are filtered to
-   * only authenticators attached with the specified in enum AuthenticatorAttachment.
-   */
-  authenticatorAttachment: Schema.optional(AuthenticatorAttachmentSchema),
+export const AuthenticatorSelectionCriteriaSchema = z
+  .object({
+    /**
+     * If this member is present, eligible authenticators are filtered to
+     * only authenticators attached with the specified in enum AuthenticatorAttachment.
+     */
+    authenticatorAttachment: AuthenticatorAttachmentSchema.optional(),
+    /**
+     * This member is retained for backwards compatibility with WebAuthn Level 1 and,
+     * for historical reasons, its naming retains the deprecated "resident" terminology
+     * for discoverable credentials. Relying Parties SHOULD set it to true if, and only if,
+     * residentKey is set to required.
+     *
+     * @see https://www.w3.org/TR/webauthn/#dom-authenticatorselectioncriteria-requireresidentkey
+     */
+    requireResidentKey: z.boolean().optional().meta({
+      deprecated: true,
+    }),
+    /**
+     * Specifies the extent to which the Relying Party desires to create a client-side
+     * discoverable credential. For historical reasons the naming retains the deprecated
+     * "resident" terminology. The value SHOULD be a member of ResidentKeyRequirement but
+     * client platforms MUST ignore unknown values, treating an unknown value as if the
+     * member does not exist.
+     *
+     * @see https://www.w3.org/TR/webauthn/#dom-authenticatorselectioncriteria-residentkey
+     */
+    residentKey: ResidentKeyRequirementSchema.optional().meta({
+      deprecated: true,
+    }),
+    /**
+     * This member describes the Relying Party's requirements regarding user verification for the create() operation.
+     * Eligible authenticators are filtered to only those capable of satisfying this requirement.
+     * The value SHOULD be a member of UserVerificationRequirement but client platforms MUST ignore unknown values,
+     * treating an unknown value as if the member does not exist.
+     */
+    userVerification: UserVerificationRequirementSchema.optional(),
+  })
+  .meta({
+    id: 'AuthenticatorSelectionCriteria',
+    ref: 'AuthenticatorSelectionCriteria',
+    description: `Specifies requirements for the authenticator. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria',
+    )}`,
+  });
 
-  /**
-   * @deprecated
-   */
-  requireResidentKey: Schema.optional(Schema.Boolean).annotations({
-    jsonSchema: { deprecated: true },
-  }),
-
-  /**
-   * @deprecated
-   */
-  residentKey: Schema.optional(ResidentKeyRequirementSchema).annotations({
-    jsonSchema: { deprecated: true },
-  }),
-
-  /**
-   * This member describes the Relying Party's requirements regarding user verification for the create() operation.
-   * Eligible authenticators are filtered to only those capable of satisfying this requirement.
-   * The value SHOULD be a member of UserVerificationRequirement but client platforms MUST ignore unknown values,
-   * treating an unknown value as if the member does not exist.
-   */
-  userVerification: Schema.optional(UserVerificationRequirementSchema),
-}).annotations({
-  identifier: 'AuthenticatorSelectionCriteria',
-  title: 'AuthenticatorSelectionCriteria',
-  description: `Specifies requirements for the authenticator. ${see(
-    'https://www.w3.org/TR/webauthn/#dictdef-authenticatorselectioncriteria',
-  )}`,
-});
-
-export type AuthenticatorSelectionCriteria = Schema.Schema.Type<
+export type AuthenticatorSelectionCriteria = z.infer<
   typeof AuthenticatorSelectionCriteriaSchema
 >;

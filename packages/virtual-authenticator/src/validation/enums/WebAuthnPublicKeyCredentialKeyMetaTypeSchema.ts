@@ -1,13 +1,10 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 
-export const WebAuthnPublicKeyCredentialKeyMetaTypeSchema = Schema.Enums(
-  WebAuthnPublicKeyCredentialKeyMetaType,
-).pipe(
-  Schema.annotations({
-    identifier: 'WebAuthnPublicKeyCredentialKeyMetaType',
-    title: 'WebAuthnPublicKeyCredentialKeyMetaType',
+export const WebAuthnPublicKeyCredentialKeyMetaTypeSchema = z
+  .enum(WebAuthnPublicKeyCredentialKeyMetaType)
+  .meta({
+    id: 'WebAuthnPublicKeyCredentialKeyMetaType',
     examples: [WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT],
-  }),
-);
+  });

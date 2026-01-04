@@ -1,11 +1,8 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { TokenBindingStatus } from '../../enums/TokenBindingStatus';
 
-export const TokenBindingStatusSchema = Schema.Enums(TokenBindingStatus).pipe(
-  Schema.annotations({
-    identifier: 'TokenBindingStatus',
-    title: 'TokenBindingStatus',
-    examples: [TokenBindingStatus.PRESENT],
-  }),
-);
+export const TokenBindingStatusSchema = z.enum(TokenBindingStatus).meta({
+  id: 'TokenBindingStatus',
+  examples: [TokenBindingStatus.PRESENT],
+});

@@ -1,4 +1,4 @@
-import { AuthenticatorResponseSchema } from '@repo/virtual-authenticator/zod-validation';
+import { AuthenticatorResponseSchema } from '@repo/virtual-authenticator/validation';
 
 import { BytesArrayBufferBrowserSchemaCodec } from '../codecs/BytesArrayBufferBrowserSchemaCodec';
 

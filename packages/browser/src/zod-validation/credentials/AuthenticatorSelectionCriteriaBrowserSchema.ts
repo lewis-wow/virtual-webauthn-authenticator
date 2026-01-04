@@ -1,4 +1,4 @@
-import { AuthenticatorSelectionCriteriaSchema } from '@repo/virtual-authenticator/zod-validation';
+import { AuthenticatorSelectionCriteriaSchema } from '@repo/virtual-authenticator/validation';
 
 export const AuthenticatorSelectionCriteriaBrowserSchema =
   AuthenticatorSelectionCriteriaSchema;

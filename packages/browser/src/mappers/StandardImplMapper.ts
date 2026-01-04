@@ -2,7 +2,7 @@ import type {
   AuthenticatorAssertionResponse,
   AuthenticatorAttestationResponse,
   PublicKeyCredential as VirtualAuthenticatorPublicKeyCredential,
-} from '@repo/virtual-authenticator/zod-validation';
+} from '@repo/virtual-authenticator/validation';
 
 import {
   AuthenticatorAssertionResponseImpl,

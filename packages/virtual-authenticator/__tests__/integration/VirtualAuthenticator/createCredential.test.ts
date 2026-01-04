@@ -28,7 +28,7 @@ import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotS
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type { PublicKeyCredentialCreationOptions } from '../../../src/zod-validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/PublicKeyCredentialCreationOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {

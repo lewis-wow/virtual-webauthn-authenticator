@@ -1,4 +1,4 @@
-import { AuthenticationExtensionsClientInputsSchema } from '@repo/virtual-authenticator/zod-validation';
+import { AuthenticationExtensionsClientInputsSchema } from '@repo/virtual-authenticator/validation';
 
 export const AuthenticationExtensionsClientInputsDtoSchema =
   AuthenticationExtensionsClientInputsSchema;

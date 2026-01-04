@@ -1,4 +1,4 @@
-import { BytesSchema } from '@repo/virtual-authenticator/zod-validation';
+import { BytesSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 export const BytesSchemaCodec = z

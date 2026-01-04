@@ -1,4 +1,4 @@
-import { PublicKeyCredentialRequestOptionsSchema } from '@repo/virtual-authenticator/zod-validation';
+import { PublicKeyCredentialRequestOptionsSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 import { ChallengeDtoSchema } from './ChallengeDtoSchema';

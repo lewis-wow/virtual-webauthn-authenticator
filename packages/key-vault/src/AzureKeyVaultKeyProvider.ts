@@ -14,7 +14,7 @@ import type {
   IKeyProvider,
   WebAuthnPublicKeyCredentialWithMeta,
 } from '@repo/virtual-authenticator/types';
-import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/zod-validation';
+import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/validation';
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';

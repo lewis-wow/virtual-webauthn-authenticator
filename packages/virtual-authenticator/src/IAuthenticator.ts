@@ -1,8 +1,8 @@
 import type { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import type { IWebAuthnRepository } from './repositories';
-import type { AuthenticatorAgentContextArgs } from './zod-validation/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorGetAssertionArgs } from './zod-validation/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorMakeCredentialArgs } from './zod-validation/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
 
 /**
  * Payload returned by the authenticatorMakeCredential operation.

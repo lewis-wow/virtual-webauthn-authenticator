@@ -1,4 +1,4 @@
-import { WebAuthnPublicKeyCredentialKeyVaultSchema } from '@repo/virtual-authenticator/zod-validation';
+import { WebAuthnPublicKeyCredentialKeyVaultSchema } from '@repo/virtual-authenticator/validation';
 
 import { WebAuthnPublicKeyCredentialBaseDtoSchema } from './WebAuthnPublicKeyCredentialBaseDtoSchema';
 import { WebAuthnPublicKeyCredentialKeyVaultKeyMetaDtoSchema } from './WebAuthnPublicKeyCredentialKeyVaultKeyMetaDtoSchema';

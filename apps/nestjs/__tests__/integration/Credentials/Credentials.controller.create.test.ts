@@ -26,7 +26,7 @@ import {
   AttestationNotSupported,
   UserNotExists,
 } from '@repo/virtual-authenticator/exceptions';
-import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/zod-validation';
+import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
 import { randomBytes } from 'node:crypto';
 import { afterEach } from 'node:test';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';

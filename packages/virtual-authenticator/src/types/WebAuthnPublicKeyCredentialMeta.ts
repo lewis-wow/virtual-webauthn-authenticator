@@ -1,5 +1,5 @@
 import type { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import type { WebAuthnPublicKeyCredentialKeyVaultKeyMeta } from '../zod-validation/WebAuthnPublicKeyCredentialKeyVaultKeyMetaSchema';
+import type { WebAuthnPublicKeyCredentialKeyVaultKeyMeta } from '../validation/WebAuthnPublicKeyCredentialKeyVaultKeyMetaSchema';
 
 export type WebAuthnPublicKeyCredentialMeta = {
   webAuthnPublicKeyCredentialKeyMetaType: typeof WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT;

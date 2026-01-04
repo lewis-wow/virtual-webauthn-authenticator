@@ -30,22 +30,22 @@ import type {
   PubKeyCredParam,
   PublicKeyCredentialDescriptor,
   PublicKeyCredentialRequestOptions,
-} from './zod-validation';
-import { AuthenticatorAgentContextArgsSchema } from './zod-validation/AuthenticatorAgentContextArgsSchema';
-import { AuthenticatorAgentMetaArgsSchema } from './zod-validation/AuthenticatorAgentMetaArgsSchema';
-import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
+} from './validation';
+import { AuthenticatorAgentContextArgsSchema } from './validation/AuthenticatorAgentContextArgsSchema';
+import { AuthenticatorAgentMetaArgsSchema } from './validation/AuthenticatorAgentMetaArgsSchema';
+import type { CollectedClientData } from './validation/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
-} from './zod-validation/CredentialCreationOptionsSchema';
+} from './validation/CredentialCreationOptionsSchema';
 import {
   CredentialRequestOptionsSchema,
   type CredentialRequestOptions,
-} from './zod-validation/CredentialRequestOptionsSchema';
-import { PublicKeyCredentialCreationOptionsSchema } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
-import { PublicKeyCredentialRequestOptionsSchema } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
-import { createOriginMatchesRpIdSchema } from './zod-validation/createOriginMatchesRpIdSchema';
+} from './validation/CredentialRequestOptionsSchema';
+import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
+import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
+import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;

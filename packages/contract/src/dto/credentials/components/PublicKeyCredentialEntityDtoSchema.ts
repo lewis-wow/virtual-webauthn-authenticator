@@ -1,4 +1,4 @@
-import { PublicKeyCredentialEntitySchema } from '@repo/virtual-authenticator/zod-validation';
+import { PublicKeyCredentialEntitySchema } from '@repo/virtual-authenticator/validation';
 
 export const PublicKeyCredentialEntityDtoSchema =
   PublicKeyCredentialEntitySchema;

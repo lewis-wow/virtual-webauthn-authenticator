@@ -1,4 +1,4 @@
-import { AuthenticatorAssertionResponseSchema } from '@repo/virtual-authenticator/zod-validation';
+import { AuthenticatorAssertionResponseSchema } from '@repo/virtual-authenticator/validation';
 
 import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { UserHandleDtoSchema } from './UserHandleDtoSchema';

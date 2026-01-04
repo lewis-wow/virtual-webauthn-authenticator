@@ -1,4 +1,4 @@
-import { ChallengeSchema } from '@repo/virtual-authenticator/zod-validation';
+import { ChallengeSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 export const ChallengeDtoSchema = z.codec(z.base64url(), ChallengeSchema, {

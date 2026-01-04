@@ -1,23 +1,20 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { BytesSchema } from './BytesSchema';
 
-export const WebAuthnPublicKeyCredentialBaseSchema = Schema.Struct({
-  id: Schema.UUID,
-  name: Schema.NullOr(Schema.String),
-
-  userId: Schema.String,
-  apiKeyId: Schema.NullOr(Schema.String),
-
+export const WebAuthnPublicKeyCredentialBaseSchema = z.object({
+  id: z.uuid(),
+  name: z.string().nullable(),
+  userId: z.string(),
   COSEPublicKey: BytesSchema,
-  counter: Schema.Number.pipe(Schema.int(), Schema.nonNegative()),
-  transports: Schema.mutable(Schema.Array(Schema.String)),
-  rpId: Schema.String,
-}).annotations({
-  identifier: 'WebAuthnPublicKeyCredential',
-  title: 'WebAuthnPublicKeyCredential',
+  counter: z.number().int().nonnegative(),
+  transports: z.array(z.string()),
+  rpId: z.string(),
+
+  createdAt: z.date(),
+  updatedAt: z.date(),
 });
 
-export type WebAuthnPublicKeyCredentialBase = Schema.Schema.Type<
+export type WebAuthnPublicKeyCredentialBase = z.infer<
   typeof WebAuthnPublicKeyCredentialBaseSchema
 >;

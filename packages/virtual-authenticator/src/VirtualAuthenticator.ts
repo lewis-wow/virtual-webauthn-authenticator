@@ -23,24 +23,24 @@ import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublic
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
-} from './zod-validation/AuthenticatorContextArgsSchema';
+} from './validation/AuthenticatorContextArgsSchema';
 import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
-} from './zod-validation/AuthenticatorGetAssertionArgsSchema';
+} from './validation/AuthenticatorGetAssertionArgsSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
-} from './zod-validation/AuthenticatorMakeCredentialArgsSchema';
+} from './validation/AuthenticatorMakeCredentialArgsSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
-} from './zod-validation/AuthenticatorMetaArgsSchema';
+} from './validation/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
-} from './zod-validation/CredParamSchema';
+} from './validation/CredParamSchema';
 
 export type AuthenticatorBackendContext = {
   apiKeyId: string;

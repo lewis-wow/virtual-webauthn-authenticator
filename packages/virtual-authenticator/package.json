@@ -8,7 +8,6 @@
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
-    "./zod-validation": "./src/zod-validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
     "./types": "./src/types/index.ts",
     "./repositories": "./src/repositories/index.ts",
@@ -17,7 +16,6 @@
   "scripts": {
     "build": "run-p barrel:*",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation",
-    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
     "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",

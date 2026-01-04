@@ -26,7 +26,7 @@ import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialT
 import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type { PublicKeyCredentialRequestOptions } from '../../../src/zod-validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {

@@ -1,13 +1,10 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { PublicKeyCredentialType } from '../../enums/PublicKeyCredentialType';
 
-export const PublicKeyCredentialTypeSchema = Schema.Enums(
-  PublicKeyCredentialType,
-).pipe(
-  Schema.annotations({
-    identifier: 'PublicKeyCredentialType',
-    title: 'PublicKeyCredentialType',
+export const PublicKeyCredentialTypeSchema = z
+  .enum(PublicKeyCredentialType)
+  .meta({
+    id: 'PublicKeyCredentialType',
     examples: [PublicKeyCredentialType.PUBLIC_KEY],
-  }),
-);
+  });

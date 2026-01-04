@@ -1,8 +1,8 @@
-import type { AuthenticatorAgentContextArgs } from './zod-validation/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorAgentMetaArgs } from './zod-validation/AuthenticatorAgentMetaArgsSchema';
-import type { CredentialCreationOptions } from './zod-validation/CredentialCreationOptionsSchema';
-import type { CredentialRequestOptions } from './zod-validation/CredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
+import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from './validation/AuthenticatorAgentMetaArgsSchema';
+import type { CredentialCreationOptions } from './validation/CredentialCreationOptionsSchema';
+import type { CredentialRequestOptions } from './validation/CredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 
 /**
  * Virtual WebAuthn Agent (Client) implementation.

@@ -1,32 +1,29 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { see } from '../meta/see';
 import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema';
-import { UserHandleSchema } from './UserHandleSchema';
+import { UserIdSchema } from './UserIdSchema';
 
 // Represents the user creating the credential
 
 /**
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity
  */
-export const PublicKeyCredentialUserEntitySchema = Schema.extend(
-  PublicKeyCredentialEntitySchema,
-  Schema.Struct({
-    id: UserHandleSchema,
-    displayName: Schema.String.annotations({
+export const PublicKeyCredentialUserEntitySchema =
+  PublicKeyCredentialEntitySchema.extend({
+    id: UserIdSchema,
+    displayName: z.string().meta({
       description: "A human-friendly name for the user's account.",
       examples: ['John Doe'],
     }),
-  }),
-).annotations({
-  identifier: 'PublicKeyCredentialUserEntity',
-  title: 'PublicKeyCredentialUserEntity',
-  ref: 'PublicKeyCredentialUserEntity',
-  description: `Represents the user creating the credential. ${see(
-    'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity',
-  )}`,
-});
+  }).meta({
+    id: 'PublicKeyCredentialUserEntity',
+    ref: 'PublicKeyCredentialUserEntity',
+    description: `Represents the user creating the credential. ${see(
+      'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity',
+    )}`,
+  });
 
-export type PublicKeyCredentialUserEntity = Schema.Schema.Type<
+export type PublicKeyCredentialUserEntity = z.infer<
   typeof PublicKeyCredentialUserEntitySchema
 >;
