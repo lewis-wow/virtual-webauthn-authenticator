@@ -1,6 +1,6 @@
-import { JsonWebKey } from '@repo/keys';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { COSEKeyMapper } from '@repo/keys/mappers';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { JsonWebKey } from '@repo/keys/jwk';
+import { KeyMapper } from '@repo/keys/shared/mappers';
 import {
   createSign,
   generateKeyPairSync,
@@ -38,9 +38,8 @@ export class MockKeyProvider implements IKeyProvider {
       keyPair.publicKey.export({ format: 'jwk' }),
     );
 
-    const COSEPublicKey = COSEKeyMapper.COSEKeyToBytes(
-      COSEKeyMapper.jwkToCOSEKey(credentialPublicKey),
-    );
+    const coseKey = KeyMapper.JWKToCOSE(credentialPublicKey);
+    const COSEPublicKey = coseKey.toBytes();
 
     const { keyVaultKeyId, keyVaultKeyName } =
       this.keyVaultKeyIdGenerator.next();

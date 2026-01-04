@@ -7,8 +7,10 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { COSEKeyAlgorithm, KeyAlgorithm } from '@repo/keys/enums';
-import { COSEKeyMapper } from '@repo/keys/mappers';
+import { COSEKey } from '@repo/keys/cose';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { JWKKeyAlgorithm } from '@repo/keys/jwk/enums';
+import { KeyMapper } from '@repo/keys/shared/mappers';
 import { PrismaClient } from '@repo/prisma';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
@@ -143,8 +145,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       test('Should have the correct public key', () => {
-        const jwk = COSEKeyMapper.COSEKeyToJwk(
-          COSEKeyMapper.bytesToCOSEKey(
+        const jwk = KeyMapper.COSEToJWK(
+          COSEKey.fromBytes(
             registrationVerification.registrationInfo!.credential.publicKey,
           ),
         );
@@ -1007,8 +1009,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       test('Should have the correct public key', () => {
-        const jwk = COSEKeyMapper.COSEKeyToJwk(
-          COSEKeyMapper.bytesToCOSEKey(
+        const jwk = KeyMapper.COSEToJWK(
+          COSEKey.fromBytes(
             registrationVerification.registrationInfo!.credential.publicKey,
           ),
         );
@@ -2468,13 +2470,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
           registrationVerification.registrationInfo?.credential.publicKey,
         ).toBeDefined();
 
-        const jwk = COSEKeyMapper.COSEKeyToJwk(
-          COSEKeyMapper.bytesToCOSEKey(
+        const jwk = KeyMapper.COSEToJWK(
+          COSEKey.fromBytes(
             registrationVerification.registrationInfo!.credential.publicKey,
           ),
         );
 
-        expect(jwk.inferAlg()).toBe(KeyAlgorithm.ES256);
+        expect(jwk.getAlg()).toBe(JWKKeyAlgorithm.ES256);
       });
 
       test('Should use the first supported algorithm from pubKeyCredParams', async () => {

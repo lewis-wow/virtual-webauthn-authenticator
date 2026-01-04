@@ -18,7 +18,7 @@ import {
   GetCredentialBodySchema,
 } from '@repo/contract/dto';
 import { ExceptionMapper } from '@repo/exception/mappers';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   PublicKeyCredentialType,
   UserVerificationRequirement,

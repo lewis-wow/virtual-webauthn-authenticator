@@ -1,5 +1,6 @@
-import { COSEKey, JsonWebKey } from '@repo/keys';
-import { COSEKeyMapper } from '@repo/keys/mappers';
+import { COSEKey } from '@repo/keys/cose';
+import { JsonWebKey } from '@repo/keys/jwk';
+import { KeyMapper } from '@repo/keys/shared/mappers';
 import * as cbor from 'cbor2';
 import { describe, expect, test } from 'vitest';
 
@@ -29,7 +30,7 @@ function createAuthData(options: {
     includeExtensions = false,
     aaguid = new Uint8Array(16).fill(0x02),
     credentialId = new Uint8Array([0x03, 0x04, 0x05]),
-    publicKey = COSEKeyMapper.jwkToCOSEKey(
+    publicKey = KeyMapper.JWKToCOSE(
       new JsonWebKey({
         kty: 'EC',
         crv: 'P-256',
@@ -594,7 +595,7 @@ describe('AttestationObjectParser', () => {
         n: 'AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQ',
         e: 'AQAB',
       });
-      const rsaPublicKey = COSEKeyMapper.jwkToCOSEKey(rsaJwk);
+      const rsaPublicKey = KeyMapper.JWKToCOSE(rsaJwk);
 
       const attestationObject = createAttestationObject({
         authDataOptions: {
@@ -608,10 +609,10 @@ describe('AttestationObjectParser', () => {
       expect(result.publicKey).toBeInstanceOf(Map);
       // Verify the key can be converted back to COSEKey
 
-      const parsedCoseKey = COSEKeyMapper.bytesToCOSEKey(result.publicKey!);
+      const parsedCoseKey = COSEKey.fromBytes(result.publicKey!);
       expect(parsedCoseKey).toBeInstanceOf(COSEKey);
       // Convert to JWK to verify structure
-      const parsedJwk = COSEKeyMapper.COSEKeyToJwk(parsedCoseKey);
+      const parsedJwk = KeyMapper.COSEToJWK(parsedCoseKey);
       expect(parsedJwk.kty).toBe('RSA');
     });
   });

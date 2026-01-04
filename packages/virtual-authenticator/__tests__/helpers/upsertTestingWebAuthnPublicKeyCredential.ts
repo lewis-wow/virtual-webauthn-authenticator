@@ -10,7 +10,6 @@ import {
   type PrismaClient,
 } from '@repo/prisma';
 
-import { COSEKeyMapper } from '../../../keys/src/mappers/COSEKeyMapper';
 import {
   RP_ID,
   WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
@@ -31,7 +30,7 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
       id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
       userId: USER_ID,
       rpId: RP_ID,
-      COSEPublicKey: COSEKeyMapper.COSEKeyToBytes(COSEPublicKey),
+      COSEPublicKey: COSEPublicKey.toBytes(),
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {

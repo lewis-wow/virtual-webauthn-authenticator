@@ -16,7 +16,7 @@ import { JwtAudience, JwtIssuer } from '@repo/auth';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
 import { ExceptionMapper } from '@repo/exception/mappers';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   Attestation,
   PublicKeyCredentialType,

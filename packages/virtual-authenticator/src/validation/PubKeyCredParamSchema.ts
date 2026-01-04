@@ -1,4 +1,4 @@
-import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
+import { COSEKeyAlgorithmSchema } from '@repo/keys/cose/validation';
 import { Schema } from 'effect';
 
 import { see } from '../meta/see';

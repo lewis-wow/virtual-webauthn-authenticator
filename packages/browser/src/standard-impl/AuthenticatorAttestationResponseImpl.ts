@@ -1,5 +1,5 @@
 import { BytesMapper } from '@repo/core/mappers';
-import type { COSEKeyMap } from '@repo/keys';
+import type { COSEKeyMap } from '@repo/keys/cose';
 import * as cbor from 'cbor2';
 
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
