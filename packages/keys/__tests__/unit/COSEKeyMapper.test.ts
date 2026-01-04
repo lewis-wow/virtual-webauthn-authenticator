@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { COSEKey } from '../../src/index.js';
-import { JsonWebKey } from '../../src/jwk/JsonWebKey.js';
-import { KeyMapper } from '../../src/mappers/KeyMapper.js';
+import { COSEKey } from '../../src/cose/COSEKey';
+import { JsonWebKey } from '../../src/jwk/JsonWebKey';
+import { KeyMapper } from '../../src/mappers/KeyMapper';
 
 // --- Test Data ---
 
