@@ -1,12 +1,70 @@
 import { assertSchema } from '@repo/assert';
+import type { COSEKeyMap } from '@repo/keys/cose';
 import * as cbor from 'cbor2';
 import z from 'zod';
+
+export type ParsePayload = {
+  /**
+   * Bytes of rpId hash.
+   */
+  rpIdHash: Uint8Array;
+
+  /**
+   * Binary number - flags.
+   */
+  flags: number;
+
+  /**
+   * Big Endien number.
+   */
+  counter: number;
+
+  aaguid: Uint8Array | null;
+
+  /**
+   * Big Endien number.
+   */
+  credentialIdLength: number | null;
+
+  /**
+   * Credential ID raw bytes
+   */
+  credentialId: Uint8Array | null;
+
+  /**
+   * COSE public key CBOR map
+   */
+  publicKey: COSEKeyMap | null;
+
+  /**
+   * Extensions CBOR decoded object.
+   * Note: Extensions are decoded as plain objects, not Maps, since they use string keys.
+   */
+  extensions: Record<string, unknown> | null;
+
+  /**
+   * Attestation Statement Format Identifiers
+   * @see https://www.w3.org/TR/webauthn-3/#attestation-statement-format-identifier
+   */
+  fmt: string;
+
+  /**
+   * Attestation statement
+   * CBOR map with: alg, sig, x5c, ...
+   */
+  attStmt: Map<string, unknown>;
+
+  /**
+   * Authenticator data: [RPIDHash (32)] [Flags (1)] [Counter (4)] [Attested credential data (Variable length)] [Extensions (Variable length)]
+   */
+  authData: Uint8Array;
+};
 
 /**
  * @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
  */
 export class AttestationObjectParser {
-  parse(attestationObject: Uint8Array) {
+  parse(attestationObject: Uint8Array): ParsePayload {
     const decodedAttestationObjectMap = cbor.decode<Map<string, unknown>>(
       attestationObject,
       {
@@ -21,7 +79,10 @@ export class AttestationObjectParser {
     assertSchema(fmt, z.string());
 
     // Attestation statement
-    const attStmt = decodedAttestationObjectMap.get('attStmt');
+    const attStmt = decodedAttestationObjectMap.get('attStmt') as Map<
+      string,
+      unknown
+    >;
     assertSchema(attStmt, z.instanceof(Map));
 
     // Authenticator data: [RPIDHash (32)] [Flags (1)] [Counter (4)] [Attested credential data (Variable length)] [Extensions (Variable length)]
@@ -80,19 +141,18 @@ export class AttestationObjectParser {
 
     // Bit 6 (AT - Attested Credential Data Included): Indicates if
     // attested credential data is included.
-    const attestationDataIncludedFlag = !!(flags & 0b00100000);
+    const attestationDataIncludedFlag = !!(flags & 0b01000000);
 
     // Bit 7 (ED - Extension data included): Indicates if extension data
     // is included in the authenticator data.
-    const extensionsDataIncludedFlag = !!(flags & 0b01000000);
-
+    const extensionsDataIncludedFlag = !!(flags & 0b10000000);
     // 5. Handle Variable Length Data
 
     let aaguid: Uint8Array | null = null;
     let credentialIdLength: number | null = null;
     let credentialId: Uint8Array | null = null;
-    let publicKey: Uint8Array | null = null;
-    let extensions: Uint8Array | null = null;
+    let publicKey: COSEKeyMap | null = null;
+    let extensions: Record<string, unknown> | null = null;
 
     // Attested credential data: [AAGUID (16)] [Credential ID length (2)] [Credential ID (L)] [Credential public key (Variable length)]
     if (attestationDataIncludedFlag) {
@@ -141,10 +201,15 @@ export class AttestationObjectParser {
       const remainingBuffer = authData.slice(pointer);
 
       // decodeSequence will read all consecutive CBOR items found in the buffer
+      // Note: With saveOriginal: true, this decodes the CBOR and returns the parsed objects
+      // COSE keys (number keys) become Maps, extensions (string keys) become plain objects
       const decodedItems = Array.from(
-        cbor.decodeSequence<Uint8Array>(remainingBuffer, {
-          saveOriginal: true,
-        }),
+        cbor.decodeSequence<Map<number, unknown> | Record<string, unknown>>(
+          remainingBuffer,
+          {
+            saveOriginal: true,
+          },
+        ),
       );
 
       let itemIndex = 0;
@@ -154,7 +219,7 @@ export class AttestationObjectParser {
           throw new Error();
         }
 
-        publicKey = decodedItems[itemIndex]!;
+        publicKey = decodedItems[itemIndex]! as Map<number, unknown>;
         itemIndex++;
       }
 
@@ -163,7 +228,7 @@ export class AttestationObjectParser {
           throw new Error();
         }
 
-        extensions = decodedItems[itemIndex]!;
+        extensions = decodedItems[itemIndex]! as Record<string, unknown>;
         itemIndex++;
       }
     }

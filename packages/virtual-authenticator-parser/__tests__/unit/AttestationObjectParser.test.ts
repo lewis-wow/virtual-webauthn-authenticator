@@ -211,6 +211,7 @@ describe('AttestationObjectParser', () => {
       expect(result.publicKey).toBeInstanceOf(Map);
       expect(result.extensions).toBeDefined();
       expect(typeof result.extensions).toBe('object');
+      expect(result.extensions).toHaveProperty('example', 'value');
     });
   });
 
@@ -607,10 +608,10 @@ describe('AttestationObjectParser', () => {
       const result = parser.parse(attestationObject);
 
       expect(result.publicKey).toBeInstanceOf(Map);
-      // Verify the key can be converted back to COSEKey
 
-      const parsedCoseKey = COSEKey.fromBytes(result.publicKey!);
+      const parsedCoseKey = new COSEKey(result.publicKey!);
       expect(parsedCoseKey).toBeInstanceOf(COSEKey);
+
       // Convert to JWK to verify structure
       const parsedJwk = KeyMapper.COSEToJWK(parsedCoseKey);
       expect(parsedJwk.kty).toBe('RSA');
