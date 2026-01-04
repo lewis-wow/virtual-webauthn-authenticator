@@ -72,6 +72,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     response: {
       attestationObject: expect.any(String),
       clientDataJSON: expect.any(String),
+      transports: [],
     },
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });
