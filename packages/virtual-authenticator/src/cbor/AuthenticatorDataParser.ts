@@ -96,7 +96,7 @@ export class AuthenticatorDataParser {
   /**
    * Check if attestation data is included (AT flag, bit 6)
    */
-  private hasAttestationData(): boolean {
+  public hasAttestationData(): boolean {
     const flags = this.getFlags();
     return !!(flags & 0b01000000);
   }
@@ -104,7 +104,7 @@ export class AuthenticatorDataParser {
   /**
    * Check if extensions data is included (ED flag, bit 7)
    */
-  private hasExtensionsData(): boolean {
+  public hasExtensionsData(): boolean {
     const flags = this.getFlags();
     return !!(flags & 0b10000000);
   }

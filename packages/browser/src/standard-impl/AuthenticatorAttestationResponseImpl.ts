@@ -1,11 +1,12 @@
 import { BytesMapper } from '@repo/core/mappers';
-import type { COSEKeyMap } from '@repo/keys/cose';
-import type { IAttestationObjectMap } from '@repo/virtual-authenticator/cbor';
+import { COSEKeyParam } from '@repo/keys/cose/enums';
+import {
+  AuthenticatorDataParser,
+  type IAttestationObjectMap,
+} from '@repo/virtual-authenticator/cbor';
 import * as cbor from 'cbor2';
 
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
-import { AuthenticatorDataTooShort } from '../exceptions/AuthenticatorDataTooShort';
-import { FailedToParseCosePublicKey } from '../exceptions/FailedToParseCosePublicKey';
 import {
   AuthenticatorResponseImpl,
   type AuthenticatorResponseImplOptions,
@@ -29,10 +30,9 @@ export class AuthenticatorAttestationResponseImpl
   public readonly attestationObject: ArrayBuffer;
 
   // Caches to prevent repeated expensive parsing
-  private _attestationObjectMap: IAttestationObjectMap | null = null;
-
-  private _publicKey: ArrayBuffer | null = null;
-  private _publicKeyAlgo: COSEAlgorithmIdentifier | undefined;
+  private _attestationObjectMap?: IAttestationObjectMap;
+  private _publicKey?: ArrayBuffer | null;
+  private _publicKeyAlgorithm?: COSEAlgorithmIdentifier;
 
   constructor(opts: AuthenticatorAttestationResponseImplOptions) {
     super({ clientDataJSON: opts.clientDataJSON });
@@ -73,103 +73,42 @@ export class AuthenticatorAttestationResponseImpl
    * Parses the binary authData to extract the COSE Public Key.
    */
   getPublicKey(): ArrayBuffer | null {
-    if (this._publicKey) return this._publicKey;
+    if (this._publicKey !== undefined) {
+      return this._publicKey;
+    }
 
     // Get authData as Uint8Array for parsing
     const authData = BytesMapper.arrayBufferToBytes(
       this.getAuthenticatorData(),
     );
-    const view = new DataView(
-      authData.buffer,
-      authData.byteOffset,
-      authData.byteLength,
-    );
 
-    // --- Binary Parsing of Authenticator Data ---
-
-    // 1. Read Flags (Byte 32)
-    // Layout: [RPIDHash (32)] [Flags (1)] [SignCount (4)] ...
-    if (authData.length < 37) {
-      throw new AuthenticatorDataTooShort();
-    }
-
-    const flags = authData[32]!;
-    const attestationDataIncluded = !!(flags & 0x40); // Bit 6
-
-    if (!attestationDataIncluded) {
+    const authenticatorDataParser = new AuthenticatorDataParser(authData);
+    const publicKey = authenticatorDataParser.getPublicKey();
+    if (publicKey === null) {
+      this._publicKey = null;
       return null;
     }
 
-    // 2. Calculate Offset to Credential Data
-    // 32 (RPID) + 1 (Flags) + 4 (Count) = 37 bytes
-    let offset = 37;
-
-    // 3. Skip AAGUID (16 bytes)
-    offset += 16;
-
-    // 4. Read Credential ID Length (2 bytes, Big-Endian)
-    if (view.byteLength < offset + 2) return null;
-    const credIdLen = view.getUint16(offset, false);
-    offset += 2;
-
-    // 5. Skip Credential ID
-    offset += credIdLen;
-
-    // 6. Extract COSE Public Key
-    // The key starts at 'offset'. It is a CBOR map.
-    const remainingBytes = authData.subarray(offset);
-
-    try {
-      // cbor.decode will decode exactly one CBOR item (the key map)
-      // Use preferMap: false to get a plain object for easier access
-      const coseKeyDecoded = cbor.decode(remainingBytes, {
-        preferMap: false,
-      });
-
-      let coseKeyMap: COSEKeyMap;
-
-      // Handle both Map and object formats
-      if (coseKeyDecoded instanceof Map) {
-        // Convert Map to object for consistent handling
-        coseKeyMap = Object.fromEntries(coseKeyDecoded) as COSEKeyMap;
-        this._publicKeyAlgo = coseKeyDecoded.get(3) as number | undefined;
-      } else {
-        coseKeyMap = coseKeyDecoded as COSEKeyMap;
-        // Extract the Algorithm (Key "3" is "alg")
-        // COSEKeyMap is a Map, so we need to use .get()
-        this._publicKeyAlgo = (coseKeyMap as Map<number, unknown>).get(3) as
-          | number
-          | undefined;
-      }
-
-      // Re-encode to get the exact raw bytes of the key map
-      // cbor.encode returns a Buffer
-      const rawKeyBytes = cbor.encode(coseKeyMap);
-
-      // Normalize to ArrayBuffer using Mapper
-      this._publicKey = BytesMapper.bytesToArrayBuffer(rawKeyBytes);
-    } catch (e) {
-      throw new FailedToParseCosePublicKey({
-        cause: e,
-      });
-    }
-
+    const rawKeyBytes = cbor.encode(authenticatorDataParser.getPublicKey());
+    this._publicKey = BytesMapper.bytesToArrayBuffer(rawKeyBytes);
+    this._publicKeyAlgorithm = publicKey.get(COSEKeyParam.alg);
     return this._publicKey;
   }
 
   getPublicKeyAlgorithm(): COSEAlgorithmIdentifier {
-    if (this._publicKeyAlgo === undefined) {
+    if (this._publicKeyAlgorithm === undefined) {
       this.getPublicKey(); // Triggers parsing
     }
 
-    if (this._publicKeyAlgo === undefined) {
+    if (this._publicKeyAlgorithm === undefined) {
       throw new AlgorithmIdentifierNotFoundInCoseKey();
     }
 
-    return this._publicKeyAlgo;
+    return this._publicKeyAlgorithm;
   }
 
   getTransports(): string[] {
+    // NOTE: Not implemented.
     return [];
   }
 }
