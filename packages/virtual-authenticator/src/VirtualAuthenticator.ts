@@ -274,7 +274,9 @@ export class VirtualAuthenticator implements IAuthenticator {
 
   /**
    * Creates data to be signed: concatenation of authData and clientDataHash.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * signature = Sign(privateKey, authenticatorData || clientDataHash)
+   *
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (Step 11)
    */
   private _createDataToSign(opts: {
     clientDataHash: Uint8Array;
