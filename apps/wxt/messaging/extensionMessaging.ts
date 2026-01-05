@@ -5,11 +5,13 @@ import { defineExtensionMessaging } from '@webext-core/messaging';
 export type MessagingProtocol = {
   'credentials.create': (
     req: CredentialCreationOptions | undefined,
-  ) => MessageResponse<PublicKeyCredential>;
+  ) => MessageResponse<PublicKeyCredential | null>;
 
   'credentials.get': (
-    req: CredentialCreationOptions | undefined,
-  ) => MessageResponse<PublicKeyCredential | PublicKeyCredentialCandidate[]>;
+    req: CredentialRequestOptions | undefined,
+  ) => MessageResponse<
+    PublicKeyCredential | PublicKeyCredentialCandidate[] | null
+  >;
 };
 
 export const extensionMessaging = defineExtensionMessaging<MessagingProtocol>();
