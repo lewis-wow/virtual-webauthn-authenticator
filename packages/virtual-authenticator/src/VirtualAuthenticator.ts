@@ -206,6 +206,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     }
 
     // BE and BS bits
+    // The value of the BE flag is set during authenticatorMakeCredential operation and MUST NOT change.
     // @see https://www.w3.org/TR/webauthn-3/#sctn-credential-backup
     // BE=0, BS=0: Single-device credential.
     //   (e.g., A hardware key or TPM where the key never leaves the chip).
