@@ -31,6 +31,7 @@ import type {
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,
   PubKeyCredParam,
+  PublicKeyCredentialCandidate,
   PublicKeyCredentialDescriptor,
   PublicKeyCredentialRequestOptions,
 } from './validation';
@@ -48,6 +49,7 @@ import {
 import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
+import type { VirtualAuthenticatorAgentGetAssertionPayload } from './validation/VirtualAuthenticatorAgentGetAssertionPayloadSchema';
 import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
 
 export type VirtualAuthenticatorAgentOptions = {
@@ -93,7 +95,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<AuthenticatorGetAssertionPayload> {
+  }): Promise<
+    AuthenticatorGetAssertionPayload | PublicKeyCredentialCandidate[]
+  > {
     const {
       authenticator,
       pkOptions,
@@ -185,6 +189,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Using local configuration knowledge of the appropriate transport to use with authenticator,
     // invoke the authenticatorGetAssertion operation on authenticator
     // with rpId, clientDataHash, allowCredentialDescriptorList, userVerification, and authenticatorExtensions as parameters.
+
+    // Note: In this case, the Relying Party did not supply a list of acceptable credential descriptors.
+    // Thus, the authenticator is being asked to exercise any credential
+    // it may possess that is scoped to the Relying Party, as identified by rpId.
     const authenticatorGetAssertionPayload =
       await authenticator.authenticatorGetAssertion({
         authenticatorGetAssertionArgs: {
@@ -854,7 +862,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<PublicKeyCredential> {
+  }): Promise<VirtualAuthenticatorAgentGetAssertionPayload> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
@@ -1042,7 +1050,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 20.AVAILABLE.2: Else:
 
     // Step 20.AVAILABLE.2.1: Execute the `issuing a credential request to an authenticator algorithm` with authenticator, savedCredentialIds, pkOptions, rpId, clientDataHash, and authenticatorExtensions.
-    const { credentialId, authenticatorData, signature, userHandle } =
+    const authenticatorGetAssertionPayload =
       await this._issueCredentialRequestToAuthenticator({
         authenticator: this.authenticator,
         // NOTE: Not used. Just for compatibility with spec.
@@ -1056,6 +1064,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         meta,
         context,
       });
+
+    if (Array.isArray(authenticatorGetAssertionPayload)) {
+      return authenticatorGetAssertionPayload;
+    }
+
+    const { credentialId, authenticatorData, signature, userHandle } =
+      authenticatorGetAssertionPayload;
 
     // Step 20.AVAILABLE.2.1: If this returns false, continue.
     // Not implemented as we have single authenticator.

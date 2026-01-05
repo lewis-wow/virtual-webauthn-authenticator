@@ -7,6 +7,7 @@ import { ApiKeyNotExists } from '../exceptions/ApiKeyNotExists';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { UserNotExists } from '../exceptions/UserNotExists';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
+import type { PublicKeyCredentialCandidate } from '../validation/PublicKeyCredentialCandidateSchema';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,
@@ -50,6 +51,74 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
       });
 
     return webAuthnPublicKeyCredentialWithMetaList as WebAuthnPublicKeyCredentialWithMeta[];
+  }
+
+  async findAllCredentialCandidatesByRpIdAndUserWithAllowCredentialDescriptorList(opts: {
+    rpId: string;
+    userId: string;
+    apiKeyId: string | null;
+    allowCredentialDescriptorList: string[] | undefined;
+  }): Promise<PublicKeyCredentialCandidate[]> {
+    const { rpId, userId, apiKeyId } = opts;
+
+    assertSchema(rpId, z.string());
+    assertSchema(userId, z.string());
+    assertSchema(apiKeyId, z.string().nullable());
+
+    const webAuthnPublicKeyCredentialCandidates =
+      await this.prisma.webAuthnPublicKeyCredential.findMany({
+        where: {
+          userId,
+          rpId,
+          apiKeyId,
+        },
+        select: {
+          id: true,
+          name: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+
+    return webAuthnPublicKeyCredentialCandidates.map(
+      (webAuthnPublicKeyCredentialCandidate) => ({
+        id: webAuthnPublicKeyCredentialCandidate.id,
+        name: webAuthnPublicKeyCredentialCandidate.name,
+        userId: webAuthnPublicKeyCredentialCandidate.user.id,
+        userDisplayName: webAuthnPublicKeyCredentialCandidate.user.name,
+        userEmail: webAuthnPublicKeyCredentialCandidate.user.email,
+      }),
+    );
+  }
+
+  async incrementCounter(opts: {
+    credentialId: string;
+  }): Promise<WebAuthnPublicKeyCredentialWithMeta> {
+    const { credentialId } = opts;
+
+    assertSchema(credentialId, z.string());
+
+    const webAuthnPublicKeyCredentialWithMeta =
+      await this.prisma.webAuthnPublicKeyCredential.update({
+        where: {
+          id: credentialId,
+        },
+        data: {
+          counter: {
+            increment: 1,
+          },
+        },
+        include: {
+          webAuthnPublicKeyCredentialKeyVaultKeyMeta: true,
+        },
+      });
+
+    return webAuthnPublicKeyCredentialWithMeta as WebAuthnPublicKeyCredentialWithMeta;
   }
 
   async createKeyVaultWebAuthnPublicKeyCredential(

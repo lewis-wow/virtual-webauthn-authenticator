@@ -1,5 +1,9 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": ["src", "__tests__"],
+  "include": [
+    "src",
+    "__tests__",
+    "../browser/src/VirtualAuthenticatorAgentClient.ts"
+  ],
   "exclude": ["node_modules"]
 }

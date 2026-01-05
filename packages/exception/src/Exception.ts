@@ -1,34 +1,28 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ExceptionMessage<T = any> = string | ((data: T) => string);
+import { assertSchema, isSchema } from '@repo/assert';
+import z from 'zod';
 
-export type ExceptionOptions<T = undefined> = {
-  status?: number;
-  code?: string;
-  message?: ExceptionMessage<T>;
-  cause?: unknown;
-} & (T extends undefined ? { data?: undefined } : { data: T });
+import {
+  ExceptionShapeSchema,
+  type ExceptionShape,
+} from './validation/ExceptionShapeSchema';
 
-export class Exception<T = undefined> extends Error {
+export type ExceptionOptions = Omit<ExceptionShape, 'name'>;
+
+export class Exception extends Error implements ExceptionShape {
   static readonly status: number = 500;
-  static readonly code: string = 'INTERNAL_SERVER_ERROR';
-  static readonly message: ExceptionMessage = 'An unexpected error occurred.';
+  static readonly message: string = 'An unexpected error occurred.';
+  static readonly code?: string;
 
   public readonly status: number;
-  public readonly code: string;
+  public readonly code?: string;
 
-  constructor(opts?: ExceptionOptions<T>) {
+  constructor(opts?: ExceptionOptions) {
     // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
     const status = opts?.status ?? ctor.status;
     const code = opts?.code ?? ctor.code;
-    const data = opts && 'data' in opts ? opts.data : undefined;
-
-    const messageFactory = opts?.message ?? ctor.message;
-    const message =
-      typeof messageFactory === 'function'
-        ? messageFactory(data as T)
-        : messageFactory;
+    const message = opts?.message ?? ctor.message;
 
     // Pass message and cause to the parent Error class
     super(message, { cause: opts?.cause });
@@ -36,9 +30,20 @@ export class Exception<T = undefined> extends Error {
     this.name = ctor.name;
     this.status = status;
     this.code = code;
+  }
 
-    if (!this.code) {
-      throw new Error(`Exception ${this.name} requires a 'code'.`);
+  static fromResponse(opts: {
+    json: unknown;
+    status: number;
+  }): Exception | null {
+    const { json, status } = opts;
+
+    assertSchema(status, z.number());
+
+    if (isSchema(json, ExceptionShapeSchema)) {
+      return new Exception({ ...json, status });
     }
+
+    return null;
   }
 }

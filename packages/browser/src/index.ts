@@ -7,3 +7,4 @@ export * from './standard-impl/PublicKeyCredentialEntityImpl';
 export * from './standard-impl/PublicKeyCredentialImpl';
 export * from './standard-impl/PublicKeyCredentialRpEntityImpl';
 export * from './standard-impl/PublicKeyCredentialUserEntityImpl';
+export * from './VirtualAuthenticatorAgentClient';

@@ -3,6 +3,7 @@ import type { IWebAuthnRepository } from './repositories';
 import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
+import type { PublicKeyCredentialCandidate } from './validation/PublicKeyCredentialCandidateSchema';
 
 /**
  * Payload returned by the authenticatorMakeCredential operation.
@@ -97,7 +98,9 @@ export interface IAuthenticator {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorGetAssertionPayload>;
+  }): Promise<
+    AuthenticatorGetAssertionPayload | PublicKeyCredentialCandidate[]
+  >;
 
   /**
    * The authenticatorCancel operation.

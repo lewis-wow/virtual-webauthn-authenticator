@@ -3,6 +3,7 @@ import type { AuthenticatorAgentMetaArgs } from './validation/AuthenticatorAgent
 import type { CredentialCreationOptions } from './validation/CredentialCreationOptionsSchema';
 import type { CredentialRequestOptions } from './validation/CredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
+import type { VirtualAuthenticatorAgentGetAssertionPayload } from './validation/VirtualAuthenticatorAgentGetAssertionPayloadSchema';
 
 /**
  * Virtual WebAuthn Agent (Client) implementation.
@@ -50,5 +51,5 @@ export interface IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<PublicKeyCredential>;
+  }): Promise<VirtualAuthenticatorAgentGetAssertionPayload>;
 }

@@ -15,6 +15,7 @@ import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
+import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
@@ -42,6 +43,7 @@ import {
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from './validation/CredParamSchema';
+import type { PublicKeyCredentialCandidate } from './validation/PublicKeyCredentialCandidateSchema';
 
 export type AuthenticatorBackendContext = {
   apiKeyId: string;
@@ -483,7 +485,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       // The authorization gesture MUST include a test of user presence.
       // If the user confirms consent to create a new credential, return an error code equivalent to "InvalidStateError" and terminate the operation.
       // If the user does not consent to create a new credential, return an error code equivalent to "NotAllowedError" and terminate the operation.
-      // NOTE: In this backend authenticator implementation, user consent and presence have already been collected by the agent/client.
+      // NOTE: In this backend authenticator implementation, user consent and presence is not implemented.
       // Finding a matching excluded credential throws CredentialExcluded error.
       // The search for finding existing credential is done as batch operation for effectivity.
       const credentialExists =
@@ -664,7 +666,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorGetAssertionPayload> {
+  }): Promise<
+    AuthenticatorGetAssertionPayload | PublicKeyCredentialCandidate[]
+  > {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -693,12 +697,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     } = authenticatorGetAssertionArgs;
 
     // Step 2: Let credentialOptions be a new empty set of public key credential sources.
-    // NOTE: Not implemented as a separate data structure. Credential filtering is handled
-    // directly in the repository query below.
+    // NOTE: Implemented below as a part of next steps.
 
-    // Step 3-7 and Step 9: Credential selection, user consent, and counter increment
-    // This operation combines multiple spec steps into a single atomic repository operation:
-    //
     // Step 3: If allowCredentialDescriptorList was supplied, then for each descriptor of allowCredentialDescriptorList:
     //   If allowCredentialDescriptorList was supplied:
     //     For each descriptor of allowCredentialDescriptorList:
@@ -706,36 +706,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     //       If credSource is not null, append it to credentialOptions.
     // Step 4: Otherwise (allowCredentialDescriptorList was not supplied):
     //     For each key → credSource of this authenticator's credentials map, append credSource to credentialOptions.
-    //   NOTE: Implemented via repository query with optional allowCredentialDescriptorList filter.
-    //
+    // NOTE: Implemented via repository query with optional allowCredentialDescriptorList filter.
+
     // Step 5: Filter by rpId
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
     //   NOTE: Implemented as part of the repository query filter.
-    //
-    // Step 6: Check if credentialOptions is empty
-    //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    //   NOTE: Implemented via repository's orThrow - throws if no credential found.
-    //
-    // Step 7: Prompt user to select credential and collect authorization gesture
-    //   Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-    //   Collect an authorization gesture confirming user consent for using selectedCredential.
-    //   If requireUserVerification is true, the authorization gesture MUST include user verification.
-    //   If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
-    //   If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    //   NOTE: User prompts and gestures are not applicable to a backend virtual authenticator for testing.
-    //   The implementation automatically selects the first matching credential. User verification and presence
-    //   checks are handled later in Step 10 during authenticatorData creation.
-    //
-    // Step 9: Increment signature counter
-    //   Increment the credential associated signature counter or the global signature counter value,
-    //   depending on which approach is implemented by the authenticator, by some positive value.
-    //   If the authenticator does not implement a signature counter, let the signature counter value remain constant at zero.
-    //   NOTE: Implemented atomically in the repository operation to prevent race conditions.
-    //   The counter is incremented by 1 for each assertion operation.
-    //
-    // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (steps 3-7, 9)
-    const webAuthnPublicKeyCredentialWithMeta =
-      await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
+    const credentialOptions =
+      await this.webAuthnRepository.findAllCredentialCandidatesByRpIdAndUserWithAllowCredentialDescriptorList(
         {
           userId: meta.userId,
           rpId,
@@ -747,11 +724,36 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
       );
 
+    // Step 6: Check if credentialOptions is empty
+    //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.
+    if (credentialOptions.length === 0) {
+      throw new CredentialOptionsEmpty();
+    }
+
+    // Step 7: Prompt user to select credential and collect authorization gesture
+    //   Prompt the user to select a public key credential source selectedCredential from credentialOptions.
+    //   Collect an authorization gesture confirming user consent for using selectedCredential.
+    //   If requireUserVerification is true, the authorization gesture MUST include user verification.
+    //   If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
+    //   If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
+    //   NOTE (OUTDATED!): User prompts and gestures are not applicable to a backend virtual authenticator for testing.
+    //   The implementation automatically selects the first matching credential. User verification and presence
+    //   checks are handled later in Step 10 during authenticatorData creation.
+    return credentialOptions;
+
     // Step 8: Let processedExtensions be the result of authenticator extension processing for each supported extension identifier → authenticator extension input in extensions.
     // NOTE: Extension processing is skipped.
 
-    // Step 9: Increment the credential associated signature counter or the global signature counter value.
-    // NOTE: Already implemented in the webAuthnRepository.
+    // Step 9: Increment signature counter
+    //   Increment the credential associated signature counter or the global signature counter value,
+    //   depending on which approach is implemented by the authenticator, by some positive value.
+    //   If the authenticator does not implement a signature counter, let the signature counter value remain constant at zero.
+    //   NOTE: Implemented atomically in the repository operation to prevent race conditions.
+    //   The counter is incremented by 1 for each assertion operation.
+    const webAuthnPublicKeyCredentialWithMeta =
+      await this.webAuthnRepository.incrementCounter({
+        credentialId: '',
+      });
 
     // Step 10: Let authenticatorData be the byte array specified in §6.1 Authenticator Data
     // including processedExtensions, if any, as the extensions

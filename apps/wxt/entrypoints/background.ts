@@ -1,4 +1,5 @@
 import { env } from '@/env';
+import { getVirtualAuthenticatorAgentClient } from '@/utils/getVirtualAuthenticatorAgentClient';
 import { ErrorMapper } from '@repo/core/mappers';
 
 import { extensionMessaging } from '../messaging/extensionMessaging';
@@ -28,34 +29,13 @@ export default defineBackground(() => {
   });
 
   extensionMessaging.onMessage('credentials.create', async (req) => {
-    const apiKey = await apiKeyItem.getValue();
-    let response: Response | undefined = undefined;
-    let rawContent: string | undefined = undefined;
+    const virtualAuthenticatorAgentClient =
+      await getVirtualAuthenticatorAgentClient();
 
-    try {
-      response = await fetch(
-        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
-        {
-          method: 'POST',
-          headers: createApiHeaders(apiKey),
-          body: JSON.stringify(req.data),
-        },
-      );
+    const publicKeyCredential =
+      await virtualAuthenticatorAgentClient.createCredential(req.data);
 
-      rawContent = await response.text();
-
-      const json = JSON.parse(rawContent);
-
-      return { ok: response.ok, data: json };
-    } catch (error) {
-      return {
-        ok: false,
-        error: ErrorMapper.errorToErrorJSON({
-          data: rawContent,
-          error,
-        }),
-      };
-    }
+    return publicKeyCredential;
   });
 
   extensionMessaging.onMessage('credentials.get', async (req) => {

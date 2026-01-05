@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@repo/core": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "buffer": "^6.0.3",
