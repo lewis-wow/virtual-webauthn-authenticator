@@ -261,9 +261,8 @@ export class VirtualAuthenticator implements IAuthenticator {
         attestedCredentialData,
         // --- OPTIONAL CREDENTIALS --- (
         //    Extension-defined authenticator data.
-        //    This is a CBOR [RFC8949] map with extension identifiers as keys,
+        //    This is a CBOR map with extension identifiers as keys,
         //    and authenticator extension outputs as values.
-        //    @see https://www.w3.org/TR/webauthn-2/#sctn-extensions
         // )
       ].filter((value) => value !== undefined),
     );
