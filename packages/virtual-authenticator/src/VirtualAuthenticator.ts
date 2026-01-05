@@ -128,18 +128,14 @@ export class VirtualAuthenticator implements IAuthenticator {
       VirtualAuthenticator.AAGUID,
       credentialIdLength,
       credentialID,
-      // The credential public key encoded in COSE_Key format, as defined
-      // in Section 7 of [RFC8152],
-      // using the CTAP2 canonical CBOR encoding form.
-      // The COSE_Key-encoded credential public key MUST contain the "alg" parameter
+      // The credential public key encoded in COSEKey format, as defined using the CTAP2 canonical CBOR encoding form.
+      // The COSEKey-encoded credential public key MUST contain the "alg" parameter
       // and MUST NOT contain any other OPTIONAL parameters.
       // The "alg" parameter MUST contain a COSEAlgorithm value.
       // The encoded credential public key MUST also contain any
       // additional REQUIRED parameters
-      // stipulated by the relevant key type specification, i.e., REQUIRED
-      // for the key type "kty"
-      // and algorithm "alg" (see Section 8 of [RFC8152]).
-      // Length (in bytes): {variable}
+      // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty" and algorithm "alg" (see Section 8 of https://datatracker.ietf.org/doc/html/rfc8152).
+      // Length (in bytes): L
       COSEPublicKey,
     ]);
 
