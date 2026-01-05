@@ -11,6 +11,7 @@ import type {
   AuthenticatorMakeCredentialPayload,
   IAuthenticator,
 } from './IAuthenticator';
+import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
@@ -293,9 +294,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    * Handles 'none' attestation (no attestation statement).
    * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
    */
-  private _handleAttestationNone(): Map<string, Uint8Array | number> {
+  private _handleAttestationNone(): IAttestationStatementMap {
     // For "none" attestation, the attestation statement is an empty CBOR map
-    const attStmt = new Map<string, Uint8Array | number>();
+    const attStmt = new Map<never, never>();
 
     return attStmt;
   }
@@ -310,7 +311,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       clientDataHash: Uint8Array;
       authData: Uint8Array;
     };
-  }): Promise<Map<string, Uint8Array | number>> {
+  }): Promise<IAttestationStatementMap> {
     const { webAuthnPublicKeyCredential, data } = opts;
 
     const dataToSign = this._createDataToSign(data);
@@ -331,7 +332,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     const attStmt = new Map<string, Uint8Array | number>([
       ['alg', alg],
       ['sig', new Uint8Array(signature)],
-    ]);
+    ]) as IAttestationStatementMap;
 
     return attStmt;
   }
@@ -374,11 +375,11 @@ export class VirtualAuthenticator implements IAuthenticator {
     attestationFormat: Fmt;
     authData: Uint8Array;
     hash: Uint8Array;
-  }): Promise<Map<string, unknown>> {
+  }): Promise<IAttestationObjectMap> {
     const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } =
       opts;
 
-    let attStmt: Map<string, Uint8Array | number>;
+    let attStmt: IAttestationStatementMap;
 
     switch (attestationFormat) {
       case Fmt.NONE:
@@ -396,13 +397,13 @@ export class VirtualAuthenticator implements IAuthenticator {
         throw new Error('Unsupported attestation format is used.');
     }
 
-    const attestationObject = new Map<string, unknown>([
+    const attestationObjectMap = new Map<string, unknown>([
       ['fmt', attestationFormat],
       ['attStmt', attStmt],
       ['authData', authData],
-    ]);
+    ]) as IAttestationObjectMap;
 
-    return attestationObject;
+    return attestationObjectMap;
   }
 
   /**
