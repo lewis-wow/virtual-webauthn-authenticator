@@ -263,7 +263,10 @@ export class VirtualAuthenticator implements IAuthenticator {
         //    This is a CBOR map with extension identifiers as keys,
         //    and authenticator extension outputs as values.
         // )
-      ].filter((value) => value !== undefined),
+      ].filter((value) => {
+        // Non defined values should be ommited.
+        return value !== undefined;
+      }),
     );
 
     return new Uint8Array(authenticatorData);
