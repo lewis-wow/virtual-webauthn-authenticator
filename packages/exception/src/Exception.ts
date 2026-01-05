@@ -6,11 +6,12 @@ import {
 export type ExceptionOptions = Omit<ExceptionShape, 'name'>;
 
 export class Exception extends Error implements ExceptionShape {
-  static readonly status: number = 500;
   static readonly message: string = 'An unexpected error occurred.';
+
+  static readonly status?: number;
   static readonly code?: string;
 
-  public readonly status: number;
+  public readonly status?: number;
   public readonly code?: string;
 
   constructor(opts?: ExceptionOptions) {
@@ -42,5 +43,16 @@ export class Exception extends Error implements ExceptionShape {
     }
 
     return new Exception({ ...parseResult.data, status });
+  }
+
+  toJSON() {
+    return {
+      message: this.message,
+      name: this.name,
+    };
+  }
+
+  toResponse(): Response {
+    return Response.json(this.toJSON(), { status: this.status ?? 500 });
   }
 }

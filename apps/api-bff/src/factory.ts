@@ -1,7 +1,6 @@
 import { container } from '@/container';
 import { Exception } from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
-import { ExceptionMapper } from '@repo/exception/mappers';
 import { createFactory } from 'hono/factory';
 
 export const factory = createFactory<{
@@ -22,7 +21,7 @@ export const factory = createFactory<{
       const exception =
         error instanceof Exception ? error : new InternalServerError();
 
-      return ExceptionMapper.exceptionToResponse(exception);
+      return exception.toResponse();
     });
   },
 });

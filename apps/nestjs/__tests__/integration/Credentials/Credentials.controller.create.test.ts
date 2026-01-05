@@ -15,7 +15,6 @@ import { Test } from '@nestjs/testing';
 import { JwtAudience, JwtIssuer } from '@repo/auth';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
-import { ExceptionMapper } from '@repo/exception/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   Attestation,
@@ -166,9 +165,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           expectStatus: 404,
         });
 
-      expect(response.body).toStrictEqual(
-        ExceptionMapper.exceptionToResponseBody(new UserNotExists()),
-      );
+      expect(response.body).toStrictEqual(new UserNotExists().toJSON());
     });
   });
 
@@ -231,9 +228,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           });
 
         expect(response.body).toStrictEqual(
-          ExceptionMapper.exceptionToResponseBody(
-            new AttestationNotSupported(),
-          ),
+          new AttestationNotSupported().toJSON(),
         );
       },
     );
@@ -254,7 +249,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         });
 
       expect(response.body).toStrictEqual(
-        ExceptionMapper.exceptionToResponseBody(new RequestValidationFailed()),
+        new RequestValidationFailed().toJSON(),
       );
     });
   });
@@ -351,9 +346,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           });
 
         expect(response.body).toStrictEqual(
-          ExceptionMapper.exceptionToResponseBody(
-            new CredentialTypesNotSupported(),
-          ),
+          new CredentialTypesNotSupported().toJSON(),
         );
       },
     );

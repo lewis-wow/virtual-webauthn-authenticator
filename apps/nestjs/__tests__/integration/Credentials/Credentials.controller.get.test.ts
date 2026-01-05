@@ -17,7 +17,6 @@ import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,
 } from '@repo/contract/dto';
-import { ExceptionMapper } from '@repo/exception/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   PublicKeyCredentialType,
@@ -241,9 +240,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
         expectStatus: 404,
       });
 
-      expect(response.body).toStrictEqual(
-        ExceptionMapper.exceptionToResponseBody(new CredentialNotFound()),
-      );
+      expect(response.body).toStrictEqual(new CredentialNotFound().toJSON());
     });
 
     test('As authenticated user', async () => {
