@@ -136,7 +136,7 @@ export class CredentialsController {
           userId: userId,
         });
 
-        const publicKeyCredential =
+        const publicKeyCredentialOrPublicKeyCredentialCandidateList =
           await this.virtualAuthenticatorAgent.getAssertion({
             origin: meta.origin,
             options: {
@@ -153,15 +153,29 @@ export class CredentialsController {
             context: { apiKeyId },
           });
 
+        if (
+          Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)
+        ) {
+          return {
+            status: 200,
+            body: GetCredentialResponseSchema.encode(
+              publicKeyCredentialOrPublicKeyCredentialCandidateList,
+            ),
+          };
+        }
+
         await this._auditCredentialAction({
           action: LogAction.GET,
-          publicKeyCredentialRawId: publicKeyCredential.rawId,
+          publicKeyCredentialRawId:
+            publicKeyCredentialOrPublicKeyCredentialCandidateList.rawId,
           jwtPayload,
         });
 
         return {
           status: 200,
-          body: GetCredentialResponseSchema.encode(publicKeyCredential),
+          body: GetCredentialResponseSchema.encode(
+            publicKeyCredentialOrPublicKeyCredentialCandidateList,
+          ),
         };
       },
     );
