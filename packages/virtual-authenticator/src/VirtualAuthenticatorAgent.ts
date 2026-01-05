@@ -15,6 +15,7 @@ import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
 import {
   Attestation,
   AuthenticatorAttachment,
+  AuthenticatorTransport,
   CollectedClientDataType,
   CredentialMediationRequirement,
   Fmt,
@@ -818,9 +819,22 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       response: {
         clientDataJSON: clientDataJSON,
         attestationObject: processedAttestationObject,
-        transports: [],
+        transports: [AuthenticatorTransport.INTERNAL],
       },
-      clientExtensionResults: {},
+      // A platform authenticator is attached using a client device-specific transport, called platform attachment, and is usually not removable from the client device.
+      // A public key credential bound to a platform authenticator is called a platform credential.
+
+      // A roaming authenticator is attached using cross-platform transports, called cross-platform attachment.
+      // Authenticators of this class are removable from, and can "roam" between, client devices.
+      // A public key credential bound to a roaming authenticator is called a roaming credential.
+
+      // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-attachment-modality
+      // NOTE: We use 'platform' because this authenticator is software-integrated
+      // and communicates directly with the client, acting like a built-in Passkey provider.
+      // Portability/Syncing is signaled via the 'Backup Eligible' (BE) flag in
+      // authenticatorData, not by setting the attachment to 'cross-platform'.
+      authenticatorAttachment: AuthenticatorAttachment.PLATFORM,
+      clientExtensionResults: credentialCreationData.clientExtensionResults,
     };
 
     // Step 22.SUCCESS.5: Return pubKeyCred.
@@ -1144,13 +1158,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 20.SUCCESS.6: Return the result of running constructAssertionAlg
     // with the current global object.
-    const pubKeyCred = {
+    const pubKeyCred: PublicKeyCredential = {
       id: Buffer.from(assertionCreationData.credentialIdResult).toString(
         'base64url',
       ),
       rawId: assertionCreationData.credentialIdResult,
-      // The AuthenticatorAttachment value matching the current authenticator attachment modality of authenticator.
-      authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON,
@@ -1158,8 +1170,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         signature,
         userHandle,
       },
+      // A platform authenticator is attached using a client device-specific transport, called platform attachment, and is usually not removable from the client device.
+      // A public key credential bound to a platform authenticator is called a platform credential.
+
+      // A roaming authenticator is attached using cross-platform transports, called cross-platform attachment.
+      // Authenticators of this class are removable from, and can "roam" between, client devices.
+      // A public key credential bound to a roaming authenticator is called a roaming credential.
+
+      // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-attachment-modality
+      // NOTE: We use 'platform' because this authenticator is software-integrated
+      // and communicates directly with the client, acting like a built-in Passkey provider.
+      // Portability/Syncing is signaled via the 'Backup Eligible' (BE) flag in
+      // authenticatorData, not by setting the attachment to 'cross-platform'.
+      authenticatorAttachment: AuthenticatorAttachment.PLATFORM,
       // NOTE: Extensions are not implemented.
-      clientExtensionResults: {},
+      clientExtensionResults: assertionCreationData.clientExtensionResults,
     };
 
     // Step 20.SUCCESS.7: For each remaining authenticator in issuedRequests
