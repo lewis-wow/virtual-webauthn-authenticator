@@ -890,7 +890,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       credentialIdFilter = pkOptions.allowCredentials ?? [];
 
       // Step 3.2: Set pkOptions.allowCredentials to empty.
-      // NOTE: Skipped
+      // NOTE: Skipped.
 
       // Step 3.3: Set a timer lifetimeTimer to a value of infinity.
       // NOTE: Not implemented.

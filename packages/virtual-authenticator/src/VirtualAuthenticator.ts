@@ -61,6 +61,8 @@ export type VirtualAuthenticatorOptions = {
  *
  * Through configurable metadata, it allows simulation of various hardware states (e.g., User Verification
  * availability, User Presence) and handles specific error scenarios like `UserVerificationNotAvailable`.
+ *
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-automation-virtual-authenticators
  */
 export class VirtualAuthenticator implements IAuthenticator {
   public readonly webAuthnRepository: IWebAuthnRepository;
