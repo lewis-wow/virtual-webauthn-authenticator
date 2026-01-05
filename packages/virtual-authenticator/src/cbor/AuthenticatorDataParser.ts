@@ -8,6 +8,7 @@ import z from 'zod';
  * Does not pre-parse the entire authData buffer, but parses each field lazily when requested.
  *
  * Authenticator data: [RPIDHash (32)] [Flags (1)] [Counter (4)] [Attested credential data (Variable length)] [Extensions (Variable length)]
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
  * @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
  */
 export class AuthenticatorDataParser {
@@ -52,12 +53,20 @@ export class AuthenticatorDataParser {
   /**
    * Get Flags (1 byte)
    *
-   * Bit 0 (UP - User Present): Result of the user presence test
-   * Bit 1 (RFU1): Reserved for future use.
-   * Bit 2 (UV - User Verified): Result of the user verification test
-   * Bits 3-5 (RFU2): Reserved for future use.
-   * Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
-   * Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
+   * - Bit 0 (UP - User Present): Result of the user presence test (1 = present, 0 = not present).
+   * - Bit 1 (RFU1): Reserved for future use.
+   * - Bit 2 (UV - User Verified): Result of the user verification test (1 = verified, 0 = not verified).
+   * - Bit 3 (BE - Backup Eligibility): Indicates if the credential is eligible for backup/sync (1 = eligible, 0 = not eligible).
+   * - Bit 4 (BS - Backup State): Indicates if the credential is currently backed up (1 = backed up, 0 = not backed up).
+   * - Bit 5 (RFU2): Reserved for future use.
+   * - Bit 6 (AT - Attested Credential Data Included): Indicates if attested credential data is included.
+   * - Bit 7 (ED - Extension data included): Indicates if extension data is included in the authenticator data.
+   *
+   * @see https://www.w3.org/TR/webauthn-3/#concept-user-present
+   * @see https://www.w3.org/TR/webauthn-3/#concept-user-verified
+   * @see https://www.w3.org/TR/webauthn-3/#backup-eligibility
+   * @see https://www.w3.org/TR/webauthn-3/#backup-state
+   * @see https://www.w3.org/TR/webauthn-3/#attested-credential-data
    */
   getFlags(): number {
     if (this._flags !== undefined) {
@@ -91,6 +100,38 @@ export class AuthenticatorDataParser {
     assertSchema(counter, z.number());
     this._counter = counter;
     return counter;
+  }
+
+  /**
+   * Check if user is present (UP flag, bit 0)
+   */
+  public isUserPresent(): boolean {
+    const flags = this.getFlags();
+    return !!(flags & 0b00000001);
+  }
+
+  /**
+   * Check if user is verified (UV flag, bit 2)
+   */
+  public isUserVerified(): boolean {
+    const flags = this.getFlags();
+    return !!(flags & 0b00000100);
+  }
+
+  /**
+   * Check if credential is backup eligible (BE flag, bit 3)
+   */
+  public isBackupEligible(): boolean {
+    const flags = this.getFlags();
+    return !!(flags & 0b00001000);
+  }
+
+  /**
+   * Check if credential is backed up (BS flag, bit 4)
+   */
+  public isBackedUp(): boolean {
+    const flags = this.getFlags();
+    return !!(flags & 0b00010000);
   }
 
   /**
