@@ -25,7 +25,6 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "zod": "^4.1.12",
-    "@repo/assert": "workspace:*"
+    "zod": "^4.1.12"
   }
 }

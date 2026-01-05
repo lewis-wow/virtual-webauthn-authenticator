@@ -1,6 +1,3 @@
-import { assertSchema, isSchema } from '@repo/assert';
-import z from 'zod';
-
 import {
   ExceptionShapeSchema,
   type ExceptionShape,
@@ -38,12 +35,12 @@ export class Exception extends Error implements ExceptionShape {
   }): Exception | null {
     const { json, status } = opts;
 
-    assertSchema(status, z.number());
+    const parseResult = ExceptionShapeSchema.safeParse(json);
 
-    if (isSchema(json, ExceptionShapeSchema)) {
-      return new Exception({ ...json, status });
+    if (!parseResult.success) {
+      return null;
     }
 
-    return null;
+    return new Exception({ ...parseResult.data, status });
   }
 }
