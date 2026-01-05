@@ -18,27 +18,36 @@ export default defineContentScript({
     mainWorldMessaging.onMessage('credentials.create', async (req) => {
       console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
 
-      const response = await extensionMessaging.sendMessage(
+      const publicKeyCredential = await extensionMessaging.sendMessage(
         'credentials.create',
         req.data,
       );
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.create response.', response);
+      console.log(`[${LOG_PREFIX}] PublicKeyCredential`, publicKeyCredential);
 
-      return response;
+      return publicKeyCredential;
     });
 
     mainWorldMessaging.onMessage('credentials.get', async (req) => {
       console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
 
-      const response = await extensionMessaging.sendMessage(
-        'credentials.get',
-        req.data,
+      const publicKeyCredentialOrPublicKeyCredentialCandidateList =
+        await extensionMessaging.sendMessage('credentials.get', req.data);
+
+      if (
+        Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)
+      ) {
+        // do something
+
+        return publicKeyCredentialOrPublicKeyCredentialCandidateList;
+      }
+
+      console.log(
+        `[${LOG_PREFIX}] PublicKeyCredential`,
+        publicKeyCredentialOrPublicKeyCredentialCandidateList,
       );
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
-
-      return response;
+      return publicKeyCredentialOrPublicKeyCredentialCandidateList;
     });
   },
 });
