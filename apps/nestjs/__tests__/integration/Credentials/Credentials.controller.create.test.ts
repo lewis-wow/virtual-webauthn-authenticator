@@ -20,7 +20,7 @@ import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   Attestation,
   PublicKeyCredentialType,
-  UserVerificationRequirement,
+  UserVerification,
 } from '@repo/virtual-authenticator/enums';
 import {
   AttestationNotSupported,
@@ -54,7 +54,7 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
       { alg: COSEKeyAlgorithm.ES256, type: PublicKeyCredentialType.PUBLIC_KEY },
     ],
     authenticatorSelection: {
-      userVerification: UserVerificationRequirement.REQUIRED,
+      userVerification: UserVerification.REQUIRED,
     },
   },
   meta: {

@@ -21,7 +21,7 @@ import { ExceptionMapper } from '@repo/exception/mappers';
 import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   PublicKeyCredentialType,
-  UserVerificationRequirement,
+  UserVerification,
 } from '@repo/virtual-authenticator/enums';
 import { CredentialNotFound } from '@repo/virtual-authenticator/exceptions';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
@@ -59,7 +59,7 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
       { alg: COSEKeyAlgorithm.ES256, type: PublicKeyCredentialType.PUBLIC_KEY },
     ],
     authenticatorSelection: {
-      userVerification: UserVerificationRequirement.REQUIRED,
+      userVerification: UserVerification.REQUIRED,
     },
   },
   meta: {
@@ -74,7 +74,7 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD = {
   publicKeyCredentialRequestOptions: {
     challenge: CHALLENGE_BASE64URL,
     rpId: RP_ID,
-    userVerification: UserVerificationRequirement.REQUIRED,
+    userVerification: UserVerification.REQUIRED,
   },
   meta: {
     origin: RP_ORIGIN,

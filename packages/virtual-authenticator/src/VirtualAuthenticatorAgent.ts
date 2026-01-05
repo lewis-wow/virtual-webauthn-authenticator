@@ -19,8 +19,8 @@ import {
   CollectedClientDataType,
   CredentialMediationRequirement,
   Fmt,
-  ResidentKeyRequirement,
-  UserVerificationRequirement,
+  ResidentKey,
+  UserVerification,
 } from './enums';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { CredentialNotFound } from './exceptions';
@@ -108,7 +108,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 1: If pkOptions.userVerification is set to required and the authenticator is not capable of performing user verification, return false.
     // Note: As we have single authenticator, we can throw UserVerificationNotAvailable error
     if (
-      pkOptions.userVerification === UserVerificationRequirement.REQUIRED &&
+      pkOptions.userVerification === UserVerification.REQUIRED &&
       meta.userVerificationEnabled === false
     ) {
       throw new UserVerificationNotAvailable();
@@ -215,9 +215,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   private _calculateEffectiveResidentKeyRequirement(opts: {
     authenticatorSelection:
       | {
-          residentKey?: ResidentKeyRequirement;
+          residentKey?: ResidentKey;
           requireResidentKey?: boolean;
-          userVerification?: UserVerificationRequirement;
+          userVerification?: UserVerification;
           authenticatorAttachment?: string;
         }
       | undefined;
@@ -226,18 +226,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // If pkOptions.authenticatorSelection.residentKey is present and set to
     // required
-    if (
-      authenticatorSelection?.residentKey === ResidentKeyRequirement.REQUIRED
-    ) {
+    if (authenticatorSelection?.residentKey === ResidentKey.REQUIRED) {
       // Let requireResidentKey be true.
       return true;
     }
 
     // If pkOptions.authenticatorSelection.residentKey is present and set to
     // preferred
-    if (
-      authenticatorSelection?.residentKey === ResidentKeyRequirement.PREFERRED
-    ) {
+    if (authenticatorSelection?.residentKey === ResidentKey.PREFERRED) {
       // If the authenticator is capable of client-side credential storage
       // modality
       // NOTE: Virtual authenticator is always capable of client-side
@@ -247,9 +243,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // If pkOptions.authenticatorSelection.residentKey is present and set to
     // discouraged
-    if (
-      authenticatorSelection?.residentKey === ResidentKeyRequirement.DISCOURAGED
-    ) {
+    if (authenticatorSelection?.residentKey === ResidentKey.DISCOURAGED) {
       // Let requireResidentKey be false.
       return false;
     }
@@ -269,13 +263,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    * @returns Boolean indicating whether user verification is required
    */
   private _calculateEffectiveUserVerificationRequirement(opts: {
-    userVerification: UserVerificationRequirement | undefined;
+    userVerification: UserVerification | undefined;
     userVerificationEnabled?: boolean;
   }): boolean {
     const { userVerification, userVerificationEnabled = true } = opts;
 
     // If pkOptions.authenticatorSelection.userVerification is set to required
-    if (userVerification === UserVerificationRequirement.REQUIRED) {
+    if (userVerification === UserVerification.REQUIRED) {
       // NOTE: Conditional mediation check skipped (not applicable to backend
       // authenticator)
       // If options.mediation is set to conditional and user verification
@@ -287,7 +281,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     }
 
     // If pkOptions.authenticatorSelection.userVerification is set to preferred
-    if (userVerification === UserVerificationRequirement.PREFERRED) {
+    if (userVerification === UserVerification.PREFERRED) {
       // If the authenticator is capable of user verification
       if (userVerificationEnabled) {
         // Let userVerification be true.

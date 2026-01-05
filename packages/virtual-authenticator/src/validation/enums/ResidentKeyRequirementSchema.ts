@@ -1,10 +1,8 @@
 import z from 'zod';
 
-import { ResidentKeyRequirement } from '../../enums/ResidentKeyRequirement';
+import { ResidentKey } from '../../enums/ResidentKey';
 
-export const ResidentKeyRequirementSchema = z
-  .enum(ResidentKeyRequirement)
-  .meta({
-    id: 'ResidentKeyRequirement',
-    examples: [ResidentKeyRequirement.REQUIRED],
-  });
+export const ResidentKeyRequirementSchema = z.enum(ResidentKey).meta({
+  id: 'ResidentKey',
+  examples: [ResidentKey.REQUIRED],
+});

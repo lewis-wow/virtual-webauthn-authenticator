@@ -5,7 +5,7 @@ import type { ValueOfEnum } from '@repo/types';
  * client-side discoverable credentials (formerly known as resident credentials or resident keys).
  * @see https://www.w3.org/TR/webauthn-3/#enum-residentKeyRequirement
  */
-export const ResidentKeyRequirement = {
+export const ResidentKey = {
   /**
    * The Relying Party requires a client-side discoverable credential.
    * The client and authenticator MUST create a client-side discoverable credential.
@@ -25,4 +25,4 @@ export const ResidentKeyRequirement = {
   DISCOURAGED: 'discouraged',
 } as const;
 
-export type ResidentKeyRequirement = ValueOfEnum<typeof ResidentKeyRequirement>;
+export type ResidentKey = ValueOfEnum<typeof ResidentKey>;

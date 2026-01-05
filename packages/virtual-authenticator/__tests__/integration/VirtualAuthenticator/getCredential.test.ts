@@ -23,7 +23,7 @@ import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/crede
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
+import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/PublicKeyCredentialRequestOptionsSchema';
@@ -347,13 +347,13 @@ describe('VirtualAuthenticator.getCredential()', () => {
         userVerification: undefined,
       },
       {
-        userVerification: UserVerificationRequirement.REQUIRED,
+        userVerification: UserVerification.REQUIRED,
       },
       {
-        userVerification: UserVerificationRequirement.PREFERRED,
+        userVerification: UserVerification.PREFERRED,
       },
       {
-        userVerification: UserVerificationRequirement.DISCOURAGED,
+        userVerification: UserVerification.DISCOURAGED,
       },
     ])('With userVerification $userVerification', ({ userVerification }) => {
       test('should produce a verifiable assertion', async () => {
@@ -387,7 +387,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           });
 
         // Per spec, if userVerification is 'required', the UV flag must be set
-        if (userVerification === UserVerificationRequirement.REQUIRED) {
+        if (userVerification === UserVerification.REQUIRED) {
           expect(
             authenticationVerification.authenticationInfo.userVerified,
           ).toBe(true);
@@ -412,8 +412,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
               id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
-          userVerification:
-            'INVALID_USER_VERIFICATION' as UserVerificationRequirement,
+          userVerification: 'INVALID_USER_VERIFICATION' as UserVerification,
         },
       ) as unknown as PublicKeyCredentialRequestOptions;
 
@@ -457,7 +456,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
               id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
-          userVerification: UserVerificationRequirement.REQUIRED,
+          userVerification: UserVerification.REQUIRED,
         },
       );
 
@@ -495,7 +494,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
               id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
-          userVerification: UserVerificationRequirement.DISCOURAGED,
+          userVerification: UserVerification.DISCOURAGED,
         },
       );
 
@@ -1425,7 +1424,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
             id: webAuthnPublicKeyCredentialIdBytes,
           },
         ],
-        userVerification: UserVerificationRequirement.REQUIRED,
+        userVerification: UserVerification.REQUIRED,
         extensions: {
           appid: 'https://example.com/appid.json',
           largeBlob: {

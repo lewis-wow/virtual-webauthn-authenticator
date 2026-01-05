@@ -9,7 +9,7 @@ import {
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { UserVerificationRequirement } from '../../src/enums/UserVerificationRequirement';
+import { UserVerification } from '../../src/enums/UserVerification';
 import type {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
@@ -86,7 +86,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     requireUserVerification:
       requireUserVerification ??
       publicKeyCredentialCreationOptions.authenticatorSelection
-        ?.userVerification === UserVerificationRequirement.REQUIRED,
+        ?.userVerification === UserVerification.REQUIRED,
     requireUserPresence: requireUserPresence ?? true,
   });
 

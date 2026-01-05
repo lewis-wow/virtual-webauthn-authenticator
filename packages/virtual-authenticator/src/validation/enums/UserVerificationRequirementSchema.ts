@@ -1,10 +1,8 @@
 import z from 'zod';
 
-import { UserVerificationRequirement } from '../../enums/UserVerificationRequirement';
+import { UserVerification } from '../../enums/UserVerification';
 
-export const UserVerificationRequirementSchema = z
-  .enum(UserVerificationRequirement)
-  .meta({
-    id: 'UserVerificationRequirement',
-    examples: [UserVerificationRequirement.DISCOURAGED],
-  });
+export const UserVerificationRequirementSchema = z.enum(UserVerification).meta({
+  id: 'UserVerification',
+  examples: [UserVerification.DISCOURAGED],
+});

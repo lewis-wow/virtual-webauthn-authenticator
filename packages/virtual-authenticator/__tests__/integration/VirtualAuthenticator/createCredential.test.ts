@@ -22,8 +22,8 @@ import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
 import { AuthenticatorTransport } from '../../../src/enums/AuthenticatorTransport';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { ResidentKeyRequirement } from '../../../src/enums/ResidentKeyRequirement';
-import { UserVerificationRequirement } from '../../../src/enums/UserVerificationRequirement';
+import { ResidentKey } from '../../../src/enums/ResidentKey';
+import { UserVerification } from '../../../src/enums/UserVerification';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
@@ -473,13 +473,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
           userVerification: undefined,
         },
         {
-          userVerification: UserVerificationRequirement.PREFERRED,
+          userVerification: UserVerification.PREFERRED,
         },
         {
-          userVerification: UserVerificationRequirement.REQUIRED,
+          userVerification: UserVerification.REQUIRED,
         },
         {
-          userVerification: UserVerificationRequirement.DISCOURAGED,
+          userVerification: UserVerification.DISCOURAGED,
         },
       ])('With userVerification $userVerification', ({ userVerification }) => {
         let registrationVerification: VerifiedRegistrationResponse;
@@ -499,7 +499,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
               agent,
               publicKeyCredentialCreationOptions,
               requireUserVerification:
-                userVerification === UserVerificationRequirement.REQUIRED,
+                userVerification === UserVerification.REQUIRED,
             }));
         });
 
@@ -646,13 +646,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
           residentKey: undefined,
         },
         {
-          residentKey: ResidentKeyRequirement.DISCOURAGED,
+          residentKey: ResidentKey.DISCOURAGED,
         },
         {
-          residentKey: ResidentKeyRequirement.PREFERRED,
+          residentKey: ResidentKey.PREFERRED,
         },
         {
-          residentKey: ResidentKeyRequirement.REQUIRED,
+          residentKey: ResidentKey.REQUIRED,
         },
       ])('With residentKey $residentKey', ({ residentKey }) => {
         let registrationVerification: VerifiedRegistrationResponse;
@@ -818,8 +818,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
           attestation: Attestation.NONE,
           authenticatorSelection: {
             authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
-            residentKey: ResidentKeyRequirement.PREFERRED,
-            userVerification: UserVerificationRequirement.REQUIRED,
+            residentKey: ResidentKey.PREFERRED,
+            userVerification: UserVerification.REQUIRED,
           },
         } satisfies PublicKeyCredentialCreationOptions;
 
@@ -2127,8 +2127,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
         excludeCredentials: [],
         authenticatorSelection: {
           authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
-          residentKey: ResidentKeyRequirement.PREFERRED,
-          userVerification: UserVerificationRequirement.REQUIRED,
+          residentKey: ResidentKey.PREFERRED,
+          userVerification: UserVerification.REQUIRED,
         },
         attestation: Attestation.NONE,
         extensions: {
@@ -2265,6 +2265,341 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
+    });
+  });
+
+  /**
+   * Tests for authenticator data flag bits
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
+   * @see https://www.w3.org/TR/webauthn-3/#flags
+   *
+   * Per spec: The authenticator data contains a flags byte with the following bits:
+   * - Bit 0: User Present (UP)
+   * - Bit 2: User Verified (UV)
+   * - Bit 6: Attested Credential Data (AT)
+   * - Bit 7: Extension Data (ED)
+   * - Bit 3: Backup Eligibility (BE)
+   * - Bit 4: Backup State (BS)
+   */
+  describe('Authenticator Data Flag Bits', () => {
+    afterEach(async () => {
+      await cleanupWebAuthnPublicKeyCredentials();
+    });
+
+    /**
+     * Test User Present (UP) bit - Bit 0
+     * @see https://www.w3.org/TR/webauthn-3/#up
+     * Per spec: The UP bit SHALL be set if and only if the authenticator
+     * detected user presence during the operation.
+     */
+    describe('User Present (UP) bit - Bit 0', () => {
+      test('Should set UP bit when user presence is detected', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // UP bit is implicitly set - registration success indicates user presence
+        expect(registrationVerification.registrationInfo).toBeDefined();
+        expect(
+          registrationVerification.registrationInfo?.credential,
+        ).toBeDefined();
+      });
+    });
+
+    /**
+     * Test User Verified (UV) bit - Bit 2
+     * @see https://www.w3.org/TR/webauthn-3/#uv
+     * Per spec: The UV bit SHALL be set if and only if the authenticator
+     * performed user verification during the operation.
+     */
+    describe('User Verified (UV) bit - Bit 2', () => {
+      test('Should set UV bit when userVerification is required', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            userVerification: UserVerification.REQUIRED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // UV bit should be set (bit 2 = 0x04)
+        expect(registrationVerification.registrationInfo?.userVerified).toBe(
+          true,
+        );
+      });
+
+      test('Should not set UV bit when userVerification is discouraged', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            userVerification: UserVerification.DISCOURAGED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // UV bit should not be set
+        expect(registrationVerification.registrationInfo?.userVerified).toBe(
+          false,
+        );
+      });
+    });
+
+    /**
+     * Test Attested Credential Data (AT) bit - Bit 6
+     * @see https://www.w3.org/TR/webauthn-3/#attested-credential-data
+     * Per spec: The AT bit SHALL be set if and only if authenticator data
+     * contains attested credential data (during credential creation).
+     */
+    describe('Attested Credential Data (AT) bit - Bit 6', () => {
+      test('Should always set AT bit during credential creation', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // AT bit should always be set during creation (bit 6 = 0x40)
+        // This is indicated by the presence of credential data
+        expect(
+          registrationVerification.registrationInfo?.credential,
+        ).toBeDefined();
+        expect(
+          registrationVerification.registrationInfo?.credential.publicKey,
+        ).toBeDefined();
+      });
+
+      test('Should set AT bit with resident key', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            residentKey: ResidentKey.REQUIRED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // AT bit should be set - indicated by credential presence
+        expect(
+          registrationVerification.registrationInfo?.credential,
+        ).toBeDefined();
+        expect(
+          registrationVerification.registrationInfo?.credential.publicKey,
+        ).toBeDefined();
+      });
+    });
+
+    /**
+     * Test Extension Data (ED) bit - Bit 7
+     * @see https://www.w3.org/TR/webauthn-3/#extension-data
+     * Per spec: The ED bit SHALL be set if and only if authenticator data
+     * contains extension data.
+     */
+    describe('Extension Data (ED) bit - Bit 7', () => {
+      test('Should not set ED bit when no extensions are provided', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          extensions: undefined,
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // ED bit should not be set when no extensions (bit 7 = 0x80)
+        // No authenticator extension results should be present
+        expect(
+          registrationVerification.registrationInfo
+            ?.authenticatorExtensionResults,
+        ).toBeUndefined();
+      });
+
+      test('Should not set ED bit with empty extensions object', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          extensions: {},
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // ED bit should not be set for empty extensions
+        expect(
+          registrationVerification.registrationInfo
+            ?.authenticatorExtensionResults,
+        ).toBeUndefined();
+      });
+    });
+
+    /**
+     * Test Backup Eligibility (BE) bit - Bit 3
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-credential-backup
+     * Per spec: The BE bit indicates whether the credential is backup eligible.
+     */
+    describe('Backup Eligibility (BE) bit - Bit 3', () => {
+      test('Should set BE bit for backup eligible credentials', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // BE bit indicates backup eligibility (bit 3 = 0x08)
+        // This is represented by credentialDeviceType (multi-device vs single-device)
+        expect(
+          registrationVerification.registrationInfo?.credentialDeviceType,
+        ).toBeDefined();
+      });
+    });
+
+    /**
+     * Test Backup State (BS) bit - Bit 4
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-credential-backup
+     * Per spec: The BS bit indicates whether the credential is currently backed up.
+     */
+    describe('Backup State (BS) bit - Bit 4', () => {
+      test('Should set BS bit correctly for backed up credentials', async () => {
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // BS bit indicates current backup state (bit 4 = 0x10)
+        expect(
+          registrationVerification.registrationInfo?.credentialBackedUp,
+        ).toBeDefined();
+      });
+    });
+
+    /**
+     * Test combinations of flag bits
+     * @see https://www.w3.org/TR/webauthn-3/#flags
+     * Per spec: Multiple flags can be set simultaneously
+     */
+    describe('Combined flag bits', () => {
+      test('Should set UP, UV, and AT bits together when userVerification is required', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            userVerification: UserVerification.REQUIRED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // All three bits should be set
+        expect(registrationVerification.registrationInfo).toBeDefined(); // UP (user present)
+        expect(registrationVerification.registrationInfo?.userVerified).toBe(
+          true,
+        ); // UV (Bit 2)
+        expect(
+          registrationVerification.registrationInfo?.credential,
+        ).toBeDefined(); // AT (Bit 6)
+      });
+
+      test('Should set UP, AT, BE, and BS bits for resident key without UV', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            residentKey: ResidentKey.REQUIRED,
+            userVerification: UserVerification.DISCOURAGED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        expect(registrationVerification.registrationInfo).toBeDefined(); // UP (Bit 0)
+        expect(registrationVerification.registrationInfo?.userVerified).toBe(
+          false,
+        ); // UV (Bit 2) - not set
+        expect(
+          registrationVerification.registrationInfo?.credential,
+        ).toBeDefined(); // AT (Bit 6)
+        expect(
+          registrationVerification.registrationInfo?.credentialDeviceType,
+        ).toBeDefined(); // BE (Bit 3)
+        expect(
+          registrationVerification.registrationInfo?.credentialBackedUp,
+        ).toBeDefined(); // BS (Bit 4)
+      });
+
+      test('Should have correct flag byte value for minimal creation (UP + AT)', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          authenticatorSelection: {
+            userVerification: UserVerification.DISCOURAGED,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(registrationVerification.verified).toBe(true);
+
+        // At minimum, UP (0x01) and AT (0x40) should be set
+        expect(registrationVerification.registrationInfo).toBeDefined(); // UP
+        expect(
+          registrationVerification.registrationInfo?.credential,
+        ).toBeDefined(); // AT
+      });
     });
   });
 

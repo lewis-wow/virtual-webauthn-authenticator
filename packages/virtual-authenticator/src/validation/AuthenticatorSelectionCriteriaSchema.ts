@@ -32,7 +32,7 @@ export const AuthenticatorSelectionCriteriaSchema = z
     /**
      * Specifies the extent to which the Relying Party desires to create a client-side
      * discoverable credential. For historical reasons the naming retains the deprecated
-     * "resident" terminology. The value SHOULD be a member of ResidentKeyRequirement but
+     * "resident" terminology. The value SHOULD be a member of ResidentKey but
      * client platforms MUST ignore unknown values, treating an unknown value as if the
      * member does not exist.
      *
@@ -44,7 +44,7 @@ export const AuthenticatorSelectionCriteriaSchema = z
     /**
      * This member describes the Relying Party's requirements regarding user verification for the create() operation.
      * Eligible authenticators are filtered to only those capable of satisfying this requirement.
-     * The value SHOULD be a member of UserVerificationRequirement but client platforms MUST ignore unknown values,
+     * The value SHOULD be a member of UserVerification but client platforms MUST ignore unknown values,
      * treating an unknown value as if the member does not exist.
      */
     userVerification: UserVerificationRequirementSchema.optional(),

@@ -5,7 +5,7 @@ import type { ValueOfEnum } from '@repo/types';
  * but not for others, and may use this type to express its needs.
  * @see https://www.w3.org/TR/webauthn-3/#enum-userVerificationRequirement
  */
-export const UserVerificationRequirement = {
+export const UserVerification = {
   /**
    * The Relying Party requires user verification for the operation and will fail
    * the operation if the response does not have the UV flag set.
@@ -23,6 +23,4 @@ export const UserVerificationRequirement = {
   DISCOURAGED: 'discouraged',
 } as const;
 
-export type UserVerificationRequirement = ValueOfEnum<
-  typeof UserVerificationRequirement
->;
+export type UserVerification = ValueOfEnum<typeof UserVerification>;
