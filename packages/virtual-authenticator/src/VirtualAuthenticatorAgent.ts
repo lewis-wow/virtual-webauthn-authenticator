@@ -47,9 +47,9 @@ import {
   type CredentialRequestOptions,
 } from './validation/CredentialRequestOptionsSchema';
 import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialOrPublicKeyCredentialCandidateList } from './validation/PublicKeyCredentialOrPublicKeyCredentialCandidateListSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
-import type { VirtualAuthenticatorAgentGetAssertionPayload } from './validation/VirtualAuthenticatorAgentGetAssertionPayloadSchema';
 import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
 
 export type VirtualAuthenticatorAgentOptions = {
@@ -862,7 +862,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<VirtualAuthenticatorAgentGetAssertionPayload> {
+  }): Promise<PublicKeyCredentialOrPublicKeyCredentialCandidateList> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the

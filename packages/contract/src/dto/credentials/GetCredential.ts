@@ -1,7 +1,6 @@
-import { PublicKeyCredentialCandidateDtoSchema } from '@repo/virtual-authenticator/dto';
+import { PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema } from '@repo/virtual-authenticator/dto';
 import z from 'zod';
 
-import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDtoSchema';
 import { PublicKeyCredentialRequestOptionsDtoSchema } from './components/PublicKeyCredentialRequestOptionsDtoSchema';
 
 // =============================================================================
@@ -26,6 +25,5 @@ export const GetCredentialBodySchema = z.object({
 // Outputs
 // -------------------------------------
 
-export const GetCredentialResponseSchema = PublicKeyCredentialDtoSchema.or(
-  z.array(PublicKeyCredentialCandidateDtoSchema),
-);
+export const GetCredentialResponseSchema =
+  PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema;

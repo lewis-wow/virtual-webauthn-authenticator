@@ -1,9 +1,9 @@
 import { Exception } from '@repo/exception';
 import { omit } from '@repo/utils';
 import {
-  PublicKeyCredentialCandidateDtoSchema,
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialDtoSchema,
+  PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema,
   PublicKeyCredentialRequestOptionsDtoSchema,
 } from '@repo/virtual-authenticator/dto';
 import type {
@@ -158,9 +158,9 @@ export class VirtualAuthenticatorAgentClient {
     });
 
     const publicKeyCredentialOrPublicKeyCredentialCandidateList =
-      PublicKeyCredentialDtoSchema.or(
-        z.array(PublicKeyCredentialCandidateDtoSchema),
-      ).parse(json);
+      PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema.parse(
+        json,
+      );
 
     if (Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)) {
       return publicKeyCredentialOrPublicKeyCredentialCandidateList;

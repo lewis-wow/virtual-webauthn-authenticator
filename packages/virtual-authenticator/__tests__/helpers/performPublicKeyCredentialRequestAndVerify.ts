@@ -6,8 +6,8 @@ import {
 } from '@simplewebauthn/server';
 import { expect } from 'vitest';
 
-import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
+import { PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema } from '../../src/dto/PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema';
 import { UserVerification } from '../../src/enums/UserVerification';
 import type { PublicKeyCredentialRequestOptions } from '../../src/validation';
 import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
@@ -64,9 +64,10 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({
-    response: PublicKeyCredentialDtoSchema.encode(
-      publicKeyCredential,
-    ) as AuthenticationResponseJSON,
+    response:
+      PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema.encode(
+        publicKeyCredential,
+      ) as AuthenticationResponseJSON,
     expectedChallenge,
     expectedOrigin: RP_ORIGIN,
     expectedRPID: RP_ID,
