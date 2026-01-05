@@ -11,11 +11,11 @@ import { AuthenticatorTransportSchema } from './enums/AuthenticatorTransportSche
 export const AuthenticatorAttestationResponseSchema =
   AuthenticatorResponseSchema.extend({
     /**
-     * @see https://www.w3.org/TR/webauthn-2/#sctn-attestation-object
+     * @see https://www.w3.org/TR/webauthn-3/#attestation-object
      */
     attestationObject: BytesSchema.meta({
       description: `The attestation object is a CBOR-encoded object containing the authenticator data and the attestation statement. It is used by the Relying Party to verify the new credential and create a binding to the user account. ${see(
-        'https://www.w3.org/TR/webauthn-2/#sctn-attestation-object',
+        'https://www.w3.org/TR/webauthn-3/#attestation-object',
       )}`,
     }),
 

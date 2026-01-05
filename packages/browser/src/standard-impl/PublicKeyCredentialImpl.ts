@@ -33,7 +33,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
    * Converts the PublicKeyCredential to a JSON-serializable object.
    * This follows the WebAuthn Level 2 specification for credential serialization.
    *
-   * @see https://www.w3.org/TR/webauthn-2/#dom-publickeycredential-tojson
+   * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-tojson
    */
   toJSON(): PublicKeyCredentialJSON {
     const rawIdBytes = BytesMapper.arrayBufferToBytes(this.rawId);
@@ -112,7 +112,6 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
 
 /**
  * Type definition for the JSON representation of a PublicKeyCredential
- * @see https://www.w3.org/TR/webauthn-2/#dictdef-publickeycredentialjson
  */
 export interface PublicKeyCredentialJSON {
   id: string;
