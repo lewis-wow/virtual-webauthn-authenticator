@@ -8,7 +8,7 @@ import { GetCredentialBodySchema } from '@repo/contract/dto';
 import { UUIDMapper } from '@repo/core/mappers';
 import {
   PublicKeyCredentialType,
-  UserVerificationRequirement,
+  UserVerification,
 } from '@repo/virtual-authenticator/enums';
 import {
   AuthenticationResponseJSON,
@@ -82,7 +82,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     },
     requireUserVerification:
       payload.publicKeyCredentialRequestOptions.userVerification ===
-      UserVerificationRequirement.REQUIRED,
+      UserVerification.REQUIRED,
   });
 
   // The most important check: confirm that the authentication was successful.
@@ -94,6 +94,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   }
 
   expect(response.body).toStrictEqual({
+    authenticatorAttachment: 'platform',
     clientExtensionResults: {},
     id: expect.any(String),
     rawId: expect.any(String),

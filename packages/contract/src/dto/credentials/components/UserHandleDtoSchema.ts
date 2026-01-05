@@ -1,4 +1,4 @@
-import { UserHandleSchema } from '@repo/virtual-authenticator/zod-validation';
+import { UserHandleSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 export const UserHandleDtoSchema = z.codec(

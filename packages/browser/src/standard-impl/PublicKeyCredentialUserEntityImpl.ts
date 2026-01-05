@@ -1,14 +1,24 @@
-import { PublicKeyCredentialEntityImpl } from './PublicKeyCredentialEntityImpl';
+import {
+  PublicKeyCredentialEntityImpl,
+  type PublicKeyCredentialEntityImplOptions,
+} from './PublicKeyCredentialEntityImpl';
+
+export type PublicKeyCredentialUserEntityImplOptions =
+  PublicKeyCredentialEntityImplOptions & {
+    id: BufferSource;
+    displayName: string;
+  };
 
 export class PublicKeyCredentialUserEntityImpl
   extends PublicKeyCredentialEntityImpl
   implements PublicKeyCredentialUserEntity
 {
-  id: BufferSource;
-  displayName: string;
+  public readonly id: BufferSource;
+  public readonly displayName: string;
 
-  constructor(opts: { name: string; id: BufferSource; displayName: string }) {
-    super(opts.name);
+  constructor(opts: PublicKeyCredentialUserEntityImplOptions) {
+    super({ name: opts.name });
+
     this.id = opts.id;
     this.displayName = opts.displayName;
   }

@@ -15,7 +15,7 @@ import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
-} from '@repo/virtual-authenticator/zod-validation';
+} from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';

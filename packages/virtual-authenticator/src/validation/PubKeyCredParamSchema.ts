@@ -1,12 +1,12 @@
-import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
-import { Schema } from 'effect';
+import { COSEKeyAlgorithmSchema } from '@repo/keys/cose/validation';
+import z from 'zod';
 
 import { see } from '../meta/see';
 import { PublicKeyCredentialTypeSchema } from './enums/PublicKeyCredentialTypeSchema';
 
-const annotations = (identifier: string) => ({
-  identifier,
-  title: identifier,
+const meta = (id: string) => ({
+  id,
+  ref: 'PubKeyCredParamSchema',
   description: `Describes the cryptographic algorithms to be supported. ${see(
     'https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters',
   )}`,
@@ -17,22 +17,20 @@ const annotations = (identifier: string) => ({
  *
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters
  */
-export const PubKeyCredParamStrictSchema = Schema.Struct({
-  type: PublicKeyCredentialTypeSchema,
-  alg: COSEKeyAlgorithmSchema,
-}).annotations(annotations('PubKeyCredParamStrict'));
+export const PubKeyCredParamStrictSchema = z
+  .object({
+    type: PublicKeyCredentialTypeSchema,
+    alg: COSEKeyAlgorithmSchema,
+  })
+  .meta(meta('PubKeyCredParamStrict'));
 
-export type PubKeyCredParamStrict = Schema.Schema.Type<
-  typeof PubKeyCredParamStrictSchema
->;
+export type PubKeyCredParamStrict = z.infer<typeof PubKeyCredParamStrictSchema>;
 
-export const PubKeyCredParamLooseSchema = Schema.mutable(
-  Schema.Struct({
-    type: Schema.String,
-    alg: Schema.Number,
-  }),
-).annotations(annotations('PubKeyCredParamLoose'));
+export const PubKeyCredParamLooseSchema = z
+  .object({
+    type: z.string(),
+    alg: z.number(),
+  })
+  .meta(meta('PubKeyCredParamLoose'));
 
-export type PubKeyCredParamLoose = Schema.Schema.Type<
-  typeof PubKeyCredParamLooseSchema
->;
+export type PubKeyCredParamLoose = z.infer<typeof PubKeyCredParamLooseSchema>;

@@ -11,6 +11,7 @@ import type {
   AuthenticatorMakeCredentialPayload,
   IAuthenticator,
 } from './IAuthenticator';
+import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
@@ -23,24 +24,24 @@ import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublic
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
-} from './zod-validation/AuthenticatorContextArgsSchema';
+} from './validation/AuthenticatorContextArgsSchema';
 import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
-} from './zod-validation/AuthenticatorGetAssertionArgsSchema';
+} from './validation/AuthenticatorGetAssertionArgsSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
-} from './zod-validation/AuthenticatorMakeCredentialArgsSchema';
+} from './validation/AuthenticatorMakeCredentialArgsSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
-} from './zod-validation/AuthenticatorMetaArgsSchema';
+} from './validation/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
-} from './zod-validation/CredParamSchema';
+} from './validation/CredParamSchema';
 
 export type AuthenticatorBackendContext = {
   apiKeyId: string;
@@ -76,6 +77,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    */
   static readonly AAGUID = new Uint8Array(Buffer.alloc(16));
 
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#attestation-statement-format-identifier
+   */
   static readonly SUPPORTED_ATTESTATION_FORMATS: string[] = [
     Fmt.NONE,
     Fmt.PACKED,
@@ -125,18 +129,14 @@ export class VirtualAuthenticator implements IAuthenticator {
       VirtualAuthenticator.AAGUID,
       credentialIdLength,
       credentialID,
-      // The credential public key encoded in COSE_Key format, as defined
-      // in Section 7 of [RFC8152],
-      // using the CTAP2 canonical CBOR encoding form.
-      // The COSE_Key-encoded credential public key MUST contain the "alg" parameter
+      // The credential public key encoded in COSEKey format, as defined using the CTAP2 canonical CBOR encoding form.
+      // The COSEKey-encoded credential public key MUST contain the "alg" parameter
       // and MUST NOT contain any other OPTIONAL parameters.
       // The "alg" parameter MUST contain a COSEAlgorithm value.
       // The encoded credential public key MUST also contain any
       // additional REQUIRED parameters
-      // stipulated by the relevant key type specification, i.e., REQUIRED
-      // for the key type "kty"
-      // and algorithm "alg" (see Section 8 of [RFC8152]).
-      // Length (in bytes): {variable}
+      // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty" and algorithm "alg" (see Section 8 of https://datatracker.ietf.org/doc/html/rfc8152).
+      // Length (in bytes): L
       COSEPublicKey,
     ]);
 
@@ -170,12 +170,21 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Bit 0 (UP - User Present): Result of the user presence test
     // (1 = present, 0 = not present).
+    // @see https://www.w3.org/TR/webauthn-3/#concept-user-present
     // Bit 1 (RFU1): Reserved for future use.
     // Bit 2 (UV - User Verified): Result of the user verification test
     // (1 = verified, 0 = not verified).
-    // Bits 3-5 (RFU2): Reserved for future use.
+    // @see https://www.w3.org/TR/webauthn-3/#concept-user-verified
+    // Bit 3 (BE - Backup Eligibility): Indicates if the credential is
+    // eligible for backup/sync (1 = eligible, 0 = not eligible).
+    // @see https://www.w3.org/TR/webauthn-3/#backup-eligibility
+    // Bit 4 (BS - Backup State): Indicates if the credential is
+    // currently backed up (1 = backed up, 0 = not backed up).
+    // @see https://www.w3.org/TR/webauthn-3/#backup-state
+    // Bit 5 (RFU2): Reserved for future use.
     // Bit 6 (AT - Attested Credential Data Included): Indicates if
     // attested credential data is included.
+    // @see https://www.w3.org/TR/webauthn-3/#attested-credential-data
     // Bit 7 (ED - Extension data included): Indicates if extension data
     // is included in the authenticator data.
     // Length (in bytes): 1
@@ -195,6 +204,38 @@ export class VirtualAuthenticator implements IAuthenticator {
     if (shouldSetUserVerifiedFlag) {
       flagsInt |= 0b00000100;
     }
+
+    // BE and BS bits
+    // The value of the BE flag is set during authenticatorMakeCredential operation and MUST NOT change.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-credential-backup
+    // BE=0, BS=0: Single-device credential.
+    //   (e.g., A hardware key or TPM where the key never leaves the chip).
+    //
+    // BE=0, BS=1: INVALID / NOT ALLOWED.
+    //   (A credential cannot be "backed up" if it is not marked "eligible").
+    //
+    // BE=1, BS=0: Multi-device credential (Passkey), but NOT currently backed up.
+    //   (Sync is possible/supported, but currently disabled or inactive).
+    //
+    // BE=1, BS=1: Multi-device credential (Passkey) and currently backed up.
+    //   (The key is synced to the cloud/database and safe from device loss).
+
+    // Bit 3: (BE - Backup Eligibility)
+    // Backup eligibility is a credential property and is permanent for a given public key credential source.
+    // A backup eligible public key credential source is referred to as a multi-device credential
+    // whereas one that is not backup eligible is referred to as a single-device credential.
+    // NOTE: We set the 'Backup Eligibility' (BE) flag to 1.
+    // Since credentials are stored in a central database rather than
+    // on a specific device, they are effectively synced and recoverable.
+    flagsInt |= 0b00001000;
+
+    // Bit 4: (BS - Backup State)
+    // Public Key Credential Sources may be backed up in some fashion such that they may become
+    // present on an authenticator other than their generating authenticator.
+    // Backup can occur via mechanisms including but not limited to peer-to-peer sync, cloud sync, local network sync, and manual import/export.
+    // NOTE: We set this to 1 because the credential is immediately stored in a central
+    // database (cloud), meaning it is already "backed up" and safe from device loss.
+    flagsInt |= 0b00010000;
 
     // Bit 6: Attested Credential Data (AT)
     // Only set if we are creating a new credential (registration),
@@ -220,11 +261,13 @@ export class VirtualAuthenticator implements IAuthenticator {
         attestedCredentialData,
         // --- OPTIONAL CREDENTIALS --- (
         //    Extension-defined authenticator data.
-        //    This is a CBOR [RFC8949] map with extension identifiers as keys,
+        //    This is a CBOR map with extension identifiers as keys,
         //    and authenticator extension outputs as values.
-        //    @see https://www.w3.org/TR/webauthn-2/#sctn-extensions
         // )
-      ].filter((value) => value !== undefined),
+      ].filter((value) => {
+        // Non defined values should be ommited.
+        return value !== undefined;
+      }),
     );
 
     return new Uint8Array(authenticatorData);
@@ -232,7 +275,9 @@ export class VirtualAuthenticator implements IAuthenticator {
 
   /**
    * Creates data to be signed: concatenation of authData and clientDataHash.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * signature = Sign(privateKey, authenticatorData || clientDataHash)
+   *
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (Step 11)
    */
   private _createDataToSign(opts: {
     clientDataHash: Uint8Array;
@@ -249,9 +294,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    * Handles 'none' attestation (no attestation statement).
    * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
    */
-  private _handleAttestationNone(): Map<string, Uint8Array | number> {
+  private _handleAttestationNone(): IAttestationStatementMap {
     // For "none" attestation, the attestation statement is an empty CBOR map
-    const attStmt = new Map<string, Uint8Array | number>();
+    const attStmt = new Map<never, never>();
 
     return attStmt;
   }
@@ -266,7 +311,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       clientDataHash: Uint8Array;
       authData: Uint8Array;
     };
-  }): Promise<Map<string, Uint8Array | number>> {
+  }): Promise<IAttestationStatementMap> {
     const { webAuthnPublicKeyCredential, data } = opts;
 
     const dataToSign = this._createDataToSign(data);
@@ -287,7 +332,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     const attStmt = new Map<string, Uint8Array | number>([
       ['alg', alg],
       ['sig', new Uint8Array(signature)],
-    ]);
+    ]) as IAttestationStatementMap;
 
     return attStmt;
   }
@@ -330,11 +375,11 @@ export class VirtualAuthenticator implements IAuthenticator {
     attestationFormat: Fmt;
     authData: Uint8Array;
     hash: Uint8Array;
-  }): Promise<Map<string, unknown>> {
+  }): Promise<IAttestationObjectMap> {
     const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } =
       opts;
 
-    let attStmt: Map<string, Uint8Array | number>;
+    let attStmt: IAttestationStatementMap;
 
     switch (attestationFormat) {
       case Fmt.NONE:
@@ -352,13 +397,13 @@ export class VirtualAuthenticator implements IAuthenticator {
         throw new Error('Unsupported attestation format is used.');
     }
 
-    const attestationObject = new Map<string, unknown>([
+    const attestationObjectMap = new Map<string, unknown>([
       ['fmt', attestationFormat],
       ['attStmt', attStmt],
       ['authData', authData],
-    ]);
+    ]) as IAttestationObjectMap;
 
-    return attestationObject;
+    return attestationObjectMap;
   }
 
   /**

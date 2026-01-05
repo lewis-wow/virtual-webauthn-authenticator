@@ -5,7 +5,7 @@ import {
   randPastDate,
   randUuid,
 } from '@ngneat/falso';
-import { WebAuthnPublicKeyCredentialKeyVaultKeyMetaSchema } from '@repo/virtual-authenticator/zod-validation';
+import { WebAuthnPublicKeyCredentialKeyVaultKeyMetaSchema } from '@repo/virtual-authenticator/validation';
 
 import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
 

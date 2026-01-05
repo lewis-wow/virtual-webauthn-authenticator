@@ -1,13 +1,10 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { AuthenticatorAttachment } from '../../enums/AuthenticatorAttachment';
 
-export const AuthenticatorAttachmentSchema = Schema.Enums(
-  AuthenticatorAttachment,
-).pipe(
-  Schema.annotations({
-    identifier: 'AuthenticatorAttachment',
-    title: 'AuthenticatorAttachment',
+export const AuthenticatorAttachmentSchema = z
+  .enum(AuthenticatorAttachment)
+  .meta({
+    id: 'AuthenticatorAttachment',
     examples: [AuthenticatorAttachment.PLATFORM],
-  }),
-);
+  });

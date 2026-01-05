@@ -1,4 +1,4 @@
-import { WebAuthnPublicKeyCredentialBaseSchema } from '@repo/virtual-authenticator/zod-validation';
+import { WebAuthnPublicKeyCredentialBaseSchema } from '@repo/virtual-authenticator/validation';
 
 import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';

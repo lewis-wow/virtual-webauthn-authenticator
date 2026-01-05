@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import * as cbor from 'cbor2';
 import z from 'zod';
 
@@ -10,14 +10,17 @@ import type {
   IAuthenticator,
 } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
+import { AuthenticatorDataParser } from './cbor';
+import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
 import {
   Attestation,
   AuthenticatorAttachment,
+  AuthenticatorTransport,
   CollectedClientDataType,
   CredentialMediationRequirement,
   Fmt,
-  ResidentKeyRequirement,
-  UserVerificationRequirement,
+  ResidentKey,
+  UserVerification,
 } from './enums';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { CredentialNotFound } from './exceptions';
@@ -30,22 +33,22 @@ import type {
   PubKeyCredParam,
   PublicKeyCredentialDescriptor,
   PublicKeyCredentialRequestOptions,
-} from './zod-validation';
-import { AuthenticatorAgentContextArgsSchema } from './zod-validation/AuthenticatorAgentContextArgsSchema';
-import { AuthenticatorAgentMetaArgsSchema } from './zod-validation/AuthenticatorAgentMetaArgsSchema';
-import type { CollectedClientData } from './zod-validation/CollectedClientDataSchema';
+} from './validation';
+import { AuthenticatorAgentContextArgsSchema } from './validation/AuthenticatorAgentContextArgsSchema';
+import { AuthenticatorAgentMetaArgsSchema } from './validation/AuthenticatorAgentMetaArgsSchema';
+import type { CollectedClientData } from './validation/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
-} from './zod-validation/CredentialCreationOptionsSchema';
+} from './validation/CredentialCreationOptionsSchema';
 import {
   CredentialRequestOptionsSchema,
   type CredentialRequestOptions,
-} from './zod-validation/CredentialRequestOptionsSchema';
-import { PublicKeyCredentialCreationOptionsSchema } from './zod-validation/PublicKeyCredentialCreationOptionsSchema';
-import { PublicKeyCredentialRequestOptionsSchema } from './zod-validation/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './zod-validation/PublicKeyCredentialSchema';
-import { createOriginMatchesRpIdSchema } from './zod-validation/createOriginMatchesRpIdSchema';
+} from './validation/CredentialRequestOptionsSchema';
+import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
+import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
+import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
@@ -105,7 +108,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 1: If pkOptions.userVerification is set to required and the authenticator is not capable of performing user verification, return false.
     // Note: As we have single authenticator, we can throw UserVerificationNotAvailable error
     if (
-      pkOptions.userVerification === UserVerificationRequirement.REQUIRED &&
+      pkOptions.userVerification === UserVerification.REQUIRED &&
       meta.userVerificationEnabled === false
     ) {
       throw new UserVerificationNotAvailable();
@@ -212,9 +215,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   private _calculateEffectiveResidentKeyRequirement(opts: {
     authenticatorSelection:
       | {
-          residentKey?: ResidentKeyRequirement;
+          residentKey?: ResidentKey;
           requireResidentKey?: boolean;
-          userVerification?: UserVerificationRequirement;
+          userVerification?: UserVerification;
           authenticatorAttachment?: string;
         }
       | undefined;
@@ -223,18 +226,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // If pkOptions.authenticatorSelection.residentKey is present and set to
     // required
-    if (
-      authenticatorSelection?.residentKey === ResidentKeyRequirement.REQUIRED
-    ) {
+    if (authenticatorSelection?.residentKey === ResidentKey.REQUIRED) {
       // Let requireResidentKey be true.
       return true;
     }
 
     // If pkOptions.authenticatorSelection.residentKey is present and set to
     // preferred
-    if (
-      authenticatorSelection?.residentKey === ResidentKeyRequirement.PREFERRED
-    ) {
+    if (authenticatorSelection?.residentKey === ResidentKey.PREFERRED) {
       // If the authenticator is capable of client-side credential storage
       // modality
       // NOTE: Virtual authenticator is always capable of client-side
@@ -244,9 +243,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // If pkOptions.authenticatorSelection.residentKey is present and set to
     // discouraged
-    if (
-      authenticatorSelection?.residentKey === ResidentKeyRequirement.DISCOURAGED
-    ) {
+    if (authenticatorSelection?.residentKey === ResidentKey.DISCOURAGED) {
       // Let requireResidentKey be false.
       return false;
     }
@@ -266,13 +263,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    * @returns Boolean indicating whether user verification is required
    */
   private _calculateEffectiveUserVerificationRequirement(opts: {
-    userVerification: UserVerificationRequirement | undefined;
+    userVerification: UserVerification | undefined;
     userVerificationEnabled?: boolean;
   }): boolean {
     const { userVerification, userVerificationEnabled = true } = opts;
 
     // If pkOptions.authenticatorSelection.userVerification is set to required
-    if (userVerification === UserVerificationRequirement.REQUIRED) {
+    if (userVerification === UserVerification.REQUIRED) {
       // NOTE: Conditional mediation check skipped (not applicable to backend
       // authenticator)
       // If options.mediation is set to conditional and user verification
@@ -284,7 +281,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     }
 
     // If pkOptions.authenticatorSelection.userVerification is set to preferred
-    if (userVerification === UserVerificationRequirement.PREFERRED) {
+    if (userVerification === UserVerification.PREFERRED) {
       // If the authenticator is capable of user verification
       if (userVerificationEnabled) {
         // Let userVerification be true.
@@ -325,16 +322,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Decode the CBOR attestation object
     // Note: cbor.decode returns a Map when the CBOR data contains a map
-    const decodedAttestation = cbor.decode(attestationObjectResult);
-
-    // Ensure we're working with a Map (cbor2 should decode CBOR maps as
-    // JavaScript Maps)
-    const attestationObject =
-      decodedAttestation instanceof Map
-        ? decodedAttestation
-        : new Map(
-            Object.entries(decodedAttestation as Record<string, unknown>),
-          );
+    const attestationObject = cbor.decode<IAttestationObjectMap>(
+      attestationObjectResult,
+      { preferMap: true },
+    );
 
     // Step 22.SUCCESS.3.1: If
     // credentialCreationData.attestationConveyancePreferenceOption's value is
@@ -344,29 +335,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // non-identifying versions of the same:
 
       // Extract attestation object components
-      const fmt = attestationObject.get('fmt') as string;
+      const fmt = attestationObject.get('fmt');
       const attStmt = attestationObject.get('attStmt');
-      const authData = attestationObject.get('authData') as Uint8Array;
+      const authData = attestationObject.get('authData');
 
-      // Convert attStmt to Map if it's a plain object
-      const attStmtMap =
-        attStmt instanceof Map
-          ? attStmt
-          : new Map(Object.entries(attStmt as Record<string, unknown>));
+      const authDataParser = new AuthenticatorDataParser(authData);
 
       // Check if aaguid (in authData) is 16 zero bytes
-      // AAGUID is located at bytes 37-52 in authData (after rpIdHash
-      // [32 bytes], flags [1 byte], signCount [4 bytes])
-      const aaguidStartIndex = 37;
-      const aaguidEndIndex = 53;
-      const aaguid = authData.slice(aaguidStartIndex, aaguidEndIndex);
-      const isAaguidZeroed = aaguid.every((byte) => byte === 0);
+      const aaguid = authDataParser.getAaguid();
+      const isAaguidZeroed = !!aaguid?.every((byte) => byte === 0);
 
       // If the aaguid in the attested credential data is 16 zero bytes
       // and credentialCreationData.attestationObjectResult.fmt is "packed"
       // and x5c is absent
       const isSelfAttestation =
-        isAaguidZeroed && fmt === Fmt.PACKED && !attStmtMap.has('x5c');
+        isAaguidZeroed && fmt === Fmt.PACKED && !attStmt.has('x5c');
 
       // then self attestation is being used and no further action is needed.
       if (isSelfAttestation) {
@@ -375,7 +358,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
       // Otherwise: Set fmt to "none" and attStmt to empty CBOR map
       attestationObject.set('fmt', Fmt.NONE);
-      attestationObject.set('attStmt', new Map<string, unknown>());
+      attestationObject.set('attStmt', new Map<never, never>());
 
       // Re-encode the modified attestation object
       return new Uint8Array(cbor.encode(attestationObject));
@@ -823,15 +806,29 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 22.SUCCESS.3: Return the result of running constructCredentialAlg
     // with the current global object.
-    const pubKeyCred = {
+    const pubKeyCred: PublicKeyCredential = {
       id: Buffer.from(credentialId).toString('base64url'),
       rawId: credentialId,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: clientDataJSON,
         attestationObject: processedAttestationObject,
+        transports: [AuthenticatorTransport.INTERNAL],
       },
-      clientExtensionResults: {},
+      // A platform authenticator is attached using a client device-specific transport, called platform attachment, and is usually not removable from the client device.
+      // A public key credential bound to a platform authenticator is called a platform credential.
+
+      // A roaming authenticator is attached using cross-platform transports, called cross-platform attachment.
+      // Authenticators of this class are removable from, and can "roam" between, client devices.
+      // A public key credential bound to a roaming authenticator is called a roaming credential.
+
+      // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-attachment-modality
+      // NOTE: We use 'platform' because this authenticator is software-integrated
+      // and communicates directly with the client, acting like a built-in Passkey provider.
+      // Portability/Syncing is signaled via the 'Backup Eligible' (BE) flag in
+      // authenticatorData, not by setting the attachment to 'cross-platform'.
+      authenticatorAttachment: AuthenticatorAttachment.PLATFORM,
+      clientExtensionResults: credentialCreationData.clientExtensionResults,
     };
 
     // Step 22.SUCCESS.5: Return pubKeyCred.
@@ -1155,13 +1152,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 20.SUCCESS.6: Return the result of running constructAssertionAlg
     // with the current global object.
-    const pubKeyCred = {
+    const pubKeyCred: PublicKeyCredential = {
       id: Buffer.from(assertionCreationData.credentialIdResult).toString(
         'base64url',
       ),
       rawId: assertionCreationData.credentialIdResult,
-      // The AuthenticatorAttachment value matching the current authenticator attachment modality of authenticator.
-      authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON,
@@ -1169,8 +1164,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         signature,
         userHandle,
       },
+      // A platform authenticator is attached using a client device-specific transport, called platform attachment, and is usually not removable from the client device.
+      // A public key credential bound to a platform authenticator is called a platform credential.
+
+      // A roaming authenticator is attached using cross-platform transports, called cross-platform attachment.
+      // Authenticators of this class are removable from, and can "roam" between, client devices.
+      // A public key credential bound to a roaming authenticator is called a roaming credential.
+
+      // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-attachment-modality
+      // NOTE: We use 'platform' because this authenticator is software-integrated
+      // and communicates directly with the client, acting like a built-in Passkey provider.
+      // Portability/Syncing is signaled via the 'Backup Eligible' (BE) flag in
+      // authenticatorData, not by setting the attachment to 'cross-platform'.
+      authenticatorAttachment: AuthenticatorAttachment.PLATFORM,
       // NOTE: Extensions are not implemented.
-      clientExtensionResults: {},
+      clientExtensionResults: assertionCreationData.clientExtensionResults,
     };
 
     // Step 20.SUCCESS.7: For each remaining authenticator in issuedRequests

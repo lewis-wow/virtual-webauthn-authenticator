@@ -1,4 +1,4 @@
-import { PublicKeyCredentialDescriptorSchema } from '@repo/virtual-authenticator/zod-validation';
+import { PublicKeyCredentialDescriptorSchema } from '@repo/virtual-authenticator/validation';
 
 import { BytesBufferSourceSchemaCodec } from '../codecs/BytesBufferSourceSchemaCodec';
 

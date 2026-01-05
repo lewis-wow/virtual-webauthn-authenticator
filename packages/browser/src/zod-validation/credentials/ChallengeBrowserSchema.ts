@@ -1,5 +1,5 @@
 import { BytesMapper } from '@repo/core/mappers';
-import { ChallengeSchema } from '@repo/virtual-authenticator/zod-validation';
+import { ChallengeSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 import { ArrayBufferBrowserSchema } from '../ArrayBufferBrowserSchema';

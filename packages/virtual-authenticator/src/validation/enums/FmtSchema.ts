@@ -1,11 +1,8 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { Fmt } from '../../enums/Fmt';
 
-export const FmtSchema = Schema.Enums(Fmt).pipe(
-  Schema.annotations({
-    identifier: 'Fmt',
-    title: 'Fmt',
-    examples: [Fmt.NONE, Fmt.PACKED],
-  }),
-);
+export const FmtSchema = z.enum(Fmt).meta({
+  id: 'Fmt',
+  examples: [Fmt.NONE, Fmt.PACKED],
+});

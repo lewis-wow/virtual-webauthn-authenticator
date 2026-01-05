@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 
-import { JsonWebKey } from '../../src/JsonWebKey.js';
-import { COSEKeyMapper } from '../../src/mappers/COSEKeyMapper.js';
+import { COSEKey } from '../../src/cose/COSEKey';
+import { JsonWebKey } from '../../src/jwk/JsonWebKey';
+import { KeyMapper } from '../../src/shared/mappers/KeyMapper';
 
 // --- Test Data ---
 
@@ -37,32 +38,32 @@ const rsaPrivateKeyJwk = new JsonWebKey(rsaPrivateKeyData);
 
 // --- End Test Data ---
 
-describe('COSEKeyMapper', () => {
+describe('KeyMapper', () => {
   describe('JWK to COSE to JWK Round-trip', () => {
     describe('EC', () => {
       test('P-256 public key', () => {
-        const coseKey = COSEKeyMapper.jwkToCOSEKey(p256PublicKeyJwk);
-        const outputJwk = COSEKeyMapper.COSEKeyToJwk(coseKey);
+        const coseKey = KeyMapper.JWKToCOSE(p256PublicKeyJwk);
+        const outputJwk = KeyMapper.COSEToJWK(coseKey);
         expect(outputJwk).toMatchObject(p256PublicKeyData);
       });
 
       test('P-256 private key', () => {
-        const coseKey = COSEKeyMapper.jwkToCOSEKey(p256PrivateKeyJwk);
-        const outputJwk = COSEKeyMapper.COSEKeyToJwk(coseKey);
+        const coseKey = KeyMapper.JWKToCOSE(p256PrivateKeyJwk);
+        const outputJwk = KeyMapper.COSEToJWK(coseKey);
         expect(outputJwk).toMatchObject(p256PrivateKeyData);
       });
     });
 
     describe('RSA', () => {
       test('RSA public key', () => {
-        const coseKey = COSEKeyMapper.jwkToCOSEKey(rsaPublicKeyJwk);
-        const outputJwk = COSEKeyMapper.COSEKeyToJwk(coseKey);
+        const coseKey = KeyMapper.JWKToCOSE(rsaPublicKeyJwk);
+        const outputJwk = KeyMapper.COSEToJWK(coseKey);
         expect(outputJwk).toMatchObject(rsaPublicKeyData);
       });
 
       test('RSA private key', () => {
-        const coseKey = COSEKeyMapper.jwkToCOSEKey(rsaPrivateKeyJwk);
-        const outputJwk = COSEKeyMapper.COSEKeyToJwk(coseKey);
+        const coseKey = KeyMapper.JWKToCOSE(rsaPrivateKeyJwk);
+        const outputJwk = KeyMapper.COSEToJWK(coseKey);
         expect(outputJwk).toMatchObject(rsaPrivateKeyData);
       });
     });
@@ -71,19 +72,19 @@ describe('COSEKeyMapper', () => {
   describe('CBOR Round-trip', () => {
     test('should serialize and deserialize a private key', () => {
       // 1. Create COSEKey from a known JWK
-      const originalCoseKey = COSEKeyMapper.jwkToCOSEKey(p256PrivateKeyJwk);
+      const originalCoseKey = KeyMapper.JWKToCOSE(p256PrivateKeyJwk);
 
       // 2. Serialize to buffer
-      const buffer = COSEKeyMapper.COSEKeyToBytes(originalCoseKey);
+      const buffer = originalCoseKey.toBytes();
 
       // 3. Deserialize from buffer
-      const deserializedCoseKey = COSEKeyMapper.bytesToCOSEKey(buffer);
+      const deserializedCoseKey = COSEKey.fromBytes(buffer);
 
       // 4. Verify the internal map is identical
       expect(deserializedCoseKey.map).toEqual(originalCoseKey.map);
 
       // 5. Verify the deserialized key can be converted back to the original JWK
-      const outputJwk = COSEKeyMapper.COSEKeyToJwk(deserializedCoseKey);
+      const outputJwk = KeyMapper.COSEToJWK(deserializedCoseKey);
       expect(outputJwk).toMatchObject(p256PrivateKeyData);
     });
   });
@@ -95,7 +96,7 @@ describe('COSEKeyMapper', () => {
         k: 'some-key',
       } as unknown as JsonWebKey;
 
-      expect(() => COSEKeyMapper.jwkToCOSEKey(octJwk)).toThrow();
+      expect(() => KeyMapper.JWKToCOSE(octJwk)).toThrow();
     });
 
     test('should throw if alg cannot be inferred', () => {
@@ -103,7 +104,7 @@ describe('COSEKeyMapper', () => {
         kty: 'EC',
         crv: 'invalid-curve',
       } as unknown as JsonWebKey;
-      expect(() => COSEKeyMapper.jwkToCOSEKey(jwk)).toThrow();
+      expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
     });
 
     test('should throw for EC key with missing x', () => {
@@ -112,7 +113,7 @@ describe('COSEKeyMapper', () => {
         crv: 'P-256',
         y: p256PublicKeyData.y,
       });
-      expect(() => COSEKeyMapper.jwkToCOSEKey(jwk)).toThrow();
+      expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
     });
 
     test('should throw for EC key with missing y', () => {
@@ -121,7 +122,7 @@ describe('COSEKeyMapper', () => {
         crv: 'P-256',
         x: p256PublicKeyData.x,
       });
-      expect(() => COSEKeyMapper.jwkToCOSEKey(jwk)).toThrow();
+      expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
     });
 
     test('should throw for RSA key with missing n', () => {
@@ -129,7 +130,7 @@ describe('COSEKeyMapper', () => {
         kty: 'RSA',
         e: rsaPublicKeyData.e,
       });
-      expect(() => COSEKeyMapper.jwkToCOSEKey(jwk)).toThrow();
+      expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
     });
 
     test('should throw for RSA key with missing e', () => {
@@ -137,7 +138,7 @@ describe('COSEKeyMapper', () => {
         kty: 'RSA',
         n: rsaPublicKeyData.n,
       });
-      expect(() => COSEKeyMapper.jwkToCOSEKey(jwk)).toThrow();
+      expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
     });
   });
 });

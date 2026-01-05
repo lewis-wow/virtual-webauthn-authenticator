@@ -1,11 +1,8 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
 import { Attestation } from '../../enums/Attestation';
 
-export const AttestationSchema = Schema.Enums(Attestation).pipe(
-  Schema.annotations({
-    identifier: 'Attestation',
-    title: 'Attestation',
-    examples: [Attestation.NONE],
-  }),
-);
+export const AttestationSchema = z.enum(Attestation).meta({
+  id: 'Attestation',
+  examples: [Attestation.NONE],
+});

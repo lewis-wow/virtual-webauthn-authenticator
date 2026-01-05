@@ -1,7 +1,11 @@
-export class PublicKeyCredentialEntityImpl {
+export type PublicKeyCredentialEntityImplOptions = {
   name: string;
+};
 
-  constructor(name: string) {
-    this.name = name;
+export class PublicKeyCredentialEntityImpl {
+  public readonly name: string;
+
+  constructor(opts: PublicKeyCredentialEntityImplOptions) {
+    this.name = opts.name;
   }
 }

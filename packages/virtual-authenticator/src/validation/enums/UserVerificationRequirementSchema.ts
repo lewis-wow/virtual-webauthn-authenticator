@@ -1,13 +1,8 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
-import { UserVerificationRequirement } from '../../enums/UserVerificationRequirement';
+import { UserVerification } from '../../enums/UserVerification';
 
-export const UserVerificationRequirementSchema = Schema.Enums(
-  UserVerificationRequirement,
-).pipe(
-  Schema.annotations({
-    identifier: 'UserVerificationRequirement',
-    title: 'UserVerificationRequirement',
-    examples: [UserVerificationRequirement.DISCOURAGED],
-  }),
-);
+export const UserVerificationRequirementSchema = z.enum(UserVerification).meta({
+  id: 'UserVerification',
+  examples: [UserVerification.DISCOURAGED],
+});

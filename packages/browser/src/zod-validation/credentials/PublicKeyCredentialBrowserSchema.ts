@@ -1,4 +1,4 @@
-import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/zod-validation';
+import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/validation';
 import { z } from 'zod';
 
 import { BytesArrayBufferBrowserSchemaCodec } from '../codecs/BytesArrayBufferBrowserSchemaCodec';

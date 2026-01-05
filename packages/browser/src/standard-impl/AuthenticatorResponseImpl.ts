@@ -1,7 +1,11 @@
-export class AuthenticatorResponseImpl implements AuthenticatorResponse {
-  readonly clientDataJSON: ArrayBuffer;
+export type AuthenticatorResponseImplOptions = {
+  clientDataJSON: ArrayBuffer;
+};
 
-  constructor(clientDataJSON: ArrayBuffer) {
-    this.clientDataJSON = clientDataJSON;
+export class AuthenticatorResponseImpl implements AuthenticatorResponse {
+  public readonly clientDataJSON: ArrayBuffer;
+
+  constructor(opts: AuthenticatorResponseImplOptions) {
+    this.clientDataJSON = opts.clientDataJSON;
   }
 }

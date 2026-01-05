@@ -4,18 +4,23 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./enums": "./src/enums/index.ts",
-    "./exceptions": "./src/exceptions/index.ts",
-    "./mappers": "./src/mappers/index.ts",
-    "./validation": "./src/validation/index.ts",
-    "./zod-validation": "./src/zod-validation/index.ts",
+    "./cose": "./src/cose/index.ts",
+    "./cose/enums": "./src/cose/enums/index.ts",
+    "./cose/validation": "./src/cose/validation/index.ts",
+    "./cose/exceptions": "./src/cose/exceptions/index.ts",
+    "./cose/mappers": "./src/cose/mappers/index.ts",
+    "./cose/cbor": "./src/cose/cbor/index.ts",
+    "./jwk": "./src/jwk/index.ts",
+    "./jwk/enums": "./src/jwk/enums/index.ts",
+    "./jwk/validation": "./src/jwk/validation/index.ts",
+    "./jwk/exceptions": "./src/jwk/exceptions/index.ts",
+    "./shared": "./src/shared/index.ts",
+    "./shared/enums": "./src/shared/enums/index.ts",
+    "./shared/exceptions": "./src/shared/exceptions/index.ts",
+    "./shared/mappers": "./src/shared/mappers/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
-    "build": "run-p barrel:*",
-    "barrel:validation": "../../scripts/barrel.ts ./src/validation",
-    "barrel:zod-validation": "../../scripts/barrel.ts ./src/zod-validation",
     "test": "vitest run --config __tests__/vitest.config.ts",
     "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
     "lint": "eslint .",
@@ -39,7 +44,6 @@
     "cbor2": "^2.0.1",
     "effect": "^3.19.4",
     "ts-pattern": "^5.8.0",
-    "uint8array-extras": "^1.5.0",
     "zod": "^4.1.12"
   }
 }

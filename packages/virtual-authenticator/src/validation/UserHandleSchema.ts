@@ -1,9 +1,9 @@
-import { Schema } from 'effect';
+import type z from 'zod';
 
 import { see } from '../meta/see';
 import { BytesSchema } from './BytesSchema';
 
-/**
+/**d
  * This attribute contains the **user handle** returned from the authenticator,
  * or `null` if the authenticator did not return a user handle.
  *
@@ -16,17 +16,17 @@ import { BytesSchema } from './BytesSchema';
  *
  * @see https://www.w3.org/TR/webauthn/#user-handle
  */
-export const UserHandleSchema = BytesSchema.pipe(
-  Schema.filter((buf) => buf.length <= 64, {
-    message: () => 'User handle must not exceed 64 bytes in length.',
-  }),
-  Schema.annotations({
-    identifier: 'UserHandle',
-    title: 'UserHandle',
+export const UserHandleSchema = BytesSchema.nullable()
+  .meta({
+    id: 'UserHandle',
+    ref: 'UserHandle',
     description: `The user handle for the assertion (max 64 bytes). ${see(
       'https://www.w3.org/TR/webauthn/#user-handle',
     )}`,
-  }),
-);
+  })
+  .refine((buf) => buf === null || buf.length <= 64, {
+    message: 'User handle must not exceed 64 bytes in length.',
+    path: ['length'],
+  });
 
-export type UserHandle = Schema.Schema.Type<typeof UserHandleSchema>;
+export type UserHandle = z.infer<typeof UserHandleSchema>;

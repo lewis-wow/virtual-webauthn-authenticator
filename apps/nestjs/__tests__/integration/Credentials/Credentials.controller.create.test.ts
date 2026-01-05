@@ -16,17 +16,17 @@ import { JwtAudience, JwtIssuer } from '@repo/auth';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
 import { ExceptionMapper } from '@repo/exception/mappers';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import {
   Attestation,
   PublicKeyCredentialType,
-  UserVerificationRequirement,
+  UserVerification,
 } from '@repo/virtual-authenticator/enums';
 import {
   AttestationNotSupported,
   UserNotExists,
 } from '@repo/virtual-authenticator/exceptions';
-import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/zod-validation';
+import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
 import { randomBytes } from 'node:crypto';
 import { afterEach } from 'node:test';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';
@@ -54,7 +54,7 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
       { alg: COSEKeyAlgorithm.ES256, type: PublicKeyCredentialType.PUBLIC_KEY },
     ],
     authenticatorSelection: {
-      userVerification: UserVerificationRequirement.REQUIRED,
+      userVerification: UserVerification.REQUIRED,
     },
   },
   meta: {

@@ -1,10 +1,10 @@
 export class AuthenticatorAssertionResponseImpl
   implements AuthenticatorAssertionResponse
 {
-  clientDataJSON: ArrayBuffer;
-  authenticatorData: ArrayBuffer;
-  signature: ArrayBuffer;
-  userHandle: ArrayBuffer | null;
+  public readonly clientDataJSON: ArrayBuffer;
+  public readonly authenticatorData: ArrayBuffer;
+  public readonly signature: ArrayBuffer;
+  public readonly userHandle: ArrayBuffer | null;
 
   constructor(opts: {
     clientDataJSON: ArrayBuffer;

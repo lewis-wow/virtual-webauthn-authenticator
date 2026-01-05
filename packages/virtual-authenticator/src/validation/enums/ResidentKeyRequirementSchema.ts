@@ -1,13 +1,8 @@
-import { Schema } from 'effect';
+import z from 'zod';
 
-import { ResidentKeyRequirement } from '../../enums/ResidentKeyRequirement';
+import { ResidentKey } from '../../enums/ResidentKey';
 
-export const ResidentKeyRequirementSchema = Schema.Enums(
-  ResidentKeyRequirement,
-).pipe(
-  Schema.annotations({
-    identifier: 'ResidentKeyRequirement',
-    title: 'ResidentKeyRequirement',
-    examples: [ResidentKeyRequirement.REQUIRED],
-  }),
-);
+export const ResidentKeyRequirementSchema = z.enum(ResidentKey).meta({
+  id: 'ResidentKey',
+  examples: [ResidentKey.REQUIRED],
+});

@@ -7,7 +7,7 @@ import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { UUIDMapper } from '@repo/core/mappers';
 import {
   PublicKeyCredentialType,
-  UserVerificationRequirement,
+  UserVerification,
 } from '@repo/virtual-authenticator/enums';
 import {
   type RegistrationResponseJSON,
@@ -58,7 +58,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     expectedRPID: RP_ID,
     requireUserVerification:
       payload.publicKeyCredentialCreationOptions.authenticatorSelection
-        ?.userVerification === UserVerificationRequirement.REQUIRED,
+        ?.userVerification === UserVerification.REQUIRED,
     requireUserPresence: true,
   });
 
@@ -66,12 +66,14 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   expect(verification.registrationInfo?.credential.counter).toBe(0);
 
   expect(response.body).toStrictEqual({
+    authenticatorAttachment: 'platform',
     clientExtensionResults: {},
     id: expect.any(String),
     rawId: expect.any(String),
     response: {
       attestationObject: expect.any(String),
       clientDataJSON: expect.any(String),
+      transports: ['internal'],
     },
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });

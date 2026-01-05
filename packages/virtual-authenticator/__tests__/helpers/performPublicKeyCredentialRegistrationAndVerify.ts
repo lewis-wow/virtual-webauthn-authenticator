@@ -9,13 +9,13 @@ import {
 
 import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { UserVerificationRequirement } from '../../src/enums/UserVerificationRequirement';
+import { UserVerification } from '../../src/enums/UserVerification';
 import type {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
-} from '../../src/zod-validation';
-import type { AuthenticatorAgentContextArgs } from '../../src/zod-validation/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorAgentMetaArgs } from '../../src/zod-validation/AuthenticatorAgentMetaArgsSchema';
+} from '../../src/validation';
+import type { AuthenticatorAgentContextArgs } from '../../src/validation/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../../src/validation/AuthenticatorAgentMetaArgsSchema';
 import { RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
@@ -86,7 +86,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     requireUserVerification:
       requireUserVerification ??
       publicKeyCredentialCreationOptions.authenticatorSelection
-        ?.userVerification === UserVerificationRequirement.REQUIRED,
+        ?.userVerification === UserVerification.REQUIRED,
     requireUserPresence: requireUserPresence ?? true,
   });
 

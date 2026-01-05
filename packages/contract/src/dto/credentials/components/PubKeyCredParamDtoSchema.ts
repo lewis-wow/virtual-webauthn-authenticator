@@ -1,3 +1,3 @@
-import { PubKeyCredParamStrictSchema } from '@repo/virtual-authenticator/zod-validation';
+import { PubKeyCredParamStrictSchema } from '@repo/virtual-authenticator/validation';
 
 export const PubKeyCredParamDtoSchema = PubKeyCredParamStrictSchema;
