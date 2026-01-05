@@ -1,7 +1,6 @@
+import { BytesSchemaCodec } from '@repo/core/zod-validation';
+import { DateSchemaCodec } from '@repo/core/zod-validation';
 import { WebAuthnPublicKeyCredentialBaseSchema } from '@repo/virtual-authenticator/validation';
-
-import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
-import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
 
 export const WebAuthnPublicKeyCredentialBaseDtoSchema =
   WebAuthnPublicKeyCredentialBaseSchema.extend({

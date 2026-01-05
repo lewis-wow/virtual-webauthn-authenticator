@@ -1,7 +1,7 @@
+import { BytesSchemaCodec } from '@repo/core/zod-validation';
 import { PublicKeyCredentialSchema } from '@repo/virtual-authenticator/validation';
 import { z } from 'zod';
 
-import { BytesSchemaCodec } from '../../codecs/BytesSchemaCodec';
 import { AuthenticatorAssertionResponseDtoSchema } from './AuthenticatorAssertionResponseDtoSchema';
 import { AuthenticatorAttestationResponseDtoSchema } from './AuthenticatorAttestationResponseDtoSchema';
 
