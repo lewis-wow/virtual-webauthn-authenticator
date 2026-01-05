@@ -76,6 +76,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    */
   static readonly AAGUID = new Uint8Array(Buffer.alloc(16));
 
+  /**
+   * @see https://www.w3.org/TR/webauthn-3/#attestation-statement-format-identifier
+   */
   static readonly SUPPORTED_ATTESTATION_FORMATS: string[] = [
     Fmt.NONE,
     Fmt.PACKED,
