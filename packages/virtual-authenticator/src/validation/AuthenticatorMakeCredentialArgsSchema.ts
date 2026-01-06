@@ -181,6 +181,24 @@ export const AuthenticatorMakeCredentialArgsSchema = z
      * Optional
      */
     extensions: z.record(z.string(), z.unknown()).optional(),
+
+    /**
+     * UNMAPPED CTAP FIELDS:
+     *
+     * The following fields from the CTAP2 authenticatorMakeCredential specification are not
+     * directly mapped to this WebAuthn schema:
+     *
+     * - pinUvAuthParam (0x08)
+     *   CTAP Data type: Byte String
+     *   Description: First 16 bytes of HMAC-SHA-256 of clientDataHash using pinUvAuthToken which
+     *   platform got from the authenticator. When sent, the authenticator verifies pinUvAuthParam
+     *   and returns an error if verification fails. Not required when requireUserVerification is false.
+     *
+     * - pinUvAuthProtocol (0x09)
+     *   CTAP Data type: Unsigned Integer
+     *   Description: PIN/UV protocol version chosen by the platform. Required when pinUvAuthParam
+     *   is present.
+     */
   })
   .meta({
     id: 'AuthenticatorMakeCredentialArgs',
