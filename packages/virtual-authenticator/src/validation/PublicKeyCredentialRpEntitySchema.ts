@@ -11,7 +11,7 @@ import { RpIdSchema } from './RpIdSchema';
  */
 export const PublicKeyCredentialRpEntitySchema =
   PublicKeyCredentialEntitySchema.extend({
-    id: RpIdSchema.optional().meta({
+    id: RpIdSchema.meta({
       description:
         "A unique identifier for the Relying Party entity, which sets the RP ID. If omitted, its value will be the origin's effective domain.",
       examples: ['example.com'],

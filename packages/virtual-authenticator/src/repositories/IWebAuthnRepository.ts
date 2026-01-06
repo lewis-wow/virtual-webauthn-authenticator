@@ -8,6 +8,7 @@ export type CreateKeyVaultDataArgs = {
   rpId: string;
   userId: string;
   apiKeyId: string | null;
+  isClientSideDiscoverable: boolean;
 } & {
   webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
     keyVaultKeyId: string | null;

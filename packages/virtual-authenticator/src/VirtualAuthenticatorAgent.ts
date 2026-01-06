@@ -733,7 +733,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // credTypesAndPubKeyAlgs, excludeCredentialDescriptorList,
     // enterpriseAttestationPossible, and authenticatorExtensions as
     // parameters.
-    const { credentialId, attestationObject } =
+    const { attestationObject, credentialId } =
       await this.authenticator.authenticatorMakeCredential({
         authenticatorMakeCredentialArgs: {
           hash: clientDataHash,
@@ -743,7 +743,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           },
           userEntity: pkOptions.user,
           requireResidentKey,
-          requireUserPresence: meta.userPresenceEnabled !== false,
+          requireUserPresence: true,
           requireUserVerification,
           credTypesAndPubKeyAlgs,
           excludeCredentialDescriptorList,

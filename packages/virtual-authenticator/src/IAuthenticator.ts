@@ -11,7 +11,10 @@ import type { PublicKeyCredentialCandidate } from './validation/PublicKeyCredent
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
  */
 export type AuthenticatorMakeCredentialPayload = {
-  /** The credential ID of the newly created credential */
+  /**
+   * The credential ID of the newly created credential
+   * NOTE: This field is not defined by the standard, it is for simplicity and to not require parsing the attestationObject in VirtualAuthenticatorAgent.
+   */
   credentialId: Uint8Array;
   /**
    * The attestation object containing the authenticator data and
@@ -82,6 +85,7 @@ export interface IAuthenticator {
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
   authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
@@ -93,6 +97,7 @@ export interface IAuthenticator {
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
   authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;

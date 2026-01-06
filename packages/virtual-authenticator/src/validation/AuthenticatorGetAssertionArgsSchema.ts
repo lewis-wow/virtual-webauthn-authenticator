@@ -12,30 +12,49 @@ import { RpIdSchema } from './RpIdSchema';
  * generation operation as defined in the WebAuthn Level 3 specification.
  *
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+ * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
+ *
+ * NOTE: This object is using the WebAuthn specification defintion.
+ * The CTAP2 and WebAuthn definition of this object can be mapped.
+ * Descriptions of the fields are from CTAP specification.
+ * Field names are from WebAuthn specification.
  */
 export const AuthenticatorGetAssertionArgsSchema = z
   .object({
     /**
-     * The hash of the serialized client data, provided by the client.
+     * Hash of the serialized client data collected by the host.
+     *
+     * Correspoding parameter name: clientDataHash (0x02)
+     * CTAP Data type: Byte String
+     * Required
      */
     hash: BytesSchema.meta({
-      description: 'The hash of the serialized client data (SHA-256).',
+      description: 'Hash of the serialized client data collected by the host.',
     }),
 
     /**
      * The caller's RP ID, as determined by the user agent and the client.
+     *
+     * Correspoding parameter name: rpId (0x01)
+     * CTAP Data type: String
+     * Required
      */
     rpId: RpIdSchema.meta({
       description: "The Relying Party's identifier.",
     }),
 
     /**
-     * An OPTIONAL list of PublicKeyCredentialDescriptor objects provided by the
-     * Relying Party with the intention that, if present, only credentials matching
-     * this list should be used.
+     * An array of PublicKeyCredentialDescriptor structures, each denoting a credential.
+     * A platform MUST NOT send an empty allowList—if it would be empty it MUST be omitted.
+     * If this parameter is present the authenticator MUST only generate an assertion using one of the denoted credentials.
+     *
+     * Correspoding parameter name: allowList (0x03)
+     * CTAP Data type: PublicKeyCredentialDescriptor[]
+     * Optional
      */
     allowCredentialDescriptorList: z
       .array(PublicKeyCredentialDescriptorSchema)
+      .min(1)
       .optional()
       .meta({
         description:
@@ -43,31 +62,33 @@ export const AuthenticatorGetAssertionArgsSchema = z
       }),
 
     /**
-     * A CBOR map from extension identifiers to their authenticator extension inputs,
-     * created by the client based on the extensions requested by the Relying Party,
-     * if any.
+     * Parameters to influence authenticator operation.
+     * These parameters might be authenticator specific.
+     *
+     * Correspoding parameter name: extensions (0x04)
+     * CTAP Data type: CBOR map of extension identifier -> authenticator extension input values
+     * Optional
      */
-    extensions: z.record(z.string(), z.unknown()).optional().meta({
-      description:
-        'Optional CBOR map of extension identifiers to authenticator extension inputs.',
-    }),
+    extensions: z.record(z.string(), z.unknown()).optional(),
 
     /**
-     * The constant Boolean value true.
-     * It is included here as a pseudo-parameter to
-     * simplify applying this abstract authenticator model
-     * to implementations that may wish to make a test
-     * of user presence optional although WebAuthn does not.
+     * Instructs the authenticator to require user consent to complete the operation.
+     *
+     * Correspoding parameter name: options.up (0x05)
+     * Default value: true
      */
-    requireUserPresence: z.boolean().meta({
+    requireUserPresence: z.boolean().default(true).meta({
       description: 'Whether user presence verification is required.',
     }),
 
     /**
-     * A Boolean value that indicates whether user verification is required for this
-     * assertion.
+     * If true, instructs the authenticator to require a user-verifying gesture in order to complete the request.
+     * Examples of such gestures are fingerprint scan or a PIN.
+     *
+     * Correspoding parameter name: options.uv (0x05) or pinUvAuthParam (0x06)
+     * Default value: false
      */
-    requireUserVerification: z.boolean().meta({
+    requireUserVerification: z.boolean().default(false).meta({
       description: 'Whether user verification is required.',
     }),
   })

@@ -1,9 +1,9 @@
 import z from 'zod';
 
-import { PublicKeyCredentialType } from '../enums';
 import { see } from '../meta/see';
 import { BytesSchema } from './BytesSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
+import { PublicKeyCredentialParametersSchema } from './PublicKeyCredentialParametersSchema';
 import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema';
 import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema';
 
@@ -14,93 +14,122 @@ import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEn
  * creation operation as defined in the WebAuthn Level 3 specification.
  *
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+ * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
+ *
+ * NOTE: This object is using the WebAuthn specification defintion.
+ * The CTAP2 and WebAuthn definition of this object can be mapped.
+ * Descriptions of the fields are from CTAP specification.
+ * Field names are from WebAuthn specification.
  */
 export const AuthenticatorMakeCredentialArgsSchema = z
   .object({
     /**
-     * The hash of the serialized client data, provided by the client.
+     * Hash of the ClientData contextual binding specified by host.
+     *
+     * Corresponding parameter name: clientDataHash (0x01)
+     * CTAP Data type: Byte String
+     * Required
      */
     hash: BytesSchema.meta({
-      description: 'The hash of the serialized client data (SHA-256).',
+      description:
+        'Hash of the ClientData contextual binding specified by host.',
     }),
 
     /**
-     * The Relying Party's PublicKeyCredentialRpEntity.
+     * This PublicKeyCredentialRpEntity data structure describes a Relying Party with which the new public key credential will be associated.
+     *
+     * Corresponding parameter name: rp (0x02)
+     * CTAP Data type: PublicKeyCredentialRpEntity
+     * Required
      */
-    rpEntity: PublicKeyCredentialRpEntitySchema.extend({ id: z.string() }).meta(
-      {
-        description: "The Relying Party's entity information.",
-      },
-    ),
+    rpEntity: PublicKeyCredentialRpEntitySchema.meta({
+      description: "The Relying Party's entity information.",
+    }),
 
     /**
-     * The user account's PublicKeyCredentialUserEntity, containing the user handle
-     * given by the Relying Party.
+     * The authenticator associates the created public key credential with the account identifier,
+     * and MAY also associate any or all of the user name, and user display name.
+     * The user name and display name are OPTIONAL for privacy reasons for single-factor scenarios where only user presence is required.
+     *
+     * Corresponding parameter name: name (0x03)
+     * CTAP Data type: PublicKeyCredentialUserEntity
+     * Required
      */
     userEntity: PublicKeyCredentialUserEntitySchema.meta({
       description: "The user account's entity information.",
     }),
 
     /**
-     * The effective resident key requirement for credential creation, a Boolean value
-     * determined by the client.
+     * Specifies whether this credential is to be discoverable or not.
+     *
+     * Corresponding parameter name: options.rk (0x07)
+     * Default value: false
      */
-    requireResidentKey: z.boolean().meta({
+    requireResidentKey: z.boolean().default(false).meta({
       description:
-        'Whether the authenticator must store a client-side discoverable credential.',
+        'Specifies whether this credential is to be discoverable or not.',
     }),
 
     /**
-     * The constant Boolean value true, or FALSE when options.mediation is set to
-     * conditional and the user agent previously collected consent from the user.
+     * Instructs the authenticator to require user consent to complete the operation.
+     * Platforms MAY send the "up" option key to CTAP2.1 authenticators, and its value MUST be true if present.
+     *
+     * Corresponds to parameter: options.up (0x07)
+     * Default value: true
      */
-    requireUserPresence: z.boolean().meta({
+    requireUserPresence: z.literal(true).default(true).meta({
       description: 'Whether user presence verification is required.',
     }),
 
     /**
-     * The effective user verification requirement for credential creation, a Boolean
-     * value determined by the client.
+     * If true, instructs the authenticator to require a user-verifying gesture in order to complete the request.
+     * Examples of such gestures are fingerprint scan or a PIN.
+     *
+     * Corresponding parameter name: options.uv (0x07) or pinUvAuthParam (0x08)
+     * Default value: false
      */
-    requireUserVerification: z.boolean().meta({
+    requireUserVerification: z.boolean().default(false).meta({
       description: 'Whether user verification is required.',
     }),
 
     /**
-     * A sequence of pairs of PublicKeyCredentialType and public key algorithms
-     * (COSEAlgorithmIdentifier) requested by the Relying Party. This sequence is
-     * ordered from most preferred to least preferred. The authenticator makes a
-     * best-effort to create the most preferred credential that it can.
+     * List of supported algorithms for credential generation.
+     * The array is ordered from most preferred to least preferred and MUST NOT include duplicate entries.
+     * PublicKeyCredentialParameters' algorithm identifiers are values that SHOULD be registered in the IANA COSE Algorithms registry.
+     *
+     * Corresponding parameter name: pubKeyCredParams (0x04)
+     * CTAP Data type: PublicKeyCredentialParameters[]
+     * Required
      */
     credTypesAndPubKeyAlgs: z
-      .array(
-        z
-          .object({
-            type: z.enum(PublicKeyCredentialType).meta({
-              description: 'PublicKeyCredentialType (e.g., "public-key")',
-            }),
-            alg: z.number().meta({
-              description: 'COSEAlgorithmIdentifier (e.g., -7 for ES256)',
-            }),
-          })
-          .meta({
-            description:
-              'A pair of credential type and public key algorithm identifier.',
-          }),
+      .array(PublicKeyCredentialParametersSchema)
+      .refine(
+        (items) => {
+          // Map to the specific ID property (alg) to check for duplicates
+          const algs = new Set(items.map((item) => item.alg));
+          return algs.size === items.length;
+        },
+        {
+          message: 'The array MUST NOT include duplicate entries.',
+        },
       )
       .meta({
-        description:
-          'Ordered list of credential type and algorithm pairs, from most to least preferred.',
+        description: 'List of supported algorithms for credential generation.',
       }),
 
     /**
-     * An OPTIONAL list of PublicKeyCredentialDescriptor objects provided by the
-     * Relying Party with the intention that, if any of these are known to the
-     * authenticator, it SHOULD NOT create a new credential. excludeCredentialDescriptorList
-     * contains a list of known credentials.
+     * An array of PublicKeyCredentialDescriptor structures.
+     * The authenticator returns an error if the authenticator already contains one of the credentials enumerated in this array.
+     * This allows RPs to limit the creation of multiple credentials for the same account on a single authenticator.
+     * If this parameter is present, it MUST NOT be empty.
+     *
+     * Corresponding parameter name: excludeList (0x05)
+     * CTAP Data type: PublicKeyCredentialDescriptor[]
+     * Optional
      */
     excludeCredentialDescriptorList: z
       .array(PublicKeyCredentialDescriptorSchema)
+      .min(1)
       .optional()
       .meta({
         description:
@@ -108,19 +137,35 @@ export const AuthenticatorMakeCredentialArgsSchema = z
       }),
 
     /**
-     * A Boolean value that indicates that individually-identifying attestation MAY
-     * be returned by the authenticator.
+     * An authenticator supporting this enterprise attestation feature is enterprise attestation
+     * capable and signals its support via the ep Option ID in the authenticatorGetInfo command response.
+     *
+     * If the enterpriseAttestation parameter is absent, attestation’s privacy characteristics are unaffected,
+     * regardless of whether the enterprise attestation feature is presently enabled.
+     *
+     * If present with a valid value, the usual privacy concerns around attestation batching may not
+     * apply to the results of this operation and the platform is requesting an enterprise attestation
+     * that includes uniquely identifying information.
+     *
+     * Correspoding parameter name: enterpriseAttestation (0x0A)
+     * CTAP Data type: Unsigned Integer
+     * Optional
      */
-    enterpriseAttestationPossible: z.boolean().meta({
+    enterpriseAttestationPossible: z.boolean().optional().meta({
       description:
         'Whether enterprise (individually-identifying) attestation is permitted.',
     }),
 
     /**
-     * A sequence of strings that expresses the Relying Party's preference for
-     * attestation statement formats, from most to least preferable. If the
-     * authenticator returns attestation, then it makes a best-effort attempt to use
-     * the most preferable format that it supports.
+     * A prioritized list of attestation statement format identifiers that the client and/or RP prefers.
+     * Authenticators that support multiple formats may use this list to select a format compatible with the caller.
+     * Clients may request omission of attestation by including a single element with the string value "none".
+     *
+     * Correspoding parameter name: attestationFormatsPreference (0x0B)
+     * CTAP Data type: String[]
+     * Optional
+     *
+     * NOTE: We do not allow to omit this field.
      */
     attestationFormats: z.array(z.string()).meta({
       description:
@@ -128,14 +173,14 @@ export const AuthenticatorMakeCredentialArgsSchema = z
     }),
 
     /**
-     * A CBOR map from extension identifiers to their authenticator extension inputs,
-     * created by the client based on the extensions requested by the Relying Party,
-     * if any.
+     * Parameters to influence authenticator operation.
+     * These parameters might be authenticator specific.
+     *
+     * Corresponding parameter name: extensions (0x06)
+     * CTAP Data type: CBOR map of extension identifier -> authenticator extension input values
+     * Optional
      */
-    extensions: z.record(z.string(), z.unknown()).optional().meta({
-      description:
-        'Optional CBOR map of extension identifiers to authenticator extension inputs.',
-    }),
+    extensions: z.record(z.string(), z.unknown()).optional(),
   })
   .meta({
     id: 'AuthenticatorMakeCredentialArgs',
