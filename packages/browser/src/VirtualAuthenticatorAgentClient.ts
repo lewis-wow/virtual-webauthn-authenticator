@@ -176,7 +176,8 @@ export class VirtualAuthenticatorAgentClient {
       response: this._createResponseImpl(
         publicKeyCredentialOrApplicablePublicKeyCredentialsList.response,
       ),
-      authenticatorAttachment: null,
+      authenticatorAttachment:
+        publicKeyCredentialOrApplicablePublicKeyCredentialsList.authenticatorAttachment,
       clientExtensionResults:
         publicKeyCredentialOrApplicablePublicKeyCredentialsList.clientExtensionResults,
     });
