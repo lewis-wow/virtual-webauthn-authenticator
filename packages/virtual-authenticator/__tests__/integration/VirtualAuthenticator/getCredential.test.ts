@@ -19,9 +19,9 @@ import {
   test,
 } from 'vitest';
 
-import { PublicKeyCredentialDtoSchema } from '../../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { PublicKeyCredentialDtoSchema } from '../../../src/dto/PublicKeyCredentialDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
@@ -109,6 +109,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
+
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
       },
       context: {
         apiKeyId: null,

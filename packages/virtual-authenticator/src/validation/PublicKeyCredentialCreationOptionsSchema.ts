@@ -6,7 +6,7 @@ import { AuthenticatorSelectionCriteriaSchema } from './AuthenticatorSelectionCr
 import { ChallengeSchema } from './ChallengeSchema';
 import { PubKeyCredParamLooseSchema } from './PubKeyCredParamSchema';
 import { PublicKeyCredentialDescriptorSchema } from './PublicKeyCredentialDescriptorSchema';
-import { PublicKeyCredentialRpEntitySchema } from './PublicKeyCredentialRpEntitySchema';
+import { PublicKeyCredentialRpEntityOptionsSchema } from './PublicKeyCredentialRpEntityOptionsSchema';
 import { PublicKeyCredentialUserEntitySchema } from './PublicKeyCredentialUserEntitySchema';
 import { AttestationSchema } from './enums/AttestationSchema';
 
@@ -18,7 +18,7 @@ import { AttestationSchema } from './enums/AttestationSchema';
  */
 export const PublicKeyCredentialCreationOptionsSchema = z
   .object({
-    rp: PublicKeyCredentialRpEntitySchema,
+    rp: PublicKeyCredentialRpEntityOptionsSchema,
     user: PublicKeyCredentialUserEntitySchema,
     challenge: ChallengeSchema,
     // Per spec step 10: if empty array, ES256 (-7) and RS256 (-257) are used as defaults

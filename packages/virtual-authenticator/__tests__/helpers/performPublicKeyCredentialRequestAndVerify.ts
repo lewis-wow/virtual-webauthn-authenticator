@@ -7,7 +7,7 @@ import {
 import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema } from '../../src/dto/PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema';
+import { PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema } from '../../src/dto/PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema';
 import { UserVerification } from '../../src/enums/UserVerification';
 import type { PublicKeyCredentialRequestOptions } from '../../src/validation';
 import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
@@ -57,6 +57,9 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     meta: {
       userId,
       origin,
+
+      userPresenceEnabled: true,
+      userVerificationEnabled: true,
     },
     context: {
       apiKeyId: null,
@@ -65,7 +68,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
   const authenticationVerification = await verifyAuthenticationResponse({
     response:
-      PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema.encode(
+      PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema.encode(
         publicKeyCredential,
       ) as AuthenticationResponseJSON,
     expectedChallenge,

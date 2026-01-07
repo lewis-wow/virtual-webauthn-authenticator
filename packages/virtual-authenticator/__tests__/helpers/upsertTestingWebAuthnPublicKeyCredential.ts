@@ -33,6 +33,7 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
       COSEPublicKey: COSEPublicKey.toBytes(),
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
+      isClientSideDiscoverable: true,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         create: {
           id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,

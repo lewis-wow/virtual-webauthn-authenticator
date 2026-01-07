@@ -4,21 +4,16 @@ import { see } from '../meta/see';
 import { PublicKeyCredentialEntitySchema } from './PublicKeyCredentialEntitySchema';
 import { UserIdSchema } from './UserIdSchema';
 
-// Represents the user creating the credential
-
 /**
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialuserentity
  */
 export const PublicKeyCredentialUserEntitySchema =
   PublicKeyCredentialEntitySchema.extend({
     id: UserIdSchema,
-    displayName: z
-      .string()
-      .optional()
-      .meta({
-        description: "A human-friendly name for the user's account.",
-        examples: ['John Doe'],
-      }),
+    displayName: z.string().meta({
+      description: "A human-friendly name for the user's account.",
+      examples: ['John Doe'],
+    }),
   }).meta({
     id: 'PublicKeyCredentialUserEntity',
     ref: 'PublicKeyCredentialUserEntity',

@@ -7,8 +7,8 @@ import {
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
 
-import { PublicKeyCredentialDtoSchema } from '../../../contract/src/dto/credentials/components/PublicKeyCredentialDtoSchema';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
+import { PublicKeyCredentialDtoSchema } from '../../src/dto/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../src/enums/UserVerification';
 import type {
   PublicKeyCredential,
@@ -63,6 +63,9 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     meta: {
       userId: USER_ID,
       origin: RP_ORIGIN,
+
+      userPresenceEnabled: true,
+      userVerificationEnabled: true,
       ...meta,
     },
     context: {
