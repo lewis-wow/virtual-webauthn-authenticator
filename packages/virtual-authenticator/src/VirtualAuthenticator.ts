@@ -725,6 +725,11 @@ export class VirtualAuthenticator implements IAuthenticator {
     //     For each key → credSource of this authenticator's credentials map, append credSource to credentialOptions.
     // NOTE: Implemented via repository query with optional allowCredentialDescriptorList filter.
 
+    // NOTE: All credentials created by this authenticator are client-side discoverable!
+    // This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
+    // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
+    // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
+
     // Step 5: Filter by rpId
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
     //   NOTE: Implemented as part of the repository query filter.
@@ -753,11 +758,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     //   If requireUserVerification is true, the authorization gesture MUST include user verification.
     //   If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     //   If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    //   NOTE (OUTDATED!): User prompts and gestures are not applicable to a backend virtual authenticator for testing.
+    //   TODO: NOTE (OUTDATED!): User prompts and gestures are not applicable to a backend virtual authenticator for testing.
     //   The implementation automatically selects the first matching credential. User verification and presence
     //   checks are handled later in Step 10 during authenticatorData creation.
 
     if (credentialOptions.length > 1) {
+      // Prompt user to select credential.
       return credentialOptions;
     }
 
