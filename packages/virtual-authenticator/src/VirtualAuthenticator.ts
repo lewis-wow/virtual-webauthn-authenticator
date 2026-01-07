@@ -26,12 +26,18 @@ import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
 } from './validation/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorGetAssertionResponse } from './validation/AuthenticatorGetAssertionResponseSchema';
+import {
+  AuthenticatorGetAssertionResponseSchema,
+  type AuthenticatorGetAssertionResponse,
+} from './validation/AuthenticatorGetAssertionResponseSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
 } from './validation/AuthenticatorMakeCredentialArgsSchema';
-import type { AuthenticatorMakeCredentialResponse } from './validation/AuthenticatorMakeCredentialResponseSchema';
+import {
+  AuthenticatorMakeCredentialResponseSchema,
+  type AuthenticatorMakeCredentialResponse,
+} from './validation/AuthenticatorMakeCredentialResponseSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
@@ -652,11 +658,18 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     const attestationObjectCborEncoded = cbor.encode(attestationObject);
 
-    // Return the attestation object to the client
-    return {
+    const authenticatorMakeCredentialResponse = {
       credentialId: rawCredentialId,
       attestationObject: attestationObjectCborEncoded,
     };
+
+    assertSchema(
+      authenticatorMakeCredentialResponse,
+      AuthenticatorMakeCredentialResponseSchema,
+    );
+
+    // Return the attestation object to the client
+    return authenticatorMakeCredentialResponse;
   }
 
   /**
@@ -742,7 +755,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     //   NOTE (OUTDATED!): User prompts and gestures are not applicable to a backend virtual authenticator for testing.
     //   The implementation automatically selects the first matching credential. User verification and presence
     //   checks are handled later in Step 10 during authenticatorData creation.
-    return credentialOptions;
+
+    if (credentialOptions.length > 1) {
+      return credentialOptions;
+    }
+
+    const selectedCredential = credentialOptions[0]!;
 
     // Step 8: Let processedExtensions be the result of authenticator extension processing for each supported extension identifier → authenticator extension input in extensions.
     // NOTE: Extension processing is skipped.
@@ -755,7 +773,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     //   The counter is incremented by 1 for each assertion operation.
     const webAuthnPublicKeyCredentialWithMeta =
       await this.webAuthnRepository.incrementCounter({
-        credentialId: '',
+        credentialId: selectedCredential.id,
       });
 
     // Step 10: Let authenticatorData be the byte array specified in §6.1 Authenticator Data
@@ -809,12 +827,19 @@ export class VirtualAuthenticator implements IAuthenticator {
       webAuthnPublicKeyCredentialWithMeta.userId,
     );
 
-    return {
+    const authenticatorGetAssertionResponse = {
       credentialId,
       authenticatorData,
       signature,
       userHandle,
     };
+
+    assertSchema(
+      authenticatorGetAssertionResponse,
+      AuthenticatorGetAssertionResponseSchema,
+    );
+
+    return authenticatorGetAssertionResponse;
   }
 
   public async authenticatorCancel() {
