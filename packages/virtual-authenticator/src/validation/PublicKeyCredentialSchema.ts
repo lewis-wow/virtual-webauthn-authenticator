@@ -36,7 +36,7 @@ export const PublicKeyCredentialSchema = CredentialSchema.extend({
    *
    * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-attachment-modality
    */
-  authenticatorAttachment: AuthenticatorAttachmentSchema.optional(),
+  authenticatorAttachment: AuthenticatorAttachmentSchema.nullable(),
   clientExtensionResults: AuthenticationExtensionsClientOutputsSchema,
 }).meta({
   id: 'PublicKeyCredential',

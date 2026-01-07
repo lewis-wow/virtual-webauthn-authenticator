@@ -136,7 +136,7 @@ export class VirtualAuthenticatorAgentClient {
       id: publicKeyCredential.id,
       rawId: publicKeyCredential.rawId.slice().buffer,
       response: this._createResponseImpl(publicKeyCredential.response),
-      authenticatorAttachment: null,
+      authenticatorAttachment: publicKeyCredential.authenticatorAttachment,
       clientExtensionResults: publicKeyCredential.clientExtensionResults,
     });
   }
