@@ -2,7 +2,7 @@ import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAg
 import type { AuthenticatorAgentMetaArgs } from './validation/AuthenticatorAgentMetaArgsSchema';
 import type { CredentialCreationOptions } from './validation/CredentialCreationOptionsSchema';
 import type { CredentialRequestOptions } from './validation/CredentialRequestOptionsSchema';
-import type { PublicKeyCredentialOrPublicKeyCredentialCandidateList } from './validation/PublicKeyCredentialOrApplicablePublicKeyCredentialsListSchema';
+import type { PublicKeyCredentialOrApplicablePublicKeyCredentialsList } from './validation/PublicKeyCredentialOrApplicablePublicKeyCredentialsListSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 
 /**
@@ -51,5 +51,5 @@ export interface IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<PublicKeyCredentialOrPublicKeyCredentialCandidateList>;
+  }): Promise<PublicKeyCredentialOrApplicablePublicKeyCredentialsList>;
 }

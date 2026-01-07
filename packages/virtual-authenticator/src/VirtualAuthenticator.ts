@@ -739,7 +739,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
     //   NOTE: Implemented as part of the repository query filter.
     const credentialOptions =
-      await this.webAuthnRepository.findAllCredentialCandidatesByRpIdAndUserWithAllowCredentialDescriptorList(
+      await this.webAuthnRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
         {
           userId: meta.userId,
           rpId,

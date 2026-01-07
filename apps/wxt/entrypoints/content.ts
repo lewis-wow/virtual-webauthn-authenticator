@@ -69,20 +69,20 @@ export default defineContentScript({
     mainWorldMessaging.onMessage('credentials.get', async (req) => {
       console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
 
-      const publicKeyCredentialOrPublicKeyCredentialCandidateList =
+      const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
         await extensionMessaging.sendMessage('credentials.get', req.data);
 
       if (
-        Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)
+        Array.isArray(publicKeyCredentialOrApplicablePublicKeyCredentialsList)
       ) {
         console.log(
           `[${LOG_PREFIX}] Multiple credentials found, showing selector...`,
-          publicKeyCredentialOrPublicKeyCredentialCandidateList,
+          publicKeyCredentialOrApplicablePublicKeyCredentialsList,
         );
 
         // Show credential selector and wait for user choice
         const selectedCredential = await selectCredential(
-          publicKeyCredentialOrPublicKeyCredentialCandidateList,
+          publicKeyCredentialOrApplicablePublicKeyCredentialsList,
         );
 
         if (!selectedCredential) {
@@ -100,15 +100,15 @@ export default defineContentScript({
         // For now, we return the array as before, but the UI selection is logged.
         // This is a UI-only implementation that needs backend integration to be functional.
 
-        return publicKeyCredentialOrPublicKeyCredentialCandidateList;
+        return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
       }
 
       console.log(
         `[${LOG_PREFIX}] PublicKeyCredential`,
-        publicKeyCredentialOrPublicKeyCredentialCandidateList,
+        publicKeyCredentialOrApplicablePublicKeyCredentialsList,
       );
 
-      return publicKeyCredentialOrPublicKeyCredentialCandidateList;
+      return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
     });
   },
 });

@@ -7,7 +7,7 @@ import { ApiKeyNotExists } from '../exceptions/ApiKeyNotExists';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { UserNotExists } from '../exceptions/UserNotExists';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import type { PublicKeyCredentialCandidate } from '../validation/ApplicablePublicKeyCredentialSchema';
+import type { ApplicablePublicKeyCredential } from '../validation';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,
@@ -53,12 +53,12 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     return webAuthnPublicKeyCredentialWithMetaList as WebAuthnPublicKeyCredentialWithMeta[];
   }
 
-  async findAllCredentialCandidatesByRpIdAndUserWithAllowCredentialDescriptorList(opts: {
+  async findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(opts: {
     rpId: string;
     userId: string;
     apiKeyId: string | null;
     allowCredentialDescriptorList: string[] | undefined;
-  }): Promise<PublicKeyCredentialCandidate[]> {
+  }): Promise<ApplicablePublicKeyCredential[]> {
     const { rpId, userId, apiKeyId } = opts;
 
     assertSchema(rpId, z.string());

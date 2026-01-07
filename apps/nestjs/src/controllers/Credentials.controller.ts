@@ -99,6 +99,9 @@ export class CredentialsController {
             meta: {
               origin: meta.origin,
               userId: userId,
+
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
             },
             context: {
               apiKeyId: apiKeyId,
@@ -136,7 +139,7 @@ export class CredentialsController {
           userId: userId,
         });
 
-        const publicKeyCredentialOrPublicKeyCredentialCandidateList =
+        const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
           await this.virtualAuthenticatorAgent.getAssertion({
             origin: meta.origin,
             options: {
@@ -149,17 +152,20 @@ export class CredentialsController {
             meta: {
               origin: meta.origin,
               userId: userId,
+
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
             },
             context: { apiKeyId },
           });
 
         if (
-          Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)
+          Array.isArray(publicKeyCredentialOrApplicablePublicKeyCredentialsList)
         ) {
           return {
             status: 200,
             body: GetCredentialResponseSchema.encode(
-              publicKeyCredentialOrPublicKeyCredentialCandidateList,
+              publicKeyCredentialOrApplicablePublicKeyCredentialsList,
             ),
           };
         }
@@ -167,14 +173,14 @@ export class CredentialsController {
         await this._auditCredentialAction({
           action: LogAction.GET,
           publicKeyCredentialRawId:
-            publicKeyCredentialOrPublicKeyCredentialCandidateList.rawId,
+            publicKeyCredentialOrApplicablePublicKeyCredentialsList.rawId,
           jwtPayload,
         });
 
         return {
           status: 200,
           body: GetCredentialResponseSchema.encode(
-            publicKeyCredentialOrPublicKeyCredentialCandidateList,
+            publicKeyCredentialOrApplicablePublicKeyCredentialsList,
           ),
         };
       },

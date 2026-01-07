@@ -3,13 +3,13 @@ import { omit } from '@repo/utils';
 import {
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialDtoSchema,
-  PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema,
+  PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema,
   PublicKeyCredentialRequestOptionsDtoSchema,
 } from '@repo/virtual-authenticator/dto';
 import type {
+  ApplicablePublicKeyCredential,
   AuthenticatorAssertionResponse,
   AuthenticatorAttestationResponse,
-  PublicKeyCredentialCandidate,
 } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
@@ -143,7 +143,7 @@ export class VirtualAuthenticatorAgentClient {
 
   async getAssertion(
     opts?: CredentialRequestOptions,
-  ): Promise<PublicKeyCredential | PublicKeyCredentialCandidate[]> {
+  ): Promise<PublicKeyCredential | ApplicablePublicKeyCredential[]> {
     const publicKeyCredentialRequestOptionsBrowser =
       PublicKeyCredentialRequestOptionsBrowserSchema.parse(opts?.publicKey);
 
@@ -157,26 +157,28 @@ export class VirtualAuthenticatorAgentClient {
       publicKeyCredentialRequestOptions,
     });
 
-    const publicKeyCredentialOrPublicKeyCredentialCandidateList =
-      PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema.parse(
+    const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
+      PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema.parse(
         json,
       );
 
-    if (Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)) {
-      return publicKeyCredentialOrPublicKeyCredentialCandidateList;
+    if (
+      Array.isArray(publicKeyCredentialOrApplicablePublicKeyCredentialsList)
+    ) {
+      return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
     }
 
     return new PublicKeyCredentialImpl({
-      id: publicKeyCredentialOrPublicKeyCredentialCandidateList.id,
+      id: publicKeyCredentialOrApplicablePublicKeyCredentialsList.id,
       rawId:
-        publicKeyCredentialOrPublicKeyCredentialCandidateList.rawId.slice()
+        publicKeyCredentialOrApplicablePublicKeyCredentialsList.rawId.slice()
           .buffer,
       response: this._createResponseImpl(
-        publicKeyCredentialOrPublicKeyCredentialCandidateList.response,
+        publicKeyCredentialOrApplicablePublicKeyCredentialsList.response,
       ),
       authenticatorAttachment: null,
       clientExtensionResults:
-        publicKeyCredentialOrPublicKeyCredentialCandidateList.clientExtensionResults,
+        publicKeyCredentialOrApplicablePublicKeyCredentialsList.clientExtensionResults,
     });
   }
 }

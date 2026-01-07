@@ -25,9 +25,9 @@ export default defineBackground(() => {
     const virtualAuthenticatorAgentClient =
       await getVirtualAuthenticatorAgentClient();
 
-    const publicKeyCredentialOrPublicKeyCredentialCandidateList =
+    const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
       await virtualAuthenticatorAgentClient.getAssertion(req.data);
 
-    return publicKeyCredentialOrPublicKeyCredentialCandidateList;
+    return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
   });
 });

@@ -6,11 +6,7 @@ import { AuthenticatorMetaArgsSchema } from './AuthenticatorMetaArgsSchema';
 export const AuthenticatorAgentMetaArgsSchema =
   AuthenticatorMetaArgsSchema.safeExtend({
     origin: OriginSchema,
-
     allowWeakChallenges: z.boolean().optional(),
-    userVerificationEnabled: z.boolean().optional(),
-    userPresenceEnabled: z.boolean().optional(),
-
     crossOrigin: z.boolean().optional(),
     // topOrigin is set only if crossOrigin is true
     // @see https://www.w3.org/TR/webauthn-3/#dom-collectedclientdata-toporigin

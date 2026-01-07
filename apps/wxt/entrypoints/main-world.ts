@@ -24,18 +24,20 @@ export default defineUnlistedScript(() => {
   navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
     console.log(`[${LOG_PREFIX}] Intercepted navigator.credentials.get`, opts);
 
-    const publicKeyCredentialOrPublicKeyCredentialCandidateList =
+    const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
       await mainWorldMessaging.sendMessage('credentials.get', opts);
 
-    if (Array.isArray(publicKeyCredentialOrPublicKeyCredentialCandidateList)) {
+    if (
+      Array.isArray(publicKeyCredentialOrApplicablePublicKeyCredentialsList)
+    ) {
       return null;
     }
 
     console.log(
       `[${LOG_PREFIX}] PublicKeyCredential`,
-      publicKeyCredentialOrPublicKeyCredentialCandidateList,
+      publicKeyCredentialOrApplicablePublicKeyCredentialsList,
     );
 
-    return publicKeyCredentialOrPublicKeyCredentialCandidateList;
+    return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
   };
 });

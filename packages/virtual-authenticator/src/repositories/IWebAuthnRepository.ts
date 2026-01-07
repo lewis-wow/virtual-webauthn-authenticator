@@ -1,5 +1,5 @@
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import type { PublicKeyCredentialCandidate } from '../validation/ApplicablePublicKeyCredentialSchema';
+import type { ApplicablePublicKeyCredential } from '../validation/ApplicablePublicKeyCredentialSchema';
 
 export type CreateKeyVaultDataArgs = {
   id: string;
@@ -27,12 +27,12 @@ export interface IWebAuthnRepository {
     credentialIds: string[];
   }): Promise<WebAuthnPublicKeyCredentialWithMeta[]>;
 
-  findAllCredentialCandidatesByRpIdAndUserWithAllowCredentialDescriptorList(opts: {
+  findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(opts: {
     rpId: string;
     userId: string;
     apiKeyId: string | null;
     allowCredentialDescriptorList: string[] | undefined;
-  }): Promise<PublicKeyCredentialCandidate[]>;
+  }): Promise<ApplicablePublicKeyCredential[]>;
 
   incrementCounter(opts: {
     credentialId: string;
