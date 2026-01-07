@@ -18,6 +18,7 @@ import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
+import type { ApplicablePublicKeyCredential } from './validation';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
@@ -47,7 +48,6 @@ import {
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from './validation/CredParamSchema';
-import type { PublicKeyCredentialCandidate } from './validation/PublicKeyCredentialCandidateSchema';
 
 export type AuthenticatorBackendContext = {
   apiKeyId: string;
@@ -684,7 +684,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
   }): Promise<
-    AuthenticatorGetAssertionResponse | PublicKeyCredentialCandidate[]
+    AuthenticatorGetAssertionResponse | ApplicablePublicKeyCredential[]
   > {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 

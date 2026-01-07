@@ -1,11 +1,11 @@
 import type { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import type { IWebAuthnRepository } from './repositories';
+import type { PublicKeyCredentialCandidate } from './validation/ApplicablePublicKeyCredentialSchema';
 import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from './validation/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from './validation/AuthenticatorMakeCredentialResponseSchema';
-import type { PublicKeyCredentialCandidate } from './validation/PublicKeyCredentialCandidateSchema';
 
 /**
  * Metadata for a discoverable credential used in silent credential

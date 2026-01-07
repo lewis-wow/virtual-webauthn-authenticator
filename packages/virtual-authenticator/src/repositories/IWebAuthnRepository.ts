@@ -1,5 +1,5 @@
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import type { PublicKeyCredentialCandidate } from '../validation/PublicKeyCredentialCandidateSchema';
+import type { PublicKeyCredentialCandidate } from '../validation/ApplicablePublicKeyCredentialSchema';
 
 export type CreateKeyVaultDataArgs = {
   id: string;

@@ -25,11 +25,12 @@ import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type {
+  ApplicablePublicKeyCredential,
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,
   PubKeyCredParam,
-  PublicKeyCredentialCandidate,
   PublicKeyCredentialDescriptor,
+  PublicKeyCredentialOrApplicablePublicKeyCredentialsList,
   PublicKeyCredentialRequestOptions,
 } from './validation';
 import { AuthenticatorAgentContextArgsSchema } from './validation/AuthenticatorAgentContextArgsSchema';
@@ -45,7 +46,6 @@ import {
   type CredentialRequestOptions,
 } from './validation/CredentialRequestOptionsSchema';
 import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialOrPublicKeyCredentialCandidateList } from './validation/PublicKeyCredentialOrPublicKeyCredentialCandidateListSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
 import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
@@ -94,7 +94,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
   }): Promise<
-    AuthenticatorGetAssertionResponse | PublicKeyCredentialCandidate[]
+    AuthenticatorGetAssertionResponse | ApplicablePublicKeyCredential[]
   > {
     const {
       authenticator,
@@ -866,7 +866,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<PublicKeyCredentialOrPublicKeyCredentialCandidateList> {
+  }): Promise<PublicKeyCredentialOrApplicablePublicKeyCredentialsList> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
