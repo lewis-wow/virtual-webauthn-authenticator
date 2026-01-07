@@ -569,6 +569,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // NOTE: This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
     // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
     // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
+    // CONCLUSION: Authenticator always chooses to create client-side discoverable credential.
     const webAuthnPublicKeyCredentialWithMeta = await match({
       webAuthnPublicKeyCredentialKeyMetaType:
         webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
