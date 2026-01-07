@@ -5,6 +5,7 @@ import type { IAttestationStatementMap } from './IAttestationStatementMap';
 /**
  * Attestation Object structure as defined in WebAuthn specification.
  * @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
+ * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#sctn-makeCred-authnr-alg
  */
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IAttestationObjectMap

@@ -2,45 +2,10 @@ import type { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import type { IWebAuthnRepository } from './repositories';
 import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from './validation/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from './validation/AuthenticatorMakeCredentialResponseSchema';
 import type { PublicKeyCredentialCandidate } from './validation/PublicKeyCredentialCandidateSchema';
-
-/**
- * Payload returned by the authenticatorMakeCredential operation.
- * Contains the newly created credential ID and attestation object.
- * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
- */
-export type AuthenticatorMakeCredentialPayload = {
-  /**
-   * The credential ID of the newly created credential
-   * NOTE: This field is not defined by the standard, it is for simplicity and to not require parsing the attestationObject in VirtualAuthenticatorAgent.
-   */
-  credentialId: Uint8Array;
-  /**
-   * The attestation object containing the authenticator data and
-   * attestation statement
-   */
-  attestationObject: Uint8Array;
-};
-
-/**
- * Payload returned by the authenticatorGetAssertion operation.
- * Contains the assertion data needed to verify the authentication.
- * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
- */
-export type AuthenticatorGetAssertionPayload = {
-  /** The credential ID used to create this assertion */
-  credentialId: Uint8Array;
-  /**
-   * The authenticator data, including RP ID hash, flags, and
-   * signature counter
-   */
-  authenticatorData: Uint8Array;
-  /** The assertion signature over the authenticator data and client data */
-  signature: Uint8Array;
-  /** The user handle associated with this credential */
-  userHandle: Uint8Array;
-};
 
 /**
  * Metadata for a discoverable credential used in silent credential
@@ -91,7 +56,7 @@ export interface IAuthenticator {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorMakeCredentialPayload>;
+  }): Promise<AuthenticatorMakeCredentialResponse>;
 
   /**
    * The authenticatorGetAssertion operation.
@@ -104,7 +69,7 @@ export interface IAuthenticator {
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
   }): Promise<
-    AuthenticatorGetAssertionPayload | PublicKeyCredentialCandidate[]
+    AuthenticatorGetAssertionResponse | PublicKeyCredentialCandidate[]
   >;
 
   /**

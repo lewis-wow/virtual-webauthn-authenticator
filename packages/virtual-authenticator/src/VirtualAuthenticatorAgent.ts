@@ -5,10 +5,7 @@ import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import * as cbor from 'cbor2';
 import z from 'zod';
 
-import type {
-  AuthenticatorGetAssertionPayload,
-  IAuthenticator,
-} from './IAuthenticator';
+import type { IAuthenticator } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
 import { AuthenticatorDataParser } from './cbor';
 import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
@@ -37,6 +34,7 @@ import type {
 } from './validation';
 import { AuthenticatorAgentContextArgsSchema } from './validation/AuthenticatorAgentContextArgsSchema';
 import { AuthenticatorAgentMetaArgsSchema } from './validation/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from './validation/AuthenticatorGetAssertionResponseSchema';
 import type { CollectedClientData } from './validation/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
@@ -96,7 +94,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
   }): Promise<
-    AuthenticatorGetAssertionPayload | PublicKeyCredentialCandidate[]
+    AuthenticatorGetAssertionResponse | PublicKeyCredentialCandidate[]
   > {
     const {
       authenticator,
@@ -193,6 +191,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Note: In this case, the Relying Party did not supply a list of acceptable credential descriptors.
     // Thus, the authenticator is being asked to exercise any credential
     // it may possess that is scoped to the Relying Party, as identified by rpId.
+
+    // Before invoking the authenticatorGetAssertion operation,
+    // the client MUST invoke the authenticatorCancel operation in order to abort all other operations in progress in the authenticator session.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+    await authenticator.authenticatorCancel({ meta });
+
     const authenticatorGetAssertionPayload =
       await authenticator.authenticatorGetAssertion({
         authenticatorGetAssertionArgs: {
@@ -725,7 +729,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // NOTE: Transport filtering not implemented. Virtual authenticator
     // accepts all credential descriptors as it represents a single
     // transport-agnostic authenticator.
-    const excludeCredentialDescriptorList = pkOptions.excludeCredentials ?? [];
+    const excludeCredentialDescriptorList = pkOptions.excludeCredentials;
 
     // Step 22.AVAILABLE.10: Invoke the authenticatorMakeCredential operation on
     // authenticator with clientDataHash, rpEntity, userEntity,

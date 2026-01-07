@@ -6,11 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
 
-import type {
-  AuthenticatorGetAssertionPayload,
-  AuthenticatorMakeCredentialPayload,
-  IAuthenticator,
-} from './IAuthenticator';
+import type { IAuthenticator } from './IAuthenticator';
 import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
@@ -30,10 +26,12 @@ import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
 } from './validation/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from './validation/AuthenticatorGetAssertionResponseSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
 } from './validation/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from './validation/AuthenticatorMakeCredentialResponseSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
@@ -414,12 +412,13 @@ export class VirtualAuthenticator implements IAuthenticator {
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
   public async authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorMakeCredentialPayload> {
+  }): Promise<AuthenticatorMakeCredentialResponse> {
     const { authenticatorMakeCredentialArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -664,13 +663,14 @@ export class VirtualAuthenticator implements IAuthenticator {
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
   public async authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
   }): Promise<
-    AuthenticatorGetAssertionPayload | PublicKeyCredentialCandidate[]
+    AuthenticatorGetAssertionResponse | PublicKeyCredentialCandidate[]
   > {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 
