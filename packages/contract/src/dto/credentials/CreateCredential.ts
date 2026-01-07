@@ -1,8 +1,9 @@
+import {
+  PublicKeyCredentialCreationOptionsDtoSchema,
+  PublicKeyCredentialDtoSchema,
+  PublicKeyCredentialUserEntityDtoSchema,
+} from '@repo/virtual-authenticator/dto';
 import z from 'zod';
-
-import { PublicKeyCredentialCreationOptionsDtoSchema } from './components/PublicKeyCredentialCreationOptionsDtoSchema';
-import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDtoSchema';
-import { PublicKeyCredentialUserEntityDtoSchema } from './components/PublicKeyCredentialUserEntityDtoSchema';
 
 // =============================================================================
 // OPERATION: CREATE

@@ -7,7 +7,7 @@ import {
 import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema } from '../../src/dto/PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema';
+import { PublicKeyCredentialOrPublicKeyCredentialCandidateListDtoSchema } from '../../src/dto/PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema';
 import { UserVerification } from '../../src/enums/UserVerification';
 import type { PublicKeyCredentialRequestOptions } from '../../src/validation';
 import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from './consts';
