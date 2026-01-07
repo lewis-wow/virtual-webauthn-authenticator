@@ -729,6 +729,11 @@ export class VirtualAuthenticator implements IAuthenticator {
     // This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
     // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
     // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
+    // @see https://www.w3.org/TR/webauthn-3/#client-side-discoverable-credential
+    // A discoverable credential capable authenticator can generate an assertion signature for
+    // a discoverable credential given only an RP ID, which in turn necessitates that the public key credential source is stored in the authenticator or client platform.
+    // @see https://www.w3.org/TR/webauthn-3/#server-side-credential
+    // Client-side storage of the public key credential source is not required for a server-side credential.
 
     // Step 5: Filter by rpId
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
