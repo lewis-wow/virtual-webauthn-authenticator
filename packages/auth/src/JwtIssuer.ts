@@ -30,6 +30,7 @@ export class JwtIssuer {
     const token = await this.jwt.sign(encodedPayload, {
       iss: this.config.iss,
       aud: this.config.aud,
+      sub: payload.apiKeyId ?? payload.userId,
     });
 
     return token;

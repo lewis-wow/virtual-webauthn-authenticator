@@ -32,21 +32,6 @@ export class Jwks {
     this.jwksRepository = opts.jwksRepository;
   }
 
-  private async _convertKeyToBytes(
-    key: CryptoKey | Uint8Array,
-  ): Promise<Uint8Array> {
-    if (key instanceof Uint8Array) {
-      return key;
-    }
-
-    if (!key.extractable) {
-      throw new Error('The provided CryptoKey is marked as non-extractable.');
-    }
-
-    const exported = await crypto.subtle.exportKey('raw', key);
-    return new Uint8Array(exported);
-  }
-
   async generateKeyPair(): Promise<Jwk> {
     const { publicKey, privateKey } = await generateKeyPair(this.alg, {
       crv: this.crv,
@@ -75,7 +60,7 @@ export class Jwks {
   async getLatestPrivateKeyOrGenerate(): Promise<{
     id: string;
     alg: string;
-    privateKey: Uint8Array;
+    privateKey: CryptoKey;
   }> {
     let latestKey = await this.jwksRepository.findLatest();
 
@@ -95,7 +80,7 @@ export class Jwks {
     return {
       id: latestKey.id,
       alg: this.alg,
-      privateKey: await this._convertKeyToBytes(privateKey),
+      privateKey: privateKey as CryptoKey,
     };
   }
 
