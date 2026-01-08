@@ -1,14 +1,14 @@
 import type { IJwksRepository, Jwk } from '@repo/crypto';
 import type { PrismaClient } from '@repo/prisma';
 
-export type PrismaAuthJwkRepositoryOptions = {
+export type PrismaAuthJwksRepositoryOptions = {
   prisma: PrismaClient;
 };
 
-export class PrismaAuthJwkRepository implements IJwksRepository {
+export class PrismaAuthJwksRepository implements IJwksRepository {
   private readonly prisma: PrismaClient;
 
-  constructor(opts: PrismaAuthJwkRepositoryOptions) {
+  constructor(opts: PrismaAuthJwksRepositoryOptions) {
     this.prisma = opts.prisma;
   }
 

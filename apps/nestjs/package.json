@@ -28,6 +28,7 @@
     "@repo/core": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/key-vault": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",

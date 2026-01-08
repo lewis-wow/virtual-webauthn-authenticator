@@ -186,6 +186,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@repo/dependency-container':
         specifier: workspace:*
         version: link:../../packages/dependency-container
@@ -506,6 +509,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@repo/env-config':
         specifier: workspace:*
         version: link:../../packages/env-config
@@ -12861,7 +12867,6 @@ snapshots:
       magic-string: 0.30.19
     optionalDependencies:
       vite: 5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
-    optional: true
 
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
@@ -12908,7 +12913,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -17884,7 +17889,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-    optional: true
 
   vite-node@3.2.4(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -17956,7 +17960,6 @@ snapshots:
       lightningcss: 1.30.2
       sass: 1.93.2
       terser: 5.44.0
-    optional: true
 
   vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -18028,7 +18031,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-    optional: true
 
   vitest@3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
