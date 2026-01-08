@@ -12,6 +12,7 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
+import { EnvelopeStatus } from '@repo/virtual-authenticator/enums';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
@@ -86,7 +87,7 @@ export class CredentialsController {
           userId: userId,
         });
 
-        const publicKeyCredential =
+        const virtualAuthenticatorAgentCreateCredentialResponse =
           await this.virtualAuthenticatorAgent.createCredential({
             origin: meta.origin,
             options: {
@@ -108,15 +109,23 @@ export class CredentialsController {
             },
           });
 
-        await this._auditCredentialAction({
-          action: LogAction.CREATE,
-          publicKeyCredentialRawId: publicKeyCredential.rawId,
-          jwtPayload,
-        });
+        if (
+          virtualAuthenticatorAgentCreateCredentialResponse.status ===
+          EnvelopeStatus.SUCCESS
+        ) {
+          await this._auditCredentialAction({
+            action: LogAction.CREATE,
+            publicKeyCredentialRawId:
+              virtualAuthenticatorAgentCreateCredentialResponse.payload.rawId,
+            jwtPayload,
+          });
+        }
 
         return {
           status: 200,
-          body: CreateCredentialResponseSchema.encode(publicKeyCredential),
+          body: CreateCredentialResponseSchema.encode(
+            virtualAuthenticatorAgentCreateCredentialResponse,
+          ),
         };
       },
     );
@@ -139,7 +148,7 @@ export class CredentialsController {
           userId: userId,
         });
 
-        const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
+        const virtualAuthenticatorAgentGetAssertionResponse =
           await this.virtualAuthenticatorAgent.getAssertion({
             origin: meta.origin,
             options: {
@@ -160,27 +169,21 @@ export class CredentialsController {
           });
 
         if (
-          Array.isArray(publicKeyCredentialOrApplicablePublicKeyCredentialsList)
+          virtualAuthenticatorAgentGetAssertionResponse.status ===
+          EnvelopeStatus.SUCCESS
         ) {
-          return {
-            status: 200,
-            body: GetCredentialResponseSchema.encode(
-              publicKeyCredentialOrApplicablePublicKeyCredentialsList,
-            ),
-          };
+          await this._auditCredentialAction({
+            action: LogAction.GET,
+            publicKeyCredentialRawId:
+              virtualAuthenticatorAgentGetAssertionResponse.payload.rawId,
+            jwtPayload,
+          });
         }
-
-        await this._auditCredentialAction({
-          action: LogAction.GET,
-          publicKeyCredentialRawId:
-            publicKeyCredentialOrApplicablePublicKeyCredentialsList.rawId,
-          jwtPayload,
-        });
 
         return {
           status: 200,
           body: GetCredentialResponseSchema.encode(
-            publicKeyCredentialOrApplicablePublicKeyCredentialsList,
+            virtualAuthenticatorAgentGetAssertionResponse,
           ),
         };
       },
