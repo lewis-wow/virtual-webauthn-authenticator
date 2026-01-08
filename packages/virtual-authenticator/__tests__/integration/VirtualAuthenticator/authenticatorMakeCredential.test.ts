@@ -1,0 +1,252 @@
+import {
+  upsertTestingUser,
+  USER_ID,
+  USER_NAME,
+} from '../../../../auth/__tests__/helpers';
+
+import { TypeAssertionError } from '@repo/assert';
+import { Hash, Jwks, Jwt } from '@repo/crypto';
+import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { PrismaClient } from '@repo/prisma';
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
+
+import type { IAuthenticator } from '../../../src';
+import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import {
+  CollectedClientDataType,
+  EnvelopeStatus,
+  Fmt,
+} from '../../../src/enums';
+import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
+import { PrismaVirtualAuthenticatorJwksRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorJwksRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import type {
+  AuthenticatorContextArgs,
+  AuthenticatorMakeCredentialArgs,
+  AuthenticatorMetaArgs,
+  CollectedClientData,
+} from '../../../src/validation';
+import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
+import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import {
+  CHALLENGE_BYTES,
+  RP_ID,
+  RP_NAME,
+  RP_ORIGIN,
+  USER_DISPLAY_NAME,
+  USER_ID_BYTSES,
+} from '../../helpers/consts';
+
+const ENCRYPTION_KEY = 'ENCRYPTION_KEY';
+
+const COLLECTED_CLIENT_DATA: CollectedClientData = {
+  type: CollectedClientDataType.WEBAUTHN_GET,
+  challenge: Buffer.from(CHALLENGE_BYTES).toString('base64url'),
+  origin: RP_ORIGIN,
+  crossOrigin: false,
+  topOrigin: undefined,
+};
+
+const CLIENT_DATA_JSON = new Uint8Array(
+  Buffer.from(JSON.stringify(COLLECTED_CLIENT_DATA)),
+);
+
+const CLIENT_DATA_HASH = Hash.sha256(CLIENT_DATA_JSON);
+
+const AUTHENTICATOR_MAKE_CREDENTIAL_ARGS: AuthenticatorMakeCredentialArgs = {
+  attestationFormats: [Fmt.NONE],
+  credTypesAndPubKeyAlgs: [
+    { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
+  ],
+  enterpriseAttestationPossible: false,
+  excludeCredentialDescriptorList: undefined,
+  extensions: {},
+  hash: CLIENT_DATA_HASH,
+  requireResidentKey: true,
+  requireUserPresence: true,
+  requireUserVerification: true,
+  rpEntity: {
+    id: RP_ID,
+    name: RP_NAME,
+  },
+  userEntity: {
+    id: USER_ID_BYTSES,
+    name: USER_NAME,
+    displayName: USER_DISPLAY_NAME,
+  },
+};
+
+type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
+  authenticator: IAuthenticator;
+  authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+  meta?: Partial<AuthenticatorMetaArgs>;
+  context?: Partial<AuthenticatorContextArgs>;
+
+  expectEnvelopeStatus?: EnvelopeStatus;
+};
+
+const performAuthenticatorMakeCredentialAndVerify = async (
+  opts: PerformAuthenticatorMakeCredentialAndVerifyArgs,
+) => {
+  const {
+    authenticator,
+    authenticatorMakeCredentialArgs,
+    meta,
+    context,
+    expectEnvelopeStatus,
+  } = opts;
+
+  const virtualAuthenticatorAuthenticatorMakeCredentialResponse =
+    await authenticator.authenticatorMakeCredential({
+      authenticatorMakeCredentialArgs,
+      meta: {
+        userId: USER_ID,
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+        ...meta,
+      },
+      context: {
+        apiKeyId: null,
+        ...context,
+      },
+    });
+
+  expect(virtualAuthenticatorAuthenticatorMakeCredentialResponse.status).toBe(
+    expectEnvelopeStatus,
+  );
+
+  return virtualAuthenticatorAuthenticatorMakeCredentialResponse.payload;
+};
+
+/**
+ * Tests for VirtualAuthenticator.createCredential() method
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+ * @see https://www.w3.org/TR/webauthn-3/#authenticatormakecredential
+ *
+ * Per spec: The authenticatorMakeCredential operation is used to create a new public key
+ * credential source. This is part of the WebAuthn registration ceremony.
+ */
+describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
+  const prisma = new PrismaClient();
+  const prismaVirtualAuthenticatorJwksRepository =
+    new PrismaVirtualAuthenticatorJwksRepository({
+      prisma,
+    });
+  const jwks = new Jwks({
+    encryptionKey: ENCRYPTION_KEY,
+    jwksRepository: prismaVirtualAuthenticatorJwksRepository,
+  });
+  const jwt = new Jwt({
+    jwks,
+  });
+  const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+  const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
+  const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
+    prisma,
+  });
+  const authenticator = new VirtualAuthenticator({
+    webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    keyProvider,
+    jwt,
+  });
+
+  const cleanupWebAuthnPublicKeyCredentials = async () => {
+    await prisma.$transaction([
+      prisma.webAuthnPublicKeyCredential.deleteMany(),
+      prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
+    ]);
+  };
+
+  beforeAll(async () => {
+    await upsertTestingUser({ prisma });
+  });
+
+  afterEach(async () => {
+    await cleanupWebAuthnPublicKeyCredentials();
+  });
+
+  afterAll(async () => {
+    await prisma.user.deleteMany();
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.requireUserPresence', () => {
+    test('args.requireUserPresence: true, meta.userPresenceEnabled: true', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireUserPresence: true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userPresenceEnabled: true,
+      };
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs,
+        meta,
+        expectEnvelopeStatus: EnvelopeStatus.SUCCESS,
+      });
+    });
+
+    test('args.requireUserPresence: true, meta.userPresenceEnabled: false', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireUserPresence: true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        // userPresenceEnabled must be `true`
+        userPresenceEnabled: false as true,
+      };
+
+      await expect(() =>
+        performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+          meta,
+        }),
+      ).rejects.toThrowError(new TypeAssertionError());
+    });
+
+    test('args.requireUserPresence: false, meta.userPresenceEnabled: true', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        // requireUserPresence must be `true`
+        requireUserPresence: false as true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userPresenceEnabled: true,
+      };
+
+      await expect(() =>
+        performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+          meta,
+        }),
+      ).rejects.toThrowError(new TypeAssertionError());
+    });
+
+    test('args.requireUserPresence: false, meta.userPresenceEnabled: false', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        // requireUserPresence must be `true`
+        requireUserPresence: false as true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        // userPresenceEnabled must be `true`
+        userPresenceEnabled: false as true,
+      };
+
+      await expect(() =>
+        performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+          meta,
+        }),
+      ).rejects.toThrowError(new TypeAssertionError());
+    });
+  });
+});

@@ -2,12 +2,9 @@ import type { IWebAuthnRepository } from './repositories';
 import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMetaArgs } from './validation/AuthenticatorMetaArgsSchema';
 import type { VirtualAuthenticatorGetAssertionResponse } from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
 import type { VirtualAuthenticatorMakeCredentialResponse } from './validation/VirtualAuthenticatorMakeCredentialResponseSchema';
-
-export type AuthenticatorMetaArgs = {
-  userId: string;
-};
 
 /**
  * Interface defining the authenticator operations as specified in the
