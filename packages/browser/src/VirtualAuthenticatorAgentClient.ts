@@ -20,6 +20,8 @@ import { PublicKeyCredentialImpl } from './standard-impl/PublicKeyCredentialImpl
 import { PublicKeyCredentialCreationOptionsBrowserSchema } from './zod-validation/credentials/PublicKeyCredentialCreationOptionsBrowserSchema';
 import { PublicKeyCredentialRequestOptionsBrowserSchema } from './zod-validation/credentials/PublicKeyCredentialRequestOptionsBrowserSchema';
 
+export type VirtualAuthenticatorAgentClientMiddleware = () => Promise<any>;
+
 export type VirtualAuthenticatorAgentClientOptions = {
   baseUrl: string;
   apiKey: string;

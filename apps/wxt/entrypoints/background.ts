@@ -1,4 +1,4 @@
-import { getVirtualAuthenticatorAgentClient } from '@/utils/getVirtualAuthenticatorAgentClient';
+import { getVirtualAuthenticatorApiClient } from '@/utils/getVirtualAuthenticatorAgentClient';
 
 import { extensionMessaging } from '../messaging/extensionMessaging';
 
@@ -12,22 +12,34 @@ export default defineBackground(() => {
   });
 
   extensionMessaging.onMessage('credentials.create', async (req) => {
-    const virtualAuthenticatorAgentClient =
-      await getVirtualAuthenticatorAgentClient();
+    const virtualAuthenticatorApiClient =
+      await getVirtualAuthenticatorApiClient();
 
-    const publicKeyCredential =
-      await virtualAuthenticatorAgentClient.createCredential(req.data);
+    // req.data contains { publicKey: serialized DTO, meta will be added }
+    const rawResponse = await virtualAuthenticatorApiClient.createCredential({
+      publicKey: req.data.publicKey,
+      meta: {
+        origin: req.sender.origin ?? '',
+      },
+    });
 
-    return publicKeyCredential;
+    // Return raw response - parsing happens in main-world
+    return rawResponse;
   });
 
   extensionMessaging.onMessage('credentials.get', async (req) => {
-    const virtualAuthenticatorAgentClient =
-      await getVirtualAuthenticatorAgentClient();
+    const virtualAuthenticatorApiClient =
+      await getVirtualAuthenticatorApiClient();
 
-    const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
-      await virtualAuthenticatorAgentClient.getAssertion(req.data);
+    // req.data contains { publicKey: serialized DTO, meta will be added }
+    const rawResponse = await virtualAuthenticatorApiClient.getAssertion({
+      publicKey: req.data.publicKey,
+      meta: {
+        origin: req.sender.origin ?? '',
+      },
+    });
 
-    return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
+    // Return raw response - parsing happens in main-world
+    return rawResponse;
   });
 });

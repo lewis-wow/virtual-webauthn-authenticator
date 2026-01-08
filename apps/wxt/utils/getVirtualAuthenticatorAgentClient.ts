@@ -1,20 +1,19 @@
-import { VirtualAuthenticatorAgentClient } from '@repo/browser';
+import { VirtualAuthenticatorApiClient } from '@repo/browser/background';
 
-let virtualAuthenticatorAgentClientInstance: VirtualAuthenticatorAgentClient;
+let virtualAuthenticatorApiClientInstance: VirtualAuthenticatorApiClient;
 
-export const getVirtualAuthenticatorAgentClient =
-  async (): Promise<VirtualAuthenticatorAgentClient> => {
-    if (virtualAuthenticatorAgentClientInstance) {
-      return virtualAuthenticatorAgentClientInstance;
+export const getVirtualAuthenticatorApiClient =
+  async (): Promise<VirtualAuthenticatorApiClient> => {
+    if (virtualAuthenticatorApiClientInstance) {
+      return virtualAuthenticatorApiClientInstance;
     }
 
     const apiKey = await apiKeyItem.getValue();
 
-    virtualAuthenticatorAgentClientInstance =
-      new VirtualAuthenticatorAgentClient({
-        baseUrl: import.meta.env.WXT_API_BASE_URL,
-        apiKey,
-      });
+    virtualAuthenticatorApiClientInstance = new VirtualAuthenticatorApiClient({
+      baseUrl: import.meta.env.WXT_API_BASE_URL,
+      apiKey,
+    });
 
-    return virtualAuthenticatorAgentClientInstance;
+    return virtualAuthenticatorApiClientInstance;
   };

@@ -1,16 +1,9 @@
-import { Logger } from '@repo/logger';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { Jwt } from '@repo/crypto';
 
 import {
   JwtPayloadSchema,
   type JwtPayload,
 } from './zod-validation/JwtPayloadSchema';
-
-const LOG_PREFIX = 'JWT_AUDIENCE';
-
-const log = new Logger({
-  prefix: LOG_PREFIX,
-});
 
 export type JwtAudienceConfig = {
   aud: string;
@@ -32,21 +25,16 @@ export class JwtAudience {
   }
 
   async validateToken(token: string): Promise<JwtPayload> {
-    try {
-      const JWKS = createRemoteJWKSet(
-        new URL(`${this.authServerBaseURL}/.well-known/jwks.json`),
-      );
-
-      const { payload } = await jwtVerify(token, JWKS, {
+    const payload = await Jwt.validateToken(token, {
+      jwks: `${this.authServerBaseURL}/.well-known/jwks.json`,
+      verifyOptions: {
         issuer: this.config.iss,
         audience: this.config.aud,
-      });
+      },
+    });
 
-      const paredPayload = JwtPayloadSchema.parse(payload);
-      return paredPayload;
-    } catch (error) {
-      log.error('Token validation failed.', { token, error });
-      throw error;
-    }
+    const paredPayload = JwtPayloadSchema.parse(payload);
+
+    return paredPayload;
   }
 }

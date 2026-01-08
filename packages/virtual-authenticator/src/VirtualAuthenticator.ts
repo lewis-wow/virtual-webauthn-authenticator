@@ -10,6 +10,8 @@ import type { IAuthenticator } from './IAuthenticator';
 import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
+import { EnvelopeResponseControlReason } from './enums/envelope/EnvelopeResponseControlReason';
+import { EnvelopeStatus } from './enums/envelope/EnvelopeStatus';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
@@ -35,10 +37,7 @@ import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
 } from './validation/AuthenticatorMakeCredentialArgsSchema';
-import {
-  AuthenticatorMakeCredentialResponseSchema,
-  type AuthenticatorMakeCredentialResponse,
-} from './validation/AuthenticatorMakeCredentialResponseSchema';
+import { AuthenticatorMakeCredentialResponseSchema } from './validation/AuthenticatorMakeCredentialResponseSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
@@ -48,6 +47,11 @@ import {
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from './validation/CredParamSchema';
+import type { VirtualAuthenticatorGetAssertionResponse } from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
+import {
+  VirtualAuthenticatorMakeCredentialResponseSchema,
+  type VirtualAuthenticatorMakeCredentialResponse,
+} from './validation/VirtualAuthenticatorMakeCredentialResponseSchema';
 
 export type AuthenticatorBackendContext = {
   apiKeyId: string;
@@ -92,6 +96,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     Fmt.NONE,
     Fmt.PACKED,
   ];
+
+  private _createStateToken(state: Record<string, unknown>) {}
 
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
@@ -424,7 +430,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorMakeCredentialResponse> {
+  }): Promise<VirtualAuthenticatorMakeCredentialResponse> {
     const { authenticatorMakeCredentialArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -659,6 +665,7 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     const attestationObjectCborEncoded = cbor.encode(attestationObject);
 
+    // Return the attestation object to the client
     const authenticatorMakeCredentialResponse = {
       credentialId: rawCredentialId,
       attestationObject: attestationObjectCborEncoded,
@@ -669,8 +676,19 @@ export class VirtualAuthenticator implements IAuthenticator {
       AuthenticatorMakeCredentialResponseSchema,
     );
 
-    // Return the attestation object to the client
-    return authenticatorMakeCredentialResponse;
+    // Apply proprietary API response envelope
+    const virtualAuthenticatorMakeCredentialResponse: VirtualAuthenticatorMakeCredentialResponse =
+      {
+        status: EnvelopeStatus.SUCCESS,
+        payload: authenticatorMakeCredentialResponse,
+      };
+
+    assertSchema(
+      virtualAuthenticatorMakeCredentialResponse,
+      VirtualAuthenticatorMakeCredentialResponseSchema,
+    );
+
+    return virtualAuthenticatorMakeCredentialResponse;
   }
 
   /**
@@ -683,9 +701,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<
-    AuthenticatorGetAssertionResponse | ApplicablePublicKeyCredential[]
-  > {
+  }): Promise<VirtualAuthenticatorGetAssertionResponse> {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -769,6 +785,15 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     if (credentialOptions.length > 1) {
       // Prompt user to select credential.
+
+      const virtualAuthenticatorGetAssertionResponse: VirtualAuthenticatorGetAssertionResponse =
+        {
+          status: EnvelopeStatus.INTERACTION_REQUIRED,
+          control: {
+            reason: EnvelopeResponseControlReason.CREDENTIAL_SELECT,
+            stateToken:
+          },
+        };
       return credentialOptions;
     }
 

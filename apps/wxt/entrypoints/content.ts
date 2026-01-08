@@ -1,14 +1,14 @@
 import { extensionMessaging } from '@/messaging/extensionMessaging';
 import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
-import type { PublicKeyCredentialCandidate } from '@repo/virtual-authenticator/validation';
+import type { ApplicablePublicKeyCredential } from '@repo/virtual-authenticator/validation';
 
 const LOG_PREFIX = 'CONTENT';
 console.log(`[${LOG_PREFIX}]`, 'Init');
 
 // Helper function to show credential selector and wait for user choice
 async function selectCredential(
-  credentials: PublicKeyCredentialCandidate[],
-): Promise<PublicKeyCredentialCandidate | null> {
+  credentials: ApplicablePublicKeyCredential[],
+): Promise<ApplicablePublicKeyCredential | null> {
   return new Promise((resolve) => {
     const requestId = `credential-selector-${Date.now()}-${Math.random()}`;
 

@@ -1,10 +1,9 @@
 import type { IWebAuthnRepository } from './repositories';
-import type { ApplicablePublicKeyCredential } from './validation/ApplicablePublicKeyCredentialSchema';
 import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorGetAssertionResponse } from './validation/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
-import type { AuthenticatorMakeCredentialResponse } from './validation/AuthenticatorMakeCredentialResponseSchema';
+import type { VirtualAuthenticatorGetAssertionResponse } from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
+import type { VirtualAuthenticatorMakeCredentialResponse } from './validation/VirtualAuthenticatorMakeCredentialResponseSchema';
 
 export type AuthenticatorMetaArgs = {
   userId: string;
@@ -33,7 +32,7 @@ export interface IAuthenticator {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorMakeCredentialResponse>;
+  }): Promise<VirtualAuthenticatorMakeCredentialResponse>;
 
   /**
    * The authenticatorGetAssertion operation.
@@ -45,9 +44,7 @@ export interface IAuthenticator {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<
-    AuthenticatorGetAssertionResponse | ApplicablePublicKeyCredential[]
-  >;
+  }): Promise<VirtualAuthenticatorGetAssertionResponse>;
 
   /**
    * The authenticatorCancel operation.

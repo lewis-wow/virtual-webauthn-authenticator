@@ -8,3 +8,5 @@ export * from './standard-impl/PublicKeyCredentialImpl';
 export * from './standard-impl/PublicKeyCredentialRpEntityImpl';
 export * from './standard-impl/PublicKeyCredentialUserEntityImpl';
 export * from './VirtualAuthenticatorAgentClient';
+export * from './main-world';
+export * from './background';
