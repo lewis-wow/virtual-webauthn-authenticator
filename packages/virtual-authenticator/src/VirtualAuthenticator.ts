@@ -1,6 +1,6 @@
 import { assertSchema } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
+import { Hash, Jwt } from '@repo/crypto';
 import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -20,7 +20,6 @@ import { SignatureFailed } from './exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
-import type { ApplicablePublicKeyCredential } from './validation';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
@@ -47,7 +46,10 @@ import {
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from './validation/CredParamSchema';
-import type { VirtualAuthenticatorGetAssertionResponse } from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
+import {
+  VirtualAuthenticatorGetAssertionResponseSchema,
+  type VirtualAuthenticatorGetAssertionResponse,
+} from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
 import {
   VirtualAuthenticatorMakeCredentialResponseSchema,
   type VirtualAuthenticatorMakeCredentialResponse,
@@ -60,6 +62,7 @@ export type AuthenticatorBackendContext = {
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
   keyProvider: IKeyProvider;
+  jwt: Jwt;
 };
 
 /**
@@ -77,10 +80,12 @@ export type VirtualAuthenticatorOptions = {
 export class VirtualAuthenticator implements IAuthenticator {
   public readonly webAuthnRepository: IWebAuthnRepository;
   private readonly keyProvider: IKeyProvider;
+  private readonly jwt: Jwt;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.webAuthnRepository = opts.webAuthnRepository;
     this.keyProvider = opts.keyProvider;
+    this.jwt = opts.jwt;
   }
 
   /**
@@ -96,8 +101,6 @@ export class VirtualAuthenticator implements IAuthenticator {
     Fmt.NONE,
     Fmt.PACKED,
   ];
-
-  private _createStateToken(state: Record<string, unknown>) {}
 
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
@@ -783,18 +786,21 @@ export class VirtualAuthenticator implements IAuthenticator {
     //   The implementation automatically selects the first matching credential. User verification and presence
     //   checks are handled later in Step 10 during authenticatorData creation.
 
+    // Prompt user to select credential.
     if (credentialOptions.length > 1) {
-      // Prompt user to select credential.
-
+      // Apply proprietary API response envelope
       const virtualAuthenticatorGetAssertionResponse: VirtualAuthenticatorGetAssertionResponse =
         {
           status: EnvelopeStatus.INTERACTION_REQUIRED,
           control: {
             reason: EnvelopeResponseControlReason.CREDENTIAL_SELECT,
-            stateToken:
+            stateToken: await this.jwt.sign({
+              credentialOptions,
+            }),
           },
         };
-      return credentialOptions;
+
+      return virtualAuthenticatorGetAssertionResponse;
     }
 
     const selectedCredential = credentialOptions[0]!;
@@ -864,19 +870,32 @@ export class VirtualAuthenticator implements IAuthenticator {
       webAuthnPublicKeyCredentialWithMeta.userId,
     );
 
-    const authenticatorGetAssertionResponse = {
-      credentialId,
-      authenticatorData,
-      signature,
-      userHandle,
-    };
+    const authenticatorGetAssertionResponse: AuthenticatorGetAssertionResponse =
+      {
+        credentialId,
+        authenticatorData,
+        signature,
+        userHandle,
+      };
 
     assertSchema(
       authenticatorGetAssertionResponse,
       AuthenticatorGetAssertionResponseSchema,
     );
 
-    return authenticatorGetAssertionResponse;
+    // Apply proprietary API response envelope
+    const virtualAuthenticatorGetAssertionResponse: VirtualAuthenticatorGetAssertionResponse =
+      {
+        status: EnvelopeStatus.SUCCESS,
+        payload: authenticatorGetAssertionResponse,
+      };
+
+    assertSchema(
+      virtualAuthenticatorGetAssertionResponse,
+      VirtualAuthenticatorGetAssertionResponseSchema,
+    );
+
+    return virtualAuthenticatorGetAssertionResponse;
   }
 
   public async authenticatorCancel() {

@@ -59,6 +59,8 @@ export type JwtPayload = {
    * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6 RFC7519#section-4.1.6}
    */
   iat?: number;
+
+  [key: string]: unknown;
 };
 
 export type JwtOptions = {
