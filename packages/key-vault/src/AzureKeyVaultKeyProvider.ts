@@ -1,27 +1,27 @@
 import {
   KnownKeyOperations,
+  type JsonWebKey,
   type KeyClient,
   type KeyVaultKey,
   type SignResult,
 } from '@azure/keyvault-keys';
-import { COSEKeyAlgorithmMapper } from '@repo/keys/cose/mappers';
-import type { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { JsonWebKey } from '@repo/keys/jwk';
-import { JWKKeyAlgorithm } from '@repo/keys/jwk/enums';
-import { KeyMapper } from '@repo/keys/shared/mappers';
+import { KeyMapper } from '@repo/keys';
+import { type JSONWebPublicKey, KeyAlgorithmMapper } from '@repo/keys';
+import { COSEKeyAlgorithm, JWKKeyAlgorithm } from '@repo/keys/enums';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
   WebAuthnPublicKeyCredentialWithMeta,
 } from '@repo/virtual-authenticator/types';
 import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/validation';
+import * as cbor from 'cbor2';
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
 import { UnexpectedWebAuthnPublicKeyCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';
 
 export type KeyPayload = {
-  jwk: JsonWebKey;
+  jwk: JSONWebPublicKey;
   meta: {
     keyVaultKey: KeyVaultKey;
   };
@@ -48,6 +48,27 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
   }
 
+  private _toB64(bytes: Uint8Array | undefined): string | undefined {
+    if (bytes === undefined) {
+      return undefined;
+    }
+
+    return Buffer.from(bytes).toString('base64url');
+  }
+
+  private _convertAzureKeyVaultJWKPublicKey(
+    azureKeyVaultJWKPublicKey: JsonWebKey,
+  ): JSONWebPublicKey {
+    return {
+      kty: azureKeyVaultJWKPublicKey.kty,
+      crv: azureKeyVaultJWKPublicKey.crv,
+      x: this._toB64(azureKeyVaultJWKPublicKey.x),
+      y: this._toB64(azureKeyVaultJWKPublicKey.y),
+      e: this._toB64(azureKeyVaultJWKPublicKey.e),
+      n: this._toB64(azureKeyVaultJWKPublicKey.n),
+    };
+  }
+
   /**
    * Creates a new cryptographic key in Azure Key Vault.
    * @param opts.keyName - The name for the new key
@@ -62,19 +83,19 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     const keyVaultKey = await this.keyClient.createKey(
       keyName,
-      COSEKeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyType(
+      KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyType(
         supportedPubKeyCredParam.alg,
       ),
       {
         keyOps: [KnownKeyOperations.Sign],
-        curve: COSEKeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyCurveName(
+        curve: KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyCurveName(
           supportedPubKeyCredParam.alg,
         ),
       },
     );
 
     return {
-      jwk: new JsonWebKey(keyVaultKey.key!),
+      jwk: this._convertAzureKeyVaultJWKPublicKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
       },
@@ -91,7 +112,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     const keyVaultKey = await this.keyClient.getKey(keyName);
 
     return {
-      jwk: new JsonWebKey(keyVaultKey.key!),
+      jwk: this._convertAzureKeyVaultJWKPublicKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
       },
@@ -153,10 +174,11 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       supportedPubKeyCredParam: pubKeyCredParams,
     });
 
-    const COSEPublicKey = KeyMapper.JWKToCOSE(jwk);
+    const COSEPublicKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+    const COSEPublicKeyBytes = cbor.encode(COSEPublicKey);
 
     return {
-      COSEPublicKey: COSEPublicKey.toBytes(),
+      COSEPublicKey: COSEPublicKeyBytes,
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
@@ -208,9 +230,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     return {
       signature: signature.signature,
-      alg: COSEKeyAlgorithmMapper.JWKKeyAlgorithmToCOSEKeyAlgorithm(
-        keyAlgorithm,
-      ),
+      alg: KeyAlgorithmMapper.JWKKeyAlgorithmToCOSEKeyAlgorithm(keyAlgorithm),
     };
   }
 }

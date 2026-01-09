@@ -1,6 +1,6 @@
+import { KeyMapper } from '@repo/keys';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { JsonWebKey } from '@repo/keys/jwk';
-import { KeyMapper } from '@repo/keys/shared/mappers';
+import * as cbor from 'cbor2';
 import {
   createSign,
   generateKeyPairSync,
@@ -34,18 +34,19 @@ export class MockKeyProvider implements IKeyProvider {
 
     this.keyPairStore[webAuthnPublicKeyCredentialId] = keyPair;
 
-    const credentialPublicKey = new JsonWebKey(
-      keyPair.publicKey.export({ format: 'jwk' }),
-    );
+    const credentialPublicKey = keyPair.publicKey.export({
+      format: 'jwk',
+    });
 
-    const coseKey = KeyMapper.JWKToCOSE(credentialPublicKey);
-    const COSEPublicKey = coseKey.toBytes();
+    const COSEPublicKey =
+      KeyMapper.JWKPublicKeyToCOSEPublicKey(credentialPublicKey);
+    const COSEPublicKeyBytes = cbor.encode(COSEPublicKey);
 
     const { keyVaultKeyId, keyVaultKeyName } =
       this.keyVaultKeyIdGenerator.next();
 
     return {
-      COSEPublicKey,
+      COSEPublicKey: COSEPublicKeyBytes,
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
