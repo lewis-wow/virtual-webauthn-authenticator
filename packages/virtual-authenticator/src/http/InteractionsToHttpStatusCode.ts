@@ -1,9 +1,10 @@
+import { HttpStatusCode } from '@repo/http';
 import type { ValueOfEnum } from '@repo/types';
 
 import { CredentialSelectInteraction } from '../interactions/CredentialSelectInteraction';
 
 export const InteractionsToHttpStatusCode = {
-  [CredentialSelectInteraction.code]: 428,
+  [CredentialSelectInteraction.code]: HttpStatusCode.PRECONDITION_REQUIRED,
 } as const;
 
 export type InteractionsToHttpStatusCode = ValueOfEnum<
