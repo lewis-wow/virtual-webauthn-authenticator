@@ -9,6 +9,7 @@ import { Hash } from '@repo/crypto';
 import { verifyEC, type COSEPublicKeyEC } from '@repo/keys';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
+import { randomUUID } from 'node:crypto';
 import {
   afterAll,
   afterEach,
@@ -756,6 +757,24 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       });
 
       expect(isVerified).toBe(true);
+    });
+  });
+
+  describe('AuthenticatorMetaArgs.userId', () => {
+    test.each([
+      { userId: randomUUID() },
+      { userId: 'NON_UUID' },
+      { userId: (1234).toString() },
+    ])('Work with userId: $userId', async ({ userId }) => {
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userId,
+      };
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        meta,
+      });
     });
   });
 });
