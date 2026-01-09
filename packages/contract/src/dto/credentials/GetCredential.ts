@@ -1,6 +1,6 @@
 import {
   PublicKeyCredentialRequestOptionsDtoSchema,
-  VirtualAuthenticatorAgentGetAssertionResponseDtoSchema,
+  AuthenticatorAgentGetAssertionResponseDtoSchema,
 } from '@repo/virtual-authenticator/dto';
 import z from 'zod';
 
@@ -27,4 +27,4 @@ export const GetCredentialBodySchema = z.object({
 // -------------------------------------
 
 export const GetCredentialResponseSchema =
-  VirtualAuthenticatorAgentGetAssertionResponseDtoSchema;
+  AuthenticatorAgentGetAssertionResponseDtoSchema;
