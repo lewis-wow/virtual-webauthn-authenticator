@@ -4,12 +4,15 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
+import { toB64 } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
 import { decodeAttestationObject } from './cbor';
 import { parseAuthenticatorData } from './cbor/parseAuthenticatorData';
+import { PublicKeyCredentialCreationOptionsDtoSchema } from './dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
+import { PublicKeyCredentialRequestOptionsDtoSchema } from './dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import {
   Attestation,
   AuthenticatorAttachment,
@@ -32,6 +35,7 @@ import type {
   AuthenticatorAgentMetaArgs,
   AuthenticatorGetAssertionResponse,
   PubKeyCredParam,
+  PublicKeyCredentialCreationOptions,
   PublicKeyCredentialDescriptor,
   PublicKeyCredentialRequestOptions,
 } from './validation';
@@ -220,6 +224,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         throw new VirtualAuthenticatorAgentCredentialSelectInterruption({
           virtualAuthenticatorCredentialSelectInterruptionPayload:
             error.payload,
+          optionsHash: toB64(
+            this._hashGetAssertionOptions({
+              pkOptions,
+              meta,
+            }),
+          )!,
         });
       }
 
@@ -396,6 +406,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return attestationObjectResult;
   }
 
+  private _hashCreateCredentialOptions(opts: {
+    pkOptions: PublicKeyCredentialCreationOptions;
+    meta: AuthenticatorAgentMetaArgs;
+  }): Uint8Array_ {
+    const { pkOptions, meta } = opts;
+
+    return Hash.sha256(
+      JSON.stringify({
+        pkOptions:
+          PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
+        meta,
+      }),
+    );
+  }
+
   /**
    * Creates a new public key credential (registration ceremony).
    * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
@@ -456,6 +481,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 3: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
+
+    // Context hash validation
+    assertSchema(
+      opts.context.optionsHash,
+      z
+        .literal(
+          toB64(
+            this._hashCreateCredentialOptions({
+              pkOptions,
+              meta,
+            }),
+          ),
+        )
+        .optional(),
+    );
 
     // Step 4: If pkOptions.timeout is present, check if its value lies
     // within a reasonable range as defined by the client and if not,
@@ -855,6 +895,20 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return pubKeyCred;
   }
 
+  private _hashGetAssertionOptions(opts: {
+    pkOptions: PublicKeyCredentialRequestOptions;
+    meta: AuthenticatorAgentMetaArgs;
+  }): Uint8Array_ {
+    const { pkOptions, meta } = opts;
+
+    return Hash.sha256(
+      JSON.stringify({
+        pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
+        meta,
+      }),
+    );
+  }
+
   /**
    * Gets an existing credential (authentication ceremony).
    * This implements the agent/client-side steps of the WebAuthn getAssertion algorithm.
@@ -902,6 +956,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 2: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
+
+    // Context hash validation
+    assertSchema(
+      opts.context.optionsHash,
+      z
+        .literal(
+          toB64(
+            this._hashGetAssertionOptions({
+              pkOptions,
+              meta,
+            }),
+          ),
+        )
+        .optional(),
+    );
 
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
     // Step 3: If options.mediation is present with the value conditional:

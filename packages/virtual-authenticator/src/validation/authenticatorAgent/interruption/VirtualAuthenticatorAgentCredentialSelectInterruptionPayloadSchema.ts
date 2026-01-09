@@ -6,6 +6,7 @@ export const VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema 
   z.object({
     virtualAuthenticatorCredentialSelectInterruptionPayload:
       VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema,
+    optionsHash: z.string(),
   });
 
 export type VirtualAuthenticatorAgentCredentialSelectInterruptionPayload =
