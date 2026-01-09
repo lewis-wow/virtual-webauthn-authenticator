@@ -1,9 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const ATTESTATION_OBJECT_MISSING_AUTH_DATA =
-  'ATTESTATION_OBJECT_MISSING_AUTH_DATA';
+import { HttpStatusCode } from '@repo/http';
 
 export class AttestationObjectMissingAuthData extends Exception {
-  static code = ATTESTATION_OBJECT_MISSING_AUTH_DATA;
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly name = 'AttestationObjectMissingAuthData';
   static message = 'Attestation object is missing "authData"';
 }

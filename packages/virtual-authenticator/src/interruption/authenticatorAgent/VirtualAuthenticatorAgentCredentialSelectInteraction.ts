@@ -2,6 +2,8 @@ import type { VirtualAuthenticatorAgentCredentialSelectInterruptionPayload } fro
 import { Interruption } from '../Interruption';
 
 export class VirtualAuthenticatorAgentCredentialSelectInterruption extends Interruption {
+  static readonly name =
+    'VirtualAuthenticatorAgentCredentialSelectInterruption';
   static message = 'Credential select required.';
 
   constructor(

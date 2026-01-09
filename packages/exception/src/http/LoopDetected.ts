@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const LOOP_DETECTED = 'LOOP_DETECTED';
-
 export class LoopDetected extends Exception {
-  static status = 508;
-  static code = LOOP_DETECTED;
-
-  constructor(message = 'Loop Detected.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.LOOP_DETECTED;
+  static readonly name = 'LoopDetected';
+  static message = 'Loop Detected.';
 }

@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const BAD_GATEWAY = 'BAD_GATEWAY';
-
 export class BadGateway extends Exception {
-  static status = 502;
-  static code = BAD_GATEWAY;
-
-  constructor(message = 'Bad Gateway.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.BAD_GATEWAY;
+  static readonly name = 'BadGateway';
+  static message = 'Bad Gateway.';
 }

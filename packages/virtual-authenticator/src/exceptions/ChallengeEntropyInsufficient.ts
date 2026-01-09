@@ -1,10 +1,9 @@
 import { Exception } from '@repo/exception';
-
-export const CHALLENGE_ENTROPY_INSUFFICIENT = 'CHALLENGE_ENTROPY_INSUFFICIENT';
+import { HttpStatusCode } from '@repo/http';
 
 export class ChallengeEntropyInsufficient extends Exception {
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly name = 'ChallengeEntropyInsufficient';
   static message =
     'Challenge entropy is insufficient. Challenges must be at least 16 bytes.';
-  static code = CHALLENGE_ENTROPY_INSUFFICIENT;
-  static status = 400;
 }

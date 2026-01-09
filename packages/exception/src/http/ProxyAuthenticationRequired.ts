@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const PROXY_AUTHENTICATION_REQUIRED = 'PROXY_AUTHENTICATION_REQUIRED';
-
 export class ProxyAuthenticationRequired extends Exception {
-  static status = 407;
-  static code = PROXY_AUTHENTICATION_REQUIRED;
-
-  constructor(message = 'Proxy Authentication Required.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.PROXY_AUTHENTICATION_REQUIRED;
+  static readonly name = 'ProxyAuthenticationRequired';
+  static message = 'Proxy Authentication Required.';
 }

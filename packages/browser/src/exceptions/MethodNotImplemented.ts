@@ -1,8 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const METHOD_NOT_IMPLEMENTED = 'METHOD_NOT_IMPLEMENTED';
+import { HttpStatusCode } from '@repo/http';
 
 export class MethodNotImplemented extends Exception {
-  static code = METHOD_NOT_IMPLEMENTED;
+  static status = HttpStatusCode.NOT_IMPLEMENTED;
+  static readonly name = 'MethodNotImplemented';
   static message = 'Method not implemented';
 }

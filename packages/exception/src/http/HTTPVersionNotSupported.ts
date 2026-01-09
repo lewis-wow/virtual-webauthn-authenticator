@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const HTTP_VERSION_NOT_SUPPORTED = 'HTTP_VERSION_NOT_SUPPORTED';
-
 export class HTTPVersionNotSupported extends Exception {
-  static status = 505;
-  static code = HTTP_VERSION_NOT_SUPPORTED;
-
-  constructor(message = 'HTTP Version Not Supported.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.HTTP_VERSION_NOT_SUPPORTED;
+  static readonly name = 'HTTPVersionNotSupported';
+  static message = 'HTTP Version Not Supported.';
 }

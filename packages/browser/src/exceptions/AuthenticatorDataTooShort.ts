@@ -1,8 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const AUTHENTICATOR_DATA_TOO_SHORT = 'AUTHENTICATOR_DATA_TOO_SHORT';
+import { HttpStatusCode } from '@repo/http';
 
 export class AuthenticatorDataTooShort extends Exception {
-  static code = AUTHENTICATOR_DATA_TOO_SHORT;
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly name = 'AuthenticatorDataTooShort';
   static message = 'Authenticator data is too short';
 }

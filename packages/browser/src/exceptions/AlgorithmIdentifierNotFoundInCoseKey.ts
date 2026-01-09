@@ -1,9 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const ALGORITHM_IDENTIFIER_NOT_FOUND_IN_COSE_KEY =
-  'ALGORITHM_IDENTIFIER_NOT_FOUND_IN_COSE_KEY';
+import { HttpStatusCode } from '@repo/http';
 
 export class AlgorithmIdentifierNotFoundInCoseKey extends Exception {
-  static code = ALGORITHM_IDENTIFIER_NOT_FOUND_IN_COSE_KEY;
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly name = 'AlgorithmIdentifierNotFoundInCoseKey';
   static message = 'Algorithm identifier not found in COSE key';
 }

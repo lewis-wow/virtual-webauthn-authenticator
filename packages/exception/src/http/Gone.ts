@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const GONE = 'GONE';
-
 export class Gone extends Exception {
-  static status = 410;
-  static code = GONE;
-
-  constructor(message = 'Gone.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.GONE;
+  static readonly name = 'Gone';
+  static message = 'Gone.';
 }

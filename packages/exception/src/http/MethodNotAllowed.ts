@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const METHOD_NOT_ALLOWED = 'METHOD_NOT_ALLOWED';
-
 export class MethodNotAllowed extends Exception {
-  static status = 405;
-  static code = METHOD_NOT_ALLOWED;
-
-  constructor(message = 'Method Not Allowed.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.METHOD_NOT_ALLOWED;
+  static readonly name = 'MethodNotAllowed';
+  static message = 'Method Not Allowed.';
 }

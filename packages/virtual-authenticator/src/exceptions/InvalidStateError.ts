@@ -1,6 +1,5 @@
 import { Exception } from '@repo/exception';
-
-export const INVALID_STATE_ERROR = 'INVALID_STATE_ERROR';
+import { HttpStatusCode } from '@repo/http';
 
 /**
  * InvalidStateError exception as defined in WebAuthn Level 3.
@@ -9,8 +8,8 @@ export const INVALID_STATE_ERROR = 'INVALID_STATE_ERROR';
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (Step 3.1)
  */
 export class InvalidStateError extends Exception {
-  static status = 400;
-  static code = INVALID_STATE_ERROR;
-
-  static message = `The authenticator is in an invalid state for this operation.`;
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly name = 'InvalidStateError';
+  static message =
+    'The authenticator is in an invalid state for this operation.';
 }

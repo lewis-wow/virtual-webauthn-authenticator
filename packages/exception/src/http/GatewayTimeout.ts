@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const GATEWAY_TIMEOUT = 'GATEWAY_TIMEOUT';
-
 export class GatewayTimeout extends Exception {
-  static status = 504;
-  static code = GATEWAY_TIMEOUT;
-
-  constructor(message = 'Gateway Timeout.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.GATEWAY_TIMEOUT;
+  static readonly name = 'GatewayTimeout';
+  static message = 'Gateway Timeout.';
 }

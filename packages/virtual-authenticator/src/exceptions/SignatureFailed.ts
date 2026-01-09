@@ -1,9 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const SIGNATURE_FAILED = 'SIGNATURE_FAILED';
+import { HttpStatusCode } from '@repo/http';
 
 export class SignatureFailed extends Exception {
-  static code = SIGNATURE_FAILED;
-  static message = `Signature failed.`;
-  static status = 500;
+  static status = HttpStatusCode.INTERNAL_SERVER_ERROR;
+  static readonly name = 'SignatureFailed';
+  static message = 'Signature failed.';
 }
