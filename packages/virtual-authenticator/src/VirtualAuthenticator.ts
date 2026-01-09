@@ -100,11 +100,10 @@ export class VirtualAuthenticator implements IAuthenticator {
    *
    * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
    * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
-   * @throws {CredentialTypesNotSupported} Throws this error if no parameter in the array is supported.
    */
-  private _findFirstSupportedCredTypesAndPubKeyAlgsOrThrow(
+  private _findFirstSupportedCredTypesAndPubKeyAlg(
     pubKeyCredParams: PubKeyCredParam[],
-  ): SupportedPubKeyCredParam {
+  ): SupportedPubKeyCredParam | null {
     for (const pubKeyCredParam of pubKeyCredParams) {
       const result = SupportedPubKeyCredParamSchema.safeParse(pubKeyCredParam);
       if (result.success) {
@@ -112,7 +111,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       }
     }
 
-    throw new CredentialTypesNotSupported();
+    return null;
   }
 
   /**
@@ -470,12 +469,14 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 2: Check if at least one of the specified combinations of
     // PublicKeyCredentialType and cryptographic parameters in
     // credTypesAndPubKeyAlgs is supported.
+    const selectedCredTypeAndAlg =
+      this._findFirstSupportedCredTypesAndPubKeyAlg(credTypesAndPubKeyAlgs);
+
     // If not, return an error code equivalent to "NotSupportedError" and
     // terminate the operation.
-    const selectedCredTypeAndAlg =
-      this._findFirstSupportedCredTypesAndPubKeyAlgsOrThrow(
-        credTypesAndPubKeyAlgs,
-      );
+    if (selectedCredTypeAndAlg === null) {
+      throw new CredentialTypesNotSupported();
+    }
 
     // Step 3: For each descriptor of excludeCredentialDescriptorList:
     if (
