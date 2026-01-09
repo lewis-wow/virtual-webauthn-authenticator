@@ -8,13 +8,13 @@ import {
 } from '@simplewebauthn/server';
 
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialDtoSchema } from '../../src/dto/PublicKeyCredentialDtoSchema';
+import { PublicKeyCredentialDtoSchema } from '../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../src/enums/UserVerification';
 import type {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
 } from '../../src/validation';
-import type { AuthenticatorAgentMetaArgs } from '../../src/validation/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../../src/validation/authenticator/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentContextArgs } from '../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 import { RP_ID, RP_ORIGIN } from './consts';
 

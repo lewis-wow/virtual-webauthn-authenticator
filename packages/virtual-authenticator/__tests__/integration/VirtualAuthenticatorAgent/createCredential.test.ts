@@ -7,11 +7,9 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Jwks, Jwt } from '@repo/crypto';
-import { COSEKey } from '@repo/keys/cose';
-import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import { JWKKeyAlgorithm } from '@repo/keys/jwk/enums';
-import { KeyMapper } from '@repo/keys/shared/mappers';
+import { KeyMapper } from '@repo/keys';
+import { decodeCOSEPublicKey } from '@repo/keys/cbor';
+import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
@@ -28,7 +26,6 @@ import { UserVerification } from '../../../src/enums/UserVerification';
 import { AttestationNotSupported } from '../../../src/exceptions/AttestationNotSupported';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
-import { PrismaVirtualAuthenticatorJwksRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorJwksRepository';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
@@ -60,8 +57,6 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   timeout: 60000,
 } as PublicKeyCredentialCreationOptions;
 
-const ENCRYPTION_KEY = 'ENCRYPTION_KEY';
-
 /**
  * Tests for VirtualAuthenticator.createCredential() method
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
@@ -72,17 +67,6 @@ const ENCRYPTION_KEY = 'ENCRYPTION_KEY';
  */
 describe('VirtualAuthenticator.createCredential()', () => {
   const prisma = new PrismaClient();
-  const prismaVirtualAuthenticatorJwksRepository =
-    new PrismaVirtualAuthenticatorJwksRepository({
-      prisma,
-    });
-  const jwks = new Jwks({
-    encryptionKey: ENCRYPTION_KEY,
-    jwksRepository: prismaVirtualAuthenticatorJwksRepository,
-  });
-  const jwt = new Jwt({
-    jwks,
-  });
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
@@ -91,7 +75,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
-    jwt,
   });
   const agent = new VirtualAuthenticatorAgent({ authenticator });
 
@@ -161,13 +144,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       test('Should have the correct public key', () => {
-        const jwk = KeyMapper.COSEToJWK(
-          COSEKey.fromBytes(
-            registrationVerification.registrationInfo!.credential.publicKey,
-          ),
+        const COSEPublicKey = decodeCOSEPublicKey(
+          registrationVerification.registrationInfo!.credential.publicKey,
         );
 
-        expect(jwk).toMatchObject(
+        const JWKPublicKey =
+          KeyMapper.COSEPublicKeyToJWKPublicKey(COSEPublicKey);
+
+        expect(JWKPublicKey).toMatchObject(
           keyProvider
             .getKeyPairStore()
             [
@@ -1025,13 +1009,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       test('Should have the correct public key', () => {
-        const jwk = KeyMapper.COSEToJWK(
-          COSEKey.fromBytes(
-            registrationVerification.registrationInfo!.credential.publicKey,
-          ),
+        const COSEPublicKey = decodeCOSEPublicKey(
+          registrationVerification.registrationInfo!.credential.publicKey,
         );
 
-        expect(jwk).toMatchObject(
+        const JWKPublicKey =
+          KeyMapper.COSEPublicKeyToJWKPublicKey(COSEPublicKey);
+
+        expect(JWKPublicKey).toMatchObject(
           keyProvider
             .getKeyPairStore()
             [
@@ -2821,13 +2806,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
           registrationVerification.registrationInfo?.credential.publicKey,
         ).toBeDefined();
 
-        const jwk = KeyMapper.COSEToJWK(
-          COSEKey.fromBytes(
-            registrationVerification.registrationInfo!.credential.publicKey,
-          ),
+        const COSEPublicKey = decodeCOSEPublicKey(
+          registrationVerification.registrationInfo!.credential.publicKey,
         );
 
-        expect(jwk.getAlg()).toBe(JWKKeyAlgorithm.ES256);
+        expect(COSEPublicKey.get(COSEKeyParam.alg)).toBe(
+          COSEKeyAlgorithm.ES256,
+        );
       });
 
       test('Should use the first supported algorithm from pubKeyCredParams', async () => {

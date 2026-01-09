@@ -3,7 +3,6 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Jwks, Jwt } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import {
   verifyRegistrationResponse,
@@ -22,12 +21,10 @@ import {
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialDtoSchema } from '../../../src/dto/PublicKeyCredentialDtoSchema';
-import { EnvelopeStatus } from '../../../src/enums';
+import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
-import { PrismaVirtualAuthenticatorJwksRepository } from '../../../src/repositories';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
@@ -47,8 +44,6 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS = {
   rpId: RP_ID,
 } as PublicKeyCredentialRequestOptions;
 
-const ENCRYPTION_KEY = 'ENCRYPTION_KEY';
-
 /**
  * Tests for VirtualAuthenticator.getCredential() method
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
@@ -60,17 +55,6 @@ const ENCRYPTION_KEY = 'ENCRYPTION_KEY';
  */
 describe('VirtualAuthenticator.getCredential()', () => {
   const prisma = new PrismaClient();
-  const prismaVirtualAuthenticatorJwksRepository =
-    new PrismaVirtualAuthenticatorJwksRepository({
-      prisma,
-    });
-  const jwks = new Jwks({
-    encryptionKey: ENCRYPTION_KEY,
-    jwksRepository: prismaVirtualAuthenticatorJwksRepository,
-  });
-  const jwt = new Jwt({
-    jwks,
-  });
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
@@ -79,7 +63,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
-    jwt,
   });
   const agent = new VirtualAuthenticatorAgent({ authenticator });
 
@@ -115,36 +98,25 @@ describe('VirtualAuthenticator.getCredential()', () => {
     // Simulate the full WebAuthn registration ceremony.
     // This creates a new public key credential (passkey) using the
     // specified options, public key, and key vault metadata.
-    const virtualAuthenticatorAgentCreateCredentialResponse =
-      await agent.createCredential({
+    const publicKeyCredential = await agent.createCredential({
+      origin: RP_ORIGIN,
+      options: {
+        publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+      },
+      sameOriginWithAncestors: true,
+
+      // Internal options
+      meta: {
+        userId: USER_ID,
         origin: RP_ORIGIN,
-        options: {
-          publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        },
-        sameOriginWithAncestors: true,
 
-        // Internal options
-        meta: {
-          userId: USER_ID,
-          origin: RP_ORIGIN,
-
-          userPresenceEnabled: true,
-          userVerificationEnabled: true,
-        },
-        context: {
-          apiKeyId: null,
-        },
-      });
-
-    if (
-      virtualAuthenticatorAgentCreateCredentialResponse.status !==
-      EnvelopeStatus.SUCCESS
-    ) {
-      throw new Error();
-    }
-
-    const publicKeyCredential =
-      virtualAuthenticatorAgentCreateCredentialResponse.payload;
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+      },
+      context: {
+        apiKeyId: null,
+      },
+    });
 
     const encodedPublicKeyCredential =
       PublicKeyCredentialDtoSchema.encode(publicKeyCredential);
