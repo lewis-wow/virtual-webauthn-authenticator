@@ -38,7 +38,7 @@ import {
   RP_ORIGIN,
 } from '../../helpers/consts';
 import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
-import { performPublicKeyCredentialRequestAndVerify } from '../../helpers/performPublicKeyCredentialRequestAndVerify';
+import { performPublicKeyCredentialRequestAndVerify } from './performPublicKeyCredentialRequestAndVerify';
 
 const PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS = {
   challenge: CHALLENGE_BYTES,

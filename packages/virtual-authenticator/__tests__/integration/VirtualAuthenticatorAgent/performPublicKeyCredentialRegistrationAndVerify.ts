@@ -1,4 +1,4 @@
-import { USER_ID } from '../../../auth/__tests__/helpers';
+import { USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import {
@@ -7,16 +7,16 @@ import {
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
 
-import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialDtoSchema } from '../../src/dto/spec/PublicKeyCredentialDtoSchema';
-import { UserVerification } from '../../src/enums/UserVerification';
+import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
+import { UserVerification } from '../../../src/enums/UserVerification';
 import type {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
-} from '../../src/validation';
-import type { AuthenticatorAgentMetaArgs } from '../../src/validation/authenticator/AuthenticatorAgentMetaArgsSchema';
-import type { AuthenticatorAgentContextArgs } from '../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
-import { RP_ID, RP_ORIGIN } from './consts';
+} from '../../../src/validation';
+import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticator/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentContextArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import { RP_ID, RP_ORIGIN } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   agent: VirtualAuthenticatorAgent;

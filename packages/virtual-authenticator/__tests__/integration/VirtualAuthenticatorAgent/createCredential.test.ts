@@ -39,7 +39,7 @@ import {
   USER_DISPLAY_NAME,
   USER_ID_BYTSES,
 } from '../../helpers/consts';
-import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
+import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 
 const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   rp: {
