@@ -1,11 +1,10 @@
 import z from 'zod';
 
-import { EnvelopeResponseControlReason } from '../../enums/envelope/EnvelopeResponseControlReason';
 import { EnvelopeStatus } from '../../enums/envelope/EnvelopeStatus';
-import { EnvelopeResponseControlSchema } from '../envelope/EnvelopeResponseControlSchema';
 import { EnvelopeResponseSchema } from '../envelope/EnvelopeResponseSchema';
 import { EnvelopeSuccessResponseSchema } from '../envelope/EnvelopeSuccessResponseSchema';
 import { AuthenticatorGetAssertionResponseSchema } from './AuthenticatorGetAssertionResponseSchema';
+import { VirtualAuthenticatorCredentialSelectStateSchema } from './state/VirtualAuthenticatorCredentialSelectStateSchema';
 
 export const VirtualAuthenticatorGetAssertionResponseSchema =
   z.discriminatedUnion('status', [
@@ -15,10 +14,7 @@ export const VirtualAuthenticatorGetAssertionResponseSchema =
     }),
     EnvelopeResponseSchema.extend({
       status: z.literal(EnvelopeStatus.INTERACTION_REQUIRED),
-      control: EnvelopeResponseControlSchema.extend({
-        reason: z.literal(EnvelopeResponseControlReason.CREDENTIAL_SELECT),
-        stateToken: z.string(),
-      }),
+      state: VirtualAuthenticatorCredentialSelectStateSchema,
     }),
   ]);
 

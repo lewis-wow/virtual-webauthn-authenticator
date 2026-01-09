@@ -1,6 +1,8 @@
+import { HttpStatusCode } from '@repo/http';
 import {
   PublicKeyCredentialRequestOptionsDtoSchema,
   AuthenticatorAgentGetAssertionResponseDtoSchema,
+  CredentialSelectExceptionPayloadDtoSchema,
 } from '@repo/virtual-authenticator/dto';
 import z from 'zod';
 
@@ -26,5 +28,8 @@ export const GetCredentialBodySchema = z.object({
 // Outputs
 // -------------------------------------
 
-export const GetCredentialResponseSchema =
-  AuthenticatorAgentGetAssertionResponseDtoSchema;
+export const GetCredentialResponseSchema = {
+  [HttpStatusCode.OK]: AuthenticatorAgentGetAssertionResponseDtoSchema,
+  [HttpStatusCode.PRECONDITION_REQUIRED]:
+    CredentialSelectExceptionPayloadDtoSchema,
+} as const;

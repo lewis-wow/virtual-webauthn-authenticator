@@ -1,6 +1,5 @@
 import z from 'zod';
 
-import { EnvelopeResponseControlSchema } from './EnvelopeResponseControlSchema';
 import { EnvelopeStatusSchema } from './enums/EnvelopeStatusSchema';
 
 /**
@@ -8,7 +7,11 @@ import { EnvelopeStatusSchema } from './enums/EnvelopeStatusSchema';
  */
 export const EnvelopeResponseSchema = z.object({
   status: EnvelopeStatusSchema,
-  control: EnvelopeResponseControlSchema,
+
+  /**
+   * Internal state.
+   */
+  state: z.null().optional(),
 
   /**
    * Spec standard payload.

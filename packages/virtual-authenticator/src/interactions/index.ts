@@ -1,2 +1,2 @@
-export * from './CredentialSelectInteraction';
-export * from './Interaction';
+export * from './authenticator/VirtualAuthenticatorCredentialSelectInteraction';
+export * from './Interruption';

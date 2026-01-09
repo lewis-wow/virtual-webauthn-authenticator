@@ -18,7 +18,7 @@ import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupp
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
-import { CredentialSelectInteraction } from './interactions/CredentialSelectInteraction';
+import { VirtualAuthenticatorCredentialSelectInterruption } from './interactions/authenticator/VirtualAuthenticatorCredentialSelectInteraction';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
@@ -602,7 +602,7 @@ export class VirtualAuthenticator implements IAuthenticator {
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
                 userId: userHandle,
-                apiKeyId: context.apiKeyId,
+                apiKeyId: meta.apiKeyId,
                 isClientSideDiscoverable: true,
               },
             );
@@ -751,7 +751,7 @@ export class VirtualAuthenticator implements IAuthenticator {
         {
           userId: meta.userId,
           rpId,
-          apiKeyId: context.apiKeyId,
+          apiKeyId: meta.apiKeyId,
           allowCredentialDescriptorList: allowCredentialDescriptorList?.map(
             (allowCredentialDescriptor) =>
               UUIDMapper.bytesToUUID(allowCredentialDescriptor.id),
@@ -770,7 +770,7 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Prompt user to select credential.
     if (credentialOptions.length > 1) {
-      throw new CredentialSelectInteraction({
+      throw new VirtualAuthenticatorCredentialSelectInterruption({
         credentialOptions,
       });
     }

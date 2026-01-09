@@ -1,7 +1,8 @@
 import z from 'zod';
 
 export const AuthenticatorContextArgsSchema = z.object({
-  apiKeyId: z.string().nullable(),
+  selectedCredentailId: z.string().optional(),
+  optionsHash: z.string().optional(),
 });
 
 export type AuthenticatorContextArgs = z.infer<

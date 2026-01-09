@@ -25,6 +25,8 @@ import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
+import { VirtualAuthenticatorCredentialSelectInterruption } from './interactions';
+import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interactions/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInteraction';
 import type {
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,
@@ -194,24 +196,35 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
     await authenticator.authenticatorCancel({ meta });
 
-    const authenticatorGetAssertionPayload =
-      await authenticator.authenticatorGetAssertion({
-        authenticatorGetAssertionArgs: {
-          allowCredentialDescriptorList,
-          extensions: authenticatorExtensions,
-          hash: clientDataHash,
-          rpId,
-          requireUserPresence: true,
-          requireUserVerification,
-        },
-        meta,
-        context,
-      });
+    try {
+      const authenticatorGetAssertionPayload =
+        await authenticator.authenticatorGetAssertion({
+          authenticatorGetAssertionArgs: {
+            allowCredentialDescriptorList,
+            extensions: authenticatorExtensions,
+            hash: clientDataHash,
+            rpId,
+            requireUserPresence: true,
+            requireUserVerification,
+          },
+          meta,
+          context,
+        });
 
-    // Step 4: Return true.
-    // NOTE: We don't need to use savedCredentialIds and saved authenticatorGetAssertion payload.
-    // We have single authenticator, so we can directly return the payload.
-    return authenticatorGetAssertionPayload;
+      // Step 4: Return true.
+      // NOTE: We don't need to use savedCredentialIds and saved authenticatorGetAssertion payload.
+      // We have single authenticator, so we can directly return the payload.
+      return authenticatorGetAssertionPayload;
+    } catch (error) {
+      if (error instanceof VirtualAuthenticatorCredentialSelectInterruption) {
+        throw new VirtualAuthenticatorAgentCredentialSelectInterruption({
+          virtualAuthenticatorCredentialSelectInterruptionPayload:
+            error.payload,
+        });
+      }
+
+      throw error;
+    }
   }
 
   /**
@@ -860,10 +873,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
+    // New context from client
     context: AuthenticatorAgentContextArgs;
   }): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
-
     // Step 1: Let options be the object passed to the
     // [[DiscoverFromExternalSource]](origin, options,
     // sameOriginWithAncestors) internal method.
