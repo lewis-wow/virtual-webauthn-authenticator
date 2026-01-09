@@ -1,6 +1,6 @@
 import type { TypedMap } from '@repo/types';
 
-import type { COSEKeyCurveName } from './enums';
+import type { COSEKeyAlgorithm, COSEKeyCurveName, COSEKeyType } from './enums';
 import type { COSEKeyParam } from './enums/COSEKeyParam';
 import type { COSEKeyTypeParam } from './enums/COSEKeyTypeParam';
 
@@ -19,7 +19,7 @@ export type COSEPublicKey = TypedMap<{
    * @see https://www.rfc-editor.org/rfc/rfc8152.html#section-7.1
    * Common values: COSEKeyType.EC (2), COSEKeyType.RSA (3)
    */
-  [COSEKeyParam.kty]: number | undefined;
+  [COSEKeyParam.kty]: COSEKeyType | undefined;
 
   /**
    * Key ID (kid) - Identification value matched to the kid in the message.
@@ -32,7 +32,7 @@ export type COSEPublicKey = TypedMap<{
    * @see https://www.rfc-editor.org/rfc/rfc8152.html#section-7.1
    * Common values: COSEKeyAlgorithm.ES256 (-7), COSEKeyAlgorithm.RS256 (-257)
    */
-  [COSEKeyParam.alg]: number | undefined;
+  [COSEKeyParam.alg]: COSEKeyAlgorithm | undefined;
 
   /**
    * Key Operations (key_ops) - Restricts the set of operations that a key is to be used for.

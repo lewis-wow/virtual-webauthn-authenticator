@@ -1,13 +1,19 @@
 import {
   KnownKeyOperations,
-  type JsonWebKey,
   type KeyClient,
   type KeyVaultKey,
   type SignResult,
 } from '@azure/keyvault-keys';
+import { assertSchema } from '@repo/assert';
 import { KeyMapper } from '@repo/keys';
 import { type JSONWebPublicKey, KeyAlgorithmMapper } from '@repo/keys';
-import { COSEKeyAlgorithm, JWKKeyAlgorithm } from '@repo/keys/enums';
+import { decodeCOSEPublicKey } from '@repo/keys/cbor';
+import {
+  COSEKeyAlgorithm,
+  COSEKeyParam,
+  JWKKeyAlgorithm,
+} from '@repo/keys/enums';
+import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
@@ -19,6 +25,7 @@ import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
 import { UnexpectedWebAuthnPublicKeyCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';
+import { mapKeyVaultKeyToJWKPublicKey } from './mappers/mapKeyVaultKeyToJWKPublicKey';
 
 export type KeyPayload = {
   jwk: JSONWebPublicKey;
@@ -56,19 +63,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     return Buffer.from(bytes).toString('base64url');
   }
 
-  private _convertAzureKeyVaultJWKPublicKey(
-    azureKeyVaultJWKPublicKey: JsonWebKey,
-  ): JSONWebPublicKey {
-    return {
-      kty: azureKeyVaultJWKPublicKey.kty,
-      crv: azureKeyVaultJWKPublicKey.crv,
-      x: this._toB64(azureKeyVaultJWKPublicKey.x),
-      y: this._toB64(azureKeyVaultJWKPublicKey.y),
-      e: this._toB64(azureKeyVaultJWKPublicKey.e),
-      n: this._toB64(azureKeyVaultJWKPublicKey.n),
-    };
-  }
-
   /**
    * Creates a new cryptographic key in Azure Key Vault.
    * @param opts.keyName - The name for the new key
@@ -95,7 +89,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     );
 
     return {
-      jwk: this._convertAzureKeyVaultJWKPublicKey(keyVaultKey.key!),
+      jwk: mapKeyVaultKeyToJWKPublicKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
       },
@@ -112,7 +106,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     const keyVaultKey = await this.keyClient.getKey(keyName);
 
     return {
-      jwk: this._convertAzureKeyVaultJWKPublicKey(keyVaultKey.key!),
+      jwk: mapKeyVaultKeyToJWKPublicKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
       },
@@ -220,17 +214,27 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
           .keyVaultKeyName,
     });
 
-    const keyAlgorithm = JWKKeyAlgorithm.ES256;
+    const COSEPublicKey = decodeCOSEPublicKey(
+      webAuthnPublicKeyCredential.COSEPublicKey,
+    );
+
+    const COSEPublicKeyAlgorithm = COSEPublicKey.get(COSEKeyParam.alg);
+    assertSchema(COSEPublicKeyAlgorithm, COSEKeyAlgorithmSchema);
+
+    const JWKKeyAlgorithm =
+      KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyAlgorithm(
+        COSEPublicKeyAlgorithm,
+      );
 
     const signature = await this._sign({
-      algorithm: keyAlgorithm,
+      algorithm: JWKKeyAlgorithm,
       keyVaultKey,
       data,
     });
 
     return {
       signature: signature.signature,
-      alg: KeyAlgorithmMapper.JWKKeyAlgorithmToCOSEKeyAlgorithm(keyAlgorithm),
+      alg: COSEPublicKeyAlgorithm,
     };
   }
 }
