@@ -6,7 +6,7 @@ import {
 
 import { TypeAssertionError } from '@repo/assert';
 import { Hash } from '@repo/crypto';
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/cose/enums';
 import { PrismaClient } from '@repo/prisma';
 import * as cbor from 'cbor2';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
@@ -19,7 +19,10 @@ import {
 } from '../../../src/cbor';
 import { CollectedClientDataType, Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { UserVerificationNotAvailable } from '../../../src/exceptions';
+import {
+  CredentialTypesNotSupported,
+  UserVerificationNotAvailable,
+} from '../../../src/exceptions';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
   AuthenticatorContextArgs,
@@ -422,6 +425,160 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           });
 
         expect(attestationObjectMap.get('fmt')).toBe(expectedFmt);
+      },
+    );
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.credTypesAndPubKeyAlgs', () => {
+    test.each(
+      [
+        // ONLY Supported algorithms
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: COSEKeyAlgorithm.ES256,
+            },
+          ],
+          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES256,
+        },
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: COSEKeyAlgorithm.ES256,
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: COSEKeyAlgorithm.ES384,
+            },
+          ],
+          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES256,
+        },
+        // At least one supported algorithm
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 6,
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: COSEKeyAlgorithm.ES384,
+            },
+          ],
+          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES256,
+        },
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 3,
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 6,
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: COSEKeyAlgorithm.ES384,
+            },
+          ],
+          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES256,
+        },
+      ].map((testCase) => ({
+        ...testCase,
+        // Create a clean string representation, e.g., "TPM, ANDROID_KEY"
+        credTypesAndPubKeyAlgsDisplay: testCase.credTypesAndPubKeyAlgs
+          .map(
+            (credTypesAndPubKeyAlg) =>
+              `${credTypesAndPubKeyAlg.type}:${credTypesAndPubKeyAlg.alg}`,
+          )
+          .join(', '),
+      })),
+    )(
+      'At least one supported args.credTypesAndPubKeyAlgs $credTypesAndPubKeyAlgsDisplay',
+      async ({ credTypesAndPubKeyAlgs, expectedCOSEKeyAlgorithm }) => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          credTypesAndPubKeyAlgs,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const { authDataParser } =
+          await performAuthenticatorMakeCredentialAndVerify({
+            authenticator,
+            authenticatorMakeCredentialArgs,
+          });
+
+        const COSEPublicKey = authDataParser.getPublicKey();
+
+        const COSEKeyAlgorithm = COSEPublicKey?.get(COSEKeyParam.alg);
+
+        expect(COSEKeyAlgorithm).toBe(expectedCOSEKeyAlgorithm);
+      },
+    );
+
+    test.each(
+      [
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 7,
+            },
+          ],
+          expectedError: new CredentialTypesNotSupported(),
+        },
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 7,
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 8,
+            },
+          ],
+          expectedError: new CredentialTypesNotSupported(),
+        },
+        {
+          credTypesAndPubKeyAlgs: [
+            {
+              type: 'INVALID_TYPE',
+              alg: 7,
+            },
+            {
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+              alg: 8,
+            },
+          ],
+          expectedError: new TypeAssertionError(),
+        },
+      ].map((testCase) => ({
+        ...testCase,
+        // Create a clean string representation, e.g., "TPM, ANDROID_KEY"
+        credTypesAndPubKeyAlgsDisplay: testCase.credTypesAndPubKeyAlgs
+          .map(
+            (credTypesAndPubKeyAlg) =>
+              `${credTypesAndPubKeyAlg.type}:${credTypesAndPubKeyAlg.alg}`,
+          )
+          .join(', '),
+      })),
+    )(
+      'No supported args.credTypesAndPubKeyAlgs $credTypesAndPubKeyAlgsDisplay',
+      async ({ credTypesAndPubKeyAlgs, expectedError }) => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          credTypesAndPubKeyAlgs,
+        } as AuthenticatorMakeCredentialArgs;
+
+        await expect(() =>
+          performAuthenticatorMakeCredentialAndVerify({
+            authenticator,
+            authenticatorMakeCredentialArgs,
+          }),
+        ).rejects.toThrowError(expectedError);
       },
     );
   });
