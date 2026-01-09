@@ -6,10 +6,9 @@ import {
 
 import { TypeAssertionError } from '@repo/assert';
 import { Hash } from '@repo/crypto';
-import { importKey, KeyAlgorithmMapper, KeyMapper } from '@repo/keys';
+import { verifyEC, type COSEPublicKeyEC } from '@repo/keys';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
-import { webcrypto } from 'node:crypto';
 import {
   afterAll,
   afterEach,
@@ -504,7 +503,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               alg: COSEKeyAlgorithm.ES384,
             },
           ],
-          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES256,
+          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES384,
         },
         {
           credTypesAndPubKeyAlgs: [
@@ -521,7 +520,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               alg: COSEKeyAlgorithm.ES384,
             },
           ],
-          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES256,
+          expectedCOSEKeyAlgorithm: COSEKeyAlgorithm.ES384,
         },
       ].map((testCase) => ({
         ...testCase,
@@ -692,28 +691,18 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           authenticatorMakeCredentialArgs,
         });
 
-      const COSEPublicKey = parsedAuthenticatorData.credentialPublicKey;
-      const jwkPublicKey = KeyMapper.COSEPublicKeyToJWKPublicKey(
-        COSEPublicKey!,
-      );
       const signature = attestationObjectMap.get('attStmt').get('sig');
       const signedData = new Uint8Array(
         Buffer.concat([attestationObjectMap.get('authData'), CLIENT_DATA_HASH]),
       );
-      const cryptoKey = await importKey({
-        keyData: jwkPublicKey,
-        algorithm: 'SHA-256',
-      });
 
-      const isVerified = await webcrypto.subtle.verify(
-        {
-          name: cryptoKey.algorithm.name,
-          hash: 'SHA-256',
-        },
-        cryptoKey,
-        signedData,
-        signature!,
-      );
+      const COSEPublicKey = parsedAuthenticatorData.credentialPublicKey;
+
+      const isVerified = await verifyEC({
+        cosePublicKey: COSEPublicKey as COSEPublicKeyEC,
+        data: signedData,
+        signature: signature!,
+      });
 
       expect(isVerified).toBe(true);
     });
