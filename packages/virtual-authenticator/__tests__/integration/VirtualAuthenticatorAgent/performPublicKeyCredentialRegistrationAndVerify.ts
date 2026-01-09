@@ -62,6 +62,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     // Internal options
     meta: {
       userId: USER_ID,
+      apiKeyId: null,
       origin: RP_ORIGIN,
 
       userPresenceEnabled: true,
@@ -69,7 +70,6 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
       ...meta,
     },
     context: {
-      apiKeyId: null,
       ...context,
     },
   });

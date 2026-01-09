@@ -321,7 +321,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           pubKeyCredParams: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              alg: -8,
+              alg: 8,
             },
           ],
         } satisfies Partial<PublicKeyCredentialCreationOptions>,
@@ -332,7 +332,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           pubKeyCredParams: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              alg: -8,
+              alg: 8,
             },
             {
               type: 'WRONG_TYPE',
@@ -1107,42 +1107,58 @@ describe('VirtualAuthenticator.createCredential()', () => {
       await cleanupWebAuthnPublicKeyCredentials();
     });
 
-    test.each([
-      {
+    test('Should work with undefined excludeCredentials array', async () => {
+      // First, create a credential
+      const firstCredential =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        });
+
+      expect(firstCredential.registrationVerification.verified).toBe(true);
+
+      // Now try to create another credential, excluding no credential using empty array
+      // Per spec, the authenticator should still allow this (different credential)
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
         excludeCredentials: undefined,
-      },
-      {
+      } satisfies PublicKeyCredentialCreationOptions;
+
+      const secondCredential =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        });
+
+      expect(secondCredential.registrationVerification.verified).toBe(true);
+    });
+
+    test('Should not work with empty excludeCredentials array', async () => {
+      // First, create a credential
+      const firstCredential =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        });
+
+      expect(firstCredential.registrationVerification.verified).toBe(true);
+
+      // Now try to create another credential, excluding no credential using empty array
+      // Per spec, the authenticator should still allow this (different credential)
+      const publicKeyCredentialCreationOptions = {
+        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
         excludeCredentials: [],
-      },
-    ])(
-      'Should work with empty or undefined excludeCredentials array',
-      async ({ excludeCredentials }) => {
-        // First, create a credential
-        const firstCredential =
-          await performPublicKeyCredentialRegistrationAndVerify({
-            agent,
-            publicKeyCredentialCreationOptions:
-              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-          });
+      } satisfies PublicKeyCredentialCreationOptions;
 
-        expect(firstCredential.registrationVerification.verified).toBe(true);
-
-        // Now try to create another credential, excluding no credential using empty array
-        // Per spec, the authenticator should still allow this (different credential)
-        const publicKeyCredentialCreationOptions = {
-          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-          excludeCredentials,
-        } satisfies PublicKeyCredentialCreationOptions;
-
-        const secondCredential =
-          await performPublicKeyCredentialRegistrationAndVerify({
-            agent,
-            publicKeyCredentialCreationOptions,
-          });
-
-        expect(secondCredential.registrationVerification.verified).toBe(true);
-      },
-    );
+      await expect(() =>
+        performPublicKeyCredentialRegistrationAndVerify({
+          agent,
+          publicKeyCredentialCreationOptions,
+        }),
+      ).rejects.toThrowError(new TypeAssertionError());
+    });
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-excludecredentials
@@ -2126,7 +2142,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           },
         ],
         timeout: 300000,
-        excludeCredentials: [],
+        excludeCredentials: undefined,
         authenticatorSelection: {
           authenticatorAttachment: AuthenticatorAttachment.CROSS_PLATFORM,
           residentKey: ResidentKey.PREFERRED,
@@ -2631,8 +2647,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
             meta: {
               userId: USER_ID,
               origin: RP_ORIGIN,
-            },
-            context: {
               apiKeyId: null,
             },
           }),

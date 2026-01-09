@@ -15,7 +15,7 @@ import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
-import { CredentialSelectInteraction } from '../../../src/interactions';
+import { VirtualAuthenticatorCredentialSelectInterruption } from '../../../src/interruption';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
   AuthenticatorGetAssertionArgs,
@@ -287,7 +287,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorMakeCredentialResponse,
         }),
       ).rejects.toThrowError(
-        new CredentialSelectInteraction({
+        new VirtualAuthenticatorCredentialSelectInterruption({
           credentialOptions: expectedCredentialOptions,
         }),
       );

@@ -26,6 +26,7 @@ import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCre
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
+import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
@@ -110,13 +111,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
+        apiKeyId: null,
 
         userPresenceEnabled: true,
         userVerificationEnabled: true,
       },
-      context: {
-        apiKeyId: null,
-      },
+      context: {},
     });
 
     const encodedPublicKeyCredential =
@@ -296,17 +296,16 @@ describe('VirtualAuthenticator.getCredential()', () => {
       },
     );
 
-    await expect(
-      async () =>
-        await performPublicKeyCredentialRequestAndVerify({
-          agent,
-          publicKeyCredentialRequestOptions,
-          webAuthnPublicKeyCredentialId,
-          publicKey,
-          counter,
-          userId,
-        }),
-    ).to.rejects.toThrowError(new CredentialNotFound());
+    await expect(() =>
+      performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+        userId,
+      }),
+    ).rejects.toThrowError(new CredentialOptionsEmpty());
   });
 
   test('should fail with wrong allowCredentials', async () => {

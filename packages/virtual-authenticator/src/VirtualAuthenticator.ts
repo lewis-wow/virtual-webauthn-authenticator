@@ -18,7 +18,7 @@ import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupp
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
-import { VirtualAuthenticatorCredentialSelectInterruption } from './interactions/authenticator/VirtualAuthenticatorCredentialSelectInteraction';
+import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption/authenticator/VirtualAuthenticatorCredentialSelectInteraction';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
@@ -103,7 +103,7 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
    * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
    */
-  private _findFirstSupportedCredTypesAndPubKeyAlg(
+  private _findFirstSupportedCredTypesAndPubKeyAlgOrNull(
     pubKeyCredParams: PubKeyCredParam[],
   ): SupportedPubKeyCredParam | null {
     for (const pubKeyCredParam of pubKeyCredParams) {
@@ -440,7 +440,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     );
 
     // Meta validation
-    assertSchema(meta, AuthenticatorMetaArgsSchema);
+    assertSchema(
+      meta,
+      AuthenticatorMetaArgsSchema.extend({
+        userPresenceEnabled: z.literal(true),
+      }),
+    );
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
 
@@ -472,7 +477,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // PublicKeyCredentialType and cryptographic parameters in
     // credTypesAndPubKeyAlgs is supported.
     const selectedCredTypeAndAlg =
-      this._findFirstSupportedCredTypesAndPubKeyAlg(credTypesAndPubKeyAlgs);
+      this._findFirstSupportedCredTypesAndPubKeyAlgOrNull(
+        credTypesAndPubKeyAlgs,
+      );
 
     // If not, return an error code equivalent to "NotSupportedError" and
     // terminate the operation.

@@ -25,8 +25,8 @@ import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import { VirtualAuthenticatorCredentialSelectInterruption } from './interactions';
-import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interactions/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInteraction';
+import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption';
+import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interruption/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInteraction';
 import type {
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,

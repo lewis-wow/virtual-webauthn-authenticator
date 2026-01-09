@@ -89,10 +89,10 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
         userId: USER_ID,
         userPresenceEnabled: true,
         userVerificationEnabled: true,
+        apiKeyId: null,
         ...meta,
       },
       context: {
-        apiKeyId: null,
         ...context,
       },
     });
