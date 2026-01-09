@@ -85,11 +85,6 @@ export class COSEKey implements IKey {
     return this.map.get(COSEKeyTypeParam.OKP_x) as Uint8Array | undefined;
   }
 
-  /** Returns OKP Private Key (d) */
-  public getOkpD(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.OKP_d) as Uint8Array | undefined;
-  }
-
   // --- EC2 (Elliptic Curve) Specific Properties ---
 
   /** Returns EC2 Curve (crv) */
@@ -111,11 +106,6 @@ export class COSEKey implements IKey {
       | undefined;
   }
 
-  /** Returns EC2 Private Key (d) */
-  public getEcD(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.EC_d) as Uint8Array | undefined;
-  }
-
   // --- RSA Specific Properties ---
 
   /** Returns RSA Modulus (n) */
@@ -126,48 +116,6 @@ export class COSEKey implements IKey {
   /** Returns RSA Public Exponent (e) */
   public getRsaE(): Uint8Array | undefined {
     return this.map.get(COSEKeyTypeParam.RSA_e) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA Private Exponent (d) */
-  public getRsaD(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_d) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA Secret Prime p */
-  public getRsaP(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_p) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA Secret Prime q */
-  public getRsaQ(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_q) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA dP (d mod (p - 1)) */
-  public getRsaDp(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_dP) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA dQ (d mod (q - 1)) */
-  public getRsaDq(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_dQ) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA qInv (CRT coefficient) */
-  public getRsaQInv(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_qInv) as Uint8Array | undefined;
-  }
-
-  /** Returns RSA Other Prime Infos (array of maps) */
-  public getRsaOther(): unknown[] | undefined {
-    return this.map.get(COSEKeyTypeParam.RSA_other) as unknown[] | undefined;
-  }
-
-  // --- Symmetric Key Properties ---
-
-  /** Returns Symmetric Key Value (k) */
-  public getSymmetricK(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.Symmetric_k) as Uint8Array | undefined;
   }
 
   // --- HSS-LMS Specific Properties ---
@@ -196,39 +144,11 @@ export class COSEKey implements IKey {
       | undefined;
   }
 
-  /** Returns WalnutDSA Matrix 1 */
-  public getWalnutDsaMatrix1(): number[][] | undefined {
-    return this.map.get(COSEKeyTypeParam.WalnutDSA_matrix_1) as
-      | number[][]
-      | undefined;
-  }
-
-  /** Returns WalnutDSA Permutation 1 */
-  public getWalnutDsaPermutation1(): number[] | undefined {
-    return this.map.get(COSEKeyTypeParam.WalnutDSA_permutation_1) as
-      | number[]
-      | undefined;
-  }
-
-  /** Returns WalnutDSA Matrix 2 */
-  public getWalnutDsaMatrix2(): number[][] | undefined {
-    return this.map.get(COSEKeyTypeParam.WalnutDSA_matrix_2) as
-      | number[][]
-      | undefined;
-  }
-
   // --- Dilithium (AKP) Specific Properties ---
 
   /** Returns Dilithium Public Key (pub) */
   public getDilithiumPub(): Uint8Array | undefined {
     return this.map.get(COSEKeyTypeParam.Dilithium_pub) as
-      | Uint8Array
-      | undefined;
-  }
-
-  /** Returns Dilithium Private Key (priv) */
-  public getDilithiumPriv(): Uint8Array | undefined {
-    return this.map.get(COSEKeyTypeParam.Dilithium_priv) as
       | Uint8Array
       | undefined;
   }
@@ -242,6 +162,14 @@ export class COSEKey implements IKey {
       assertSchema(alg, z.enum(COSEKeyAlgorithm));
 
       switch (kty) {
+        case COSEKeyType.OKP: {
+          const crv = map.get(COSEKeyTypeParam.OKP_crv);
+          assertSchema(crv, z.enum(COSEKeyCurveName));
+
+          const x = map.get(COSEKeyTypeParam.OKP_x);
+          assertSchema(x, z.instanceof(Uint8Array));
+          break;
+        }
         case COSEKeyType.EC: {
           const crv = map.get(COSEKeyTypeParam.EC_crv);
           assertSchema(crv, z.enum(COSEKeyCurveName));
@@ -252,11 +180,6 @@ export class COSEKey implements IKey {
           const y = map.get(COSEKeyTypeParam.EC_y);
           // Y can be bytes or boolean (compressed)
           assertSchema(y, z.union([z.instanceof(Uint8Array), z.boolean()]));
-
-          if (map.has(COSEKeyTypeParam.EC_d)) {
-            const d = map.get(COSEKeyTypeParam.EC_d);
-            assertSchema(d, z.instanceof(Uint8Array));
-          }
           break;
         }
         case COSEKeyType.RSA: {

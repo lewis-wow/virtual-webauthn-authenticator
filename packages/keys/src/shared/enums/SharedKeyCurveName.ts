@@ -36,10 +36,8 @@ export const SharedKeyCurveName = {
    * Ed25519 curve for EdDSA.
    * - COSE: 6
    * - JWK: 'Ed25519'
-   *
-   * NOTE: Not implemented / supported.
    */
-  // Ed25519: 'Ed25519',
+  Ed25519: 'Ed25519',
 } as const;
 
 export type SharedKeyCurveName = ValueOfEnum<typeof SharedKeyCurveName>;

@@ -29,22 +29,20 @@ export const JWKKeyType = {
   [SharedKeyType.RSA]: SharedKeyType.RSA,
 
   /**
+   * Octet Key Pair.
+   * Used with curves like Ed25519 or X25519.
+   *
+   * @see https://datatracker.ietf.org/doc/html/rfc8037#section-2
+   */
+  [SharedKeyType.OKP]: SharedKeyType.OKP,
+
+  /**
    * Octet Sequence (Symmetric).
    * Used for symmetric keys (HMAC, AES).
    *
    * NOTE: Not used. Is only for symmetric encryption.
    */
   // [SharedKeyType.Oct]: SharedKeyType.Oct,
-
-  /**
-   * Octet Key Pair.
-   * Used with curves like Ed25519 or X25519.
-   *
-   * @see https://datatracker.ietf.org/doc/html/rfc8037#section-2
-   *
-   * NOTE: Not implemented / supported.
-   */
-  // [SharedKeyType.OKP]: SharedKeyType.OKP,
 } as const satisfies Record<SharedKeyType, unknown>;
 
 export type JWKKeyType = ValueOfEnum<typeof JWKKeyType>;

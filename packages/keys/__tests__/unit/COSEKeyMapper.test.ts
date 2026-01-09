@@ -7,16 +7,13 @@ import { KeyMapper } from '../../src/shared/mappers/KeyMapper';
 // --- Test Data ---
 
 // Reusable JWK data objects (as plain objects).
+// Note: This package only supports public keys, not private keys.
+
 const p256PublicKeyData = {
   kty: 'EC',
   crv: 'P-256',
   x: '46h_Gf2I-GAe3AnwT3a4u2bYgPKFF5eQ8eZ5LLu-DPg',
   y: 'qNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY',
-};
-
-const p256PrivateKeyData = {
-  ...p256PublicKeyData,
-  d: 'RGs-NTMbC3S8EYM-LI_2a2yN2AnTpF2YAbK2DPa1fS4',
 };
 
 const rsaPublicKeyData = {
@@ -25,16 +22,16 @@ const rsaPublicKeyData = {
   e: 'AQAB',
 };
 
-const rsaPrivateKeyData = {
-  ...rsaPublicKeyData,
-  d: 'B-k_s-a_l-o-n-g_v-a-l-i-d_b-a-s-e-6-4-u-r-l_s-t-r-i-n-g_f-o-r_t-h-e_p-r-i-v-a-t-e_e-x-p-o-n-e-n-t_d_B-k_s-a_l-o-n-g_v-a-l-i-d_b-a-s-e-6-4-u-r-l_s-t-r-i-n-g_f-o-r_t-h-e_p-r-i-v-a-t-e_e-x-p-o-n-e-n-t_d_B-k_s-a_l-o-n-g_v-a-l-i-d_b-a-s-e-6-4-u-r-l_s-t-r-i-n-g_f-o-r_t-h-e_p-r-i-v-a-t-e_e-x-p-o-n-e-n-t_c',
+const ed25519PublicKeyData = {
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: 'XuEoF6K1cPOKyFJSN2vQqZg1H45-wMEpK7YbYfSxLW8',
 };
 
 // Reusable JsonWebKey class instances
 const p256PublicKeyJwk = new JsonWebKey(p256PublicKeyData);
-const p256PrivateKeyJwk = new JsonWebKey(p256PrivateKeyData);
 const rsaPublicKeyJwk = new JsonWebKey(rsaPublicKeyData);
-const rsaPrivateKeyJwk = new JsonWebKey(rsaPrivateKeyData);
+const ed25519PublicKeyJwk = new JsonWebKey(ed25519PublicKeyData);
 
 // --- End Test Data ---
 
@@ -46,12 +43,6 @@ describe('KeyMapper', () => {
         const outputJwk = KeyMapper.COSEToJWK(coseKey);
         expect(outputJwk).toMatchObject(p256PublicKeyData);
       });
-
-      test('P-256 private key', () => {
-        const coseKey = KeyMapper.JWKToCOSE(p256PrivateKeyJwk);
-        const outputJwk = KeyMapper.COSEToJWK(coseKey);
-        expect(outputJwk).toMatchObject(p256PrivateKeyData);
-      });
     });
 
     describe('RSA', () => {
@@ -60,19 +51,21 @@ describe('KeyMapper', () => {
         const outputJwk = KeyMapper.COSEToJWK(coseKey);
         expect(outputJwk).toMatchObject(rsaPublicKeyData);
       });
+    });
 
-      test('RSA private key', () => {
-        const coseKey = KeyMapper.JWKToCOSE(rsaPrivateKeyJwk);
+    describe('OKP', () => {
+      test('Ed25519 public key', () => {
+        const coseKey = KeyMapper.JWKToCOSE(ed25519PublicKeyJwk);
         const outputJwk = KeyMapper.COSEToJWK(coseKey);
-        expect(outputJwk).toMatchObject(rsaPrivateKeyData);
+        expect(outputJwk).toMatchObject(ed25519PublicKeyData);
       });
     });
   });
 
   describe('CBOR Round-trip', () => {
-    test('should serialize and deserialize a private key', () => {
+    test('should serialize and deserialize an EC public key', () => {
       // 1. Create COSEKey from a known JWK
-      const originalCoseKey = KeyMapper.JWKToCOSE(p256PrivateKeyJwk);
+      const originalCoseKey = KeyMapper.JWKToCOSE(p256PublicKeyJwk);
 
       // 2. Serialize to buffer
       const buffer = originalCoseKey.toBytes();
@@ -85,7 +78,25 @@ describe('KeyMapper', () => {
 
       // 5. Verify the deserialized key can be converted back to the original JWK
       const outputJwk = KeyMapper.COSEToJWK(deserializedCoseKey);
-      expect(outputJwk).toMatchObject(p256PrivateKeyData);
+      expect(outputJwk).toMatchObject(p256PublicKeyData);
+    });
+
+    test('should serialize and deserialize an OKP public key', () => {
+      // 1. Create COSEKey from a known JWK
+      const originalCoseKey = KeyMapper.JWKToCOSE(ed25519PublicKeyJwk);
+
+      // 2. Serialize to buffer
+      const buffer = originalCoseKey.toBytes();
+
+      // 3. Deserialize from buffer
+      const deserializedCoseKey = COSEKey.fromBytes(buffer);
+
+      // 4. Verify the internal map is identical
+      expect(deserializedCoseKey.map).toEqual(originalCoseKey.map);
+
+      // 5. Verify the deserialized key can be converted back to the original JWK
+      const outputJwk = KeyMapper.COSEToJWK(deserializedCoseKey);
+      expect(outputJwk).toMatchObject(ed25519PublicKeyData);
     });
   });
 
@@ -137,6 +148,14 @@ describe('KeyMapper', () => {
       const jwk = new JsonWebKey({
         kty: 'RSA',
         n: rsaPublicKeyData.n,
+      });
+      expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
+    });
+
+    test('should throw for OKP key with missing x', () => {
+      const jwk = new JsonWebKey({
+        kty: 'OKP',
+        crv: 'Ed25519',
       });
       expect(() => KeyMapper.JWKToCOSE(jwk)).toThrow();
     });

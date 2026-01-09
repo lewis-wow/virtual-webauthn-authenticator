@@ -73,6 +73,14 @@ export const SharedKeyAlgorithm = {
    * - JWK: 'PS512'
    */
   PS512: 'PS512',
+
+  /**
+   * EdDSA (Edwards-curve Digital Signature Algorithm).
+   * Used with Ed25519 and Ed448 curves.
+   * - COSE: -8
+   * - JWK: 'EdDSA'
+   */
+  EdDSA: 'EdDSA',
 } as const;
 
 export type SharedKeyAlgorithm = ValueOfEnum<typeof SharedKeyAlgorithm>;

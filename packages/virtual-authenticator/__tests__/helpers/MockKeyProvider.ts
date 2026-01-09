@@ -64,9 +64,11 @@ export class MockKeyProvider implements IKeyProvider {
 
     const keyPair = this.keyPairStore[webAuthnPublicKeyCredential.id]!;
 
-    const signature = createSign('sha256')
-      .update(data)
-      .sign(keyPair.privateKey);
+    const signature = new Uint8Array(
+      createSign('sha256')
+        .update(data)
+        .sign({ key: keyPair.privateKey, dsaEncoding: 'ieee-p1363' }),
+    );
 
     return { signature, alg: COSEKeyAlgorithm.ES256 };
   }

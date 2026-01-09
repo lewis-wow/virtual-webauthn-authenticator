@@ -87,6 +87,15 @@ export const JWKKeyAlgorithm = {
   [SharedKeyAlgorithm.PS512]: SharedKeyAlgorithm.PS512,
 
   /**
+   * EdDSA (Edwards-curve Digital Signature Algorithm).
+   * Implementation: Optional (for JWS conformance)
+   * Used with Ed25519 and Ed448 curves.
+   *
+   * @see https://datatracker.ietf.org/doc/html/rfc8037
+   */
+  [SharedKeyAlgorithm.EdDSA]: SharedKeyAlgorithm.EdDSA,
+
+  /**
    * No digital signature or MAC performed.
    * Implementation: Optional (for JWS conformance)
    *

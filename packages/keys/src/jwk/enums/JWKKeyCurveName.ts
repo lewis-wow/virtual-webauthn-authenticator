@@ -6,11 +6,7 @@ export const JWKKeyCurveName = {
   [SharedKeyCurveName['P-256']]: SharedKeyCurveName['P-256'],
   [SharedKeyCurveName['P-384']]: SharedKeyCurveName['P-384'],
   [SharedKeyCurveName['P-521']]: SharedKeyCurveName['P-521'],
-
-  /**
-   * NOTE: Not implemented / supported.
-   */
-  // [SharedKeyCurveName.Ed25519]: 'Ed25519',
+  [SharedKeyCurveName.Ed25519]: SharedKeyCurveName.Ed25519,
 } as const satisfies Record<SharedKeyCurveName, unknown>;
 
 export type JWKKeyCurveName = ValueOfEnum<typeof JWKKeyCurveName>;

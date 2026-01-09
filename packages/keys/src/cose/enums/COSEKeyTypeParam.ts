@@ -24,11 +24,6 @@ export const COSEKeyTypeParam = {
    */
   OKP_x: -2,
 
-  /**
-   * OKP: Private key (d).
-   */
-  OKP_d: -4,
-
   // --- Key Type 2: EC2 (Elliptic Curve Keys w/ x-coordinate) ---
 
   /**
@@ -54,13 +49,6 @@ export const COSEKeyTypeParam = {
    */
   EC_y: -3,
 
-  /**
-   * EC2: Private key (d).
-   *
-   * NOTE: EC for compatibility.
-   */
-  EC_d: -4,
-
   // --- Key Type 3: RSA ---
 
   /**
@@ -72,64 +60,6 @@ export const COSEKeyTypeParam = {
    * RSA: Public exponent (e).
    */
   RSA_e: -2,
-
-  /**
-   * RSA: Private exponent (d).
-   */
-  RSA_d: -3,
-
-  /**
-   * RSA: Prime factor p of n (p).
-   */
-  RSA_p: -4,
-
-  /**
-   * RSA: Prime factor q of n (q).
-   */
-  RSA_q: -5,
-
-  /**
-   * RSA: dP is d mod (p - 1).
-   */
-  RSA_dP: -6,
-
-  /**
-   * RSA: dQ is d mod (q - 1).
-   */
-  RSA_dQ: -7,
-
-  /**
-   * RSA: qInv is the CRT coefficient q^(-1) mod p.
-   */
-  RSA_qInv: -8,
-
-  /**
-   * RSA: Other prime infos (other).
-   * Value: Array of maps.
-   */
-  RSA_other: -9,
-
-  /**
-   * RSA: A prime factor r_i of n, where i >= 3.
-   */
-  RSA_ri: -10,
-
-  /**
-   * RSA: d_i = d mod (r_i - 1).
-   */
-  RSA_di: -11,
-
-  /**
-   * RSA: The CRT coefficient t_i = (r_1 * ... * r_(i-1))^(-1) mod r_i.
-   */
-  RSA_ti: -12,
-
-  // --- Key Type 4: Symmetric ---
-
-  /**
-   * Symmetric: Key Value (k).
-   */
-  Symmetric_k: -1,
 
   // --- Key Type 5: HSS-LMS ---
 
@@ -155,32 +85,12 @@ export const COSEKeyTypeParam = {
    */
   WalnutDSA_t_values: -3,
 
-  /**
-   * WalnutDSA: NxN Matrix of entries in F_q in column-major form (matrix 1).
-   */
-  WalnutDSA_matrix_1: -4,
-
-  /**
-   * WalnutDSA: Permutation associated with matrix 1 (permutation 1).
-   */
-  WalnutDSA_permutation_1: -5,
-
-  /**
-   * WalnutDSA: NxN Matrix of entries in F_q in column-major form (matrix 2).
-   */
-  WalnutDSA_matrix_2: -6,
-
   // --- Key Type 7: Dilithium (Draft) ---
 
   /**
    * Dilithium: Public key (pub).
    */
   Dilithium_pub: -1,
-
-  /**
-   * Dilithium: Private key (priv).
-   */
-  Dilithium_priv: -2,
 } as const;
 
 export type COSEKeyTypeParam = ValueOfEnum<typeof COSEKeyTypeParam>;

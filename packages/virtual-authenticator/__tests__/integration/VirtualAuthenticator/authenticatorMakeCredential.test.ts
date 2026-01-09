@@ -11,6 +11,7 @@ import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/cose/enums';
 import { KeyMapper } from '@repo/keys/shared/mappers';
 import { PrismaClient } from '@repo/prisma';
 import * as cbor from 'cbor2';
+import { webcrypto } from 'node:crypto';
 import {
   afterAll,
   afterEach,
@@ -681,10 +682,11 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   });
 
   describe('AuthenticatorMakeCredentialArgs.hash', () => {
-    test('', async () => {
+    test('Signature is valid', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
         hash: CLIENT_DATA_HASH,
+        attestationFormats: [Fmt.PACKED],
       } as AuthenticatorMakeCredentialArgs;
 
       const { attestationObjectMap, authDataParser } =
@@ -694,9 +696,24 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         });
 
       const COSEPublicKey = authDataParser.getPublicKey();
-      KeyMapper.COSEToJWK(new COSEKey(COSEPublicKey!));
+      const jwkPublicKey = KeyMapper.COSEToJWK(new COSEKey(COSEPublicKey!));
+      const signature = attestationObjectMap.get('attStmt').get('sig');
+      const signedData = new Uint8Array(
+        Buffer.concat([attestationObjectMap.get('authData'), CLIENT_DATA_HASH]),
+      );
+      const cryptoKey = await jwkPublicKey.toCryptoKey();
 
-      attestationObjectMap.get('attStmt').get('sig');
+      const isVerified = await webcrypto.subtle.verify(
+        {
+          name: cryptoKey.algorithm.name,
+          hash: 'SHA-256',
+        },
+        cryptoKey,
+        signedData,
+        signature!,
+      );
+
+      expect(isVerified).toBe(true);
     });
   });
 });

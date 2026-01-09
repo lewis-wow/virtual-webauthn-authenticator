@@ -24,10 +24,8 @@ export const COSEKeyCurveName = {
   /**
    * Ed25519 curve for EdDSA.
    * Used with EdDSA signature algorithm.
-   *
-   * NOTE: Not implemented / supported.
    */
-  // [SharedKeyCurveName.Ed25519]: 6,
+  [SharedKeyCurveName.Ed25519]: 6,
 } as const satisfies Record<SharedKeyCurveName, unknown>;
 
 export type COSEKeyCurveName = ValueOfEnum<typeof COSEKeyCurveName>;

@@ -49,14 +49,13 @@ export interface ICOSEKeyMap
     [COSEKeyParam.base_iv]: Uint8Array | undefined;
 
     // Key Type Parameters (key = -1)
-    // Shared by: OKP_crv, EC_crv, RSA_n, Symmetric_k, HSS_LMS_pub, WalnutDSA_N, Dilithium_pub
+    // Shared by: OKP_crv, EC_crv, RSA_n, HSS_LMS_pub, WalnutDSA_N, Dilithium_pub
 
     /**
      * Parameter at key -1.
      * - OKP: crv (curve identifier)
      * - EC2: crv (curve identifier)
      * - RSA: n (modulus)
-     * - Symmetric: k (key value)
      * - HSS-LMS: pub (public key)
      * - WalnutDSA: N (group and matrix size)
      * - Dilithium: pub (public key)
@@ -64,7 +63,7 @@ export interface ICOSEKeyMap
     [COSEKeyTypeParam.EC_crv]: number | Uint8Array | undefined;
 
     // Key Type Parameters (key = -2)
-    // Shared by: OKP_x, EC_x, RSA_e, WalnutDSA_q, Dilithium_priv
+    // Shared by: OKP_x, EC_x, RSA_e, WalnutDSA_q
 
     /**
      * Parameter at key -2.
@@ -72,77 +71,16 @@ export interface ICOSEKeyMap
      * - EC2: x (x-coordinate)
      * - RSA: e (public exponent)
      * - WalnutDSA: q (finite field)
-     * - Dilithium: priv (private key)
      */
     [COSEKeyTypeParam.EC_x]: Uint8Array | number | undefined;
 
     // Key Type Parameters (key = -3)
-    // Shared by: EC_y, RSA_d, WalnutDSA_t_values
+    // Shared by: EC_y, WalnutDSA_t_values
 
     /**
      * Parameter at key -3.
      * - EC2: y (y-coordinate, may be boolean for point compression)
-     * - RSA: d (private exponent)
      * - WalnutDSA: t_values (list of T-values)
      */
     [COSEKeyTypeParam.EC_y]: Uint8Array | boolean | number[] | undefined;
-
-    // Key Type Parameters (key = -4)
-    // Shared by: OKP_d, EC_d, RSA_p, WalnutDSA_matrix_1
-
-    /**
-     * Parameter at key -4.
-     * - OKP: d (private key)
-     * - EC2: d (private key)
-     * - RSA: p (prime factor p of n)
-     * - WalnutDSA: matrix_1 (NxN matrix)
-     */
-    [COSEKeyTypeParam.EC_d]: Uint8Array | number[][] | undefined;
-
-    // Key Type Parameters (key = -5)
-    // Shared by: RSA_q, WalnutDSA_permutation_1
-
-    /**
-     * Parameter at key -5.
-     * - RSA: q (prime factor q of n)
-     * - WalnutDSA: permutation_1 (permutation)
-     */
-    [COSEKeyTypeParam.RSA_q]: Uint8Array | number[] | undefined;
-
-    // Key Type Parameters (key = -6)
-    // Shared by: RSA_dP, WalnutDSA_matrix_2
-
-    /**
-     * Parameter at key -6.
-     * - RSA: dP (d mod (p - 1))
-     * - WalnutDSA: matrix_2 (NxN matrix)
-     */
-    [COSEKeyTypeParam.RSA_dP]: Uint8Array | number[][] | undefined;
-
-    // Key Type Parameters (key = -7)
-    // RSA only
-
-    /**
-     * RSA dQ (d mod (q - 1)).
-     * @see https://www.rfc-editor.org/rfc/rfc8230.html#section-4
-     */
-    [COSEKeyTypeParam.RSA_dQ]: Uint8Array | undefined;
-
-    // Key Type Parameters (key = -8)
-    // RSA only
-
-    /**
-     * RSA qInv (CRT coefficient q^(-1) mod p).
-     * @see https://www.rfc-editor.org/rfc/rfc8230.html#section-4
-     */
-    [COSEKeyTypeParam.RSA_qInv]: Uint8Array | undefined;
-
-    // Key Type Parameters (key = -9)
-    // RSA only
-
-    /**
-     * RSA Other prime infos.
-     * @see https://www.rfc-editor.org/rfc/rfc8230.html#section-4
-     */
-    [COSEKeyTypeParam.RSA_other]: unknown[] | undefined;
   }> {}

@@ -22,10 +22,9 @@ export const COSEKeyType = {
 
   /**
    * Octet Key Pair.
-   *
-   * NOTE: Not implemented / supported.
+   * Used with curves like Ed25519 or X25519.
    */
-  // [SharedKeyType.OKP]: 1,
+  [SharedKeyType.OKP]: 1,
 
   /**
    * Elliptic Curve Keys w/ x- and y-coordinate pair.

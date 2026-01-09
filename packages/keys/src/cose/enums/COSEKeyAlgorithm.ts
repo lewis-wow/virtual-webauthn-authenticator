@@ -114,11 +114,9 @@ export const COSEKeyAlgorithm = {
 
   /**
    * EdDSA (Ed25519).
-   * Status: Deprecated (in IETF context, generally Active).
-   *
-   * NOTE: Not implemented / supported.
+   * Used with OKP keys on Ed25519 curve.
    */
-  // EdDSA: -8,
+  [SharedKeyAlgorithm.EdDSA]: -8,
 
   /**
    * ECDSA using P-256 curve and SHA-256.

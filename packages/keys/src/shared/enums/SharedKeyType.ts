@@ -32,10 +32,8 @@ export const SharedKeyType = {
    * Used with curves like Ed25519 or X25519.
    * - COSE: 1
    * - JWK: 'OKP'
-   *
-   * NOTE: Not implemented / supported.
    */
-  // OKP: 'OKP',
+  OKP: 'OKP',
 
   /**
    * Octet Sequence (Symmetric).

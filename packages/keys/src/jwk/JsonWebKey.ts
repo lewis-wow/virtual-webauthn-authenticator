@@ -1,5 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import { Buffer } from 'buffer';
+import type { webcrypto } from 'crypto';
+import { importJWK } from 'jose';
 import z from 'zod';
 
 import type { IKey } from '../shared/IKey';
@@ -51,11 +53,6 @@ export type JsonWebKeyOptions = {
   [JWKKeyTypeParam.EC_y]?: Uint8Array | string;
 
   /**
-   * EC Private Key (d) or RSA Private Exponent.
-   */
-  [JWKKeyTypeParam.EC_d]?: Uint8Array | string;
-
-  /**
    * RSA Modulus (n).
    */
   [JWKKeyTypeParam.RSA_n]?: Uint8Array | string;
@@ -64,42 +61,6 @@ export type JsonWebKeyOptions = {
    * RSA Public Exponent (e).
    */
   [JWKKeyTypeParam.RSA_e]?: Uint8Array | string;
-
-  /**
-   * RSA First Prime Factor (p).
-   */
-  [JWKKeyTypeParam.RSA_p]?: Uint8Array | string;
-
-  /**
-   * RSA Second Prime Factor (q).
-   */
-  [JWKKeyTypeParam.RSA_q]?: Uint8Array | string;
-
-  /**
-   * RSA First Factor CRT Exponent (dp).
-   */
-  [JWKKeyTypeParam.RSA_dp]?: Uint8Array | string;
-
-  /**
-   * RSA Second Factor CRT Exponent (dq).
-   */
-  [JWKKeyTypeParam.RSA_dq]?: Uint8Array | string;
-
-  /**
-   * RSA First CRT Coefficient (qi).
-   */
-  [JWKKeyTypeParam.RSA_qi]?: Uint8Array | string;
-
-  /**
-   * Symmetric Key Value (k).
-   */
-  [JWKKeyTypeParam.Oct_k]?: Uint8Array | string;
-
-  /**
-   * HSM Token (t).
-   * Note: This is a proprietary extension, not in standard JWK spec, but kept for compatibility.
-   */
-  t?: Uint8Array | string;
 };
 
 /**
@@ -117,22 +78,10 @@ export class JsonWebKey implements IKey {
   public crv?: string;
   public x?: string;
   public y?: string;
-  public d?: string;
 
   // --- RSA Parameters ---
   public n?: string;
   public e?: string;
-  public p?: string;
-  public q?: string;
-  public dp?: string;
-  public dq?: string;
-  public qi?: string;
-
-  // --- Symmetric Parameters ---
-  public k?: string;
-
-  // --- Extensions ---
-  public t?: string;
 
   constructor(opts: JsonWebKeyOptions) {
     if (!JsonWebKey.canParse(opts)) {
@@ -150,31 +99,12 @@ export class JsonWebKey implements IKey {
       this.x = this._toBase64url(opts[JWKKeyTypeParam.EC_x]!);
     if (opts[JWKKeyTypeParam.EC_y])
       this.y = this._toBase64url(opts[JWKKeyTypeParam.EC_y]!);
-    if (opts[JWKKeyTypeParam.EC_d])
-      this.d = this._toBase64url(opts[JWKKeyTypeParam.EC_d]!);
 
     // RSA
     if (opts[JWKKeyTypeParam.RSA_n])
       this.n = this._toBase64url(opts[JWKKeyTypeParam.RSA_n]!);
     if (opts[JWKKeyTypeParam.RSA_e])
       this.e = this._toBase64url(opts[JWKKeyTypeParam.RSA_e]!);
-    if (opts[JWKKeyTypeParam.RSA_p])
-      this.p = this._toBase64url(opts[JWKKeyTypeParam.RSA_p]!);
-    if (opts[JWKKeyTypeParam.RSA_q])
-      this.q = this._toBase64url(opts[JWKKeyTypeParam.RSA_q]!);
-    if (opts[JWKKeyTypeParam.RSA_dp])
-      this.dp = this._toBase64url(opts[JWKKeyTypeParam.RSA_dp]!);
-    if (opts[JWKKeyTypeParam.RSA_dq])
-      this.dq = this._toBase64url(opts[JWKKeyTypeParam.RSA_dq]!);
-    if (opts[JWKKeyTypeParam.RSA_qi])
-      this.qi = this._toBase64url(opts[JWKKeyTypeParam.RSA_qi]!);
-
-    // Symmetric
-    if (opts[JWKKeyTypeParam.Oct_k])
-      this.k = this._toBase64url(opts[JWKKeyTypeParam.Oct_k]!);
-
-    // Extension
-    if (opts.t) this.t = this._toBase64url(opts.t);
   }
 
   public toJSON(): Record<string, unknown> {
@@ -190,26 +120,9 @@ export class JsonWebKey implements IKey {
     if (this.x) json[JWKKeyTypeParam.EC_x] = this.x;
     if (this.y) json[JWKKeyTypeParam.EC_y] = this.y;
 
-    // RSA & EC Private (Shared 'd')
-    // Note: In JWK, 'd' is the parameter key for both EC and RSA private exponents.
-    if (this.d) json[JWKKeyTypeParam.RSA_d] = this.d;
-
     // RSA Public
     if (this.n) json[JWKKeyTypeParam.RSA_n] = this.n;
     if (this.e) json[JWKKeyTypeParam.RSA_e] = this.e;
-
-    // RSA Private
-    if (this.p) json[JWKKeyTypeParam.RSA_p] = this.p;
-    if (this.q) json[JWKKeyTypeParam.RSA_q] = this.q;
-    if (this.dp) json[JWKKeyTypeParam.RSA_dp] = this.dp;
-    if (this.dq) json[JWKKeyTypeParam.RSA_dq] = this.dq;
-    if (this.qi) json[JWKKeyTypeParam.RSA_qi] = this.qi;
-
-    // Symmetric
-    if (this.k) json[JWKKeyTypeParam.Oct_k] = this.k;
-
-    // Extensions
-    if (this.t) json['t'] = this.t;
 
     return json;
   }
@@ -226,22 +139,10 @@ export class JsonWebKey implements IKey {
       [JWKKeyTypeParam.EC_crv]: json[JWKKeyTypeParam.EC_crv] as string,
       [JWKKeyTypeParam.EC_x]: json[JWKKeyTypeParam.EC_x] as string,
       [JWKKeyTypeParam.EC_y]: json[JWKKeyTypeParam.EC_y] as string,
-      [JWKKeyTypeParam.EC_d]: json[JWKKeyTypeParam.EC_d] as string,
 
       // RSA
       [JWKKeyTypeParam.RSA_n]: json[JWKKeyTypeParam.RSA_n] as string,
       [JWKKeyTypeParam.RSA_e]: json[JWKKeyTypeParam.RSA_e] as string,
-      [JWKKeyTypeParam.RSA_p]: json[JWKKeyTypeParam.RSA_p] as string,
-      [JWKKeyTypeParam.RSA_q]: json[JWKKeyTypeParam.RSA_q] as string,
-      [JWKKeyTypeParam.RSA_dp]: json[JWKKeyTypeParam.RSA_dp] as string,
-      [JWKKeyTypeParam.RSA_dq]: json[JWKKeyTypeParam.RSA_dq] as string,
-      [JWKKeyTypeParam.RSA_qi]: json[JWKKeyTypeParam.RSA_qi] as string,
-
-      // Symmetric
-      [JWKKeyTypeParam.Oct_k]: json[JWKKeyTypeParam.Oct_k] as string,
-
-      // Extension
-      t: json['t'] as string,
     };
 
     return new JsonWebKey(jsonWebKeyOptions);
@@ -279,6 +180,14 @@ export class JsonWebKey implements IKey {
         // but strictly speaking, it's ambiguous.
         return JWKKeyAlgorithm.PS256;
 
+      case JWKKeyType.OKP:
+        switch (this.crv) {
+          case JWKKeyCurveName.Ed25519:
+            return JWKKeyAlgorithm.EdDSA;
+          default:
+            return undefined;
+        }
+
       default:
         return undefined;
     }
@@ -286,6 +195,18 @@ export class JsonWebKey implements IKey {
 
   public getKeyOps(): string[] | undefined {
     return this.keyOps;
+  }
+
+  // --- OKP (Octet Key Pair) Specific Properties ---
+
+  /** Returns OKP Curve (crv) */
+  public getOkpCrv(): string | undefined {
+    return this.crv;
+  }
+
+  /** Returns OKP Public Key (x) */
+  public getOkpX(): string | undefined {
+    return this.x;
   }
 
   // --- EC (Elliptic Curve) Specific Properties ---
@@ -305,11 +226,6 @@ export class JsonWebKey implements IKey {
     return this.y;
   }
 
-  /** Returns EC2 Private Key (d) */
-  public getEcD(): string | undefined {
-    return this.d;
-  }
-
   // --- RSA Specific Properties ---
 
   /** Returns RSA Modulus (n) */
@@ -322,34 +238,20 @@ export class JsonWebKey implements IKey {
     return this.e;
   }
 
-  /** Returns RSA Private Exponent (d) */
-  public getRsaD(): string | undefined {
-    return this.d;
-  }
+  /**
+   * Converts this JWK to a standard Web Crypto `CryptoKey`.
+   * Compatible with Node.js (v15+), Browsers, Deno, and Cloudflare Workers.
+   */
+  public async toCryptoKey(): Promise<webcrypto.CryptoKey> {
+    // Convert your class instance to a plain JSON object
+    const jwk = this.toJSON();
 
-  /** Returns RSA Secret Prime p */
-  public getRsaP(): string | undefined {
-    return this.p;
-  }
+    // Let the 'jose' library handle the import
+    // It automatically detects alg, crv, kty and maps them to Web Crypto API
+    // Returns a standard Web Crypto 'CryptoKey'
+    const key = await importJWK(jwk, this.getAlg());
 
-  /** Returns RSA Secret Prime q */
-  public getRsaQ(): string | undefined {
-    return this.q;
-  }
-
-  /** Returns RSA dP (d mod (p - 1)) */
-  public getRsaDp(): string | undefined {
-    return this.dp;
-  }
-
-  /** Returns RSA dQ (d mod (q - 1)) */
-  public getRsaDq(): string | undefined {
-    return this.dq;
-  }
-
-  /** Returns RSA qInv (CRT coefficient) */
-  public getRsaQInv(): string | undefined {
-    return this.qi;
+    return key as webcrypto.CryptoKey;
   }
 
   /**
