@@ -1,3 +1,4 @@
-export * from './IAttestationObjectMap';
-export * from './IAttestationStatementMap';
-export * from './AuthenticatorDataParser';
+export * from './AttestationObjectMap';
+export * from './AttestationStatementMap';
+export * from './decodeAttestationObject';
+export * from './decodeAttestationObject';

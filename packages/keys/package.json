@@ -8,6 +8,7 @@
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
+    "./cbor": "./src/cbor/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {

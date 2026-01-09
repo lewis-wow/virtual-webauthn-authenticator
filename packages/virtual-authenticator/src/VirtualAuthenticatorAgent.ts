@@ -8,7 +8,7 @@ import z from 'zod';
 import type { IAuthenticator } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
 import { AuthenticatorDataParser } from './cbor';
-import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
+import type { IAttestationObjectMap } from './cbor/AttestationObjectMap';
 import {
   Attestation,
   AuthenticatorAttachment,
