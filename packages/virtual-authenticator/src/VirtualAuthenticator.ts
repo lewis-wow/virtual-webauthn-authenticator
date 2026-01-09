@@ -49,10 +49,6 @@ import {
   type SupportedPubKeyCredParam,
 } from './validation/spec/CredParamSchema';
 
-export type AuthenticatorBackendContext = {
-  apiKeyId: string;
-};
-
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
   keyProvider: IKeyProvider;
