@@ -17,6 +17,7 @@ import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
+import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
 import { CredentialSelectInteraction } from './interactions/CredentialSelectInteraction';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
@@ -713,8 +714,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       rpId,
       allowCredentialDescriptorList,
 
-      // NOTE: Should be always true. Just for compatibility with spec.
-      // requireUserPresence,
+      requireUserPresence,
       requireUserVerification,
 
       // NOTE: Extensions are not implemented.
@@ -766,14 +766,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     }
 
     // Step 7: Prompt user to select credential and collect authorization gesture
-    //   Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-    //   Collect an authorization gesture confirming user consent for using selectedCredential.
-    //   If requireUserVerification is true, the authorization gesture MUST include user verification.
-    //   If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
-    //   If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    //   TODO: NOTE (OUTDATED!): User prompts and gestures are not applicable to a backend virtual authenticator for testing.
-    //   The implementation automatically selects the first matching credential. User verification and presence
-    //   checks are handled later in Step 10 during authenticatorData creation.
+    // Prompt the user to select a public key credential source selectedCredential from credentialOptions.
 
     // Prompt user to select credential.
     if (credentialOptions.length > 1) {
@@ -782,6 +775,22 @@ export class VirtualAuthenticator implements IAuthenticator {
       });
     }
 
+    // Collect an authorization gesture confirming user consent for using selectedCredential.
+    // If requireUserVerification is true, the authorization gesture MUST include user verification.
+    if (
+      requireUserVerification === true &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
+    // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
+    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
+      throw new UserPresenceNotAvailable();
+    }
+    // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
+
+    // IMPORTANT: The credential is selected ONLY if there is only one credential.
     const selectedCredential = credentialOptions[0]!;
 
     // Step 8: Let processedExtensions be the result of authenticator extension processing for each supported extension identifier → authenticator extension input in extensions.

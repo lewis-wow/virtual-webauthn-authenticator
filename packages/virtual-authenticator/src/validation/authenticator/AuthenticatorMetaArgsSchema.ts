@@ -4,7 +4,7 @@ export const AuthenticatorMetaArgsSchema = z.object({
   userId: z.string(),
 
   userVerificationEnabled: z.boolean(),
-  userPresenceEnabled: z.literal(true),
+  userPresenceEnabled: z.boolean(),
 });
 
 export type AuthenticatorMetaArgs = z.infer<typeof AuthenticatorMetaArgsSchema>;

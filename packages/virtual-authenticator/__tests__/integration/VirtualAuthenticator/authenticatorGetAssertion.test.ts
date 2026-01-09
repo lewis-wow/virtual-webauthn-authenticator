@@ -7,12 +7,20 @@ import {
   beforeAll,
   beforeEach,
   describe,
+  expect,
   test,
 } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { PublicKeyCredentialType } from '../../../src/enums';
+import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
+import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation';
+import type {
+  AuthenticatorGetAssertionArgs,
+  AuthenticatorMakeCredentialResponse,
+  AuthenticatorMetaArgs,
+} from '../../../src/validation';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
@@ -72,15 +80,193 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     await prisma.user.deleteMany();
   });
 
-  describe('test', () => {
-    test('test', async () => {
-      const authenticatorGetAssertionArgs = AUTHENTICATOR_GET_ASSERTION_ARGS;
+  describe('AuthenticatorMakeCredentialArgs.requireUserPresence', () => {
+    test('args.requireUserPresence: true, meta.userPresenceEnabled: true', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserPresence: true,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userPresenceEnabled: true,
+      };
 
       await performAuthenticatorGetAssertionAndVerify({
         authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        meta,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+
+    test('args.requireUserPresence: true, meta.userPresenceEnabled: false', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserPresence: true,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userPresenceEnabled: false,
+      };
+
+      await expect(() =>
+        performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          prisma,
+          authenticatorGetAssertionArgs,
+          meta,
+          authenticatorMakeCredentialResponse,
+        }),
+      ).rejects.toThrowError(new UserPresenceNotAvailable());
+    });
+
+    test('args.requireUserPresence: false, meta.userPresenceEnabled: true', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserPresence: false,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userPresenceEnabled: true,
+      };
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        meta,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+
+    test('args.requireUserPresence: false, meta.userPresenceEnabled: false', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserPresence: false,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userPresenceEnabled: false,
+      };
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        meta,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.requireUserVerification', () => {
+    test('args.requireUserVerification: true, meta.userVerificationEnabled: true', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserVerification: true,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: true,
+      };
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        meta,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+
+    test('args.requireUserVerification: true, meta.userVerificationEnabled: false', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserVerification: true,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: false,
+      };
+
+      await expect(() =>
+        performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          prisma,
+          authenticatorGetAssertionArgs,
+          meta,
+          authenticatorMakeCredentialResponse,
+        }),
+      ).rejects.toThrowError(new UserVerificationNotAvailable());
+    });
+
+    test('args.requireUserVerification: false, meta.userVerificationEnabled: true', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserVerification: false,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: true,
+      };
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        meta,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+
+    test('args.requireUserVerification: false, meta.userVerificationEnabled: false', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        requireUserVerification: false,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: false,
+      };
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        meta,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.allowCredentialDescriptorList', () => {
+    test('Client-side discovery', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        allowCredentialDescriptorList: undefined,
+      } as AuthenticatorGetAssertionArgs;
+
+      // DUMMY TEST:
+      expect(authenticatorGetAssertionArgs).toBeDefined();
+    });
+
+    test('Authentication with existing public key credential', async () => {
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        allowCredentialDescriptorList: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: authenticatorMakeCredentialResponse.credentialId,
+          },
+        ],
+      } as AuthenticatorGetAssertionArgs;
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
-        prisma,
       });
     });
   });
