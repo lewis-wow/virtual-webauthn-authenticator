@@ -138,7 +138,9 @@ const performAuthenticatorMakeCredentialAndVerify = async (
   }
 
   expect(parsedAuthenticatorData.extensionsData).toBe(undefined);
-  expect(parsedAuthenticatorData.rpIdHash).toStrictEqual(Hash.sha256(RP_ID));
+  expect(parsedAuthenticatorData.rpIdHash).toStrictEqual(
+    Hash.sha256(authenticatorMakeCredentialArgs.rpEntity.id),
+  );
 
   return {
     response: authenticatorMakeCredentialResponse,
@@ -648,6 +650,27 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           authenticatorMakeCredentialArgs,
         }),
       ).rejects.toThrowError(new CredentialExcluded());
+    });
+
+    test('No credential excluded because of different RP ID', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        rpEntity: {
+          id: 'another-rp.id',
+          name: 'ANOTHER_RP_NAME',
+        },
+        excludeCredentialDescriptorList: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: credentialId,
+          },
+        ],
+      } as AuthenticatorMakeCredentialArgs;
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs,
+      });
     });
 
     test('Invalid empty args.excludeCredentialDescriptorList', async () => {
