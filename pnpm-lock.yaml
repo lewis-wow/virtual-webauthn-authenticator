@@ -957,6 +957,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
