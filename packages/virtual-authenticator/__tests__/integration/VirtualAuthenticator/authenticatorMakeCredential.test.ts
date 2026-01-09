@@ -364,6 +364,11 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       [
         { attestationFormats: [Fmt.NONE], expectedFmt: Fmt.NONE },
         { attestationFormats: [Fmt.PACKED], expectedFmt: Fmt.PACKED },
+        // Empty
+        {
+          attestationFormats: [],
+          expectedFmt: VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
+        },
         // Not supported formats
         {
           attestationFormats: [Fmt.TPM],
