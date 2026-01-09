@@ -5,20 +5,21 @@ import {
 } from '../../../../auth/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
-import { Hash, Jwks, Jwt } from '@repo/crypto';
+import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import { PrismaClient } from '@repo/prisma';
+import * as cbor from 'cbor2';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
 import type { IAuthenticator } from '../../../src';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import {
-  CollectedClientDataType,
-  EnvelopeStatus,
-  Fmt,
-} from '../../../src/enums';
+  AuthenticatorDataParser,
+  type IAttestationObjectMap,
+} from '../../../src/cbor';
+import { CollectedClientDataType } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { PrismaVirtualAuthenticatorJwksRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorJwksRepository';
+import { UserVerificationNotAvailable } from '../../../src/exceptions';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
   AuthenticatorContextArgs,
@@ -37,8 +38,6 @@ import {
   USER_ID_BYTSES,
 } from '../../helpers/consts';
 
-const ENCRYPTION_KEY = 'ENCRYPTION_KEY';
-
 const COLLECTED_CLIENT_DATA: CollectedClientData = {
   type: CollectedClientDataType.WEBAUTHN_GET,
   challenge: Buffer.from(CHALLENGE_BYTES).toString('base64url'),
@@ -54,7 +53,7 @@ const CLIENT_DATA_JSON = new Uint8Array(
 const CLIENT_DATA_HASH = Hash.sha256(CLIENT_DATA_JSON);
 
 const AUTHENTICATOR_MAKE_CREDENTIAL_ARGS: AuthenticatorMakeCredentialArgs = {
-  attestationFormats: [Fmt.NONE],
+  attestationFormats: [],
   credTypesAndPubKeyAlgs: [
     { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
   ],
@@ -81,22 +80,15 @@ type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
   authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
   meta?: Partial<AuthenticatorMetaArgs>;
   context?: Partial<AuthenticatorContextArgs>;
-
-  expectEnvelopeStatus?: EnvelopeStatus;
 };
 
 const performAuthenticatorMakeCredentialAndVerify = async (
   opts: PerformAuthenticatorMakeCredentialAndVerifyArgs,
 ) => {
-  const {
-    authenticator,
-    authenticatorMakeCredentialArgs,
-    meta,
-    context,
-    expectEnvelopeStatus,
-  } = opts;
+  const { authenticator, authenticatorMakeCredentialArgs, meta, context } =
+    opts;
 
-  const virtualAuthenticatorAuthenticatorMakeCredentialResponse =
+  const authenticatorMakeCredentialResponse =
     await authenticator.authenticatorMakeCredential({
       authenticatorMakeCredentialArgs,
       meta: {
@@ -111,11 +103,37 @@ const performAuthenticatorMakeCredentialAndVerify = async (
       },
     });
 
-  expect(virtualAuthenticatorAuthenticatorMakeCredentialResponse.status).toBe(
-    expectEnvelopeStatus,
+  const attestationObjectMap = cbor.decode<IAttestationObjectMap>(
+    authenticatorMakeCredentialResponse.attestationObject,
+    {
+      preferMap: true,
+    },
   );
 
-  return virtualAuthenticatorAuthenticatorMakeCredentialResponse.payload;
+  const authData = attestationObjectMap.get('authData');
+
+  const authDataParser = new AuthenticatorDataParser(authData);
+
+  expect(authDataParser.getAaguid()).toStrictEqual(VirtualAuthenticator.AAGUID);
+  // New credential counter should be always 0
+  expect(authDataParser.getCounter()).toBe(0);
+
+  expect(authDataParser.isUserPresent()).toBe(true);
+  expect(authDataParser.isBackupEligible()).toBe(true);
+  expect(authDataParser.isBackedUp()).toBe(true);
+
+  if (authenticatorMakeCredentialArgs.requireUserVerification) {
+    expect(authDataParser.isUserVerified()).toBe(true);
+  }
+
+  expect(authDataParser.getExtensions()).toBe(null);
+  expect(authDataParser.getRpIdHash()).toStrictEqual(Hash.sha256(RP_ID));
+
+  return {
+    response: authenticatorMakeCredentialResponse,
+    attestationObjectMap,
+    authDataParser,
+  };
 };
 
 /**
@@ -128,17 +146,6 @@ const performAuthenticatorMakeCredentialAndVerify = async (
  */
 describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   const prisma = new PrismaClient();
-  const prismaVirtualAuthenticatorJwksRepository =
-    new PrismaVirtualAuthenticatorJwksRepository({
-      prisma,
-    });
-  const jwks = new Jwks({
-    encryptionKey: ENCRYPTION_KEY,
-    jwksRepository: prismaVirtualAuthenticatorJwksRepository,
-  });
-  const jwt = new Jwt({
-    jwks,
-  });
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
@@ -147,7 +154,6 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
-    jwt,
   });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {
@@ -184,7 +190,6 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         authenticator,
         authenticatorMakeCredentialArgs,
         meta,
-        expectEnvelopeStatus: EnvelopeStatus.SUCCESS,
       });
     });
 
@@ -247,6 +252,110 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           meta,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
+    });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.requireUserPresence', () => {
+    test('args.requireUserVerification: true, meta.userVerificationEnabled: true', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireUserVerification: true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: true,
+      };
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs,
+        meta,
+      });
+    });
+
+    test('args.requireUserVerification: true, meta.userVerificationEnabled: false', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireUserVerification: true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: false,
+      };
+
+      await expect(() =>
+        performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+          meta,
+        }),
+      ).rejects.toThrowError(new UserVerificationNotAvailable());
+    });
+
+    test('args.requireUserVerification: false, meta.userVerificationEnabled: true', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireUserVerification: false,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: true,
+      };
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs,
+        meta,
+      });
+    });
+
+    test('args.requireUserVerification: false, meta.userVerificationEnabled: false', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireUserVerification: false,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userVerificationEnabled: false,
+      };
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs,
+        meta,
+      });
+    });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.enterpriseAttestationPossible', () => {
+    test('args.enterpriseAttestationPossible: false', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        enterpriseAttestationPossible: false,
+      } as AuthenticatorMakeCredentialArgs;
+
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs,
+      });
+    });
+
+    test('args.enterpriseAttestationPossible: true', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        enterpriseAttestationPossible: true,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const { attestationObjectMap } =
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+        });
+
+      // Most preferable format by the authenticator
+      expect(attestationObjectMap.get('fmt')).toBe(
+        VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
+      );
     });
   });
 });

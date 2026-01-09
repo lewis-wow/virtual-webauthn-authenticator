@@ -10,6 +10,7 @@ import type { IAuthenticator } from './IAuthenticator';
 import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
+import { UserVerificationNotAvailable } from './exceptions';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
@@ -88,6 +89,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     Fmt.NONE,
     Fmt.PACKED,
   ];
+
+  static readonly MOST_PREFFERED_ATTESTATION_FORMAT = Fmt.NONE;
 
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
@@ -350,10 +353,12 @@ export class VirtualAuthenticator implements IAuthenticator {
    * If attestationFormats contains no supported value, use the most preferred format.
    *
    * @param attestationFormats - List of attestation format identifiers from the client
-   * @returns The first supported format, or the most preferred format (Fmt.NONE) if none are supported
+   * @returns The first supported format, or the most preferred format if none are supported
    */
   private _findFirstSupportedAttestationFormat(opts: {
     attestationFormats: string[];
+    // NOTE: Not used, as enterprise attestation is not supported.
+    enterpriseAttestationPossible: boolean;
   }): Fmt {
     const { attestationFormats } = opts;
 
@@ -366,8 +371,11 @@ export class VirtualAuthenticator implements IAuthenticator {
         ),
     );
 
-    // If no supported format found, return the most preferred format (Fmt.NONE)
-    return (firstSupportedAttestationFormat as Fmt) ?? Fmt.NONE;
+    // If no supported format found, return the most preferred format
+    return (
+      (firstSupportedAttestationFormat as Fmt) ??
+      VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT
+    );
   }
 
   /**
@@ -450,8 +458,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       requireUserVerification,
       credTypesAndPubKeyAlgs,
 
-      // NOTE: enterpriseAttestationPossible is always false. Just for compatibility with spec.
-      // enterpriseAttestationPossible,
+      enterpriseAttestationPossible,
 
       attestationFormats,
       excludeCredentialDescriptorList,
@@ -511,8 +518,12 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Step 5: If requireUserVerification is true and the authenticator cannot perform user verification,
     // return an error code equivalent to "ConstraintError" and terminate the operation.
-    // NOTE: This virtual authenticator can perform UV.
-    // NOTE: Implemented without need to check.
+    if (
+      requireUserVerification === true &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
 
     // Step 6: Collect an authorization gesture confirming user consent for creating a new credential.
     // The authorization gesture MUST include a test of user presence.
@@ -628,6 +639,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // preferred format.
     const attestationFormat = this._findFirstSupportedAttestationFormat({
       attestationFormats,
+      enterpriseAttestationPossible: enterpriseAttestationPossible ?? false,
     });
 
     // Step 13: Let authenticatorData be the byte array specified in §6.1
