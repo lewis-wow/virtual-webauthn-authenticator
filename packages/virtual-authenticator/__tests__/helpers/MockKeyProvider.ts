@@ -1,4 +1,4 @@
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { JsonWebKey } from '@repo/keys/jwk';
 import { KeyMapper } from '@repo/keys/shared/mappers';
 import {

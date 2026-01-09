@@ -1,4 +1,4 @@
-import type { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import type { COSEKeyAlgorithm } from '@repo/keys/enums';
 
 import type { WebAuthnPublicKeyCredentialWithMeta } from './WebAuthnPublicKeyCredentialWithMeta';
 

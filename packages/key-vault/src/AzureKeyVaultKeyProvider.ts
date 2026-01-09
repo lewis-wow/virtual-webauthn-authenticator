@@ -4,8 +4,8 @@ import {
   type KeyVaultKey,
   type SignResult,
 } from '@azure/keyvault-keys';
-import type { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
 import { COSEKeyAlgorithmMapper } from '@repo/keys/cose/mappers';
+import type { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { JsonWebKey } from '@repo/keys/jwk';
 import { JWKKeyAlgorithm } from '@repo/keys/jwk/enums';
 import { KeyMapper } from '@repo/keys/shared/mappers';

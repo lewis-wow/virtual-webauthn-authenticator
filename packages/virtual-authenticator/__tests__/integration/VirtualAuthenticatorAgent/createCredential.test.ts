@@ -9,7 +9,7 @@ import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Jwks, Jwt } from '@repo/crypto';
 import { COSEKey } from '@repo/keys/cose';
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { JWKKeyAlgorithm } from '@repo/keys/jwk/enums';
 import { KeyMapper } from '@repo/keys/shared/mappers';
 import { PrismaClient } from '@repo/prisma';

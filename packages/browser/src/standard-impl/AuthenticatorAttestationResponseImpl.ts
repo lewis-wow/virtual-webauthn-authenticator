@@ -1,5 +1,5 @@
 import { BytesMapper } from '@repo/core/mappers';
-import { COSEKeyParam } from '@repo/keys/cose/enums';
+import { COSEKeyParam } from '@repo/keys/enums';
 import {
   AuthenticatorDataParser,
   type IAttestationObjectMap,

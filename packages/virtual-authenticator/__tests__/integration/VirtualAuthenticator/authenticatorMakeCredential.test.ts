@@ -7,7 +7,7 @@ import {
 import { TypeAssertionError } from '@repo/assert';
 import { Hash } from '@repo/crypto';
 import { COSEKey } from '@repo/keys/cose';
-import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { KeyMapper } from '@repo/keys/shared/mappers';
 import { PrismaClient } from '@repo/prisma';
 import * as cbor from 'cbor2';
