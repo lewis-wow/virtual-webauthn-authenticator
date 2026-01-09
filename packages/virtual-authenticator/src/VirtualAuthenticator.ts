@@ -803,7 +803,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // and excluding attestedCredentialData.
     // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
     const authenticatorData = await this._createAuthenticatorData({
-      // excluding attestedCredentialData
+      // IMPORTANT: exlude attestedCredentialData
       attestedCredentialData: undefined,
       rpId,
       counter: webAuthnPublicKeyCredentialWithMeta.counter,

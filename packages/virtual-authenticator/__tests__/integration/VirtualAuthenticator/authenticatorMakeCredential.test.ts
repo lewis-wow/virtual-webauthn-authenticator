@@ -1,16 +1,11 @@
-import {
-  upsertTestingUser,
-  USER_ID,
-  USER_NAME,
-} from '../../../../auth/__tests__/helpers';
+import { upsertTestingUser } from '../../../../auth/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
-import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
-import { verifyEC, type COSEPublicKeyEC } from '@repo/keys';
+import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
+import { verifySignature } from '@simplewebauthn/server/helpers';
 import { randomUUID } from 'node:crypto';
 import {
   afterAll,
@@ -22,13 +17,8 @@ import {
   test,
 } from 'vitest';
 
-import type { IAuthenticator } from '../../../src';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
-import {
-  decodeAttestationObject,
-  parseAuthenticatorData,
-} from '../../../src/cbor';
-import { CollectedClientDataType, Fmt } from '../../../src/enums';
+import { Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import {
   CredentialTypesNotSupported,
@@ -37,135 +27,16 @@ import {
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
-  AuthenticatorContextArgs,
   AuthenticatorMakeCredentialArgs,
   AuthenticatorMetaArgs,
-  CollectedClientData,
 } from '../../../src/validation';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
-  CHALLENGE_BYTES,
-  RP_ID,
-  RP_NAME,
-  RP_ORIGIN,
-  USER_DISPLAY_NAME,
-  USER_ID_BYTSES,
-} from '../../helpers/consts';
-
-const COLLECTED_CLIENT_DATA: CollectedClientData = {
-  type: CollectedClientDataType.WEBAUTHN_GET,
-  challenge: Buffer.from(CHALLENGE_BYTES).toString('base64url'),
-  origin: RP_ORIGIN,
-  crossOrigin: false,
-  topOrigin: undefined,
-};
-
-const CLIENT_DATA_JSON = new Uint8Array(
-  Buffer.from(JSON.stringify(COLLECTED_CLIENT_DATA)),
-);
-
-const CLIENT_DATA_HASH = Hash.sha256(CLIENT_DATA_JSON);
-
-const AUTHENTICATOR_MAKE_CREDENTIAL_ARGS: AuthenticatorMakeCredentialArgs = {
-  attestationFormats: [],
-  credTypesAndPubKeyAlgs: [
-    { type: PublicKeyCredentialType.PUBLIC_KEY, alg: COSEKeyAlgorithm.ES256 },
-  ],
-  enterpriseAttestationPossible: false,
-  excludeCredentialDescriptorList: undefined,
-  extensions: {},
-  hash: CLIENT_DATA_HASH,
-  requireResidentKey: false,
-  requireUserPresence: true,
-  requireUserVerification: false,
-  rpEntity: {
-    id: RP_ID,
-    name: RP_NAME,
-  },
-  userEntity: {
-    id: USER_ID_BYTSES,
-    name: USER_NAME,
-    displayName: USER_DISPLAY_NAME,
-  },
-};
-
-type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
-  authenticator: IAuthenticator;
-  authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-  prisma: PrismaClient;
-  meta?: Partial<AuthenticatorMetaArgs>;
-  context?: Partial<AuthenticatorContextArgs>;
-};
-
-const performAuthenticatorMakeCredentialAndVerify = async (
-  opts: PerformAuthenticatorMakeCredentialAndVerifyArgs,
-) => {
-  const {
-    authenticator,
-    authenticatorMakeCredentialArgs,
-    prisma,
-    meta,
-    context,
-  } = opts;
-
-  const authenticatorMakeCredentialResponse =
-    await authenticator.authenticatorMakeCredential({
-      authenticatorMakeCredentialArgs,
-      meta: {
-        userId: USER_ID,
-        userPresenceEnabled: true,
-        userVerificationEnabled: true,
-        ...meta,
-      },
-      context: {
-        apiKeyId: null,
-        ...context,
-      },
-    });
-
-  const attestationObjectMap = decodeAttestationObject(
-    authenticatorMakeCredentialResponse.attestationObject,
-  );
-
-  const authData = attestationObjectMap.get('authData');
-
-  const parsedAuthenticatorData = parseAuthenticatorData(authData);
-
-  expect(parsedAuthenticatorData.aaguid).toStrictEqual(
-    VirtualAuthenticator.AAGUID,
-  );
-  // New credential counter should be always 0
-  expect(parsedAuthenticatorData.counter).toBe(0);
-
-  expect(parsedAuthenticatorData.flags.up).toBe(true);
-  expect(parsedAuthenticatorData.flags.be).toBe(true);
-  expect(parsedAuthenticatorData.flags.bs).toBe(true);
-
-  if (authenticatorMakeCredentialArgs.requireUserVerification) {
-    expect(parsedAuthenticatorData.flags.uv).toBe(true);
-  }
-
-  expect(parsedAuthenticatorData.extensionsData).toBe(undefined);
-  expect(parsedAuthenticatorData.rpIdHash).toStrictEqual(
-    Hash.sha256(authenticatorMakeCredentialArgs.rpEntity.id),
-  );
-
-  const webAuthnPublicKeyCredentialCount =
-    await prisma.webAuthnPublicKeyCredential.count({
-      where: {
-        id: UUIDMapper.bytesToUUID(parsedAuthenticatorData.credentialID!),
-      },
-    });
-
-  expect(webAuthnPublicKeyCredentialCount).toBe(1);
-
-  return {
-    response: authenticatorMakeCredentialResponse,
-    attestationObjectMap,
-    parsedAuthenticatorData,
-  };
-};
+  AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+  CLIENT_DATA_HASH,
+  performAuthenticatorMakeCredentialAndVerify,
+} from './performAuthenticatorMakeCredentialAndVerify';
 
 /**
  * Tests for VirtualAuthenticator.createCredential() method
@@ -786,10 +657,10 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         Buffer.concat([attestationObjectMap.get('authData'), CLIENT_DATA_HASH]),
       );
 
-      const COSEPublicKey = parsedAuthenticatorData.credentialPublicKey;
-
-      const isVerified = await verifyEC({
-        cosePublicKey: COSEPublicKey as COSEPublicKeyEC,
+      const isVerified = await verifySignature({
+        credentialPublicKey: encodeCOSEPublicKey(
+          parsedAuthenticatorData.credentialPublicKey!,
+        ),
         data: signedData,
         signature: signature!,
       });
