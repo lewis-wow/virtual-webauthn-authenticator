@@ -6,7 +6,9 @@ import {
 
 import { TypeAssertionError } from '@repo/assert';
 import { Hash } from '@repo/crypto';
+import { COSEKey } from '@repo/keys/cose';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/cose/enums';
+import { KeyMapper } from '@repo/keys/shared/mappers';
 import { PrismaClient } from '@repo/prisma';
 import * as cbor from 'cbor2';
 import {
@@ -675,6 +677,26 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         authenticator,
         authenticatorMakeCredentialArgs,
       });
+    });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.hash', () => {
+    test('', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        hash: CLIENT_DATA_HASH,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const { attestationObjectMap, authDataParser } =
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+        });
+
+      const COSEPublicKey = authDataParser.getPublicKey();
+      KeyMapper.COSEToJWK(new COSEKey(COSEPublicKey!));
+
+      attestationObjectMap.get('attStmt').get('sig');
     });
   });
 });

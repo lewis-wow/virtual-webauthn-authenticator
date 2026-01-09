@@ -4,6 +4,7 @@ import z from 'zod';
 
 import type { IKey } from '../shared/IKey';
 import { UnsupportedKeyType } from '../shared/exceptions/UnsupportedKeyType';
+import type { ICOSEKeyMap } from './cbor/ICOSEKeyMap';
 import { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
 import { COSEKeyCurveName } from './enums/COSEKeyCurveName';
 import { COSEKeyParam } from './enums/COSEKeyParam';
@@ -11,12 +12,10 @@ import { COSEKeyType } from './enums/COSEKeyType';
 import { COSEKeyTypeParam } from './enums/COSEKeyTypeParam';
 import { CannotParseCOSEKey } from './exceptions/CannotParseCOSEKey';
 
-export type COSEKeyMap = Map<number, unknown>;
-
 export class COSEKey implements IKey {
-  readonly map: COSEKeyMap;
+  readonly map: ICOSEKeyMap;
 
-  constructor(map: COSEKeyMap) {
+  constructor(map: ICOSEKeyMap) {
     if (!COSEKey.canParse(map)) {
       throw new CannotParseCOSEKey();
     }
@@ -29,7 +28,7 @@ export class COSEKey implements IKey {
   }
 
   static fromBytes(bytes: Uint8Array): COSEKey {
-    const decoded = cbor.decode<COSEKeyMap>(bytes);
+    const decoded = cbor.decode<ICOSEKeyMap>(bytes);
     return new COSEKey(decoded);
   }
 
@@ -234,7 +233,7 @@ export class COSEKey implements IKey {
       | undefined;
   }
 
-  public static canParse(map: COSEKeyMap): boolean {
+  public static canParse(map: ICOSEKeyMap): boolean {
     try {
       const kty = map.get(COSEKeyParam.kty);
       assertSchema(kty, z.enum(COSEKeyType));
