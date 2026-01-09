@@ -29,7 +29,7 @@ import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption';
-import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interruption/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInteraction';
+import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interruption/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInterruption';
 import type {
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,

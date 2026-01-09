@@ -15,7 +15,7 @@ import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
-import { CredentialSelectInteraction } from '@repo/virtual-authenticator/interactions';
+import { VirtualAuthenticatorAgentCredentialSelectInterruption } from '@repo/virtual-authenticator/interruption';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
@@ -105,13 +105,12 @@ export class CredentialsController {
             meta: {
               origin: meta.origin,
               userId: userId,
+              apiKeyId,
 
               userPresenceEnabled: true,
               userVerificationEnabled: true,
             },
-            context: {
-              apiKeyId: apiKeyId,
-            },
+            context: {},
           });
 
         await this._auditCredentialAction({
@@ -159,11 +158,12 @@ export class CredentialsController {
               meta: {
                 origin: meta.origin,
                 userId: userId,
+                apiKeyId,
 
                 userPresenceEnabled: true,
                 userVerificationEnabled: true,
               },
-              context: { apiKeyId },
+              context: {},
             });
 
           await this._auditCredentialAction({
@@ -181,17 +181,21 @@ export class CredentialsController {
         } catch (error) {
           return await match(error)
             .with(
-              P.instanceOf(CredentialSelectInteraction),
+              P.instanceOf(
+                VirtualAuthenticatorAgentCredentialSelectInterruption,
+              ),
               async (interaction) => {
                 return {
                   status: HttpStatusCode.PRECONDITION_REQUIRED,
                   body: GetCredentialResponseSchema[
                     HttpStatusCode.PRECONDITION_REQUIRED
                   ].encode({
-                    payload: interaction.interactionPayload.payload,
-                    state: await this.jwt.sign(
-                      interaction.interactionPayload.state,
-                    ),
+                    payload:
+                      interaction.payload
+                        .virtualAuthenticatorCredentialSelectInterruptionPayload,
+                    state: await this.jwt.sign({
+                      optionsHash: interaction.payload.optionsHash,
+                    }),
                   }),
                 };
               },
