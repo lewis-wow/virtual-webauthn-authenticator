@@ -5,6 +5,7 @@ import {
 } from '../../../../auth/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
+import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { verifyEC, type COSEPublicKeyEC } from '@repo/keys';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
@@ -91,6 +92,7 @@ const AUTHENTICATOR_MAKE_CREDENTIAL_ARGS: AuthenticatorMakeCredentialArgs = {
 type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
   authenticator: IAuthenticator;
   authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+  prisma: PrismaClient;
   meta?: Partial<AuthenticatorMetaArgs>;
   context?: Partial<AuthenticatorContextArgs>;
 };
@@ -98,8 +100,13 @@ type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
 const performAuthenticatorMakeCredentialAndVerify = async (
   opts: PerformAuthenticatorMakeCredentialAndVerifyArgs,
 ) => {
-  const { authenticator, authenticatorMakeCredentialArgs, meta, context } =
-    opts;
+  const {
+    authenticator,
+    authenticatorMakeCredentialArgs,
+    prisma,
+    meta,
+    context,
+  } = opts;
 
   const authenticatorMakeCredentialResponse =
     await authenticator.authenticatorMakeCredential({
@@ -142,6 +149,15 @@ const performAuthenticatorMakeCredentialAndVerify = async (
   expect(parsedAuthenticatorData.rpIdHash).toStrictEqual(
     Hash.sha256(authenticatorMakeCredentialArgs.rpEntity.id),
   );
+
+  const webAuthnPublicKeyCredentialCount =
+    await prisma.webAuthnPublicKeyCredential.count({
+      where: {
+        id: UUIDMapper.bytesToUUID(parsedAuthenticatorData.credentialID!),
+      },
+    });
+
+  expect(webAuthnPublicKeyCredentialCount).toBe(1);
 
   return {
     response: authenticatorMakeCredentialResponse,
@@ -202,6 +218,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
         meta,
       });
@@ -221,6 +238,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
           meta,
         }),
@@ -241,6 +259,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
           meta,
         }),
@@ -262,6 +281,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
           meta,
         }),
@@ -282,6 +302,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
         meta,
       });
@@ -300,6 +321,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
           meta,
         }),
@@ -318,6 +340,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
         meta,
       });
@@ -335,6 +358,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
         meta,
       });
@@ -363,6 +387,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
         await performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
         });
       },
@@ -378,6 +403,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
       });
     });
@@ -391,6 +417,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       const { attestationObjectMap } =
         await performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
         });
 
@@ -460,6 +487,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         const { attestationObjectMap } =
           await performAuthenticatorMakeCredentialAndVerify({
             authenticator,
+            prisma,
             authenticatorMakeCredentialArgs,
           });
 
@@ -546,6 +574,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         const { parsedAuthenticatorData } =
           await performAuthenticatorMakeCredentialAndVerify({
             authenticator,
+            prisma,
             authenticatorMakeCredentialArgs,
           });
 
@@ -615,6 +644,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         await expect(() =>
           performAuthenticatorMakeCredentialAndVerify({
             authenticator,
+            prisma,
             authenticatorMakeCredentialArgs,
           }),
         ).rejects.toThrowError(expectedError);
@@ -628,6 +658,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     beforeEach(async () => {
       const { response } = await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
       });
 
@@ -648,6 +679,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
         }),
       ).rejects.toThrowError(new CredentialExcluded());
@@ -676,6 +708,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
         }),
       ).rejects.toThrowError(new CredentialExcluded());
@@ -698,6 +731,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
       });
     });
@@ -711,6 +745,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       await expect(() =>
         performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
         }),
       ).rejects.toThrowError(new TypeAssertionError());
@@ -724,6 +759,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs,
       });
     });
@@ -740,6 +776,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       const { attestationObjectMap, parsedAuthenticatorData } =
         await performAuthenticatorMakeCredentialAndVerify({
           authenticator,
+          prisma,
           authenticatorMakeCredentialArgs,
         });
 
@@ -772,6 +809,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
       await performAuthenticatorMakeCredentialAndVerify({
         authenticator,
+        prisma,
         authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
         meta,
       });
