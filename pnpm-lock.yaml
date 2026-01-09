@@ -1089,6 +1089,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
