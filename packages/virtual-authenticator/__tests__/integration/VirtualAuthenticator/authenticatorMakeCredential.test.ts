@@ -17,7 +17,7 @@ import {
   AuthenticatorDataParser,
   type IAttestationObjectMap,
 } from '../../../src/cbor';
-import { CollectedClientDataType } from '../../../src/enums';
+import { CollectedClientDataType, Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerificationNotAvailable } from '../../../src/exceptions';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
@@ -357,5 +357,67 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
       );
     });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.attestationFormats', () => {
+    test.each(
+      [
+        { attestationFormats: [Fmt.NONE], expectedFmt: Fmt.NONE },
+        { attestationFormats: [Fmt.PACKED], expectedFmt: Fmt.PACKED },
+        // Not supported formats
+        {
+          attestationFormats: [Fmt.TPM],
+          expectedFmt: VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
+        },
+        {
+          attestationFormats: [
+            Fmt.TPM,
+            Fmt.ANDROID_KEY,
+            Fmt.APPLE_ANONYMOUS,
+            Fmt.ANDROID_SAFETYNET,
+          ],
+          expectedFmt: VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
+        },
+        // At least one supported format
+        {
+          attestationFormats: [
+            Fmt.TPM,
+            Fmt.ANDROID_KEY,
+            Fmt.PACKED,
+            Fmt.ANDROID_SAFETYNET,
+          ],
+          expectedFmt: Fmt.PACKED,
+        },
+        {
+          attestationFormats: [
+            Fmt.TPM,
+            Fmt.ANDROID_KEY,
+            Fmt.NONE,
+            Fmt.ANDROID_SAFETYNET,
+          ],
+          expectedFmt: Fmt.NONE,
+        },
+      ].map((testCase) => ({
+        ...testCase,
+        // Create a clean string representation, e.g., "TPM, ANDROID_KEY"
+        attestationFormatsDisplay: testCase.attestationFormats.join(', '),
+      })),
+    )(
+      'args.attestationFormats: $attestationFormatsDisplay',
+      async ({ attestationFormats, expectedFmt }) => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          attestationFormats,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const { attestationObjectMap } =
+          await performAuthenticatorMakeCredentialAndVerify({
+            authenticator,
+            authenticatorMakeCredentialArgs,
+          });
+
+        expect(attestationObjectMap.get('fmt')).toBe(expectedFmt);
+      },
+    );
   });
 });
