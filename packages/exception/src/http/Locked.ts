@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class Locked extends Exception {
   static status = HttpStatusCode.LOCKED;
-  static readonly name = 'Locked';
+  static readonly code = 'Locked';
   static message = 'Locked.';
 }

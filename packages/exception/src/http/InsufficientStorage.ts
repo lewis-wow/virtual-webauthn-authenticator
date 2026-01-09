@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class InsufficientStorage extends Exception {
   static status = HttpStatusCode.INSUFFICIENT_STORAGE;
-  static readonly name = 'InsufficientStorage';
+  static readonly code = 'InsufficientStorage';
   static message = 'Insufficient Storage.';
 }

@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class MethodNotImplemented extends Exception {
   static status = HttpStatusCode.NOT_IMPLEMENTED;
-  static readonly name = 'MethodNotImplemented';
+  static readonly code = 'MethodNotImplemented';
   static message = 'Method not implemented';
 }

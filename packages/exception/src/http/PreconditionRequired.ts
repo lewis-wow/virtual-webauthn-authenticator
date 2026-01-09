@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class PreconditionRequired extends Exception {
   static status = HttpStatusCode.PRECONDITION_REQUIRED;
-  static readonly name = 'PreconditionRequired';
+  static readonly code = 'PreconditionRequired';
   static message = 'Precondition Required.';
 }

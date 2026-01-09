@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class ApiKeyDeleteEnabledFailed extends Exception {
   static status = HttpStatusCode.METHOD_NOT_ALLOWED;
-  static readonly name = 'ApiKeyDeleteEnabledFailed';
+  static readonly code = 'ApiKeyDeleteEnabledFailed';
   static message = 'Api key delete enabled failed.';
 }

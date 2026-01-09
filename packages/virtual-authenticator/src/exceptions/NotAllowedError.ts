@@ -9,6 +9,6 @@ import { HttpStatusCode } from '@repo/http';
  */
 export class NotAllowedError extends Exception {
   static status = HttpStatusCode.FORBIDDEN;
-  static readonly name = 'NotAllowedError';
+  static readonly code = 'NotAllowedError';
   static message = 'The user did not consent to the operation.';
 }

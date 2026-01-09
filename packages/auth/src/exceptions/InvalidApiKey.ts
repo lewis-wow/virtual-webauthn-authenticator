@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class InvalidApiKey extends Exception {
   static status = HttpStatusCode.UNAUTHORIZED;
-  static readonly name = 'InvalidApiKey';
+  static readonly code = 'InvalidApiKey';
   static message = 'Invalid API key.';
 }

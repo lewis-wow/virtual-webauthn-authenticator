@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class NetworkAuthenticationRequired extends Exception {
   static status = HttpStatusCode.NETWORK_AUTHENTICATION_REQUIRED;
-  static readonly name = 'NetworkAuthenticationRequired';
+  static readonly code = 'NetworkAuthenticationRequired';
   static message = 'Network Authentication Required.';
 }

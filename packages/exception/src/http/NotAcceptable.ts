@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class NotAcceptable extends Exception {
   static status = HttpStatusCode.NOT_ACCEPTABLE;
-  static readonly name = 'NotAcceptable';
+  static readonly code = 'NotAcceptable';
   static message = 'Not Acceptable.';
 }

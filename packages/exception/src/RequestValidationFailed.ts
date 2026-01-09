@@ -4,6 +4,6 @@ import { Exception } from './Exception';
 
 export class RequestValidationFailed extends Exception {
   static status = HttpStatusCode.BAD_REQUEST;
-  static readonly name = 'RequestValidationFailed';
+  static readonly code = 'RequestValidationFailed';
   static message = 'Request validation failed.';
 }

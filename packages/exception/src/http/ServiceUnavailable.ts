@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class ServiceUnavailable extends Exception {
   static status = HttpStatusCode.SERVICE_UNAVAILABLE;
-  static readonly name = 'ServiceUnavailable';
+  static readonly code = 'ServiceUnavailable';
   static message = 'Service Unavailable.';
 }

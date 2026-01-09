@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class ApiKeyNotFound extends Exception {
   static status = HttpStatusCode.NOT_FOUND;
-  static readonly name = 'ApiKeyNotFound';
+  static readonly code = 'ApiKeyNotFound';
   static message = 'Api key not found.';
 }

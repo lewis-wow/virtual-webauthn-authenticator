@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class SignatureFailed extends Exception {
   static status = HttpStatusCode.INTERNAL_SERVER_ERROR;
-  static readonly name = 'SignatureFailed';
+  static readonly code = 'SignatureFailed';
   static message = 'Signature failed.';
 }

@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class WebAuthnPublicKeyCredentialNotFound extends Exception {
   static status = HttpStatusCode.NOT_FOUND;
-  static readonly name = 'WebAuthnPublicKeyCredentialNotFound';
+  static readonly code = 'WebAuthnPublicKeyCredentialNotFound';
   static message = 'WebAuthn Public Key Credential Not Found.';
 }

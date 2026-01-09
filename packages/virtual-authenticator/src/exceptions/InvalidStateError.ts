@@ -9,7 +9,7 @@ import { HttpStatusCode } from '@repo/http';
  */
 export class InvalidStateError extends Exception {
   static status = HttpStatusCode.BAD_REQUEST;
-  static readonly name = 'InvalidStateError';
+  static readonly code = 'InvalidStateError';
   static message =
     'The authenticator is in an invalid state for this operation.';
 }

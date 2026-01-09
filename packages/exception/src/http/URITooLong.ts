@@ -4,6 +4,6 @@ import { Exception } from '../Exception';
 
 export class URITooLong extends Exception {
   static status = HttpStatusCode.URI_TOO_LONG;
-  static readonly name = 'URITooLong';
+  static readonly code = 'URITooLong';
   static message = 'URI Too Long.';
 }

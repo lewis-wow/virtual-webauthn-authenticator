@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class TypeAssertionError extends Exception {
   static status = HttpStatusCode.BAD_REQUEST;
-  static readonly name = 'TypeAssertionError';
+  static readonly code = 'TypeAssertionError';
   static message = 'Type mismatch';
 }

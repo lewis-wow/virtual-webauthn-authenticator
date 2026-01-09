@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class CredentialTypesNotSupported extends Exception {
   static status = HttpStatusCode.BAD_REQUEST;
-  static readonly name = 'CredentialTypesNotSupported';
+  static readonly code = 'CredentialTypesNotSupported';
   static message = 'Credential types not supported.';
 }

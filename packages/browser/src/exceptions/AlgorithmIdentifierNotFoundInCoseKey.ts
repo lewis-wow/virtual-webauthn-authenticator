@@ -3,6 +3,6 @@ import { HttpStatusCode } from '@repo/http';
 
 export class AlgorithmIdentifierNotFoundInCoseKey extends Exception {
   static status = HttpStatusCode.BAD_REQUEST;
-  static readonly name = 'AlgorithmIdentifierNotFoundInCoseKey';
+  static readonly code = 'AlgorithmIdentifierNotFoundInCoseKey';
   static message = 'Algorithm identifier not found in COSE key';
 }
