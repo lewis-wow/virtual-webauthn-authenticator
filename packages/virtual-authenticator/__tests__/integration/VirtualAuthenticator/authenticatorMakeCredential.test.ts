@@ -73,9 +73,9 @@ const AUTHENTICATOR_MAKE_CREDENTIAL_ARGS: AuthenticatorMakeCredentialArgs = {
   excludeCredentialDescriptorList: undefined,
   extensions: {},
   hash: CLIENT_DATA_HASH,
-  requireResidentKey: true,
+  requireResidentKey: false,
   requireUserPresence: true,
-  requireUserVerification: true,
+  requireUserVerification: false,
   rpEntity: {
     id: RP_ID,
     name: RP_NAME,
@@ -267,7 +267,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     });
   });
 
-  describe('AuthenticatorMakeCredentialArgs.requireUserPresence', () => {
+  describe('AuthenticatorMakeCredentialArgs.requireUserVerification', () => {
     test('args.requireUserVerification: true, meta.userVerificationEnabled: true', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
@@ -336,6 +336,15 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         authenticatorMakeCredentialArgs,
         meta,
       });
+    });
+  });
+
+  describe('AuthenticatorMakeCredentialArgs.requireResidentKey', () => {
+    test('', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        requireResidentKey: false,
+      } as AuthenticatorMakeCredentialArgs;
     });
   });
 

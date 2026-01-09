@@ -61,13 +61,20 @@ export const AuthenticatorMakeCredentialArgsSchema = z
 
     /**
      * Specifies whether this credential is to be discoverable or not.
+     * If requireResidentKey is true, then authenticator MUST create a client-side discoverable credential.
+     * The authenticator can choose whether to create resident key or not.
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (Step 7.4)
      *
      * Corresponding parameter name: options.rk (0x07)
      * Default value: false
+     *
+     * NOTE: This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
+     * Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
+     * Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this Virtual authenticator implementation.
      */
     requireResidentKey: z.boolean().default(false).meta({
       description:
-        'Specifies whether this credential is to be discoverable or not.',
+        'Specifies whether this credential is to be client-side discoverable or not.',
     }),
 
     /**
