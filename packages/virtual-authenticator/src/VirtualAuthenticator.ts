@@ -1,6 +1,6 @@
 import { assertSchema } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, Jwt } from '@repo/crypto';
+import { Hash } from '@repo/crypto';
 import * as cbor from 'cbor2';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -56,7 +56,6 @@ export type AuthenticatorBackendContext = {
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
   keyProvider: IKeyProvider;
-  jwt: Jwt;
 };
 
 /**
@@ -74,12 +73,10 @@ export type VirtualAuthenticatorOptions = {
 export class VirtualAuthenticator implements IAuthenticator {
   public readonly webAuthnRepository: IWebAuthnRepository;
   private readonly keyProvider: IKeyProvider;
-  private readonly jwt: Jwt;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.webAuthnRepository = opts.webAuthnRepository;
     this.keyProvider = opts.keyProvider;
-    this.jwt = opts.jwt;
   }
 
   /**
