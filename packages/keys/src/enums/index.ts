@@ -6,3 +6,5 @@ export * from './COSEKeyTypeParam';
 export * from './JWKKeyAlgorithm';
 export * from './JWKKeyCurveName';
 export * from './JWKKeyType';
+export * from './SubtleCryptoAlg';
+export * from './SubtleCryptoKeyAlgName';

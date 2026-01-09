@@ -3,6 +3,7 @@ import { swapKeysAndValues } from '@repo/utils';
 import { match } from 'ts-pattern';
 import z from 'zod';
 
+import { SubtleCryptoAlg, SubtleCryptoKeyAlgName } from './enums';
 import { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
 import { JWKKeyAlgorithm } from './enums/JWKKeyAlgorithm';
 import { JWKKeyCurveName } from './enums/JWKKeyCurveName';
@@ -79,6 +80,61 @@ export class KeyAlgorithmMapper {
         () => JWKKeyType.RSA,
       )
       .when(guardSchema(z.enum([JWKKeyAlgorithm.EdDSA])), () => JWKKeyType.OKP)
+      .exhaustive();
+  }
+
+  /**
+   * Convert a COSE algorithm ID into a corresponding hash algorithm string value that WebCrypto APIs expect.
+   */
+  static COSEKeyAlgorithmToSubtleCryptoAlg(
+    coseKeyAlgorithm: COSEKeyAlgorithm,
+  ): SubtleCryptoAlg {
+    const keyAlgorithm =
+      KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyAlgorithm(coseKeyAlgorithm);
+
+    return match(keyAlgorithm)
+      .with(JWKKeyAlgorithm.ES256, () => SubtleCryptoAlg['SHA-256'])
+      .with(JWKKeyAlgorithm.PS256, () => SubtleCryptoAlg['SHA-256'])
+      .with(JWKKeyAlgorithm.RS256, () => SubtleCryptoAlg['SHA-256'])
+      .with(JWKKeyAlgorithm.ES384, () => SubtleCryptoAlg['SHA-384'])
+      .with(JWKKeyAlgorithm.PS384, () => SubtleCryptoAlg['SHA-384'])
+      .with(JWKKeyAlgorithm.RS384, () => SubtleCryptoAlg['SHA-384'])
+      .with(JWKKeyAlgorithm.ES512, () => SubtleCryptoAlg['SHA-512'])
+      .with(JWKKeyAlgorithm.PS512, () => SubtleCryptoAlg['SHA-512'])
+      .with(JWKKeyAlgorithm.RS512, () => SubtleCryptoAlg['SHA-512'])
+      .with(JWKKeyAlgorithm.EdDSA, () => SubtleCryptoAlg['SHA-512'])
+      .exhaustive();
+  }
+
+  /**
+   * Convert a COSE algorithm ID into a corresponding key algorithm string value that WebCrypto APIs expect.
+   */
+  static COSEKeyAlgorithmToSubtleCryptoKeyAlgName(
+    coseKeyAlgorithm: COSEKeyAlgorithm,
+  ): SubtleCryptoKeyAlgName {
+    const keyAlgorithm =
+      KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyAlgorithm(coseKeyAlgorithm);
+
+    return match(keyAlgorithm)
+      .with(JWKKeyAlgorithm.EdDSA, () => SubtleCryptoKeyAlgName.Ed25519)
+      .with(JWKKeyAlgorithm.ES256, () => SubtleCryptoKeyAlgName.ECDSA)
+      .with(JWKKeyAlgorithm.ES384, () => SubtleCryptoKeyAlgName.ECDSA)
+      .with(JWKKeyAlgorithm.ES512, () => SubtleCryptoKeyAlgName.ECDSA)
+      .with(
+        JWKKeyAlgorithm.RS256,
+        () => SubtleCryptoKeyAlgName['RSASSA-PKCS1-v1_5'],
+      )
+      .with(
+        JWKKeyAlgorithm.RS384,
+        () => SubtleCryptoKeyAlgName['RSASSA-PKCS1-v1_5'],
+      )
+      .with(
+        JWKKeyAlgorithm.RS512,
+        () => SubtleCryptoKeyAlgName['RSASSA-PKCS1-v1_5'],
+      )
+      .with(JWKKeyAlgorithm.PS256, () => SubtleCryptoKeyAlgName['RSA-PSS'])
+      .with(JWKKeyAlgorithm.PS384, () => SubtleCryptoKeyAlgName['RSA-PSS'])
+      .with(JWKKeyAlgorithm.PS512, () => SubtleCryptoKeyAlgName['RSA-PSS'])
       .exhaustive();
   }
 }
