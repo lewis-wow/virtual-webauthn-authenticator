@@ -23,6 +23,8 @@ import { COSEKeyCurveNameSchema } from './validation/enums/COSEKeyCurveNameSchem
  * @param opts.data - The data that was signed.
  * @param opts.shaHashOverride - Optional override for the SHA hash algorithm.
  * @returns A promise that resolves to true if the signature is valid, false otherwise.
+ *
+ * @see https://github.com/MasterKale/SimpleWebAuthn/blob/master/packages/server/src/helpers/iso/isoCrypto/verifyEC2.ts
  */
 export async function verifyEC(opts: {
   cosePublicKey: COSEPublicKeyEC;
