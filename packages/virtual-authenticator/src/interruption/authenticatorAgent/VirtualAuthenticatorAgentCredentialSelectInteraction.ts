@@ -2,9 +2,11 @@ import type { VirtualAuthenticatorAgentCredentialSelectInterruptionPayload } fro
 import { Interruption } from '../Interruption';
 
 export class VirtualAuthenticatorAgentCredentialSelectInterruption extends Interruption {
+  static message = 'Credential select required.';
+
   constructor(
     public readonly payload: VirtualAuthenticatorAgentCredentialSelectInterruptionPayload,
   ) {
-    super({ message: 'Credential select required.' });
+    super();
   }
 }

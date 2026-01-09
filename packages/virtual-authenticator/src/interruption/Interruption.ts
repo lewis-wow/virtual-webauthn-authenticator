@@ -1,15 +1,13 @@
-export type InterruptionOptions = {
-  message: string;
-  timeout?: number;
-};
+import { Exception } from '@repo/exception';
+import { HttpStatusCode } from '@repo/http';
 
-export abstract class Interruption extends Error {
+export abstract class Interruption extends Exception {
+  static status = HttpStatusCode.PRECONDITION_REQUIRED;
+
   static readonly code: string;
-  public readonly timeout?: number;
 
-  constructor(opts: InterruptionOptions) {
-    super(opts.message);
-    this.timeout = opts.timeout;
+  constructor() {
+    super();
 
     Object.setPrototypeOf(this, new.target.prototype);
   }
