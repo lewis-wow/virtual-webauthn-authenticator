@@ -1,4 +1,4 @@
-import { upsertTestingUser } from '../../../../auth/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { PrismaClient } from '@repo/prisma';
 import {
@@ -15,12 +15,14 @@ import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
+import { CredentialSelectInteraction } from '../../../src/interactions';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
   AuthenticatorGetAssertionArgs,
   AuthenticatorMakeCredentialResponse,
   AuthenticatorMetaArgs,
 } from '../../../src/validation';
+import { RP_ID } from '../../helpers';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
@@ -241,14 +243,54 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
   });
 
   describe('AuthenticatorMakeCredentialArgs.allowCredentialDescriptorList', () => {
-    test('Client-side discovery', async () => {
+    test('Client-side discovery for single credential', async () => {
       const authenticatorGetAssertionArgs = {
         ...AUTHENTICATOR_GET_ASSERTION_ARGS,
         allowCredentialDescriptorList: undefined,
       } as AuthenticatorGetAssertionArgs;
 
-      // DUMMY TEST:
-      expect(authenticatorGetAssertionArgs).toBeDefined();
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        prisma,
+        authenticatorGetAssertionArgs,
+        authenticatorMakeCredentialResponse,
+      });
+    });
+
+    test('Client-side discovery for multiple credential', async () => {
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        prisma,
+      });
+
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        allowCredentialDescriptorList: undefined,
+      } as AuthenticatorGetAssertionArgs;
+
+      const expectedCredentialOptions =
+        await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
+          {
+            rpId: RP_ID,
+            userId: USER_ID,
+            apiKeyId: null,
+            allowCredentialDescriptorList: undefined,
+          },
+        );
+
+      await expect(() =>
+        performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          prisma,
+          authenticatorGetAssertionArgs,
+          authenticatorMakeCredentialResponse,
+        }),
+      ).rejects.toThrowError(
+        new CredentialSelectInteraction({
+          credentialOptions: expectedCredentialOptions,
+        }),
+      );
     });
 
     test('Authentication with existing public key credential', async () => {
