@@ -340,12 +340,31 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   });
 
   describe('AuthenticatorMakeCredentialArgs.requireResidentKey', () => {
-    test('', async () => {
-      const authenticatorMakeCredentialArgs = {
-        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+    // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
+    // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
+    // The credential is discoverable if requireResidentKey is true or the authenticator chooses to create a client-side discoverable credential.
+    test.each([
+      // In both cases, the credential is client-side discoverable (Resident).
+      {
         requireResidentKey: false,
-      } as AuthenticatorMakeCredentialArgs;
-    });
+      },
+      {
+        requireResidentKey: true,
+      },
+    ])(
+      'args.requireResidentKey $requireResidentKey',
+      async ({ requireResidentKey }) => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireResidentKey,
+        } as AuthenticatorMakeCredentialArgs;
+
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+        });
+      },
+    );
   });
 
   describe('AuthenticatorMakeCredentialArgs.enterpriseAttestationPossible', () => {
