@@ -5,6 +5,6 @@ export class CredentialSelectInteraction extends Interaction {
   static readonly code = 'CredentialSelectInteraction';
 
   constructor(public readonly payload: CredentialSelectExceptionPayload) {
-    super('Credential select required.');
+    super({ message: 'Credential select required.' });
   }
 }
