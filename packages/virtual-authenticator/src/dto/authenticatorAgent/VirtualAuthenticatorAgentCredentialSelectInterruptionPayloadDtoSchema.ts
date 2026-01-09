@@ -1,0 +1,4 @@
+import { VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema } from '../../validation/authenticatorAgent/interruption/VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema';
+
+export const VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadDtoSchema =
+  VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema;

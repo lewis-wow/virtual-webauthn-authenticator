@@ -1,3 +1,4 @@
+import { HttpStatusCode } from '@repo/http';
 import {
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialUserEntityDtoSchema,
@@ -37,5 +38,6 @@ export const CreateCredentialBodySchema = z.object({
 // Outputs
 // -------------------------------------
 
-export const CreateCredentialResponseSchema =
-  AuthenticatorAgentCreateCredentialResponseDtoSchema;
+export const CreateCredentialResponseSchema = {
+  [HttpStatusCode.OK]: AuthenticatorAgentCreateCredentialResponseDtoSchema,
+};

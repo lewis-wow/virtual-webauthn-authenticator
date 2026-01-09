@@ -1,3 +1,4 @@
+import { HttpStatusCode } from '@repo/http';
 import {
   PaginationRequestMetaSchema,
   PaginationResultSchema,
@@ -21,5 +22,8 @@ export const ListWebAuthnPublicKeyCredentialsQuerySchema =
 // Outputs
 // -------------------------------------
 
-export const ListWebAuthnPublicKeyCredentialsResponseSchema =
-  PaginationResultSchema(WebAuthnPublicKeyCredentialDtoSchema);
+export const ListWebAuthnPublicKeyCredentialsResponseSchema = {
+  [HttpStatusCode.OK]: PaginationResultSchema(
+    WebAuthnPublicKeyCredentialDtoSchema,
+  ),
+};

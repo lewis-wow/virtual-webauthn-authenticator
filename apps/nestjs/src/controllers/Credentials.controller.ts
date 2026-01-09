@@ -120,8 +120,10 @@ export class CredentialsController {
         });
 
         return {
-          status: 200,
-          body: CreateCredentialResponseSchema.encode(publicKeyCredential),
+          status: HttpStatusCode.OK,
+          body: CreateCredentialResponseSchema[HttpStatusCode.OK].encode(
+            publicKeyCredential,
+          ),
         };
       },
     );
@@ -190,10 +192,8 @@ export class CredentialsController {
                   body: GetCredentialResponseSchema[
                     HttpStatusCode.PRECONDITION_REQUIRED
                   ].encode({
-                    payload:
-                      interaction.payload
-                        .virtualAuthenticatorCredentialSelectInterruptionPayload,
-                    state: await this.jwt.sign({
+                    ...interaction.payload,
+                    optionsHash: await this.jwt.sign({
                       optionsHash: interaction.payload.optionsHash,
                     }),
                   }),
