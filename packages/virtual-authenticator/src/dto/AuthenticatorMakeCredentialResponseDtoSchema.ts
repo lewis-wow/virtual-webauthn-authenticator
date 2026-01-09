@@ -1,6 +1,6 @@
 import { BytesSchemaCodec } from '@repo/core/zod-validation';
 
-import { AuthenticatorMakeCredentialResponseSchema } from '../validation/AuthenticatorMakeCredentialResponseSchema';
+import { AuthenticatorMakeCredentialResponseSchema } from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 
 export const AuthenticatorMakeCredentialResponseDtoSchema =
   AuthenticatorMakeCredentialResponseSchema.extend({
