@@ -95,10 +95,14 @@ export const parseAuthenticatorData = (
     credentialID = authData.slice(pointer, (pointer += credIDLen));
 
     // Credential Public Key (CBOR encoded)
-    const firstDecoded = cbor.decode<COSEPublicKey>(authData.slice(pointer));
-    const firstEncoded = Uint8Array.from(cbor.encode(firstDecoded));
-
-    credentialPublicKey = firstDecoded;
+    // Use decodeSequence to handle cases where extensions follow
+    const remaining = authData.slice(pointer);
+    const items = Array.from(cbor.decodeSequence<COSEPublicKey>(remaining));
+    if (items.length === 0) {
+      throw new Error('Expected public key in CBOR data');
+    }
+    credentialPublicKey = items[0]!;
+    const firstEncoded = Uint8Array.from(cbor.encode(credentialPublicKey));
     pointer += firstEncoded.byteLength;
   }
 
