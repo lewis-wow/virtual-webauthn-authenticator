@@ -7,8 +7,8 @@ import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
-import { AuthenticatorDataParser } from './cbor';
-import type { IAttestationObjectMap } from './cbor/AttestationObjectMap';
+import { decodeAttestationObject } from './cbor';
+import { parseAuthenticatorData } from './cbor/parseAuthenticatorData';
 import {
   Attestation,
   AuthenticatorAttachment,
@@ -330,10 +330,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Decode the CBOR attestation object
     // Note: cbor.decode returns a Map when the CBOR data contains a map
-    const attestationObject = cbor.decode<IAttestationObjectMap>(
-      attestationObjectResult,
-      { preferMap: true },
-    );
+    const attestationObject = decodeAttestationObject(attestationObjectResult);
 
     // Step 22.SUCCESS.3.1: If
     // credentialCreationData.attestationConveyancePreferenceOption's value is
@@ -347,11 +344,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const attStmt = attestationObject.get('attStmt');
       const authData = attestationObject.get('authData');
 
-      const authDataParser = new AuthenticatorDataParser(authData);
+      const parsedAuthenticatorData = parseAuthenticatorData(authData);
 
       // Check if aaguid (in authData) is 16 zero bytes
-      const aaguid = authDataParser.getAaguid();
-      const isAaguidZeroed = !!aaguid?.every((byte) => byte === 0);
+      const isAaguidZeroed = parsedAuthenticatorData.aaguid?.every(
+        (byte) => byte === 0,
+      );
 
       // If the aaguid in the attested credential data is 16 zero bytes
       // and credentialCreationData.attestationObjectResult.fmt is "packed"

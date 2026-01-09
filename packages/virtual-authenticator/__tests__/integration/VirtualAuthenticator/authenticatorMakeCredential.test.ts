@@ -6,11 +6,9 @@ import {
 
 import { TypeAssertionError } from '@repo/assert';
 import { Hash } from '@repo/crypto';
-import { COSEKey } from '@repo/keys/cose';
+import { importKey, KeyAlgorithmMapper, KeyMapper } from '@repo/keys';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
-import { KeyMapper } from '@repo/keys/shared/mappers';
 import { PrismaClient } from '@repo/prisma';
-import * as cbor from 'cbor2';
 import { webcrypto } from 'node:crypto';
 import {
   afterAll,
@@ -25,8 +23,8 @@ import {
 import type { IAuthenticator } from '../../../src';
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import {
-  AuthenticatorDataParser,
-  type IAttestationObjectMap,
+  decodeAttestationObject,
+  parseAuthenticatorData,
 } from '../../../src/cbor';
 import { CollectedClientDataType, Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
@@ -118,36 +116,35 @@ const performAuthenticatorMakeCredentialAndVerify = async (
       },
     });
 
-  const attestationObjectMap = cbor.decode<IAttestationObjectMap>(
+  const attestationObjectMap = decodeAttestationObject(
     authenticatorMakeCredentialResponse.attestationObject,
-    {
-      preferMap: true,
-    },
   );
 
   const authData = attestationObjectMap.get('authData');
 
-  const authDataParser = new AuthenticatorDataParser(authData);
+  const parsedAuthenticatorData = parseAuthenticatorData(authData);
 
-  expect(authDataParser.getAaguid()).toStrictEqual(VirtualAuthenticator.AAGUID);
+  expect(parsedAuthenticatorData.aaguid).toStrictEqual(
+    VirtualAuthenticator.AAGUID,
+  );
   // New credential counter should be always 0
-  expect(authDataParser.getCounter()).toBe(0);
+  expect(parsedAuthenticatorData.counter).toBe(0);
 
-  expect(authDataParser.isUserPresent()).toBe(true);
-  expect(authDataParser.isBackupEligible()).toBe(true);
-  expect(authDataParser.isBackedUp()).toBe(true);
+  expect(parsedAuthenticatorData.flags.up).toBe(true);
+  expect(parsedAuthenticatorData.flags.be).toBe(true);
+  expect(parsedAuthenticatorData.flags.bs).toBe(true);
 
   if (authenticatorMakeCredentialArgs.requireUserVerification) {
-    expect(authDataParser.isUserVerified()).toBe(true);
+    expect(parsedAuthenticatorData.flags.uv).toBe(true);
   }
 
-  expect(authDataParser.getExtensions()).toBe(null);
-  expect(authDataParser.getRpIdHash()).toStrictEqual(Hash.sha256(RP_ID));
+  expect(parsedAuthenticatorData.extensionsData).toBe(undefined);
+  expect(parsedAuthenticatorData.rpIdHash).toStrictEqual(Hash.sha256(RP_ID));
 
   return {
     response: authenticatorMakeCredentialResponse,
     attestationObjectMap,
-    authDataParser,
+    parsedAuthenticatorData,
   };
 };
 
@@ -544,13 +541,13 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           credTypesAndPubKeyAlgs,
         } as AuthenticatorMakeCredentialArgs;
 
-        const { authDataParser } =
+        const { parsedAuthenticatorData } =
           await performAuthenticatorMakeCredentialAndVerify({
             authenticator,
             authenticatorMakeCredentialArgs,
           });
 
-        const COSEPublicKey = authDataParser.getPublicKey();
+        const COSEPublicKey = parsedAuthenticatorData.credentialPublicKey;
 
         const COSEKeyAlgorithm = COSEPublicKey?.get(COSEKeyParam.alg);
 
@@ -689,19 +686,24 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         attestationFormats: [Fmt.PACKED],
       } as AuthenticatorMakeCredentialArgs;
 
-      const { attestationObjectMap, authDataParser } =
+      const { attestationObjectMap, parsedAuthenticatorData } =
         await performAuthenticatorMakeCredentialAndVerify({
           authenticator,
           authenticatorMakeCredentialArgs,
         });
 
-      const COSEPublicKey = authDataParser.getPublicKey();
-      const jwkPublicKey = KeyMapper.COSEToJWK(new COSEKey(COSEPublicKey!));
+      const COSEPublicKey = parsedAuthenticatorData.credentialPublicKey;
+      const jwkPublicKey = KeyMapper.COSEPublicKeyToJWKPublicKey(
+        COSEPublicKey!,
+      );
       const signature = attestationObjectMap.get('attStmt').get('sig');
       const signedData = new Uint8Array(
         Buffer.concat([attestationObjectMap.get('authData'), CLIENT_DATA_HASH]),
       );
-      const cryptoKey = await jwkPublicKey.toCryptoKey();
+      const cryptoKey = await importKey({
+        keyData: jwkPublicKey,
+        algorithm: 'SHA-256',
+      });
 
       const isVerified = await webcrypto.subtle.verify(
         {

@@ -1080,6 +1080,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1099,9 +1102,6 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
       '@repo/types':
         specifier: workspace:*
         version: link:../types

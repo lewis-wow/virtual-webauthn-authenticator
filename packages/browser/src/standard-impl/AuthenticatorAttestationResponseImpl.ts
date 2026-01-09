@@ -1,11 +1,12 @@
 import { BytesMapper } from '@repo/core/mappers';
+import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyParam } from '@repo/keys/enums';
 import {
-  AuthenticatorDataParser,
-  type IAttestationObjectMap,
+  decodeAttestationObject,
+  parseAuthenticatorData,
+  type AttestationObjectMap,
 } from '@repo/virtual-authenticator/cbor';
 import type { AuthenticatorTransport } from '@repo/virtual-authenticator/enums';
-import * as cbor from 'cbor2';
 
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
 import {
@@ -33,7 +34,7 @@ export class AuthenticatorAttestationResponseImpl
   public readonly transports: AuthenticatorTransport[];
 
   // Caches to prevent repeated expensive parsing
-  private _attestationObjectMap?: IAttestationObjectMap;
+  private _attestationObjectMap?: AttestationObjectMap;
   private _publicKey?: ArrayBuffer | null;
   private _publicKeyAlgorithm?: COSEAlgorithmIdentifier;
 
@@ -57,12 +58,7 @@ export class AuthenticatorAttestationResponseImpl
       this.attestationObject,
     );
 
-    this._attestationObjectMap = cbor.decode<IAttestationObjectMap>(
-      attestationBytes,
-      {
-        preferMap: true,
-      },
-    );
+    this._attestationObjectMap = decodeAttestationObject(attestationBytes);
 
     // Normalize to Uint8Array using Mapper, then store the underlying ArrayBuffer
     return BytesMapper.bytesToArrayBuffer(
@@ -80,14 +76,14 @@ export class AuthenticatorAttestationResponseImpl
       this.getAuthenticatorData(),
     );
 
-    const authenticatorDataParser = new AuthenticatorDataParser(authData);
-    const publicKey = authenticatorDataParser.getPublicKey();
-    if (publicKey === null) {
+    const parsedAuthenticatorData = parseAuthenticatorData(authData);
+    const publicKey = parsedAuthenticatorData.credentialPublicKey;
+    if (publicKey === undefined) {
       this._publicKey = null;
       return null;
     }
 
-    const rawKeyBytes = cbor.encode(authenticatorDataParser.getPublicKey());
+    const rawKeyBytes = encodeCOSEPublicKey(publicKey);
     this._publicKey = BytesMapper.bytesToArrayBuffer(rawKeyBytes);
     this._publicKeyAlgorithm = publicKey.get(COSEKeyParam.alg);
     return this._publicKey;
