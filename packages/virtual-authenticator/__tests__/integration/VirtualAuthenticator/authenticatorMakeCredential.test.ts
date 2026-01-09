@@ -652,6 +652,34 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       ).rejects.toThrowError(new CredentialExcluded());
     });
 
+    test('Credential excluded with non-uuid credential ids', async () => {
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        excludeCredentialDescriptorList: [
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: new Uint8Array(Buffer.from('SOME_ID')),
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            // Empty id
+            id: new Uint8Array([]),
+          },
+          {
+            type: PublicKeyCredentialType.PUBLIC_KEY,
+            id: credentialId,
+          },
+        ],
+      } as AuthenticatorMakeCredentialArgs;
+
+      await expect(() =>
+        performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs,
+        }),
+      ).rejects.toThrowError(new CredentialExcluded());
+    });
+
     test('No credential excluded because of different RP ID', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
