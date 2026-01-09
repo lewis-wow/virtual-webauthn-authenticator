@@ -30,7 +30,7 @@ import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { PrismaVirtualAuthenticatorJwksRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorJwksRepository';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {

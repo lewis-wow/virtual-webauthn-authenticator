@@ -1,4 +1,4 @@
-import { AuthenticatorSelectionCriteriaSchema } from '../validation/AuthenticatorSelectionCriteriaSchema';
+import { AuthenticatorSelectionCriteriaSchema } from '../validation/spec/AuthenticatorSelectionCriteriaSchema';
 
 export const AuthenticatorSelectionCriteriaDtoSchema =
   AuthenticatorSelectionCriteriaSchema;

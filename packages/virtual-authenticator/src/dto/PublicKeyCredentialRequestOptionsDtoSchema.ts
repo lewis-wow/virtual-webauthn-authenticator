@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { PublicKeyCredentialRequestOptionsSchema } from '../validation/PublicKeyCredentialRequestOptionsSchema';
+import { PublicKeyCredentialRequestOptionsSchema } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import { ChallengeDtoSchema } from './ChallengeDtoSchema';
 import { PublicKeyCredentialDescriptorDtoSchema } from './PublicKeyCredentialDescriptorDtoSchema';
 

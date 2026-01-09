@@ -1,9 +1,8 @@
-import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorAgentMetaArgs } from './validation/AuthenticatorAgentMetaArgsSchema';
-import type { CredentialCreationOptions } from './validation/CredentialCreationOptionsSchema';
-import type { CredentialRequestOptions } from './validation/CredentialRequestOptionsSchema';
-import type { VirtualAuthenticatorAgentCreateCredentialResponse } from './validation/VirtualAuthenticatorAgentCreateCredentialResponseSchema';
-import type { VirtualAuthenticatorAgentGetAssertionResponse } from './validation/VirtualAuthenticatorAgentGetAssertionResponseSchema';
+import type { AuthenticatorAgentMetaArgs } from './validation/authenticator/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentContextArgs } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { CredentialCreationOptions } from './validation/spec/CredentialCreationOptionsSchema';
+import type { CredentialRequestOptions } from './validation/spec/CredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/spec/PublicKeyCredentialSchema';
 
 /**
  * Virtual WebAuthn Agent (Client) implementation.
@@ -30,7 +29,7 @@ export interface IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<VirtualAuthenticatorAgentCreateCredentialResponse>;
+  }): Promise<PublicKeyCredential>;
 
   /**
    * Gets an existing credential (authentication ceremony).
@@ -51,5 +50,5 @@ export interface IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<VirtualAuthenticatorAgentGetAssertionResponse>;
+  }): Promise<PublicKeyCredential>;
 }

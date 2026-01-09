@@ -1,4 +1,4 @@
-import { ApplicablePublicKeyCredentialSchema } from '../validation/ApplicablePublicKeyCredentialSchema';
+import { ApplicablePublicKeyCredentialSchema } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 
 export const ApplicablePublicKeyCredentialDtoSchema =
   ApplicablePublicKeyCredentialSchema;

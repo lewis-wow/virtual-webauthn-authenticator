@@ -1,4 +1,4 @@
-import { AuthenticationExtensionsClientInputsSchema } from '../validation/AuthenticationExtensionsClientInputsSchema';
+import { AuthenticationExtensionsClientInputsSchema } from '../validation/spec/AuthenticationExtensionsClientInputsSchema';
 
 export const AuthenticationExtensionsClientInputsDtoSchema =
   AuthenticationExtensionsClientInputsSchema;

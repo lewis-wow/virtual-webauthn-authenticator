@@ -1,4 +1,4 @@
-import { PublicKeyCredentialEntitySchema } from '../validation/PublicKeyCredentialEntitySchema';
+import { PublicKeyCredentialEntitySchema } from '../validation/spec/PublicKeyCredentialEntitySchema';
 
 export const PublicKeyCredentialEntityDtoSchema =
   PublicKeyCredentialEntitySchema;

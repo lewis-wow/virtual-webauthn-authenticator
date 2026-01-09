@@ -1,3 +1,3 @@
-import { PubKeyCredParamStrictSchema } from '../validation/PubKeyCredParamSchema';
+import { PubKeyCredParamStrictSchema } from '../validation/spec/PubKeyCredParamSchema';
 
 export const PubKeyCredParamDtoSchema = PubKeyCredParamStrictSchema;

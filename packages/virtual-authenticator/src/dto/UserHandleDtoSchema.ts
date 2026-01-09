@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { UserHandleSchema } from '../validation/UserHandleSchema';
+import { UserHandleSchema } from '../validation/spec/UserHandleSchema';
 
 export const UserHandleDtoSchema = z.codec(
   z.base64url().nullable(),

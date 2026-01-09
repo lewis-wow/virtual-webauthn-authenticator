@@ -1,10 +1,10 @@
 import type { IWebAuthnRepository } from './repositories';
-import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
-import type { AuthenticatorMetaArgs } from './validation/AuthenticatorMetaArgsSchema';
-import type { VirtualAuthenticatorGetAssertionResponse } from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
-import type { VirtualAuthenticatorMakeCredentialResponse } from './validation/VirtualAuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorGetAssertionArgs } from './validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
+import type { AuthenticatorMakeCredentialArgs } from './validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from './validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorMetaArgs } from './validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { AuthenticatorAgentContextArgs } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 
 /**
  * Interface defining the authenticator operations as specified in the
@@ -29,7 +29,7 @@ export interface IAuthenticator {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<VirtualAuthenticatorMakeCredentialResponse>;
+  }): Promise<AuthenticatorMakeCredentialResponse>;
 
   /**
    * The authenticatorGetAssertion operation.
@@ -41,7 +41,7 @@ export interface IAuthenticator {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     context: AuthenticatorAgentContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<VirtualAuthenticatorGetAssertionResponse>;
+  }): Promise<AuthenticatorGetAssertionResponse>;
 
   /**
    * The authenticatorCancel operation.

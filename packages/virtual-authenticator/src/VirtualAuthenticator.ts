@@ -10,50 +10,44 @@ import type { IAuthenticator } from './IAuthenticator';
 import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { EnvelopeResponseControlReason } from './enums/envelope/EnvelopeResponseControlReason';
-import { EnvelopeStatus } from './enums/envelope/EnvelopeStatus';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
+import { CredentialSelectInteraction } from './interactions/CredentialSelectInteraction';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
-} from './validation/AuthenticatorContextArgsSchema';
+} from './validation/authenticator/AuthenticatorContextArgsSchema';
 import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
-} from './validation/AuthenticatorGetAssertionArgsSchema';
+} from './validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import {
   AuthenticatorGetAssertionResponseSchema,
   type AuthenticatorGetAssertionResponse,
-} from './validation/AuthenticatorGetAssertionResponseSchema';
+} from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
-} from './validation/AuthenticatorMakeCredentialArgsSchema';
-import { AuthenticatorMakeCredentialResponseSchema } from './validation/AuthenticatorMakeCredentialResponseSchema';
+} from './validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import {
+  AuthenticatorMakeCredentialResponseSchema,
+  type AuthenticatorMakeCredentialResponse,
+} from './validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
-} from './validation/AuthenticatorMetaArgsSchema';
+} from './validation/authenticator/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
-} from './validation/CredParamSchema';
-import {
-  VirtualAuthenticatorGetAssertionResponseSchema,
-  type VirtualAuthenticatorGetAssertionResponse,
-} from './validation/VirtualAuthenticatorGetAssertionResponseSchema';
-import {
-  VirtualAuthenticatorMakeCredentialResponseSchema,
-  type VirtualAuthenticatorMakeCredentialResponse,
-} from './validation/VirtualAuthenticatorMakeCredentialResponseSchema';
+} from './validation/spec/CredParamSchema';
 
 export type AuthenticatorBackendContext = {
   apiKeyId: string;
@@ -433,7 +427,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<VirtualAuthenticatorMakeCredentialResponse> {
+  }): Promise<AuthenticatorMakeCredentialResponse> {
     const { authenticatorMakeCredentialArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -679,19 +673,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       AuthenticatorMakeCredentialResponseSchema,
     );
 
-    // Apply proprietary API response envelope
-    const virtualAuthenticatorMakeCredentialResponse: VirtualAuthenticatorMakeCredentialResponse =
-      {
-        status: EnvelopeStatus.SUCCESS,
-        payload: authenticatorMakeCredentialResponse,
-      };
-
-    assertSchema(
-      virtualAuthenticatorMakeCredentialResponse,
-      VirtualAuthenticatorMakeCredentialResponseSchema,
-    );
-
-    return virtualAuthenticatorMakeCredentialResponse;
+    return authenticatorMakeCredentialResponse;
   }
 
   /**
@@ -704,7 +686,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<VirtualAuthenticatorGetAssertionResponse> {
+  }): Promise<AuthenticatorGetAssertionResponse> {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -788,19 +770,9 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Prompt user to select credential.
     if (credentialOptions.length > 1) {
-      // Apply proprietary API response envelope
-      const virtualAuthenticatorGetAssertionResponse: VirtualAuthenticatorGetAssertionResponse =
-        {
-          status: EnvelopeStatus.INTERACTION_REQUIRED,
-          control: {
-            reason: EnvelopeResponseControlReason.CREDENTIAL_SELECT,
-            stateToken: await this.jwt.sign({
-              credentialOptions,
-            }),
-          },
-        };
-
-      return virtualAuthenticatorGetAssertionResponse;
+      throw new CredentialSelectInteraction({
+        credentialOptions,
+      });
     }
 
     const selectedCredential = credentialOptions[0]!;
@@ -883,19 +855,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       AuthenticatorGetAssertionResponseSchema,
     );
 
-    // Apply proprietary API response envelope
-    const virtualAuthenticatorGetAssertionResponse: VirtualAuthenticatorGetAssertionResponse =
-      {
-        status: EnvelopeStatus.SUCCESS,
-        payload: authenticatorGetAssertionResponse,
-      };
-
-    assertSchema(
-      virtualAuthenticatorGetAssertionResponse,
-      VirtualAuthenticatorGetAssertionResponseSchema,
-    );
-
-    return virtualAuthenticatorGetAssertionResponse;
+    return authenticatorGetAssertionResponse;
   }
 
   public async authenticatorCancel() {

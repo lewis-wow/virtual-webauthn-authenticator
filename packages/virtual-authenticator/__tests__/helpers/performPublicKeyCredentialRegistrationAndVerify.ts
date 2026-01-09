@@ -14,8 +14,8 @@ import type {
   PublicKeyCredential,
   PublicKeyCredentialCreationOptions,
 } from '../../src/validation';
-import type { AuthenticatorAgentContextArgs } from '../../src/validation/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../../src/validation/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentContextArgs } from '../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 import { RP_ID, RP_ORIGIN } from './consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {

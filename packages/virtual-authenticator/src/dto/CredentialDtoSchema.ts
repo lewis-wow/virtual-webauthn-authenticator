@@ -1,3 +1,3 @@
-import { CredentialSchema } from '../validation/CredentialSchema';
+import { CredentialSchema } from '../validation/spec/CredentialSchema';
 
 export const CredentialDtoSchema = CredentialSchema;

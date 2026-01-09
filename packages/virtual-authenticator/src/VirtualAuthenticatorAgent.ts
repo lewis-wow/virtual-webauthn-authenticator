@@ -20,7 +20,6 @@ import {
   UserVerification,
 } from './enums';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
-import { EnvelopeStatus } from './enums/envelope/EnvelopeStatus';
 import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
@@ -28,28 +27,26 @@ import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAv
 import type {
   AuthenticatorAgentContextArgs,
   AuthenticatorAgentMetaArgs,
+  AuthenticatorGetAssertionResponse,
   PubKeyCredParam,
   PublicKeyCredentialDescriptor,
   PublicKeyCredentialRequestOptions,
-  VirtualAuthenticatorGetAssertionResponse,
 } from './validation';
-import { AuthenticatorAgentContextArgsSchema } from './validation/AuthenticatorAgentContextArgsSchema';
-import { AuthenticatorAgentMetaArgsSchema } from './validation/AuthenticatorAgentMetaArgsSchema';
-import type { CollectedClientData } from './validation/CollectedClientDataSchema';
+import { AuthenticatorAgentMetaArgsSchema } from './validation/authenticator/AuthenticatorAgentMetaArgsSchema';
+import { AuthenticatorAgentContextArgsSchema } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import { createOriginMatchesRpIdSchema } from './validation/authenticatorAgent/createOriginMatchesRpIdSchema';
+import type { CollectedClientData } from './validation/spec/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
-} from './validation/CredentialCreationOptionsSchema';
+} from './validation/spec/CredentialCreationOptionsSchema';
 import {
   CredentialRequestOptionsSchema,
   type CredentialRequestOptions,
-} from './validation/CredentialRequestOptionsSchema';
-import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
-import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
-import type { VirtualAuthenticatorAgentCreateCredentialResponse } from './validation/VirtualAuthenticatorAgentCreateCredentialResponseSchema';
-import type { VirtualAuthenticatorAgentGetAssertionResponse } from './validation/VirtualAuthenticatorAgentGetAssertionResponseSchema';
-import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
+} from './validation/spec/CredentialRequestOptionsSchema';
+import { PublicKeyCredentialCreationOptionsSchema } from './validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import { PublicKeyCredentialRequestOptionsSchema } from './validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/spec/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
@@ -94,7 +91,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<VirtualAuthenticatorGetAssertionResponse> {
+  }): Promise<AuthenticatorGetAssertionResponse> {
     const {
       authenticator,
       pkOptions,
@@ -406,7 +403,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<VirtualAuthenticatorAgentCreateCredentialResponse> {
+  }): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
@@ -736,7 +733,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // credTypesAndPubKeyAlgs, excludeCredentialDescriptorList,
     // enterpriseAttestationPossible, and authenticatorExtensions as
     // parameters.
-    const virtualAuthenticatorMakeCredentialResponse =
+    const { attestationObject, credentialId } =
       await this.authenticator.authenticatorMakeCredential({
         authenticatorMakeCredentialArgs: {
           hash: clientDataHash,
@@ -795,8 +792,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // identifier → client extension output entries.
     const credentialCreationData = {
       // attestationObjectResult: whose value is the bytes returned from the successful authenticatorMakeCredential operation.
-      attestationObjectResult:
-        virtualAuthenticatorMakeCredentialResponse.payload.attestationObject,
+      attestationObjectResult: attestationObject,
       // clientDataJSONResult: whose value is the bytes of clientDataJSON.
       clientDataJSONResult: clientDataJSON,
       // attestationConveyancePreferenceOption: whose value is the value of pkOptions.attestation.
@@ -819,10 +815,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 22.SUCCESS.3: Return the result of running constructCredentialAlg
     // with the current global object.
     const pubKeyCred: PublicKeyCredential = {
-      id: Buffer.from(
-        virtualAuthenticatorMakeCredentialResponse.payload.credentialId,
-      ).toString('base64url'),
-      rawId: virtualAuthenticatorMakeCredentialResponse.payload.credentialId,
+      id: Buffer.from(credentialId).toString('base64url'),
+      rawId: credentialId,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
         clientDataJSON: clientDataJSON,
@@ -846,15 +840,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     };
 
     // Step 22.SUCCESS.5: Return pubKeyCred.
-
-    // Apply proprietary API response envelope
-    const virtualAuthenticatorAgentCreateCredentialResponse: VirtualAuthenticatorAgentCreateCredentialResponse =
-      {
-        status: EnvelopeStatus.SUCCESS,
-        payload: pubKeyCred,
-      };
-
-    return virtualAuthenticatorAgentCreateCredentialResponse;
+    return pubKeyCred;
   }
 
   /**
@@ -876,7 +862,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-  }): Promise<VirtualAuthenticatorAgentGetAssertionResponse> {
+  }): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
@@ -1064,7 +1050,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 20.AVAILABLE.2: Else:
 
     // Step 20.AVAILABLE.2.1: Execute the `issuing a credential request to an authenticator algorithm` with authenticator, savedCredentialIds, pkOptions, rpId, clientDataHash, and authenticatorExtensions.
-    const virtualAuthenticatorGetAssertionResponse =
+    const { credentialId, authenticatorData, signature, userHandle } =
       await this._issueCredentialRequestToAuthenticator({
         authenticator: this.authenticator,
         // NOTE: Not used. Just for compatibility with spec.
@@ -1078,15 +1064,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         meta,
         context,
       });
-
-    if (
-      virtualAuthenticatorGetAssertionResponse.status !== EnvelopeStatus.SUCCESS
-    ) {
-      return virtualAuthenticatorGetAssertionResponse;
-    }
-
-    const { credentialId, authenticatorData, signature, userHandle } =
-      virtualAuthenticatorGetAssertionResponse.payload;
 
     // Step 20.AVAILABLE.2.1: If this returns false, continue.
     // Not implemented as we have single authenticator.
@@ -1218,14 +1195,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // NOTE: Not implemented.
 
     // Step 20.SUCCESS.8: Return pubKeyCred and terminate this algorithm.
-
-    // Apply proprietary API response envelope
-    const virtualAuthenticatorAgentGetAssertionResponse: VirtualAuthenticatorAgentGetAssertionResponse =
-      {
-        status: EnvelopeStatus.SUCCESS,
-        payload: pubKeyCred,
-      };
-
-    return virtualAuthenticatorAgentGetAssertionResponse;
+    return pubKeyCred;
   }
 }
