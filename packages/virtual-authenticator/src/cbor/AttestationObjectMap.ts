@@ -1,4 +1,4 @@
-import type { TypedMap } from '@repo/types';
+import type { TypedMap, Uint8Array_ } from '@repo/types';
 
 import type { AttestationStatementMap } from './AttestationStatementMap';
 
@@ -13,5 +13,5 @@ export type AttestationObjectMap = TypedMap<{
   /** Attestation statement - a CBOR map containing attestation-specific data */
   attStmt: AttestationStatementMap;
   /** Authenticator data - raw bytes containing rpIdHash, flags, counter, and optional credential data */
-  authData: Uint8Array;
+  authData: Uint8Array_;
 }>;

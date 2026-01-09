@@ -11,6 +11,7 @@ import { KeyMapper } from '@repo/keys';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
+import type { Uint8Array_ } from '@repo/types';
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
@@ -3083,11 +3084,11 @@ describe('VirtualAuthenticator.createCredential()', () => {
           });
 
         expect(
-          (publicKeyCredential.response as { attestationObject: Uint8Array })
+          (publicKeyCredential.response as { attestationObject: Uint8Array_ })
             .attestationObject,
         ).toBeInstanceOf(Uint8Array);
         expect(
-          (publicKeyCredential.response as { attestationObject: Uint8Array })
+          (publicKeyCredential.response as { attestationObject: Uint8Array_ })
             .attestationObject.length,
         ).toBeGreaterThan(0);
       });

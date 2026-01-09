@@ -5,6 +5,7 @@ import {
   type SignResult,
 } from '@azure/keyvault-keys';
 import { assertSchema } from '@repo/assert';
+import * as cbor from '@repo/cbor';
 import { KeyMapper } from '@repo/keys';
 import { type JSONWebPublicKey, KeyAlgorithmMapper } from '@repo/keys';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
@@ -14,13 +15,13 @@ import {
   JWKKeyAlgorithm,
 } from '@repo/keys/enums';
 import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
+import type { Uint8Array_ } from '@repo/types';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
   WebAuthnPublicKeyCredentialWithMeta,
 } from '@repo/virtual-authenticator/types';
 import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/validation';
-import * as cbor from 'cbor2';
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
@@ -35,7 +36,7 @@ export type KeyPayload = {
 };
 
 export type SignPayload = {
-  signature: Uint8Array;
+  signature: Uint8Array_;
   meta: {
     signResult: SignResult;
   };
@@ -55,7 +56,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
   }
 
-  private _toB64(bytes: Uint8Array | undefined): string | undefined {
+  private _toB64(bytes: Uint8Array_ | undefined): string | undefined {
     if (bytes === undefined) {
       return undefined;
     }
@@ -123,7 +124,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
   private async _sign(opts: {
     keyVaultKey: KeyVaultKey;
     algorithm: JWKKeyAlgorithm;
-    data: Uint8Array;
+    data: Uint8Array_;
   }): Promise<SignPayload> {
     const { keyVaultKey, algorithm, data } = opts;
 
@@ -133,7 +134,9 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     const signResult = await cryptographyClient.signData(algorithm, data);
 
     return {
-      signature: ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
+      signature: new Uint8Array(
+        ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
+      ),
       meta: {
         signResult,
       },
@@ -150,7 +153,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     webAuthnPublicKeyCredentialId: string;
     pubKeyCredParams: PubKeyCredParamStrict;
   }): Promise<{
-    COSEPublicKey: Uint8Array;
+    COSEPublicKey: Uint8Array_;
     webAuthnPublicKeyCredentialKeyMetaType: WebAuthnPublicKeyCredentialKeyMetaType;
     webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
       keyVaultKeyId: string | null;
@@ -191,10 +194,10 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
    * @throws UnexpectedWebAuthnPublicKeyCredentialKeyMetaType if credential is not KEY_VAULT type
    */
   async sign(opts: {
-    data: Uint8Array;
+    data: Uint8Array_;
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }): Promise<{
-    signature: Uint8Array;
+    signature: Uint8Array_;
     alg: COSEKeyAlgorithm;
   }> {
     const { data, webAuthnPublicKeyCredential } = opts;

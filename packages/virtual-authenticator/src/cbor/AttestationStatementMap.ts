@@ -1,4 +1,4 @@
-import type { TypedMap } from '@repo/types';
+import type { TypedMap, Uint8Array_ } from '@repo/types';
 
 /**
  * Attestation Statement structure as defined in WebAuthn specification.
@@ -21,7 +21,7 @@ export type AttestationStatementMap = TypedMap<{
    * - https://www.w3.org/TR/webauthn-3/#sctn-tpm-attestation:
    * The attestation signature, in the form of a TPMT_SIGNATURE structure as specified in https://www.w3.org/TR/webauthn-3/#biblio-tpmv2-part2 section 11.3.4.
    */
-  sig?: Uint8Array | undefined;
+  sig?: Uint8Array_ | undefined;
 
   /**
    * - https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation:
@@ -34,7 +34,7 @@ export type AttestationStatementMap = TypedMap<{
    * aikCert followed by its certificate chain, in X.509 encoding.
    * - aikCert: The AIK certificate used for the attestation, in X.509 encoding.
    */
-  x5c?: Uint8Array[] | undefined;
+  x5c?: Uint8Array_[] | undefined;
 
   // Fields specific to "tpm" format
 
@@ -52,14 +52,14 @@ export type AttestationStatementMap = TypedMap<{
    *
    * The TPMS_ATTEST structure over which the above signature was computed, as specified in https://www.w3.org/TR/webauthn-3/#biblio-tpmv2-part2 section 10.12.8.
    */
-  certInfo?: Uint8Array | undefined;
+  certInfo?: Uint8Array_ | undefined;
 
   /**
    * @see https://www.w3.org/TR/webauthn-3/#sctn-tpm-attestation
    *
    * The TPMT_PUBLIC structure (see https://www.w3.org/TR/webauthn-3/#biblio-tpmv2-part2 section 12.2.4) used by the TPM to represent the credential public key.
    */
-  pubArea?: Uint8Array | undefined;
+  pubArea?: Uint8Array_ | undefined;
 
   // Fields specific to "android-safetynet" format
 
@@ -68,5 +68,5 @@ export type AttestationStatementMap = TypedMap<{
    *
    * JSON Web Signature (JWS) string as bytes
    */
-  response?: Uint8Array | undefined;
+  response?: Uint8Array_ | undefined;
 }>;

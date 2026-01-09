@@ -1,10 +1,12 @@
+import type { Uint8Array_ } from '@repo/types';
+
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 
 export type CreateKeyVaultDataArgs = {
   id: string;
   name?: string;
-  COSEPublicKey: Uint8Array;
+  COSEPublicKey: Uint8Array_;
   rpId: string;
   userId: string;
   apiKeyId: string | null;

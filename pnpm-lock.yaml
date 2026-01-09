@@ -1112,6 +1112,28 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
+  packages/cbor:
+    dependencies:
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+
   packages/contract:
     dependencies:
       '@ngneat/falso':
@@ -1417,6 +1439,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/cbor':
+        specifier: workspace:*
+        version: link:../cbor
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
@@ -1475,6 +1500,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/cbor':
+        specifier: workspace:*
+        version: link:../cbor
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
@@ -1992,6 +2020,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/cbor':
+        specifier: workspace:*
+        version: link:../cbor
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto

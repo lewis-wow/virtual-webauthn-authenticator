@@ -1,4 +1,5 @@
 import { assertSchema } from '@repo/assert';
+import type { Uint8Array_ } from '@repo/types';
 import { Buffer } from 'buffer';
 import { webcrypto } from 'node:crypto';
 import z from 'zod';
@@ -25,8 +26,8 @@ import { COSEKeyCurveNameSchema } from './validation/enums/COSEKeyCurveNameSchem
  */
 export async function verifyOKP(opts: {
   cosePublicKey: COSEPublicKeyOKP;
-  signature: Uint8Array;
-  data: Uint8Array;
+  signature: Uint8Array_;
+  data: Uint8Array_;
 }): Promise<boolean> {
   const { cosePublicKey, signature, data } = opts;
 

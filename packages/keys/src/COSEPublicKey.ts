@@ -1,4 +1,4 @@
-import type { TypedMap } from '@repo/types';
+import type { TypedMap, Uint8Array_ } from '@repo/types';
 
 import type { COSEKeyAlgorithm, COSEKeyCurveName, COSEKeyType } from './enums';
 import type { COSEKeyParam } from './enums/COSEKeyParam';
@@ -25,7 +25,7 @@ export type COSEPublicKey = TypedMap<{
    * Key ID (kid) - Identification value matched to the kid in the message.
    * @see https://www.rfc-editor.org/rfc/rfc8152.html#section-7.1
    */
-  [COSEKeyParam.kid]: Uint8Array | undefined;
+  [COSEKeyParam.kid]: Uint8Array_ | undefined;
 
   /**
    * Algorithm (alg) - The algorithm that is used with the key.
@@ -44,7 +44,7 @@ export type COSEPublicKey = TypedMap<{
    * Base IV (base_iv) - Base initialization vector to be XORed with partial IVs.
    * @see https://www.rfc-editor.org/rfc/rfc8152.html#section-7.1
    */
-  [COSEKeyParam.base_iv]: Uint8Array | undefined;
+  [COSEKeyParam.base_iv]: Uint8Array_ | undefined;
 }>;
 
 export type COSEPublicKeyOKP = COSEPublicKey &
@@ -59,7 +59,7 @@ export type COSEPublicKeyOKP = COSEPublicKey &
      * Parameter at key -2.
      * OKP: x (public key)
      */
-    [COSEKeyTypeParam.x]: Uint8Array | undefined;
+    [COSEKeyTypeParam.x]: Uint8Array_ | undefined;
   }>;
 
 export type COSEPublicKeyEC = COSEPublicKey &
@@ -74,13 +74,13 @@ export type COSEPublicKeyEC = COSEPublicKey &
      * Parameter at key -2.
      * EC2: x (x-coordinate)
      */
-    [COSEKeyTypeParam.x]: Uint8Array | undefined;
+    [COSEKeyTypeParam.x]: Uint8Array_ | undefined;
 
     /**
      * Parameter at key -3.
      * EC2: y (y-coordinate)
      */
-    [COSEKeyTypeParam.y]: Uint8Array | undefined;
+    [COSEKeyTypeParam.y]: Uint8Array_ | undefined;
   }>;
 
 export type COSEPublicKeyRSA = COSEPublicKey &
@@ -89,11 +89,11 @@ export type COSEPublicKeyRSA = COSEPublicKey &
      * Parameter at key -1.
      * RSA: n
      */
-    [COSEKeyTypeParam.n]: Uint8Array | undefined;
+    [COSEKeyTypeParam.n]: Uint8Array_ | undefined;
 
     /**
      * Parameter at key -2.
      * RSA: e
      */
-    [COSEKeyTypeParam.e]: Uint8Array | undefined;
+    [COSEKeyTypeParam.e]: Uint8Array_ | undefined;
   }>;

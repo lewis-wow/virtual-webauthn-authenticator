@@ -1,3 +1,4 @@
+import type { Uint8Array_ } from '@repo/types';
 import { swapKeysAndValues } from '@repo/utils';
 import { Buffer } from 'buffer';
 
@@ -17,7 +18,7 @@ import { UnsupportedKeyType } from './exceptions/UnsupportedKeyType';
 export class KeyMapper {
   static readonly CURVE_NAME_MAP = swapKeysAndValues(COSEKeyCurveName);
 
-  private static _toB64(bytes: Uint8Array | undefined): string | undefined {
+  private static _toB64(bytes: Uint8Array_ | undefined): string | undefined {
     if (bytes === undefined) {
       return undefined;
     }
@@ -25,7 +26,7 @@ export class KeyMapper {
     return Buffer.from(bytes).toString('base64url');
   }
 
-  private static _fromB64(b64: string | undefined): Uint8Array | undefined {
+  private static _fromB64(b64: string | undefined): Uint8Array_ | undefined {
     if (b64 === undefined) {
       return undefined;
     }

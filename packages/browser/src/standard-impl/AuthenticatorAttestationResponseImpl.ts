@@ -1,6 +1,7 @@
 import { BytesMapper } from '@repo/core/mappers';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyParam } from '@repo/keys/enums';
+import type { Uint8Array_ } from '@repo/types';
 import {
   decodeAttestationObject,
   parseAuthenticatorData,
@@ -15,7 +16,7 @@ import {
 } from './AuthenticatorResponseImpl';
 
 export type DecodedAttestationObject = {
-  authData: Uint8Array;
+  authData: Uint8Array_;
   fmt: string;
   attStmt: Record<string, unknown>;
 };

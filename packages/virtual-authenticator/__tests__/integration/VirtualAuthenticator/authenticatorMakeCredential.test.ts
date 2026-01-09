@@ -10,6 +10,7 @@ import { Hash } from '@repo/crypto';
 import { verifyEC, type COSEPublicKeyEC } from '@repo/keys';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
+import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import {
   afterAll,
@@ -653,7 +654,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   });
 
   describe('AuthenticatorMakeCredentialArgs.excludeCredentialDescriptorList', () => {
-    let credentialId: Uint8Array;
+    let credentialId: Uint8Array_;
 
     beforeEach(async () => {
       const { response } = await performAuthenticatorMakeCredentialAndVerify({

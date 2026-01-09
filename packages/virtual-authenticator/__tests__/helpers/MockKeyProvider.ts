@@ -1,6 +1,7 @@
 import { KeyMapper } from '@repo/keys';
+import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
-import * as cbor from 'cbor2';
+import type { Uint8Array_ } from '@repo/types';
 import {
   createSign,
   generateKeyPairSync,
@@ -48,7 +49,7 @@ export class MockKeyProvider implements IKeyProvider {
     // Set the algorithm parameter (required by WebAuthn spec)
     COSEPublicKey.set(COSEKeyParam.alg, pubKeyCredParams.alg);
 
-    const COSEPublicKeyBytes = cbor.encode(COSEPublicKey);
+    const COSEPublicKeyBytes = encodeCOSEPublicKey(COSEPublicKey);
 
     const { keyVaultKeyId, keyVaultKeyName } =
       this.keyVaultKeyIdGenerator.next();
@@ -66,7 +67,7 @@ export class MockKeyProvider implements IKeyProvider {
   }
 
   async sign(opts: {
-    data: Uint8Array;
+    data: Uint8Array_;
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
     const { data, webAuthnPublicKeyCredential } = opts;

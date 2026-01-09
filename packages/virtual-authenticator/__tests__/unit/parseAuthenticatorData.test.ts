@@ -1,3 +1,4 @@
+import * as cbor from '@repo/cbor';
 import type {
   COSEPublicKey,
   COSEPublicKeyEC,
@@ -9,7 +10,7 @@ import {
   COSEKeyType,
   COSEKeyTypeParam,
 } from '@repo/keys/enums';
-import * as cbor from 'cbor2';
+import type { Uint8Array_ } from '@repo/types';
 import { describe, expect, test } from 'vitest';
 
 import { parseAuthenticatorData } from '../../src/cbor/parseAuthenticatorData.js';
@@ -43,16 +44,16 @@ const createRSAPublicKey = (): COSEPublicKey => {
  * Helper function to create a valid authenticator data buffer
  */
 const createAuthData = (options: {
-  rpIdHash?: Uint8Array;
+  rpIdHash?: Uint8Array_;
   flags?: number;
   counter?: number;
   includeAttestedCredentialData?: boolean;
   includeExtensions?: boolean;
-  aaguid?: Uint8Array;
-  credentialId?: Uint8Array;
+  aaguid?: Uint8Array_;
+  credentialId?: Uint8Array_;
   publicKey?: COSEPublicKey;
   extensions?: Record<string, unknown>;
-}): Uint8Array => {
+}): Uint8Array_ => {
   const {
     rpIdHash = new Uint8Array(32).fill(0x01), // Default 32-byte hash
     flags = 0b00000001, // Default: only UP (User Present) bit set
@@ -65,7 +66,7 @@ const createAuthData = (options: {
     extensions = { example: 'value' },
   } = options;
 
-  const parts: Uint8Array[] = [];
+  const parts: Uint8Array_[] = [];
 
   // [RPIDHash (32)]
   parts.push(rpIdHash);
@@ -437,7 +438,7 @@ describe('parseAuthenticatorData', () => {
       const credentialIdLength = 3;
       const credentialId = new Uint8Array(3).fill(0x03);
 
-      const authDataParts: Uint8Array[] = [];
+      const authDataParts: Uint8Array_[] = [];
       authDataParts.push(rpIdHash);
       authDataParts.push(new Uint8Array([flags]));
 
@@ -521,7 +522,7 @@ describe('parseAuthenticatorData', () => {
       const flags = 0b10000001; // ED flag (bit 7) and UP flag (bit 0) set
       const counter = 0;
 
-      const authDataParts: Uint8Array[] = [];
+      const authDataParts: Uint8Array_[] = [];
       authDataParts.push(rpIdHash);
       authDataParts.push(new Uint8Array([flags]));
 

@@ -35,6 +35,7 @@
     "@repo/exception": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/cbor": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "cbor2": "^2.0.1",
     "ecdsa-sig-formatter": "^1.0.11"

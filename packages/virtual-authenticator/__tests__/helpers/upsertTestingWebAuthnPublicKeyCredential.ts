@@ -5,11 +5,11 @@ import {
 } from '../../../key-vault/__tests__/helpers';
 import { COSEPublicKey } from '../../../keys/__tests__/helpers/COSEPublicKey';
 
+import * as cbor from '@repo/cbor';
 import {
   WebAuthnPublicKeyCredentialKeyMetaType,
   type PrismaClient,
 } from '@repo/prisma';
-import * as cbor from 'cbor2';
 
 import {
   RP_ID,

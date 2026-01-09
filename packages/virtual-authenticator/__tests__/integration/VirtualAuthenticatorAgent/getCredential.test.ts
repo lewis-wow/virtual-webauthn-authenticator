@@ -4,6 +4,7 @@ import { set } from '@repo/core/__tests__/helpers';
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
 import { PrismaClient } from '@repo/prisma';
+import type { Uint8Array_ } from '@repo/types';
 import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
@@ -75,8 +76,8 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
   let registrationInfo: {
     webAuthnPublicKeyCredentialId: string;
-    webAuthnPublicKeyCredentialIdBytes: Uint8Array;
-    publicKey: Uint8Array<ArrayBuffer>;
+    webAuthnPublicKeyCredentialIdBytes: Uint8Array_;
+    publicKey: Uint8Array_;
     counter: number;
   };
 
@@ -899,7 +900,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
               id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
-          challenge: 'not-a-uint8array' as unknown as Uint8Array,
+          challenge: 'not-a-uint8array' as unknown as Uint8Array_,
         },
       ) as unknown as PublicKeyCredentialRequestOptions;
 
@@ -1485,7 +1486,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
               id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
-          challenge: null as unknown as Uint8Array,
+          challenge: null as unknown as Uint8Array_,
         },
       ) as unknown as PublicKeyCredentialRequestOptions;
 
@@ -1518,7 +1519,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
               id: webAuthnPublicKeyCredentialIdBytes,
             },
           ],
-          challenge: undefined as unknown as Uint8Array,
+          challenge: undefined as unknown as Uint8Array_,
         },
       ) as unknown as PublicKeyCredentialRequestOptions;
 

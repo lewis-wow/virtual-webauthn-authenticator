@@ -1,7 +1,8 @@
 import { assertSchema } from '@repo/assert';
+import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
-import * as cbor from 'cbor2';
+import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
@@ -119,9 +120,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
    */
   private async _createAttestedCredentialData(opts: {
-    credentialId: Uint8Array;
-    COSEPublicKey: Uint8Array;
-  }): Promise<Uint8Array> {
+    credentialId: Uint8Array_;
+    COSEPublicKey: Uint8Array_;
+  }): Promise<Uint8Array_> {
     const { credentialId, COSEPublicKey } = opts;
 
     // Byte length L of Credential ID, 16-bit unsigned big-endian integer.
@@ -156,11 +157,11 @@ export class VirtualAuthenticator implements IAuthenticator {
   private async _createAuthenticatorData(opts: {
     rpId: string;
     counter: number;
-    attestedCredentialData: Uint8Array | undefined;
+    attestedCredentialData: Uint8Array_ | undefined;
     requireUserVerification: boolean;
     userVerificationEnabled: boolean;
     userPresenceEnabled: boolean;
-  }): Promise<Uint8Array> {
+  }): Promise<Uint8Array_> {
     const {
       rpId,
       counter,
@@ -286,9 +287,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (Step 11)
    */
   private _createDataToSign(opts: {
-    clientDataHash: Uint8Array;
-    authData: Uint8Array;
-  }): Uint8Array {
+    clientDataHash: Uint8Array_;
+    authData: Uint8Array_;
+  }): Uint8Array_ {
     const { clientDataHash, authData } = opts;
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
@@ -314,8 +315,8 @@ export class VirtualAuthenticator implements IAuthenticator {
   private async _handleAttestationPacked(opts: {
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
     data: {
-      clientDataHash: Uint8Array;
-      authData: Uint8Array;
+      clientDataHash: Uint8Array_;
+      authData: Uint8Array_;
     };
   }): Promise<AttestationStatementMap> {
     const { webAuthnPublicKeyCredential, data } = opts;
@@ -384,8 +385,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
 
     attestationFormat: Fmt;
-    authData: Uint8Array;
-    hash: Uint8Array;
+    authData: Uint8Array_;
+    hash: Uint8Array_;
   }): Promise<AttestationObjectMap> {
     const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } =
       opts;

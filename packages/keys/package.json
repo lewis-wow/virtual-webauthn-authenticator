@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@repo/assert": "workspace:*",
+    "@repo/cbor": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/utils": "workspace:*",
     "buffer": "^6.0.3",

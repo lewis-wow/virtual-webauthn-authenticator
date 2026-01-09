@@ -1,13 +1,14 @@
+import * as cbor from '@repo/cbor';
 import type { COSEPublicKey } from '@repo/keys';
-import * as cbor from 'cbor2';
+import type { Uint8Array_ } from '@repo/types';
 
 /**
  * Parsed authenticator data structure.
  * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
  */
 export type ParsedAuthenticatorData = {
-  rpIdHash: Uint8Array;
-  flagsBuf: Uint8Array;
+  rpIdHash: Uint8Array_;
+  flagsBuf: Uint8Array_;
   flags: {
     /** User Presence (UP) - bit 0 */
     up: boolean;
@@ -25,12 +26,12 @@ export type ParsedAuthenticatorData = {
     flagsInt: number;
   };
   counter: number;
-  counterBuf: Uint8Array;
-  aaguid?: Uint8Array;
-  credentialID?: Uint8Array;
+  counterBuf: Uint8Array_;
+  aaguid?: Uint8Array_;
+  credentialID?: Uint8Array_;
   credentialPublicKey?: COSEPublicKey;
   extensionsData?: Record<string, unknown>;
-  extensionsDataBuffer?: Uint8Array;
+  extensionsDataBuffer?: Uint8Array_;
 };
 
 /**
@@ -41,7 +42,7 @@ export type ParsedAuthenticatorData = {
  * @see https://www.w3.org/TR/webauthn-3/#sctn-attestation
  */
 export const parseAuthenticatorData = (
-  authData: Uint8Array,
+  authData: Uint8Array_,
 ): ParsedAuthenticatorData => {
   if (authData.byteLength < 37) {
     throw new Error(
@@ -79,8 +80,8 @@ export const parseAuthenticatorData = (
   const counter = dataView.getUint32(pointer, false);
   pointer += 4;
 
-  let aaguid: Uint8Array | undefined = undefined;
-  let credentialID: Uint8Array | undefined = undefined;
+  let aaguid: Uint8Array_ | undefined = undefined;
+  let credentialID: Uint8Array_ | undefined = undefined;
   let credentialPublicKey: COSEPublicKey | undefined = undefined;
 
   if (flags.at) {
@@ -107,7 +108,7 @@ export const parseAuthenticatorData = (
   }
 
   let extensionsData: Record<string, unknown> | undefined = undefined;
-  let extensionsDataBuffer: Uint8Array | undefined = undefined;
+  let extensionsDataBuffer: Uint8Array_ | undefined = undefined;
 
   if (flags.ed) {
     type AuthenticatorExtensionData = Map<string, unknown>;

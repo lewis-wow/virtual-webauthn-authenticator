@@ -43,6 +43,7 @@
     "vitest-mock-extended": "^3.1.0"
   },
   "dependencies": {
+    "@repo/cbor": "workspace:*",
     "@repo/http": "workspace:*",
     "@repo/assert": "workspace:*",
     "@repo/crypto": "workspace:*",

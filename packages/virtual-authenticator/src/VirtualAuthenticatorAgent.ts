@@ -1,8 +1,9 @@
 import { assertSchema } from '@repo/assert';
+import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import * as cbor from 'cbor2';
+import type { Uint8Array_ } from '@repo/types';
 import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
@@ -79,13 +80,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     authenticator: IAuthenticator;
     // savedCredentialIds: A map containing authenticator → credential ID. This argument will be modified in this algorithm.
     // NOTE: Not used, just for the compatibility with spec.
-    savedCredentialIds: Map<IAuthenticator, Uint8Array>;
+    savedCredentialIds: Map<IAuthenticator, Uint8Array_>;
     // pkOptions: This argument is a PublicKeyCredentialRequestOptions object specifying the desired attributes of the public key credential to discover.
     pkOptions: PublicKeyCredentialRequestOptions;
     // rpId: The request RP ID.
     rpId: string;
     // clientDataHash: The hash of the serialized client data represented by clientDataJSON.
-    clientDataHash: Uint8Array;
+    clientDataHash: Uint8Array_;
     // authenticatorExtensions: A map containing extension identifiers to the base64url encoding of the client extension processing output for authenticator extensions.
     authenticatorExtensions: Record<string, unknown>;
 
@@ -323,8 +324,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    */
   private _constructCredentialAlg(opts: {
     attestationConveyancePreferenceOption: Attestation | undefined;
-    attestationObjectResult: Uint8Array;
-  }): Uint8Array {
+    attestationObjectResult: Uint8Array_;
+  }): Uint8Array_ {
     const { attestationConveyancePreferenceOption, attestationObjectResult } =
       opts;
 
@@ -1052,7 +1053,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       await this._issueCredentialRequestToAuthenticator({
         authenticator: this.authenticator,
         // NOTE: Not used. Just for compatibility with spec.
-        savedCredentialIds: new Map<IAuthenticator, Uint8Array>(),
+        savedCredentialIds: new Map<IAuthenticator, Uint8Array_>(),
         pkOptions,
         rpId,
         clientDataHash,

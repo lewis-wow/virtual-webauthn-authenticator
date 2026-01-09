@@ -11,6 +11,7 @@ import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Forbidden } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
+import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
@@ -39,7 +40,7 @@ export class CredentialsController {
    */
   private async _auditCredentialAction(opts: {
     action: LogAction;
-    publicKeyCredentialRawId: Uint8Array;
+    publicKeyCredentialRawId: Uint8Array_;
     jwtPayload: JwtPayload;
   }): Promise<void> {
     const { action, publicKeyCredentialRawId, jwtPayload } = opts;

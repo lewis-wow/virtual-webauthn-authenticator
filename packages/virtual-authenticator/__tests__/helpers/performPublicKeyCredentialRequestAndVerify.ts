@@ -1,5 +1,6 @@
 import { USER_ID } from '../../../auth/__tests__/helpers';
 
+import type { Uint8Array_ } from '@repo/types';
 import {
   type AuthenticationResponseJSON,
   verifyAuthenticationResponse,
@@ -17,7 +18,7 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
 
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnPublicKeyCredentialId: string;
-  publicKey: Uint8Array<ArrayBuffer>;
+  publicKey: Uint8Array_;
   counter: number;
   expectedNewCounter?: number;
   expectedChallenge?: string;
@@ -76,7 +77,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     expectedRPID: RP_ID,
     credential: {
       id: webAuthnPublicKeyCredentialId,
-      publicKey,
+      publicKey: publicKey,
       counter,
     },
     requireUserVerification:

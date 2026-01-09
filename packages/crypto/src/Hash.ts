@@ -1,7 +1,8 @@
+import type { Uint8Array_ } from '@repo/types';
 import * as crypto from 'node:crypto';
 
 export class Hash {
-  static sha256(data: crypto.BinaryLike): Uint8Array {
+  static sha256(data: crypto.BinaryLike): Uint8Array_ {
     return new Uint8Array(crypto.createHash('sha256').update(data).digest());
   }
 }
