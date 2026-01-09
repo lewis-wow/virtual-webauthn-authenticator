@@ -1,10 +1,10 @@
 import z from 'zod';
 
-import { EnvelopeResponseControlReason } from '../enums/envelope/EnvelopeResponseControlReason';
-import { EnvelopeStatus } from '../enums/envelope/EnvelopeStatus';
-import { EnvelopeResponseControlSchema } from '../validation/envelope/EnvelopeResponseControlSchema';
-import { EnvelopeResponseSchema } from '../validation/envelope/EnvelopeResponseSchema';
-import { EnvelopeSuccessResponseSchema } from '../validation/envelope/EnvelopeSuccessResponseSchema';
+import { EnvelopeResponseControlReason } from '../../enums/envelope/EnvelopeResponseControlReason';
+import { EnvelopeStatus } from '../../enums/envelope/EnvelopeStatus';
+import { EnvelopeResponseControlSchema } from '../../validation/envelope/EnvelopeResponseControlSchema';
+import { EnvelopeResponseSchema } from '../../validation/envelope/EnvelopeResponseSchema';
+import { EnvelopeSuccessResponseSchema } from '../../validation/envelope/EnvelopeSuccessResponseSchema';
 import { AuthenticatorGetAssertionResponseDtoSchema } from './AuthenticatorGetAssertionResponseDtoSchema';
 
 export const VirtualAuthenticatorGetAssertionResponseDtoSchema =

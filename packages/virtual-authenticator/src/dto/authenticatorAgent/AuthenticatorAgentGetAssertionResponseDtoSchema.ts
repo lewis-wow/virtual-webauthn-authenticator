@@ -1,4 +1,4 @@
-import { PublicKeyCredentialDtoSchema } from '../PublicKeyCredentialDtoSchema';
+import { PublicKeyCredentialDtoSchema } from '../spec/PublicKeyCredentialDtoSchema';
 
 export const AuthenticatorAgentGetAssertionResponseDtoSchema =
   PublicKeyCredentialDtoSchema;
