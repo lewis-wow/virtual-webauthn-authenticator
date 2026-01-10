@@ -686,7 +686,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 22.SIGNAL: If options.signal is present and aborted
     // For each authenticator in issuedRequests invoke the authenticatorCancel operation on authenticator
     // and remove authenticator from issuedRequests. Throw a "NotAllowedError" DOMException.
-    // NOTE: Cancellation is not impelemented.
     if (options.signal?.aborted) {
       // NOTE: signal reason is used instead of NotAllowedError
       throw options.signal.reason;
