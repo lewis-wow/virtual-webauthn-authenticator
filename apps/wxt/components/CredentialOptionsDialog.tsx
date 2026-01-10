@@ -1,12 +1,12 @@
 'use client';
 
 import { Button } from '@repo/ui/components/Button';
-import { DialogContent } from '@repo/ui/components/DialogContent';
 import {
   Dialog,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogContent,
 } from '@repo/ui/components/ui/dialog';
 import { cn } from '@repo/ui/lib/utils';
 import { Check } from 'lucide-react';

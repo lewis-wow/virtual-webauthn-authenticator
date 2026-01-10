@@ -1,12 +1,12 @@
 'use client';
 
 import { Button } from '@repo/ui/components/Button';
-import { DialogContent } from '@repo/ui/components/DialogContent';
 import {
   Dialog,
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogContent,
 } from '@repo/ui/components/ui/dialog';
 import { AlertCircle } from 'lucide-react';
 
