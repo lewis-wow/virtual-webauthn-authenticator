@@ -1,3 +1,4 @@
+import type { Uint8Array_ } from '@repo/types';
 import type {
   AuthenticatorTransport,
   BufferSource,
@@ -5,6 +6,12 @@ import type {
 } from '@repo/types/dom';
 
 import { PublicKeyCredentialType } from '../enums';
+import { bytesToBufferSource } from './helpers';
+
+export type PublicKeyCredentialDescriptorImplOptions = {
+  id: Uint8Array_;
+  transports?: AuthenticatorTransport[];
+};
 
 export class PublicKeyCredentialDescriptorImpl
   implements PublicKeyCredentialDescriptor
@@ -13,11 +20,8 @@ export class PublicKeyCredentialDescriptorImpl
   public readonly id: BufferSource;
   public readonly transports?: AuthenticatorTransport[];
 
-  constructor(opts: {
-    id: BufferSource;
-    transports?: AuthenticatorTransport[];
-  }) {
-    this.id = opts.id;
+  constructor(opts: PublicKeyCredentialDescriptorImplOptions) {
+    this.id = bytesToBufferSource(opts.id);
     this.transports = opts.transports;
   }
 }

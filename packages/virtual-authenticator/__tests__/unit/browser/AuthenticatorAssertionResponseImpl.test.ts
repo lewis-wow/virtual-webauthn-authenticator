@@ -4,10 +4,10 @@ import { AuthenticatorAssertionResponseImpl } from '../../../src/browser/Authent
 
 describe('AuthenticatorAssertionResponseImpl', () => {
   const createMockData = () => ({
-    clientDataJSON: new ArrayBuffer(64),
-    authenticatorData: new ArrayBuffer(37),
-    signature: new ArrayBuffer(72),
-    userHandle: new ArrayBuffer(16),
+    clientDataJSON: new Uint8Array(64),
+    authenticatorData: new Uint8Array(37),
+    signature: new Uint8Array(72),
+    userHandle: new Uint8Array(16),
   });
 
   describe('constructor', () => {
@@ -16,10 +16,10 @@ describe('AuthenticatorAssertionResponseImpl', () => {
 
       const response = new AuthenticatorAssertionResponseImpl(data);
 
-      expect(response.clientDataJSON).toBe(data.clientDataJSON);
-      expect(response.authenticatorData).toBe(data.authenticatorData);
-      expect(response.signature).toBe(data.signature);
-      expect(response.userHandle).toBe(data.userHandle);
+      expect(response.clientDataJSON).toBeInstanceOf(ArrayBuffer);
+      expect(response.authenticatorData).toBeInstanceOf(ArrayBuffer);
+      expect(response.signature).toBeInstanceOf(ArrayBuffer);
+      expect(response.userHandle).toBeInstanceOf(ArrayBuffer);
     });
 
     test('should handle null userHandle', () => {
@@ -33,7 +33,7 @@ describe('AuthenticatorAssertionResponseImpl', () => {
       expect(response.userHandle).toBeNull();
     });
 
-    test('should store all properties as readonly', () => {
+    test('should store all properties as readonly ArrayBuffer', () => {
       const data = createMockData();
 
       const response = new AuthenticatorAssertionResponseImpl(data);
@@ -43,14 +43,35 @@ describe('AuthenticatorAssertionResponseImpl', () => {
       expect(response.signature).toBeInstanceOf(ArrayBuffer);
       expect(response.userHandle).toBeInstanceOf(ArrayBuffer);
     });
+
+    test('should convert Uint8Array to ArrayBuffer correctly', () => {
+      const clientDataJSON = new Uint8Array([1, 2, 3, 4]);
+      const authenticatorData = new Uint8Array([5, 6, 7]);
+      const signature = new Uint8Array([8, 9, 10]);
+      const userHandle = new Uint8Array([11, 12]);
+
+      const response = new AuthenticatorAssertionResponseImpl({
+        clientDataJSON,
+        authenticatorData,
+        signature,
+        userHandle,
+      });
+
+      expect(new Uint8Array(response.clientDataJSON)).toEqual(clientDataJSON);
+      expect(new Uint8Array(response.authenticatorData)).toEqual(
+        authenticatorData,
+      );
+      expect(new Uint8Array(response.signature)).toEqual(signature);
+      expect(new Uint8Array(response.userHandle!)).toEqual(userHandle);
+    });
   });
 
   describe('property sizes', () => {
     test('should preserve ArrayBuffer byte lengths', () => {
-      const clientDataJSON = new ArrayBuffer(128);
-      const authenticatorData = new ArrayBuffer(37);
-      const signature = new ArrayBuffer(64);
-      const userHandle = new ArrayBuffer(32);
+      const clientDataJSON = new Uint8Array(128);
+      const authenticatorData = new Uint8Array(37);
+      const signature = new Uint8Array(64);
+      const userHandle = new Uint8Array(32);
 
       const response = new AuthenticatorAssertionResponseImpl({
         clientDataJSON,

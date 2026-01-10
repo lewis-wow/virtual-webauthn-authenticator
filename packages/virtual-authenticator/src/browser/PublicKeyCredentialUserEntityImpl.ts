@@ -1,3 +1,4 @@
+import type { Uint8Array_ } from '@repo/types';
 import type {
   BufferSource,
   PublicKeyCredentialUserEntity,
@@ -7,10 +8,11 @@ import {
   PublicKeyCredentialEntityImpl,
   type PublicKeyCredentialEntityImplOptions,
 } from './PublicKeyCredentialEntityImpl';
+import { bytesToBufferSource } from './helpers';
 
 export type PublicKeyCredentialUserEntityImplOptions =
   PublicKeyCredentialEntityImplOptions & {
-    id: BufferSource;
+    id: Uint8Array_;
     displayName: string;
   };
 
@@ -24,7 +26,7 @@ export class PublicKeyCredentialUserEntityImpl
   constructor(opts: PublicKeyCredentialUserEntityImplOptions) {
     super({ name: opts.name });
 
-    this.id = opts.id;
+    this.id = bytesToBufferSource(opts.id);
     this.displayName = opts.displayName;
   }
 }

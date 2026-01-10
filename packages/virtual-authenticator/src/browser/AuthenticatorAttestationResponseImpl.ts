@@ -18,6 +18,7 @@ import {
   AuthenticatorResponseImpl,
   type AuthenticatorResponseImplOptions,
 } from './AuthenticatorResponseImpl';
+import { bytesToArrayBuffer } from './helpers';
 
 export type DecodedAttestationObject = {
   authData: Uint8Array_;
@@ -27,7 +28,7 @@ export type DecodedAttestationObject = {
 
 export type AuthenticatorAttestationResponseImplOptions =
   AuthenticatorResponseImplOptions & {
-    attestationObject: ArrayBuffer;
+    attestationObject: Uint8Array_;
     transports: AuthenticatorTransport[];
   };
 
@@ -46,7 +47,7 @@ export class AuthenticatorAttestationResponseImpl
   constructor(opts: AuthenticatorAttestationResponseImplOptions) {
     super({ clientDataJSON: opts.clientDataJSON });
 
-    this.attestationObject = opts.attestationObject;
+    this.attestationObject = bytesToArrayBuffer(opts.attestationObject);
     this.transports = opts.transports;
   }
 

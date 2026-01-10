@@ -34,21 +34,22 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'AQIDBAUGBwg',
-        rawId: rawId.buffer,
+        rawId,
         response: response as unknown as AuthenticatorAttestationResponseImpl,
         authenticatorAttachment: 'platform',
         clientExtensionResults: {},
       });
 
       expect(credential.id).toBe('AQIDBAUGBwg');
-      expect(credential.rawId).toBe(rawId.buffer);
+      expect(credential.rawId).toBeInstanceOf(ArrayBuffer);
+      expect(new Uint8Array(credential.rawId)).toEqual(rawId);
       expect(credential.type).toBe(PublicKeyCredentialType.PUBLIC_KEY);
       expect(credential.authenticatorAttachment).toBe('platform');
     });
 
     test('should create instance with assertion response', () => {
       const response = createMockAssertionResponse();
-      const rawId = new ArrayBuffer(16);
+      const rawId = new Uint8Array(16);
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test-credential-id',
@@ -68,7 +69,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test-id',
-        rawId: new ArrayBuffer(8),
+        rawId: new Uint8Array(8),
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: null,
         clientExtensionResults: {},
@@ -84,7 +85,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test-id',
-        rawId: new ArrayBuffer(8),
+        rawId: new Uint8Array(8),
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: null,
         clientExtensionResults: {},
@@ -102,7 +103,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test-id',
-        rawId: new ArrayBuffer(8),
+        rawId: new Uint8Array(8),
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: null,
         clientExtensionResults: extensionResults,
@@ -119,7 +120,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'AQIDBA',
-        rawId: rawId.buffer,
+        rawId,
         response: response as unknown as AuthenticatorAttestationResponseImpl,
         authenticatorAttachment: 'platform',
         clientExtensionResults: {},
@@ -142,7 +143,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'BQYHCAo',
-        rawId: rawId.buffer,
+        rawId,
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: 'cross-platform',
         clientExtensionResults: { appid: true },
@@ -168,7 +169,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test-id',
-        rawId: new ArrayBuffer(8),
+        rawId: new Uint8Array(8),
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: null,
         clientExtensionResults: {},
@@ -186,7 +187,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test-id',
-        rawId: rawId.buffer,
+        rawId,
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: null,
         clientExtensionResults: {},
@@ -206,7 +207,7 @@ describe('PublicKeyCredentialImpl', () => {
 
       const credential = new PublicKeyCredentialImpl({
         id: 'test',
-        rawId: new ArrayBuffer(8),
+        rawId: new Uint8Array(8),
         response: response as unknown as AuthenticatorAssertionResponseImpl,
         authenticatorAttachment: null,
         clientExtensionResults: {},

@@ -11,13 +11,14 @@ describe('PublicKeyCredentialDescriptorImpl', () => {
 
       const descriptor = new PublicKeyCredentialDescriptorImpl({ id });
 
-      expect(descriptor.id).toBe(id);
       expect(descriptor.type).toBe(PublicKeyCredentialType.PUBLIC_KEY);
       expect(descriptor.transports).toBeUndefined();
+      // id is converted to BufferSource (ArrayBuffer)
+      expect(new Uint8Array(descriptor.id as ArrayBuffer)).toEqual(id);
     });
 
     test('should create instance with id and transports', () => {
-      const id = new ArrayBuffer(16);
+      const id = new Uint8Array(16);
       const transports: AuthenticatorTransport[] = ['usb', 'nfc'];
 
       const descriptor = new PublicKeyCredentialDescriptorImpl({
@@ -25,7 +26,7 @@ describe('PublicKeyCredentialDescriptorImpl', () => {
         transports,
       });
 
-      expect(descriptor.id).toBe(id);
+      expect(descriptor.id).toBeInstanceOf(ArrayBuffer);
       expect(descriptor.transports).toEqual(['usb', 'nfc']);
     });
 
@@ -39,20 +40,21 @@ describe('PublicKeyCredentialDescriptorImpl', () => {
   });
 
   describe('id property', () => {
-    test('should accept Uint8Array as id', () => {
+    test('should convert Uint8Array to BufferSource', () => {
       const id = new Uint8Array([0x01, 0x02, 0x03]);
 
       const descriptor = new PublicKeyCredentialDescriptorImpl({ id });
 
-      expect(descriptor.id).toBe(id);
+      expect(new Uint8Array(descriptor.id as ArrayBuffer)).toEqual(id);
     });
 
-    test('should accept ArrayBuffer as id', () => {
-      const id = new ArrayBuffer(32);
+    test('should preserve id data correctly', () => {
+      const id = new Uint8Array([1, 2, 3, 4, 5]);
 
       const descriptor = new PublicKeyCredentialDescriptorImpl({ id });
 
-      expect(descriptor.id).toBe(id);
+      const resultBytes = new Uint8Array(descriptor.id as ArrayBuffer);
+      expect(resultBytes).toEqual(id);
     });
 
     test('should preserve id byte length', () => {
@@ -60,7 +62,7 @@ describe('PublicKeyCredentialDescriptorImpl', () => {
 
       const descriptor = new PublicKeyCredentialDescriptorImpl({ id });
 
-      expect((descriptor.id as Uint8Array).byteLength).toBe(64);
+      expect((descriptor.id as ArrayBuffer).byteLength).toBe(64);
     });
   });
 

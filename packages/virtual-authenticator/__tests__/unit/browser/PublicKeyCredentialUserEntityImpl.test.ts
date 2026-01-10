@@ -13,14 +13,15 @@ describe('PublicKeyCredentialUserEntityImpl', () => {
       });
 
       expect(entity.name).toBe('user@example.com');
-      expect(entity.id).toBe(id);
+      expect(entity.id).toBeInstanceOf(ArrayBuffer);
+      expect(new Uint8Array(entity.id as ArrayBuffer)).toEqual(id);
       expect(entity.displayName).toBe('John Doe');
     });
 
     test('should inherit name from PublicKeyCredentialEntityImpl', () => {
       const entity = new PublicKeyCredentialUserEntityImpl({
         name: 'test@test.com',
-        id: new ArrayBuffer(16),
+        id: new Uint8Array(16),
         displayName: 'Test User',
       });
 
@@ -29,7 +30,7 @@ describe('PublicKeyCredentialUserEntityImpl', () => {
   });
 
   describe('id property', () => {
-    test('should accept Uint8Array as id', () => {
+    test('should convert Uint8Array to BufferSource', () => {
       const id = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x05]);
 
       const entity = new PublicKeyCredentialUserEntityImpl({
@@ -38,11 +39,11 @@ describe('PublicKeyCredentialUserEntityImpl', () => {
         displayName: 'User',
       });
 
-      expect(entity.id).toBe(id);
+      expect(new Uint8Array(entity.id as ArrayBuffer)).toEqual(id);
     });
 
-    test('should accept ArrayBuffer as id', () => {
-      const id = new ArrayBuffer(32);
+    test('should preserve id data correctly', () => {
+      const id = new Uint8Array([1, 2, 3, 4, 5]);
 
       const entity = new PublicKeyCredentialUserEntityImpl({
         name: 'user',
@@ -50,7 +51,7 @@ describe('PublicKeyCredentialUserEntityImpl', () => {
         displayName: 'User',
       });
 
-      expect(entity.id).toBe(id);
+      expect(new Uint8Array(entity.id as ArrayBuffer)).toEqual(id);
     });
 
     test('should preserve id byte length', () => {
@@ -62,7 +63,7 @@ describe('PublicKeyCredentialUserEntityImpl', () => {
         displayName: 'User',
       });
 
-      expect((entity.id as Uint8Array).byteLength).toBe(64);
+      expect((entity.id as ArrayBuffer).byteLength).toBe(64);
     });
   });
 

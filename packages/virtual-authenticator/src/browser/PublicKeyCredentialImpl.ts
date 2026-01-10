@@ -1,4 +1,5 @@
 import { BytesMapper } from '@repo/core/mappers';
+import type { Uint8Array_ } from '@repo/types';
 import type {
   AuthenticationExtensionsClientOutputs,
   AuthenticatorAssertionResponse,
@@ -8,10 +9,11 @@ import type {
 import { Buffer } from 'buffer';
 
 import { PublicKeyCredentialType } from '../enums';
+import { bytesToArrayBuffer } from './helpers';
 
 export type PublicKeyCredentialImplOptions = {
   id: string;
-  rawId: ArrayBuffer;
+  rawId: Uint8Array_;
   response: AuthenticatorAttestationResponse | AuthenticatorAssertionResponse;
   authenticatorAttachment: string | null;
   clientExtensionResults: Record<string, unknown>;
@@ -29,7 +31,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
 
   constructor(opts: PublicKeyCredentialImplOptions) {
     this.id = opts.id;
-    this.rawId = opts.rawId;
+    this.rawId = bytesToArrayBuffer(opts.rawId);
     this.type = PublicKeyCredentialType.PUBLIC_KEY;
     this.response = opts.response;
     this.authenticatorAttachment = opts.authenticatorAttachment;

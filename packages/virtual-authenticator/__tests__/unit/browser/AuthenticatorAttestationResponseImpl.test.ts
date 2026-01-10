@@ -97,25 +97,20 @@ const createAuthData = (options: {
 /**
  * Helper function to create a valid attestation object
  */
-const createAttestationObject = (authData?: Uint8Array_): ArrayBuffer => {
+const createAttestationObject = (authData?: Uint8Array_): Uint8Array_ => {
   const attestationObject = new Map<string, unknown>();
   attestationObject.set('fmt', 'none');
   attestationObject.set('authData', authData ?? createAuthData({}));
   attestationObject.set('attStmt', {});
 
-  const encoded = cbor.encode(attestationObject);
-  return encoded.buffer.slice(
-    encoded.byteOffset,
-    encoded.byteOffset + encoded.byteLength,
-  );
+  return cbor.encode(attestationObject);
 };
 
 // --- End Test Data Helpers ---
 
 describe('AuthenticatorAttestationResponseImpl', () => {
   const createMockOptions = () => ({
-    clientDataJSON: new TextEncoder().encode('{"test":"data"}')
-      .buffer as ArrayBuffer,
+    clientDataJSON: new TextEncoder().encode('{"test":"data"}') as Uint8Array_,
     attestationObject: createAttestationObject(),
     transports: [AuthenticatorTransport.USB, AuthenticatorTransport.NFC],
   });
@@ -126,8 +121,8 @@ describe('AuthenticatorAttestationResponseImpl', () => {
 
       const response = new AuthenticatorAttestationResponseImpl(opts);
 
-      expect(response.clientDataJSON).toBe(opts.clientDataJSON);
-      expect(response.attestationObject).toBe(opts.attestationObject);
+      expect(response.clientDataJSON).toBeInstanceOf(ArrayBuffer);
+      expect(response.attestationObject).toBeInstanceOf(ArrayBuffer);
       expect(response.transports).toEqual(opts.transports);
     });
 
@@ -206,11 +201,8 @@ describe('AuthenticatorAttestationResponseImpl', () => {
 
       const encoded = cbor.encode(attestationObject);
       const opts = {
-        clientDataJSON: new ArrayBuffer(16),
-        attestationObject: encoded.buffer.slice(
-          encoded.byteOffset,
-          encoded.byteOffset + encoded.byteLength,
-        ),
+        clientDataJSON: new Uint8Array(16),
+        attestationObject: encoded,
         transports: [] as AuthenticatorTransport[],
       };
 
