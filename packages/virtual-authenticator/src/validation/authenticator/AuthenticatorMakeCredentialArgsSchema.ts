@@ -100,35 +100,24 @@ export const AuthenticatorMakeCredentialArgsSchema = z
     }),
 
     /**
-     * List of supported algorithms for credential generation.
-     * The array is ordered from most preferred to least preferred and MUST NOT include duplicate entries.
-     * PublicKeyCredentialParameters' algorithm identifiers are values that SHOULD be registered in the IANA COSE Algorithms registry.
+     * A sequence of pairs of PublicKeyCredentialType and public key algorithms (COSEAlgorithmIdentifier)
+     * requested by the Relying Party.
+     * This sequence is ordered from most preferred to least preferred.
+     * The authenticator makes a best-effort to create the most preferred credential that it can.
      *
      * Corresponding parameter name: pubKeyCredParams (0x04)
      * CTAP Data type: PublicKeyCredentialParameters[]
      * Required
      */
-    credTypesAndPubKeyAlgs: z
-      .array(PublicKeyCredentialParametersSchema)
-      .refine(
-        (items) => {
-          // Map to the specific ID property (alg) to check for duplicates
-          const algs = new Set(items.map((item) => item.alg));
-          return algs.size === items.length;
-        },
-        {
-          message: 'The array MUST NOT include duplicate entries.',
-        },
-      )
-      .meta({
-        description: 'List of supported algorithms for credential generation.',
-      }),
+    credTypesAndPubKeyAlgs: z.array(PublicKeyCredentialParametersSchema).meta({
+      description: 'List of supported algorithms for credential generation.',
+    }),
 
     /**
-     * An array of PublicKeyCredentialDescriptor structures.
-     * The authenticator returns an error if the authenticator already contains one of the credentials enumerated in this array.
-     * This allows RPs to limit the creation of multiple credentials for the same account on a single authenticator.
-     * If this parameter is present, it MUST NOT be empty.
+     * An OPTIONAL list of PublicKeyCredentialDescriptor objects provided by the Relying Party
+     * with the intention that, if any of these are known to the authenticator,
+     * it SHOULD NOT create a new credential.
+     * excludeCredentialDescriptorList contains a list of known credentials.
      *
      * Corresponding parameter name: excludeList (0x05)
      * CTAP Data type: PublicKeyCredentialDescriptor[]
@@ -136,7 +125,6 @@ export const AuthenticatorMakeCredentialArgsSchema = z
      */
     excludeCredentialDescriptorList: z
       .array(PublicKeyCredentialDescriptorSchema)
-      .min(1)
       .optional()
       .meta({
         description:

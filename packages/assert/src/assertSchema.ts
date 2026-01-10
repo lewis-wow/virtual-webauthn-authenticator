@@ -14,6 +14,6 @@ export function assertSchema<T extends z.ZodTypeAny>(
   const result = schema.safeParse(data);
 
   if (!result.success) {
-    throw new TypeAssertionError();
+    throw new TypeAssertionError(result.error);
   }
 }

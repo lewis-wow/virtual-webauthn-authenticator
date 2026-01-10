@@ -28,10 +28,10 @@ export const AuthenticatorMakeCredentialArgsDtoSchema =
     userEntity: PublicKeyCredentialUserEntityDtoSchema,
 
     /**
-     * An array of PublicKeyCredentialDescriptor structures.
-     * The authenticator returns an error if the authenticator already contains one of the credentials enumerated in this array.
-     * This allows RPs to limit the creation of multiple credentials for the same account on a single authenticator.
-     * If this parameter is present, it MUST NOT be empty.
+     * An OPTIONAL list of PublicKeyCredentialDescriptor objects provided by the Relying Party
+     * with the intention that, if any of these are known to the authenticator,
+     * it SHOULD NOT create a new credential.
+     * excludeCredentialDescriptorList contains a list of known credentials.
      *
      * Corresponding parameter name: excludeList (0x05)
      * CTAP Data type: PublicKeyCredentialDescriptor[]
@@ -39,7 +39,6 @@ export const AuthenticatorMakeCredentialArgsDtoSchema =
      */
     excludeCredentialDescriptorList: z
       .array(PublicKeyCredentialDescriptorDtoSchema)
-      .min(1)
       .optional()
       .meta({
         description:

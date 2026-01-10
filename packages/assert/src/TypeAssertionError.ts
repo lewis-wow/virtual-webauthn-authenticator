@@ -1,8 +1,15 @@
 import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
+import type z from 'zod';
 
-export class TypeAssertionError extends Exception {
+export type TypeAssertionErrorData = z.ZodError | undefined;
+
+export class TypeAssertionError extends Exception<TypeAssertionErrorData> {
   static status = HttpStatusCode.BAD_REQUEST_400;
   static readonly code = 'TypeAssertionError';
   static message = 'Type mismatch';
+
+  constructor(data?: TypeAssertionErrorData) {
+    super({ data });
+  }
 }

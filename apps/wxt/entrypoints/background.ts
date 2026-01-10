@@ -40,6 +40,10 @@ export default defineBackground(() => {
 
     const json = await response.json();
 
+    if (!response.ok) {
+      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+    }
+
     return json;
   });
 
@@ -56,6 +60,10 @@ export default defineBackground(() => {
     );
 
     const json = await response.json();
+
+    if (!response.ok) {
+      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+    }
 
     return json;
   });

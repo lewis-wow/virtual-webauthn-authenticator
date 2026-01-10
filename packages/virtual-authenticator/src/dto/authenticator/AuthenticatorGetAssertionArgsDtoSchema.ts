@@ -16,9 +16,7 @@ export const AuthenticatorGetAssertionArgsDtoSchema =
     hash: BytesSchemaCodec,
 
     /**
-     * An array of PublicKeyCredentialDescriptor structures, each denoting a credential.
-     * A platform MUST NOT send an empty allowList—if it would be empty it MUST be omitted.
-     * If this parameter is present the authenticator MUST only generate an assertion using one of the denoted credentials.
+     * An OPTIONAL list of PublicKeyCredentialDescriptors describing credentials acceptable to the Relying Party (possibly filtered by the client), if any.
      *
      * Correspoding parameter name: allowList (0x03)
      * CTAP Data type: PublicKeyCredentialDescriptor[]
@@ -26,7 +24,6 @@ export const AuthenticatorGetAssertionArgsDtoSchema =
      */
     allowCredentialDescriptorList: z
       .array(PublicKeyCredentialDescriptorDtoSchema)
-      .min(1)
       .optional()
       .meta({
         description:
