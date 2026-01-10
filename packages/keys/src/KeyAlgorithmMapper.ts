@@ -10,6 +10,8 @@ import { JWKKeyCurveName } from './enums/JWKKeyCurveName';
 import { JWKKeyType } from './enums/JWKKeyType';
 
 export class KeyAlgorithmMapper {
+  static readonly COSE_TO_JWK_ALG = swapKeysAndValues(COSEKeyAlgorithm);
+
   static JWKKeyAlgorithmToCOSEKeyAlgorithm(
     keyAlgorithm: JWKKeyAlgorithm,
   ): COSEKeyAlgorithm {
@@ -19,9 +21,7 @@ export class KeyAlgorithmMapper {
   static COSEKeyAlgorithmToJWKKeyAlgorithm(
     coseKeyAlgorithm: COSEKeyAlgorithm,
   ): JWKKeyAlgorithm {
-    const COSE_TO_JWK_ALG = swapKeysAndValues(COSEKeyAlgorithm);
-
-    return COSE_TO_JWK_ALG[coseKeyAlgorithm];
+    return KeyAlgorithmMapper.COSE_TO_JWK_ALG[coseKeyAlgorithm];
   }
 
   /**
