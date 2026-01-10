@@ -75,9 +75,9 @@ export class WebAuthnPublicKeyCredentialsController {
         });
 
         return {
-          status: HttpStatusCode.OK,
+          status: HttpStatusCode.OK_200,
           body: ListWebAuthnPublicKeyCredentialsResponseSchema[
-            HttpStatusCode.OK
+            HttpStatusCode.OK_200
           ].encode(result),
         };
       },
@@ -116,9 +116,9 @@ export class WebAuthnPublicKeyCredentialsController {
         }
 
         return {
-          status: HttpStatusCode.OK,
+          status: HttpStatusCode.OK_200,
           body: GetWebAuthnPublicKeyCredentialResponseSchema[
-            HttpStatusCode.OK
+            HttpStatusCode.OK_200
           ].encode(webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential),
         };
       },
@@ -193,9 +193,9 @@ export class WebAuthnPublicKeyCredentialsController {
         });
 
         return {
-          status: HttpStatusCode.OK,
+          status: HttpStatusCode.OK_200,
           body: DeleteWebAuthnPublicKeyCredentialResponseSchema[
-            HttpStatusCode.OK
+            HttpStatusCode.OK_200
           ].encode(webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential),
         };
       },

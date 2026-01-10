@@ -13,8 +13,8 @@ export class HealthcheckController {
   async healthcheck() {
     return tsRestHandler(nestjsContract.api.healthcheck.get, async () => {
       return {
-        status: HttpStatusCode.OK,
-        body: GetHealthcheckResponseSchema[HttpStatusCode.OK].encode({
+        status: HttpStatusCode.OK_200,
+        body: GetHealthcheckResponseSchema[HttpStatusCode.OK_200].encode({
           healthy: true,
         }),
       };

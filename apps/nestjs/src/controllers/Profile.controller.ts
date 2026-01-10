@@ -15,8 +15,8 @@ export class ProfileController {
   async healthcheck(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(nestjsContract.api.profile.get, async () => {
       return {
-        status: HttpStatusCode.OK,
-        body: GetProfileResponseSchema[HttpStatusCode.OK].encode({
+        status: HttpStatusCode.OK_200,
+        body: GetProfileResponseSchema[HttpStatusCode.OK_200].encode({
           jwtPayload,
         }),
       };

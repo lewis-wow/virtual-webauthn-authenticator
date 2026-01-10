@@ -6,7 +6,7 @@ import { UnsupportedKeyType } from '../../src/exceptions/UnsupportedKeyType.js';
 describe('Exceptions', () => {
   describe('UnsupportedKeyType', () => {
     test('should have correct status code', () => {
-      expect(UnsupportedKeyType.status).toBe(HttpStatusCode.BAD_REQUEST);
+      expect(UnsupportedKeyType.status).toBe(HttpStatusCode.BAD_REQUEST_400);
     });
 
     test('should have correct error code', () => {

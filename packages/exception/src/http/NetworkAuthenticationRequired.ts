@@ -3,7 +3,7 @@ import { HttpStatusCode } from '@repo/http';
 import { Exception } from '../Exception';
 
 export class NetworkAuthenticationRequired extends Exception {
-  static status = HttpStatusCode.NETWORK_AUTHENTICATION_REQUIRED;
+  static status = HttpStatusCode.NETWORK_AUTHENTICATION_REQUIRED_511;
   static readonly code = 'NetworkAuthenticationRequired';
   static message = 'Network Authentication Required.';
 }

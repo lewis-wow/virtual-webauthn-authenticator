@@ -24,8 +24,8 @@ export class LogsController {
       });
 
       return {
-        status: HttpStatusCode.OK,
-        body: ListLogsResponseSchema[HttpStatusCode.OK].encode(logs),
+        status: HttpStatusCode.OK_200,
+        body: ListLogsResponseSchema[HttpStatusCode.OK_200].encode(logs),
       };
     });
   }

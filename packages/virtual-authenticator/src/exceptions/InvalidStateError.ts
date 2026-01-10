@@ -8,7 +8,7 @@ import { HttpStatusCode } from '@repo/http';
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (Step 3.1)
  */
 export class InvalidStateError extends Exception {
-  static status = HttpStatusCode.BAD_REQUEST;
+  static status = HttpStatusCode.BAD_REQUEST_400;
   static readonly code = 'InvalidStateError';
   static message =
     'The authenticator is in an invalid state for this operation.';

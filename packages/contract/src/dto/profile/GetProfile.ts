@@ -11,7 +11,7 @@ import z from 'zod';
 // -------------------------------------
 
 export const GetProfileResponseSchema = {
-  [HttpStatusCode.OK]: z.object({
+  [HttpStatusCode.OK_200]: z.object({
     jwtPayload: JwtPayloadSchema.nullable(),
   }),
 };

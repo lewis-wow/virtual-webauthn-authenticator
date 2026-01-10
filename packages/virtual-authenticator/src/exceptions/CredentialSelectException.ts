@@ -8,7 +8,7 @@ import { ApplicablePublicKeyCredentialSchema } from '../validation/spec/Applicab
 export class CredentialSelectException extends Exception<CredentialSelectExceptionData> {
   static readonly code = 'CredentialSelectException';
   static message = 'Credential select required.';
-  static status = HttpStatusCode.PRECONDITION_REQUIRED;
+  static status = HttpStatusCode.PRECONDITION_REQUIRED_428;
 
   constructor(data: CredentialSelectExceptionData) {
     assertSchema(data, CredentialSelectExceptionDataSchema);

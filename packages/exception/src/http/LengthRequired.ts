@@ -3,7 +3,7 @@ import { HttpStatusCode } from '@repo/http';
 import { Exception } from '../Exception';
 
 export class LengthRequired extends Exception {
-  static status = HttpStatusCode.LENGTH_REQUIRED;
+  static status = HttpStatusCode.LENGTH_REQUIRED_411;
   static readonly code = 'LengthRequired';
   static message = 'Length Required.';
 }

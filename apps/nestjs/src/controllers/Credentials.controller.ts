@@ -121,8 +121,8 @@ export class CredentialsController {
         });
 
         return {
-          status: HttpStatusCode.OK,
-          body: CreateCredentialResponseSchema[HttpStatusCode.OK].encode(
+          status: HttpStatusCode.OK_200,
+          body: CreateCredentialResponseSchema[HttpStatusCode.OK_200].encode(
             publicKeyCredential,
           ),
         };
@@ -193,8 +193,8 @@ export class CredentialsController {
           });
 
           return {
-            status: HttpStatusCode.OK,
-            body: GetCredentialResponseSchema[HttpStatusCode.OK].encode(
+            status: HttpStatusCode.OK_200,
+            body: GetCredentialResponseSchema[HttpStatusCode.OK_200].encode(
               publicKeyCredential,
             ),
           };

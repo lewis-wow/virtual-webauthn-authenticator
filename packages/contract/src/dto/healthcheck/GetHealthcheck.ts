@@ -10,7 +10,7 @@ import z from 'zod';
 // -------------------------------------
 
 export const GetHealthcheckResponseSchema = {
-  [HttpStatusCode.OK]: z.object({
+  [HttpStatusCode.OK_200]: z.object({
     healthy: z.literal(true),
   }),
 };

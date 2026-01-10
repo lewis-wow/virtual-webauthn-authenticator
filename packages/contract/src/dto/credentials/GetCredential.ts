@@ -30,5 +30,5 @@ export const GetCredentialBodySchema = z.object({
 // -------------------------------------
 
 export const GetCredentialResponseSchema = {
-  [HttpStatusCode.OK]: AuthenticatorAgentGetAssertionResponseDtoSchema,
+  [HttpStatusCode.OK_200]: AuthenticatorAgentGetAssertionResponseDtoSchema,
 } as const;

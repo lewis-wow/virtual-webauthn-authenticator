@@ -30,5 +30,5 @@ export const GetWebAuthnPublicKeyCredentialParamsSchema =
 // -------------------------------------
 
 export const GetWebAuthnPublicKeyCredentialResponseSchema = {
-  [HttpStatusCode.OK]: WebAuthnPublicKeyCredentialDtoSchema,
+  [HttpStatusCode.OK_200]: WebAuthnPublicKeyCredentialDtoSchema,
 };

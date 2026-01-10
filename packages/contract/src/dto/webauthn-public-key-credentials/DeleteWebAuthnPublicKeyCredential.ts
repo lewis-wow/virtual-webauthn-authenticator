@@ -31,5 +31,5 @@ export const DeleteWebAuthnPublicKeyCredentialParamsSchema =
 // -------------------------------------
 
 export const DeleteWebAuthnPublicKeyCredentialResponseSchema = {
-  [HttpStatusCode.OK]: WebAuthnPublicKeyCredentialDtoSchema,
+  [HttpStatusCode.OK_200]: WebAuthnPublicKeyCredentialDtoSchema,
 };

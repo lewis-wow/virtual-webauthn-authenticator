@@ -22,5 +22,5 @@ export const ListLogsQuerySchema = PaginationRequestMetaSchema(SortKeysSchema);
 // -------------------------------------
 
 export const ListLogsResponseSchema = {
-  [HttpStatusCode.OK]: PaginationResultSchema(LogDtoSchema),
+  [HttpStatusCode.OK_200]: PaginationResultSchema(LogDtoSchema),
 };

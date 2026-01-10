@@ -3,7 +3,7 @@ import { HttpStatusCode } from '@repo/http';
 import { Exception } from '../Exception';
 
 export class UnprocessableEntity extends Exception {
-  static status = HttpStatusCode.UNPROCESSABLE_ENTITY;
+  static status = HttpStatusCode.UNPROCESSABLE_ENTITY_422;
   static readonly code = 'UnprocessableEntity';
   static message = 'Unprocessable Entity.';
 }

@@ -23,7 +23,7 @@ export const ListWebAuthnPublicKeyCredentialsQuerySchema =
 // -------------------------------------
 
 export const ListWebAuthnPublicKeyCredentialsResponseSchema = {
-  [HttpStatusCode.OK]: PaginationResultSchema(
+  [HttpStatusCode.OK_200]: PaginationResultSchema(
     WebAuthnPublicKeyCredentialDtoSchema,
   ),
 };

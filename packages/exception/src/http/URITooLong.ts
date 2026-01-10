@@ -3,7 +3,7 @@ import { HttpStatusCode } from '@repo/http';
 import { Exception } from '../Exception';
 
 export class URITooLong extends Exception {
-  static status = HttpStatusCode.URI_TOO_LONG;
+  static status = HttpStatusCode.URI_TOO_LONG_414;
   static readonly code = 'URITooLong';
   static message = 'URI Too Long.';
 }
