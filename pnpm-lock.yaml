@@ -2056,6 +2056,9 @@ importers:
       '@repo/cbor':
         specifier: workspace:*
         version: link:../cbor
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../core
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto
@@ -2065,6 +2068,9 @@ importers:
       '@repo/http':
         specifier: workspace:*
         version: link:../http
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
@@ -2074,6 +2080,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
       cbor2:
         specifier: ^2.0.1
         version: 2.0.1
@@ -2093,15 +2102,9 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -12950,7 +12953,14 @@ snapshots:
       magic-string: 0.30.19
     optionalDependencies:
       vite: 5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
-    optional: true
+
+  '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
+    dependencies:
+      '@vitest/spy': 3.2.4
+      estree-walker: 3.0.3
+      magic-string: 0.30.19
+    optionalDependencies:
+      vite: 5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
@@ -12989,7 +12999,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.10.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -17974,7 +17984,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-    optional: true
 
   vite-node@3.2.4(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -18046,7 +18055,6 @@ snapshots:
       lightningcss: 1.30.2
       sass: 1.93.2
       terser: 5.44.0
-    optional: true
 
   vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -18118,13 +18126,12 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-    optional: true
 
   vitest@3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@24.10.1)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))
+      '@vitest/mocker': 3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
