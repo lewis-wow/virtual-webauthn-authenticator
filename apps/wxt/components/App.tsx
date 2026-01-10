@@ -12,11 +12,7 @@ export const App = () => {
   const { openDialog, closeDialog } = useExtensionDialog();
 
   useEffect(() => {
-    console.log('useEffect');
-
     const handleErrorMessage = (error: AnyExceptionShape) => {
-      console.log('handleErrorMessage');
-
       const component = match(error)
         .when(isExceptionShape(CredentialSelectException), (error) => {
           return (
@@ -35,20 +31,15 @@ export const App = () => {
         })
         .otherwise((error) => {
           return (
-            <div>
-              asdf
-              <ErrorDialog
-                error={error}
-                onOpenChange={(isOpen) => {
-                  console.log('Change');
-                  if (!isOpen) closeDialog();
-                }}
-              />
-            </div>
+            <ErrorDialog
+              error={error}
+              onOpenChange={(isOpen) => {
+                console.log('Change');
+                if (!isOpen) closeDialog();
+              }}
+            />
           );
         });
-
-      console.log('component', component);
 
       openDialog(component);
     };
