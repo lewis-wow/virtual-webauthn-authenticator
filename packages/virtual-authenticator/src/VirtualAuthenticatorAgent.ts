@@ -4,7 +4,6 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import { toB64, uint8ArraysEqual } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
@@ -31,7 +30,6 @@ import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAv
 import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption';
 import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interruption/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInterruption';
 import {
-  BytesSchema,
   type AuthenticatorAgentContextArgs,
   type AuthenticatorAgentMetaArgs,
   type AuthenticatorGetAssertionResponse,
@@ -100,7 +98,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Custom options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
-    optionsHash: Uint8Array_;
+    optionsHash: string;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
       authenticator,
@@ -215,8 +213,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
             requireUserPresence: true,
             requireUserVerification,
           },
-          meta,
-          context,
+          meta: {
+            userId: meta.userId,
+            apiKeyId: meta.apiKeyId,
+            userPresenceEnabled: meta.userPresenceEnabled,
+            userVerificationEnabled: meta.userVerificationEnabled,
+          },
+          context: context?.authenticatorContext,
         });
 
       // Step 4: Return true.
@@ -405,16 +408,20 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return attestationObjectResult;
   }
 
-  private _hashCreateCredentialOptions(opts: {
+  private _hashCreateCredentialOptionsAsHex(opts: {
     pkOptions: PublicKeyCredentialCreationOptions;
     meta: AuthenticatorAgentMetaArgs;
-  }): Uint8Array_ {
+  }): string {
     const { pkOptions, meta } = opts;
 
-    return Hash.sha256JSON({
-      pkOptions: PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
-      meta,
-    });
+    return Hash.sha256JSON(
+      {
+        pkOptions:
+          PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
+        meta,
+      },
+      'hex',
+    );
   }
 
   /**
@@ -480,20 +487,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 3: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
 
+    const optionsHash = this._hashCreateCredentialOptionsAsHex({
+      pkOptions,
+      meta,
+    });
+
     // Context hash validation
-    assertSchema(
-      opts.context?.hash,
-      z
-        .literal(
-          toB64(
-            this._hashCreateCredentialOptions({
-              pkOptions,
-              meta,
-            }),
-          ),
-        )
-        .optional(),
-    );
+    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
 
     // Step 4: If pkOptions.timeout is present, check if its value lies
     // within a reasonable range as defined by the client and if not,
@@ -800,8 +800,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           attestationFormats,
           extensions: pkOptions.extensions,
         },
-        meta,
-        context,
+        meta: {
+          userId: meta.userId,
+          apiKeyId: meta.apiKeyId,
+          userPresenceEnabled: meta.userPresenceEnabled,
+          userVerificationEnabled: meta.userVerificationEnabled,
+        },
+        context: context?.authenticatorContext,
       });
 
     // Step 22.UNAVAILABLE: If an authenticator ceases to be available on this client device
@@ -892,16 +897,19 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return pubKeyCred;
   }
 
-  private _hashGetAssertionOptions(opts: {
+  private _hashGetAssertionOptionsAsHex(opts: {
     pkOptions: PublicKeyCredentialRequestOptions;
     meta: AuthenticatorAgentMetaArgs;
-  }): Uint8Array_ {
+  }): string {
     const { pkOptions, meta } = opts;
 
-    return Hash.sha256JSON({
-      pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
-      meta,
-    });
+    return Hash.sha256JSON(
+      {
+        pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
+        meta,
+      },
+      'hex',
+    );
   }
 
   /**
@@ -952,22 +960,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 2: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
 
-    const optionsHash = this._hashGetAssertionOptions({
+    const optionsHash = this._hashGetAssertionOptionsAsHex({
       pkOptions,
       meta,
     });
 
     // Context hash validation
-    assertSchema(
-      opts.context?.hash,
-      BytesSchema.optional().refine((contextHash) => {
-        if (contextHash === undefined) {
-          return true;
-        }
-
-        return uint8ArraysEqual(contextHash, optionsHash);
-      }),
-    );
+    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
 
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
     // Step 3: If options.mediation is present with the value conditional:

@@ -293,13 +293,16 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
-      const expectedHash = Hash.sha256JSON({
-        authenticatorGetAssertionArgs:
-          AuthenticatorGetAssertionArgsDtoSchema.encode(
-            authenticatorGetAssertionArgs,
-          ),
-        meta,
-      });
+      const expectedHash = Hash.sha256JSON(
+        {
+          authenticatorGetAssertionArgs:
+            AuthenticatorGetAssertionArgsDtoSchema.encode(
+              authenticatorGetAssertionArgs,
+            ),
+          meta,
+        },
+        'hex',
+      );
 
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
@@ -358,13 +361,16 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
-      const expectedHash = Hash.sha256JSON({
-        authenticatorGetAssertionArgs:
-          AuthenticatorGetAssertionArgsDtoSchema.encode(
-            authenticatorGetAssertionArgs,
-          ),
-        meta,
-      });
+      const expectedHash = Hash.sha256JSON(
+        {
+          authenticatorGetAssertionArgs:
+            AuthenticatorGetAssertionArgsDtoSchema.encode(
+              authenticatorGetAssertionArgs,
+            ),
+          meta,
+        },
+        'hex',
+      );
 
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({

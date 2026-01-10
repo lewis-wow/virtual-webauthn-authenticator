@@ -3,7 +3,6 @@ import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import type { Uint8Array_ } from '@repo/types';
-import { uint8ArraysEqual } from '@repo/utils';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
@@ -25,7 +24,6 @@ import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
-import { BytesSchema } from './validation/BytesSchema';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
@@ -423,19 +421,22 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
-  private _hashAuthenticatorMakeCredentialOptions(opts: {
+  private _hashAuthenticatorMakeCredentialOptionsAsHex(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     meta: AuthenticatorMetaArgs;
-  }) {
+  }): string {
     const { authenticatorMakeCredentialArgs, meta } = opts;
 
-    return Hash.sha256JSON({
-      authenticatorMakeCredentialArgs:
-        AuthenticatorMakeCredentialArgsDtoSchema.encode(
-          authenticatorMakeCredentialArgs,
-        ),
-      meta,
-    });
+    return Hash.sha256JSON(
+      {
+        authenticatorMakeCredentialArgs:
+          AuthenticatorMakeCredentialArgsDtoSchema.encode(
+            authenticatorMakeCredentialArgs,
+          ),
+        meta,
+      },
+      'hex',
+    );
   }
 
   /**
@@ -710,19 +711,22 @@ export class VirtualAuthenticator implements IAuthenticator {
     return authenticatorMakeCredentialResponse;
   }
 
-  private _hashAuthenticatorGetAssertionOptions(opts: {
+  private _hashAuthenticatorGetAssertionOptionsAsHex(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
   }) {
     const { authenticatorGetAssertionArgs, meta } = opts;
 
-    return Hash.sha256JSON({
-      authenticatorGetAssertionArgs:
-        AuthenticatorGetAssertionArgsDtoSchema.encode(
-          authenticatorGetAssertionArgs,
-        ),
-      meta,
-    });
+    return Hash.sha256JSON(
+      {
+        authenticatorGetAssertionArgs:
+          AuthenticatorGetAssertionArgsDtoSchema.encode(
+            authenticatorGetAssertionArgs,
+          ),
+        meta,
+      },
+      'hex',
+    );
   }
 
   /**
@@ -750,22 +754,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
 
-    const optionsHash = this._hashAuthenticatorGetAssertionOptions({
+    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
       authenticatorGetAssertionArgs,
       meta,
     });
 
     // Context hash validation
-    assertSchema(
-      opts.context?.hash,
-      BytesSchema.optional().refine((contextHash) => {
-        if (contextHash === undefined) {
-          return true;
-        }
-
-        return uint8ArraysEqual(contextHash, optionsHash);
-      }),
-    );
+    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
 
     const {
       hash,
