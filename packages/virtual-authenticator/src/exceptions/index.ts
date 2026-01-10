@@ -8,6 +8,7 @@ export * from './ChallengeEntropyInsufficient';
 export * from './InvalidStateError';
 export * from './NotAllowedError';
 export * from './SignatureFailed';
+export * from './UnknownException';
 export * from './UserVerificationNotAvailable';
 export * from './UserNotExists';
 export * from './ApiKeyNotExists';
