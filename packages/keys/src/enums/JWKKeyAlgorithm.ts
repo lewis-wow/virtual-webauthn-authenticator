@@ -80,7 +80,9 @@ export const JWKKeyAlgorithm = {
    * - COSE: -8
    * - JWK: 'EdDSA'
    */
-  EdDSA: 'EdDSA',
+
+  // NOTE: Azure Key Vault does NOT support OKP/EdDSA keys.
+  // EdDSA: 'EdDSA',
 } as const;
 
 export type JWKKeyAlgorithm = ValueOfEnum<typeof JWKKeyAlgorithm>;

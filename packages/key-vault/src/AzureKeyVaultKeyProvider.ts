@@ -25,7 +25,9 @@ import type { PubKeyCredParamStrict } from '@repo/virtual-authenticator/validati
 import ecdsa from 'ecdsa-sig-formatter';
 
 import type { CryptographyClientFactory } from './CryptographyClientFactory';
+import { OKPKeyTypeNotSupported } from './exceptions/OKPKeyTypeNotSupported';
 import { UnexpectedWebAuthnPublicKeyCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';
+import { UnsupportedKeyType } from './exceptions/UnsupportedKeyType';
 import { mapKeyVaultKeyToJWKPublicKey } from './mappers/mapKeyVaultKeyToJWKPublicKey';
 
 export type KeyPayload = {
@@ -66,28 +68,60 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
   /**
    * Creates a new cryptographic key in Azure Key Vault.
+   * Supports EC (P-256, P-384, P-521) and RSA keys.
+   *
    * @param opts.keyName - The name for the new key
    * @param opts.supportedPubKeyCredParam - Public key credential parameters
+   * @param opts.hsm - If true, key will be created in HSM (Hardware Security Module)
    * @returns KeyPayload containing the JWK and Key Vault metadata
    */
   private async _createKey(opts: {
     keyName: string;
     supportedPubKeyCredParam: PubKeyCredParamStrict;
+    hsm: boolean;
   }): Promise<KeyPayload> {
-    const { keyName, supportedPubKeyCredParam } = opts;
+    const { keyName, supportedPubKeyCredParam, hsm } = opts;
 
-    const keyVaultKey = await this.keyClient.createKey(
-      keyName,
-      KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyType(
-        supportedPubKeyCredParam.alg,
-      ),
-      {
-        keyOps: [KnownKeyOperations.Sign],
-        curve: KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyCurveName(
-          supportedPubKeyCredParam.alg,
-        ),
-      },
+    const keyType = KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyType(
+      supportedPubKeyCredParam.alg,
     );
+    const curve = KeyAlgorithmMapper.COSEKeyAlgorithmToJWKKeyCurveName(
+      supportedPubKeyCredParam.alg,
+    );
+    const keySize = KeyAlgorithmMapper.COSEKeyAlgorithmToRSAKeySize(
+      supportedPubKeyCredParam.alg,
+    );
+
+    let keyVaultKey: KeyVaultKey;
+
+    switch (keyType) {
+      case 'EC':
+        // Create EC key (P-256, P-384, P-521)
+        keyVaultKey = await this.keyClient.createEcKey(keyName, {
+          keyOps: [KnownKeyOperations.Sign, KnownKeyOperations.Verify],
+          curve: curve,
+          hsm,
+        });
+        break;
+
+      case 'RSA':
+        // Create RSA key (RS256, RS384, RS512, PS256, PS384, PS512)
+        keyVaultKey = await this.keyClient.createRsaKey(keyName, {
+          keyOps: [KnownKeyOperations.Sign, KnownKeyOperations.Verify],
+          keySize: keySize,
+          hsm,
+        });
+        break;
+
+      case 'OKP':
+        // OKP keys (Ed25519/EdDSA) are NOT supported by Azure Key Vault
+        throw new OKPKeyTypeNotSupported();
+
+      default:
+        throw new UnsupportedKeyType({
+          message: `Unsupported key type: ${keyType}`,
+        });
+    }
 
     return {
       jwk: mapKeyVaultKeyToJWKPublicKey(keyVaultKey.key!),
@@ -116,6 +150,8 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
   /**
    * Signs data using a key from Azure Key Vault.
+   * Handles different signature formats for EC, RSA, and OKP keys.
+   *
    * @param opts.keyVaultKey - The Key Vault key to use for signing
    * @param opts.algorithm - The signing algorithm
    * @param opts.data - The data to sign
@@ -133,10 +169,21 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     const signResult = await cryptographyClient.signData(algorithm, data);
 
+    // EC signatures (ES256, ES384, ES512) need to be converted from JWS format to DER format
+    // RSA and EdDSA signatures are returned as-is
+    const isECAlgorithm =
+      algorithm === JWKKeyAlgorithm.ES256 ||
+      algorithm === JWKKeyAlgorithm.ES384 ||
+      algorithm === JWKKeyAlgorithm.ES512;
+
+    const signature = isECAlgorithm
+      ? new Uint8Array(
+          ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
+        )
+      : new Uint8Array(signResult.result);
+
     return {
-      signature: new Uint8Array(
-        ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
-      ),
+      signature,
       meta: {
         signResult,
       },
@@ -147,11 +194,13 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
    * Generates a new key pair for WebAuthn credentials.
    * @param opts.webAuthnPublicKeyCredentialId - The credential ID
    * @param opts.pubKeyCredParams - Public key credential parameters
+   * @param opts.hsm - If true, key will be created in HSM (Hardware Security Module)
    * @returns Object containing COSE public key and Key Vault metadata
    */
   async generateKeyPair(opts: {
     webAuthnPublicKeyCredentialId: string;
     pubKeyCredParams: PubKeyCredParamStrict;
+    hsm?: boolean;
   }): Promise<{
     COSEPublicKey: Uint8Array_;
     webAuthnPublicKeyCredentialKeyMetaType: WebAuthnPublicKeyCredentialKeyMetaType;
@@ -161,7 +210,11 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       hsm: boolean;
     };
   }> {
-    const { webAuthnPublicKeyCredentialId, pubKeyCredParams } = opts;
+    const {
+      webAuthnPublicKeyCredentialId,
+      pubKeyCredParams,
+      hsm = false,
+    } = opts;
 
     const {
       jwk,
@@ -169,9 +222,13 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     } = await this._createKey({
       keyName: webAuthnPublicKeyCredentialId,
       supportedPubKeyCredParam: pubKeyCredParams,
+      hsm,
     });
 
-    const COSEPublicKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+    const COSEPublicKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(
+      jwk,
+      pubKeyCredParams.alg,
+    );
     const COSEPublicKeyBytes = cbor.encode(COSEPublicKey);
 
     return {
@@ -181,7 +238,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         keyVaultKeyId: keyVaultKey.id ?? null,
         keyVaultKeyName: keyVaultKey.name,
-        hsm: false,
+        hsm,
       },
     };
   }

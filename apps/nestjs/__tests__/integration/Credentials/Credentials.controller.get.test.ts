@@ -22,7 +22,7 @@ import {
   PublicKeyCredentialType,
   UserVerification,
 } from '@repo/virtual-authenticator/enums';
-import { CredentialNotFound } from '@repo/virtual-authenticator/exceptions';
+import { CredentialOptionsEmpty } from '@repo/virtual-authenticator/exceptions';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomUUID } from 'node:crypto';
 import {
@@ -232,10 +232,12 @@ describe('CredentialsController - POST /api/credentials/get', () => {
           userId: randomUUID(),
         }),
         payload,
-        expectStatus: 404,
+        expectStatus: 400,
       });
 
-      expect(response.body).toStrictEqual(new CredentialNotFound().toJSON());
+      expect(response.body).toStrictEqual(
+        new CredentialOptionsEmpty().toJSON(),
+      );
     });
 
     test('As authenticated user', async () => {

@@ -1,5 +1,6 @@
 export * from './AttestationNotSupported';
 export * from './CredentialNotFound';
+export * from './CredentialOptionsEmpty';
 export * from './CredentialTypesNotSupported';
 export * from './GenerateKeyPairFailed';
 export * from './ChallengeEntropyInsufficient';

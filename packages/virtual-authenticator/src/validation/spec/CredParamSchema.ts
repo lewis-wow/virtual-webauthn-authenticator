@@ -33,7 +33,10 @@ export const PubKeyCredParamSchema = CredParamSchema.extend({
 export type PubKeyCredParam = z.infer<typeof PubKeyCredParamSchema>;
 
 /**
- * Describes the cryptographic algorithms to be supported
+ * Describes the cryptographic algorithms supported by the implementation.
+ *
+ * NOTE: Azure Key Vault does NOT support OKP (EdDSA/Ed25519) keys.
+ * If using Azure Key Vault as key provider, only EC and RSA algorithms are supported.
  *
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialparameters
  */

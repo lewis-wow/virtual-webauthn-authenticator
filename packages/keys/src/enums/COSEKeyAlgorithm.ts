@@ -23,7 +23,8 @@ export const COSEKeyAlgorithm = {
    * EdDSA (Ed25519).
    * Used with OKP keys on Ed25519 curve.
    */
-  [JWKKeyAlgorithm.EdDSA]: -8,
+  // NOTE: Azure Key Vault does NOT support OKP/EdDSA keys.
+  // [JWKKeyAlgorithm.EdDSA]: -8,
 
   /**
    * ECDSA w/ SHA-384.

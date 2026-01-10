@@ -9,6 +9,7 @@ import type {
   COSEPublicKeyRSA,
 } from './COSEPublicKey';
 import type { JSONWebPublicKey } from './JSONWebPublicKey';
+import type { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
 import { COSEKeyCurveName } from './enums/COSEKeyCurveName';
 import { COSEKeyParam } from './enums/COSEKeyParam';
 import { COSEKeyType } from './enums/COSEKeyType';
@@ -74,10 +75,17 @@ export class KeyMapper {
 
   static JWKPublicKeyToCOSEPublicKey(
     JWKPublicKey: JSONWebPublicKey,
+    alg?: COSEKeyAlgorithm,
   ): COSEPublicKey {
     const kty = JWKPublicKey.kty;
 
     const coseKey = new Map() as COSEPublicKey;
+
+    // Set the algorithm parameter if provided
+    // Per WebAuthn spec: The COSEKey-encoded credential public key MUST contain the "alg" parameter
+    if (alg !== undefined) {
+      coseKey.set(COSEKeyParam.alg, alg);
+    }
 
     switch (kty) {
       case 'EC': {

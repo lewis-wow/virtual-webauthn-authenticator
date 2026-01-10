@@ -265,7 +265,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              alg: -8,
+              alg: -999, // Unsupported algorithm
             },
             {
               type: 'WRONG_TYPE',
@@ -307,7 +307,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         pubKeyCredParams: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            alg: -8,
+            alg: -999, // Unsupported algorithm
           },
         ],
       } satisfies Partial<PublicKeyCredentialCreationOptions>,
@@ -315,7 +315,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         pubKeyCredParams: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            alg: -8,
+            alg: -999, // Unsupported algorithm
           },
           {
             type: 'WRONG_TYPE',
