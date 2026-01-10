@@ -12,3 +12,4 @@ export * from './UnknownException';
 export * from './UserVerificationNotAvailable';
 export * from './UserNotExists';
 export * from './ApiKeyNotExists';
+export * from './CredentialSelectException';

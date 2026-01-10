@@ -1,11 +1,11 @@
 import {
   ExceptionShapeSchema,
-  type ExceptionShape,
+  type AnyExceptionShape,
 } from './validation/ExceptionShapeSchema';
 
 export class Exception<TData = undefined>
   extends Error
-  implements ExceptionShape
+  implements AnyExceptionShape
 {
   static readonly message: string = 'An unexpected error occurred.';
   static readonly status?: number;
@@ -15,7 +15,7 @@ export class Exception<TData = undefined>
   public readonly code: string;
   public readonly data: TData;
 
-  constructor(opts?: Partial<ExceptionShape>) {
+  constructor(opts?: Partial<AnyExceptionShape>) {
     // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
@@ -60,3 +60,6 @@ export class Exception<TData = undefined>
     return Response.json(this.toJSON(), { status: this.status ?? 500 });
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyException = Exception<any>;

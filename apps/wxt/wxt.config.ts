@@ -26,7 +26,7 @@ export default defineConfig({
     web_accessible_resources: [
       {
         resources: ['main-world.js'],
-        matches: ['*://*/*'],
+        matches: ['<all_urls>'],
       },
     ],
   },

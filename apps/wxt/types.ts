@@ -2,21 +2,21 @@ import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,
 } from '@repo/contract/dto';
-import { ExceptionShape } from '@repo/exception/validation';
+import { AnyExceptionShape } from '@repo/exception/validation';
 import { PublicKeyCredentialDtoSchema } from '@repo/virtual-authenticator/dto';
 import z from 'zod';
 
-export type Response<T> =
-  | {
-      ok: true;
-      error?: undefined;
-      data: T;
-    }
-  | {
-      ok: false;
-      error: ExceptionShape;
-      data?: undefined;
-    };
+export type SuccessResponse<T> = {
+  ok: true;
+  data: T;
+};
+
+export type ErrorResponse = {
+  ok: false;
+  error: AnyExceptionShape;
+};
+
+export type Response<T> = SuccessResponse<T> | ErrorResponse;
 
 /**
  * Messaging protocol between main-world, content script, and background.
