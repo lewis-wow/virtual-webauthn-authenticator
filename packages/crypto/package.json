@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@repo/assert": "workspace:*",
+    "fast-json-stable-stringify": "^2.1.0",
     "jose": "^6.1.0",
     "ts-pattern": "^5.8.0",
     "zod": "^4.1.12"

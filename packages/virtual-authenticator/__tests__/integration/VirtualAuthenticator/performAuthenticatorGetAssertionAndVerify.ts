@@ -49,7 +49,7 @@ export type PerformAuthenticatorGetAssertionAndVerifyArgs = {
   authenticatorMakeCredentialResponse: AuthenticatorMakeCredentialResponse;
   prisma: PrismaClient;
   meta?: Partial<AuthenticatorMetaArgs>;
-  context?: Partial<AuthenticatorContextArgs>;
+  context?: AuthenticatorContextArgs;
 
   expectedCounter?: number;
 };
@@ -77,9 +77,7 @@ export const performAuthenticatorGetAssertionAndVerify = async (
         apiKeyId: null,
         ...meta,
       },
-      context: {
-        ...context,
-      },
+      context,
     });
 
   const parsedGetAssertionAuthenticatorData = parseAuthenticatorData(

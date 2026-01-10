@@ -1,12 +1,13 @@
 import z from 'zod';
 
+import { BytesSchema } from '../../BytesSchema';
 import { VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema } from '../../authenticator/interruption/VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema';
 
 export const VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema =
   z.object({
     virtualAuthenticatorCredentialSelectInterruptionPayload:
       VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema,
-    optionsHash: z.string(),
+    hash: BytesSchema,
   });
 
 export type VirtualAuthenticatorAgentCredentialSelectInterruptionPayload =

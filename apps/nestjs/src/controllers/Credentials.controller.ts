@@ -110,7 +110,7 @@ export class CredentialsController {
               userPresenceEnabled: true,
               userVerificationEnabled: true,
             },
-            context: {},
+            context: undefined,
           });
 
         await this._auditCredentialAction({
@@ -165,7 +165,7 @@ export class CredentialsController {
                 userPresenceEnabled: true,
                 userVerificationEnabled: true,
               },
-              context: {},
+              context: undefined,
             });
 
           await this._auditCredentialAction({

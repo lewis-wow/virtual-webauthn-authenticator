@@ -4,7 +4,7 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import { toB64 } from '@repo/utils';
+import { toB64, uint8ArraysEqual } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
@@ -30,14 +30,15 @@ import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupp
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption';
 import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interruption/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInterruption';
-import type {
-  AuthenticatorAgentContextArgs,
-  AuthenticatorAgentMetaArgs,
-  AuthenticatorGetAssertionResponse,
-  PubKeyCredParam,
-  PublicKeyCredentialCreationOptions,
-  PublicKeyCredentialDescriptor,
-  PublicKeyCredentialRequestOptions,
+import {
+  BytesSchema,
+  type AuthenticatorAgentContextArgs,
+  type AuthenticatorAgentMetaArgs,
+  type AuthenticatorGetAssertionResponse,
+  type PubKeyCredParam,
+  type PublicKeyCredentialCreationOptions,
+  type PublicKeyCredentialDescriptor,
+  type PublicKeyCredentialRequestOptions,
 } from './validation';
 import { AuthenticatorAgentMetaArgsSchema } from './validation/authenticator/AuthenticatorAgentMetaArgsSchema';
 import { AuthenticatorAgentContextArgsSchema } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
@@ -96,8 +97,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // authenticatorExtensions: A map containing extension identifiers to the base64url encoding of the client extension processing output for authenticator extensions.
     authenticatorExtensions: Record<string, unknown>;
 
+    // Custom options
     meta: AuthenticatorAgentMetaArgs;
     context: AuthenticatorAgentContextArgs;
+    optionsHash: Uint8Array_;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
       authenticator,
@@ -108,6 +111,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
       meta,
       context,
+      optionsHash,
     } = opts;
 
     // Step 1: If pkOptions.userVerification is set to required and the authenticator is not capable of performing user verification, return false.
@@ -224,12 +228,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         throw new VirtualAuthenticatorAgentCredentialSelectInterruption({
           virtualAuthenticatorCredentialSelectInterruptionPayload:
             error.payload,
-          optionsHash: toB64(
-            this._hashGetAssertionOptions({
-              pkOptions,
-              meta,
-            }),
-          )!,
+          hash: optionsHash,
         });
       }
 
@@ -412,13 +411,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   }): Uint8Array_ {
     const { pkOptions, meta } = opts;
 
-    return Hash.sha256(
-      JSON.stringify({
-        pkOptions:
-          PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
-        meta,
-      }),
-    );
+    return Hash.sha256JSON({
+      pkOptions: PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
+      meta,
+    });
   }
 
   /**
@@ -439,7 +435,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
-    context: AuthenticatorAgentContextArgs;
+
+    // Context is optional
+    context?: AuthenticatorAgentContextArgs;
   }): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
@@ -484,7 +482,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Context hash validation
     assertSchema(
-      opts.context.optionsHash,
+      opts.context?.hash,
       z
         .literal(
           toB64(
@@ -900,12 +898,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   }): Uint8Array_ {
     const { pkOptions, meta } = opts;
 
-    return Hash.sha256(
-      JSON.stringify({
-        pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
-        meta,
-      }),
-    );
+    return Hash.sha256JSON({
+      pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
+      meta,
+    });
   }
 
   /**
@@ -956,19 +952,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 2: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
 
+    const optionsHash = this._hashGetAssertionOptions({
+      pkOptions,
+      meta,
+    });
+
     // Context hash validation
     assertSchema(
-      opts.context.optionsHash,
-      z
-        .literal(
-          toB64(
-            this._hashGetAssertionOptions({
-              pkOptions,
-              meta,
-            }),
-          ),
-        )
-        .optional(),
+      opts.context?.hash,
+      BytesSchema.optional().refine((contextHash) => {
+        if (contextHash === undefined) {
+          return true;
+        }
+
+        return uint8ArraysEqual(contextHash, optionsHash);
+      }),
     );
 
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
@@ -1141,8 +1139,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         // NOTE: Extensions are not implemented.
         authenticatorExtensions: {},
 
+        // Custom options
         meta,
         context,
+        optionsHash,
       });
 
     // Step 20.AVAILABLE.2.1: If this returns false, continue.

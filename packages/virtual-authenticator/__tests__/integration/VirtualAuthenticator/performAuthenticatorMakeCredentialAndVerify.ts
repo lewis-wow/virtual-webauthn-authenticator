@@ -68,7 +68,7 @@ export type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
   authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
   prisma: PrismaClient;
   meta?: Partial<AuthenticatorMetaArgs>;
-  context?: Partial<AuthenticatorContextArgs>;
+  context?: AuthenticatorContextArgs;
 };
 
 export const performAuthenticatorMakeCredentialAndVerify = async (
@@ -92,9 +92,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
         apiKeyId: null,
         ...meta,
       },
-      context: {
-        ...context,
-      },
+      context,
     });
 
   const attestationObjectMap = decodeAttestationObject(

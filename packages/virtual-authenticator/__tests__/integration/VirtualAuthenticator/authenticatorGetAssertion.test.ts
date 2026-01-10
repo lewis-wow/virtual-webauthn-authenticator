@@ -1,5 +1,6 @@
 import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 
+import { Hash } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import {
   afterAll,
@@ -12,6 +13,7 @@ import {
 } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
@@ -269,6 +271,13 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         allowCredentialDescriptorList: undefined,
       } as AuthenticatorGetAssertionArgs;
 
+      const meta: AuthenticatorMetaArgs = {
+        userId: USER_ID,
+        apiKeyId: null,
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+      };
+
       const expectedCredentialOptions =
         await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
           {
@@ -282,6 +291,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
           authenticator,
+          meta,
           prisma,
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
@@ -289,6 +299,13 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       ).rejects.toThrowError(
         new VirtualAuthenticatorCredentialSelectInterruption({
           credentialOptions: expectedCredentialOptions,
+          hash: Hash.sha256JSON({
+            authenticatorGetAssertionArgs:
+              AuthenticatorGetAssertionArgsDtoSchema.encode(
+                authenticatorGetAssertionArgs,
+              ),
+            meta,
+          }),
         }),
       );
     });

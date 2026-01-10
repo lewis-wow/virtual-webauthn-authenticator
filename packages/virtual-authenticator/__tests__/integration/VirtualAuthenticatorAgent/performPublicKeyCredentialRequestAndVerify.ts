@@ -63,7 +63,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
       userPresenceEnabled: true,
       userVerificationEnabled: true,
     },
-    context: {},
+    context: undefined,
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({

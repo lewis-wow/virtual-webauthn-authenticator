@@ -116,7 +116,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         userPresenceEnabled: true,
         userVerificationEnabled: true,
       },
-      context: {},
+      context: undefined,
     });
 
     const encodedPublicKeyCredential =

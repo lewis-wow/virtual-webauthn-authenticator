@@ -3,12 +3,15 @@ import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import type { Uint8Array_ } from '@repo/types';
+import { uint8ArraysEqual } from '@repo/utils';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
 import type { AttestationObjectMap, AttestationStatementMap } from './cbor';
+import { AuthenticatorGetAssertionArgsDtoSchema } from './dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
+import { AuthenticatorMakeCredentialArgsDtoSchema } from './dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { UserVerificationNotAvailable } from './exceptions';
@@ -22,6 +25,7 @@ import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
+import { BytesSchema } from './validation/BytesSchema';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
@@ -419,6 +423,21 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
+  private _hashAuthenticatorMakeCredentialOptions(opts: {
+    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+    meta: AuthenticatorMetaArgs;
+  }) {
+    const { authenticatorMakeCredentialArgs, meta } = opts;
+
+    return Hash.sha256JSON({
+      authenticatorMakeCredentialArgs:
+        AuthenticatorMakeCredentialArgsDtoSchema.encode(
+          authenticatorMakeCredentialArgs,
+        ),
+      meta,
+    });
+  }
+
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
@@ -691,6 +710,21 @@ export class VirtualAuthenticator implements IAuthenticator {
     return authenticatorMakeCredentialResponse;
   }
 
+  private _hashAuthenticatorGetAssertionOptions(opts: {
+    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
+    meta: AuthenticatorMetaArgs;
+  }) {
+    const { authenticatorGetAssertionArgs, meta } = opts;
+
+    return Hash.sha256JSON({
+      authenticatorGetAssertionArgs:
+        AuthenticatorGetAssertionArgsDtoSchema.encode(
+          authenticatorGetAssertionArgs,
+        ),
+      meta,
+    });
+  }
+
   /**
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
@@ -715,6 +749,23 @@ export class VirtualAuthenticator implements IAuthenticator {
     assertSchema(meta, AuthenticatorMetaArgsSchema);
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
+
+    const optionsHash = this._hashAuthenticatorGetAssertionOptions({
+      authenticatorGetAssertionArgs,
+      meta,
+    });
+
+    // Context hash validation
+    assertSchema(
+      opts.context?.hash,
+      BytesSchema.optional().refine((contextHash) => {
+        if (contextHash === undefined) {
+          return true;
+        }
+
+        return uint8ArraysEqual(contextHash, optionsHash);
+      }),
+    );
 
     const {
       hash,
@@ -779,6 +830,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     if (credentialOptions.length > 1) {
       throw new VirtualAuthenticatorCredentialSelectInterruption({
         credentialOptions,
+        hash: optionsHash,
       });
     }
 
