@@ -1,6 +1,8 @@
 import { extensionMessaging } from '@/messaging/extensionMessaging';
 import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
 
+import { showErrorModal } from '../utils/showErrorModal';
+
 const LOG_PREFIX = 'CONTENT';
 console.log(`[${LOG_PREFIX}]`, 'Init');
 
@@ -23,6 +25,15 @@ export default defineContentScript({
         req.data,
       );
 
+      if (response && response.ok === false) {
+        showErrorModal({
+          message:
+            response.error.message ||
+            'An error occurred during credential creation.',
+          data: response,
+        });
+      }
+
       console.log(`[${LOG_PREFIX}]`, 'credentials.create response.', response);
 
       return response;
@@ -35,6 +46,15 @@ export default defineContentScript({
         'credentials.get',
         req.data,
       );
+
+      if (response && response.ok === false) {
+        showErrorModal({
+          message:
+            response.error.message ||
+            'An error occurred during credential get.',
+          data: response,
+        });
+      }
 
       console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
 
