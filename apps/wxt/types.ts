@@ -20,7 +20,8 @@ export type SerializedCredentialGetRequest = {
  * Background returns raw API response (unknown) which is parsed in main-world.
  */
 export type MessagingProtocol = {
-  'credentials.create': (req: SerializedCredentialCreationRequest) => unknown; // Raw API response, parsed in main-world
-
-  'credentials.get': (req: SerializedCredentialGetRequest) => unknown; // Raw API response, parsed in main-world
+  fetch: (req: { url: string; init: RequestInit }) => {
+    status: number;
+    json: unknown;
+  }; // Proxy fetch from background -> content -> main-world
 };

@@ -1,5 +1,3 @@
-import { getVirtualAuthenticatorApiClient } from '@/utils/getVirtualAuthenticatorAgentClient';
-
 import { extensionMessaging } from '../messaging/extensionMessaging';
 
 const LOG_PREFIX = 'BACKGROUND';
@@ -11,35 +9,28 @@ export default defineBackground(() => {
     id: browser.runtime.id,
   });
 
-  extensionMessaging.onMessage('credentials.create', async (req) => {
-    const virtualAuthenticatorApiClient =
-      await getVirtualAuthenticatorApiClient();
-
-    // req.data contains { publicKey: serialized DTO, meta will be added }
-    const rawResponse = await virtualAuthenticatorApiClient.createCredential({
-      publicKey: req.data.publicKey,
-      meta: {
-        origin: req.sender.origin ?? '',
-      },
+  // Handle fetch requests proxied from content script
+  extensionMessaging.onMessage('fetch', async (req) => {
+    console.log(`[${LOG_PREFIX}]`, 'Fetch request', {
+      url: req.data.url,
+      method: req.data.init.method,
     });
 
-    // Return raw response - parsing happens in main-world
-    return rawResponse;
-  });
+    try {
+      const response = await fetch(req.data.url, req.data.init);
+      const json = await response.json();
 
-  extensionMessaging.onMessage('credentials.get', async (req) => {
-    const virtualAuthenticatorApiClient =
-      await getVirtualAuthenticatorApiClient();
+      console.log(`[${LOG_PREFIX}]`, 'Fetch response', {
+        status: response.status,
+      });
 
-    // req.data contains { publicKey: serialized DTO, meta will be added }
-    const rawResponse = await virtualAuthenticatorApiClient.getAssertion({
-      publicKey: req.data.publicKey,
-      meta: {
-        origin: req.sender.origin ?? '',
-      },
-    });
-
-    // Return raw response - parsing happens in main-world
-    return rawResponse;
+      return {
+        status: response.status,
+        json,
+      };
+    } catch (error) {
+      console.error(`[${LOG_PREFIX}]`, 'Fetch error', error);
+      throw error;
+    }
   });
 });

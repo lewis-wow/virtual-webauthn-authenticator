@@ -4,11 +4,9 @@ import { omit } from '@repo/utils';
 import {
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialDtoSchema,
-  PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema,
   PublicKeyCredentialRequestOptionsDtoSchema,
 } from '@repo/virtual-authenticator/dto';
 import type {
-  ApplicablePublicKeyCredential,
   AuthenticatorAssertionResponse,
   AuthenticatorAttestationResponse,
   CredentialCreationOptions,
@@ -173,7 +171,7 @@ export class VirtualAuthenticatorAgentClient {
 
   async getAssertion(
     opts?: CredentialRequestOptions,
-  ): Promise<DOMPublicKeyCredential | ApplicablePublicKeyCredential[]> {
+  ): Promise<DOMPublicKeyCredential> {
     const publicKeyCredentialRequestOptions = convertBrowserRequestOptions(
       opts?.publicKey as PublicKeyCredentialRequestOptions | undefined,
     );
@@ -191,27 +189,14 @@ export class VirtualAuthenticatorAgentClient {
       publicKeyCredentialRequestOptions: encodedOptions,
     });
 
-    const publicKeyCredentialOrApplicablePublicKeyCredentialsList =
-      PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema.parse(
-        json,
-      );
-
-    if (
-      Array.isArray(publicKeyCredentialOrApplicablePublicKeyCredentialsList)
-    ) {
-      return publicKeyCredentialOrApplicablePublicKeyCredentialsList;
-    }
+    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(json);
 
     return new PublicKeyCredentialImpl({
-      id: publicKeyCredentialOrApplicablePublicKeyCredentialsList.id,
-      rawId: publicKeyCredentialOrApplicablePublicKeyCredentialsList.rawId,
-      response: this._createResponseImpl(
-        publicKeyCredentialOrApplicablePublicKeyCredentialsList.response,
-      ),
-      authenticatorAttachment:
-        publicKeyCredentialOrApplicablePublicKeyCredentialsList.authenticatorAttachment,
-      clientExtensionResults:
-        publicKeyCredentialOrApplicablePublicKeyCredentialsList.clientExtensionResults,
+      id: publicKeyCredential.id,
+      rawId: publicKeyCredential.rawId,
+      response: this._createResponseImpl(publicKeyCredential.response),
+      authenticatorAttachment: publicKeyCredential.authenticatorAttachment,
+      clientExtensionResults: publicKeyCredential.clientExtensionResults,
     });
   }
 }
