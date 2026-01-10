@@ -3,11 +3,12 @@ import {
   type KeyClient,
   type KeyVaultKey,
   type SignResult,
+  type JsonWebKey as AzureJsonWebKey,
 } from '@azure/keyvault-keys';
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { KeyMapper } from '@repo/keys';
-import { type JSONWebPublicKey, KeyAlgorithmMapper } from '@repo/keys';
+import { KeyAlgorithmMapper } from '@repo/keys';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import {
   COSEKeyAlgorithm,
@@ -16,6 +17,8 @@ import {
 } from '@repo/keys/enums';
 import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
 import type { Uint8Array_ } from '@repo/types';
+import type { JsonWebKey } from '@repo/types/dom';
+import { toB64 } from '@repo/utils';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
@@ -28,10 +31,9 @@ import type { CryptographyClientFactory } from './CryptographyClientFactory';
 import { OKPKeyTypeNotSupported } from './exceptions/OKPKeyTypeNotSupported';
 import { UnexpectedWebAuthnPublicKeyCredentialKeyMetaType } from './exceptions/UnexpectedWebAuthnPublicKeyCredentialKeyMetaType';
 import { UnsupportedKeyType } from './exceptions/UnsupportedKeyType';
-import { mapKeyVaultKeyToJWKPublicKey } from './mappers/mapKeyVaultKeyToJWKPublicKey';
 
 export type KeyPayload = {
-  jwk: JSONWebPublicKey;
+  jwk: JsonWebKey;
   meta: {
     keyVaultKey: KeyVaultKey;
   };
@@ -58,12 +60,25 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
   }
 
-  private _toB64(bytes: Uint8Array_ | undefined): string | undefined {
-    if (bytes === undefined) {
-      return undefined;
-    }
-
-    return Buffer.from(bytes).toString('base64url');
+  private _azureKeyVaultKeyToJsonWebKey(
+    azureJsonWebKey: AzureJsonWebKey,
+  ): JsonWebKey {
+    return {
+      kty: azureJsonWebKey.kty,
+      crv: azureJsonWebKey.crv,
+      x: toB64(azureJsonWebKey.x as Uint8Array_ | undefined),
+      y: toB64(azureJsonWebKey.y as Uint8Array_ | undefined),
+      e: toB64(azureJsonWebKey.e as Uint8Array_ | undefined),
+      n: toB64(azureJsonWebKey.n as Uint8Array_ | undefined),
+      d: toB64(azureJsonWebKey.d as Uint8Array_ | undefined),
+      dp: toB64(azureJsonWebKey.dp as Uint8Array_ | undefined),
+      dq: toB64(azureJsonWebKey.dq as Uint8Array_ | undefined),
+      p: toB64(azureJsonWebKey.p as Uint8Array_ | undefined),
+      q: toB64(azureJsonWebKey.q as Uint8Array_ | undefined),
+      qi: toB64(azureJsonWebKey.qi as Uint8Array_ | undefined),
+      k: toB64(azureJsonWebKey.k as Uint8Array_ | undefined),
+      key_ops: azureJsonWebKey.keyOps,
+    };
   }
 
   /**
@@ -124,7 +139,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     }
 
     return {
-      jwk: mapKeyVaultKeyToJWKPublicKey(keyVaultKey.key!),
+      jwk: this._azureKeyVaultKeyToJsonWebKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
       },
@@ -141,7 +156,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     const keyVaultKey = await this.keyClient.getKey(keyName);
 
     return {
-      jwk: mapKeyVaultKeyToJWKPublicKey(keyVaultKey.key!),
+      jwk: this._azureKeyVaultKeyToJsonWebKey(keyVaultKey.key!),
       meta: {
         keyVaultKey,
       },

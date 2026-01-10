@@ -1,4 +1,5 @@
 import type { Uint8Array_ } from '@repo/types';
+import type { JsonWebKey } from '@repo/types/dom';
 import { swapKeysAndValues } from '@repo/utils';
 import { Buffer } from 'buffer';
 
@@ -8,7 +9,6 @@ import type {
   COSEPublicKeyOKP,
   COSEPublicKeyRSA,
 } from './COSEPublicKey';
-import type { JSONWebPublicKey } from './JSONWebPublicKey';
 import type { COSEKeyAlgorithm } from './enums/COSEKeyAlgorithm';
 import { COSEKeyCurveName } from './enums/COSEKeyCurveName';
 import { COSEKeyParam } from './enums/COSEKeyParam';
@@ -35,12 +35,10 @@ export class KeyMapper {
     return new Uint8Array(Buffer.from(b64, 'base64url'));
   }
 
-  static COSEPublicKeyToJWKPublicKey(
-    COSEPublicKey: COSEPublicKey,
-  ): JSONWebPublicKey {
+  static COSEPublicKeyToJWKPublicKey(COSEPublicKey: COSEPublicKey): JsonWebKey {
     const kty = COSEPublicKey.get(COSEKeyParam.kty);
 
-    const jwk: JSONWebPublicKey = {};
+    const jwk: JsonWebKey = {};
 
     switch (kty) {
       case COSEKeyType.EC: {
@@ -74,7 +72,7 @@ export class KeyMapper {
   }
 
   static JWKPublicKeyToCOSEPublicKey(
-    JWKPublicKey: JSONWebPublicKey,
+    JWKPublicKey: JsonWebKey,
     alg?: COSEKeyAlgorithm,
   ): COSEPublicKey {
     const kty = JWKPublicKey.kty;

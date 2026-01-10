@@ -88,13 +88,9 @@ while (unresolvedNodes.size > 0) {
 }
 
 // 5. Generate the Output File
-const outputSourceFile = project.createSourceFile(
-  'src/types/dom.ts',
-  undefined,
-  {
-    overwrite: true,
-  },
-);
+const outputSourceFile = project.createSourceFile('src/dom.ts', undefined, {
+  overwrite: true,
+});
 
 outputSourceFile.addStatements([
   `/**`,
@@ -118,5 +114,5 @@ outputSourceFile.addTypeAliases(
 outputSourceFile.saveSync();
 
 console.log(
-  `Successfully generated src/types/dom.ts with ${resolvedNodes.size} types.`,
+  `Successfully generated src/dom.ts with ${resolvedNodes.size} types.`,
 );
