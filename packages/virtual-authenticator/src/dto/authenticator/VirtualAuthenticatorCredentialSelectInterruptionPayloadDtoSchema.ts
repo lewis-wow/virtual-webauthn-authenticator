@@ -1,4 +1,8 @@
+import { BytesSchemaCodec } from '@repo/core/zod-validation';
+
 import { VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema } from '../../validation';
 
 export const VirtualAuthenticatorCredentialSelectInterruptionPayloadDtoSchema =
-  VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema;
+  VirtualAuthenticatorCredentialSelectInterruptionPayloadSchema.extend({
+    hash: BytesSchemaCodec,
+  });

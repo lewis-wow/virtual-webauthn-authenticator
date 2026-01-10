@@ -31,5 +31,9 @@ export const GetCredentialBodySchema = z.object({
 export const GetCredentialResponseSchema = {
   [HttpStatusCode.OK]: AuthenticatorAgentGetAssertionResponseDtoSchema,
   [HttpStatusCode.PRECONDITION_REQUIRED]:
-    VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadDtoSchema,
+    VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadDtoSchema.extend(
+      {
+        token: z.string(),
+      },
+    ),
 } as const;

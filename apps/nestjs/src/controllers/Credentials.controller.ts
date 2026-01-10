@@ -193,9 +193,7 @@ export class CredentialsController {
                     HttpStatusCode.PRECONDITION_REQUIRED
                   ].encode({
                     ...interaction.payload,
-                    optionsHash: await this.jwt.sign({
-                      optionsHash: interaction.payload.optionsHash,
-                    }),
+                    token: await this.jwt.sign(interaction.payload),
                   }),
                 };
               },
