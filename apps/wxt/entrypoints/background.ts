@@ -40,11 +40,19 @@ export default defineBackground(() => {
 
     const json = await response.json();
 
-    if (!response.ok) {
-      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+    if (response.ok) {
+      return {
+        ok: true,
+        data: json,
+      };
     }
 
-    return json;
+    console.log(`[${LOG_PREFIX}]`, 'Error', json);
+
+    return {
+      ok: false,
+      error: json,
+    };
   });
 
   extensionMessaging.onMessage('credentials.get', async (req) => {
@@ -61,10 +69,18 @@ export default defineBackground(() => {
 
     const json = await response.json();
 
-    if (!response.ok) {
-      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+    if (response.ok) {
+      return {
+        ok: true,
+        data: json,
+      };
     }
 
-    return json;
+    console.log(`[${LOG_PREFIX}]`, 'Error', json);
+
+    return {
+      ok: false,
+      error: json,
+    };
   });
 });

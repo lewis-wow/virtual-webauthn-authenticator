@@ -20,6 +20,7 @@
     "@repo/env-config": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/contract": "workspace:*",
+    "@repo/exception": "workspace:*",
     "@repo/ui": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@vitejs/plugin-react": "^5.1.1",

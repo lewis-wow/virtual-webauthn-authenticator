@@ -48,10 +48,11 @@ export class Exception<TData = undefined>
     return new Exception({ ...parseResult.data, status });
   }
 
-  toJSON() {
+  toJSON(opts?: { omitData?: boolean }) {
     return {
       message: this.message,
       code: this.code,
+      data: opts?.omitData === true ? undefined : this.data,
     };
   }
 

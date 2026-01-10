@@ -59,11 +59,12 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     apiKeyId: string | null;
     allowCredentialDescriptorList: string[] | undefined;
   }): Promise<ApplicablePublicKeyCredential[]> {
-    const { rpId, userId, apiKeyId } = opts;
+    const { rpId, userId, apiKeyId, allowCredentialDescriptorList } = opts;
 
     assertSchema(rpId, z.string());
     assertSchema(userId, z.string());
     assertSchema(apiKeyId, z.string().nullable());
+    assertSchema(allowCredentialDescriptorList, z.array(z.string()).optional());
 
     const webAuthnPublicKeyCredentialCandidates =
       await this.prisma.webAuthnPublicKeyCredential.findMany({
@@ -71,6 +72,9 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
           userId,
           rpId,
           apiKeyId,
+          id: {
+            in: allowCredentialDescriptorList,
+          },
         },
         select: {
           id: true,

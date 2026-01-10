@@ -1,4 +1,5 @@
 import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
+import { Exception } from '@repo/exception';
 import {
   convertBrowserCreationOptions,
   convertBrowserRequestOptions,
@@ -39,7 +40,13 @@ export default defineUnlistedScript(() => {
       },
     );
 
-    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(response);
+    if (!response.ok) {
+      throw new Exception(response.error);
+    }
+
+    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(
+      response.data,
+    );
 
     return new PublicKeyCredentialImpl({
       id: publicKeyCredential.id,
@@ -68,7 +75,13 @@ export default defineUnlistedScript(() => {
       meta: { origin: window.location.origin },
     });
 
-    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(response);
+    if (!response.ok) {
+      throw new Exception(response.error);
+    }
+
+    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(
+      response.data,
+    );
 
     return new PublicKeyCredentialImpl({
       id: publicKeyCredential.id,
