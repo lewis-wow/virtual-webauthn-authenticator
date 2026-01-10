@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
-    "@repo/browser": "workspace:*",
     "@repo/env-config": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/core": "workspace:*",

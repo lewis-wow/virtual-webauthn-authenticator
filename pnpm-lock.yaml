@@ -666,9 +666,6 @@ importers:
       '@repo/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repo/browser':
-        specifier: workspace:*
-        version: link:../../packages/browser
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -1077,49 +1074,6 @@ importers:
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
-      typescript:
-        specifier: ^5.5.4
-        version: 5.9.2
-
-  packages/browser:
-    dependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
-      '@repo/exception':
-        specifier: workspace:*
-        version: link:../exception
-      '@repo/http':
-        specifier: workspace:*
-        version: link:../http
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
-      '@repo/utils':
-        specifier: workspace:*
-        version: link:../utils
-      '@repo/virtual-authenticator':
-        specifier: workspace:*
-        version: link:../virtual-authenticator
-      buffer:
-        specifier: ^6.0.3
-        version: 6.0.3
-      cbor2:
-        specifier: ^2.0.1
-        version: 2.0.1
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.12
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
