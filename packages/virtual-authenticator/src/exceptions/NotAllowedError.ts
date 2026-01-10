@@ -8,7 +8,7 @@ import { HttpStatusCode } from '@repo/http';
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred (Step 3.1)
  */
 export class NotAllowedError extends Exception {
-  static status = HttpStatusCode.FORBIDDEN;
+  static status = HttpStatusCode.FORBIDDEN_403;
   static readonly code = 'NotAllowedError';
   static message = 'The user did not consent to the operation.';
 }
