@@ -3,6 +3,7 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
+import { Hash } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import {
@@ -22,11 +23,20 @@ import {
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
+import { PublicKeyCredentialRequestOptionsDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
+import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
+import { VirtualAuthenticatorAgentCredentialSelectInterruption } from '../../../src/interruption';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import {
+  type AuthenticatorGetAssertionArgs,
+  type AuthenticatorMetaArgs,
+} from '../../../src/validation';
+import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticator/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
@@ -38,6 +48,8 @@ import {
   RP_ORIGIN,
 } from '../../helpers/consts';
 import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
+import { AUTHENTICATOR_GET_ASSERTION_ARGS } from '../VirtualAuthenticator/performAuthenticatorGetAssertionAndVerify';
+import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 import { performPublicKeyCredentialRequestAndVerify } from './performPublicKeyCredentialRequestAndVerify';
 
 const PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS = {
@@ -110,13 +122,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
       meta: {
         userId: USER_ID,
         origin: RP_ORIGIN,
+        apiKeyId: null,
 
         userPresenceEnabled: true,
         userVerificationEnabled: true,
       },
-      context: {
-        apiKeyId: null,
-      },
+      context: undefined,
     });
 
     const encodedPublicKeyCredential =
@@ -296,17 +307,16 @@ describe('VirtualAuthenticator.getCredential()', () => {
       },
     );
 
-    await expect(
-      async () =>
-        await performPublicKeyCredentialRequestAndVerify({
-          agent,
-          publicKeyCredentialRequestOptions,
-          webAuthnPublicKeyCredentialId,
-          publicKey,
-          counter,
-          userId,
-        }),
-    ).to.rejects.toThrowError(new CredentialNotFound());
+    await expect(() =>
+      performPublicKeyCredentialRequestAndVerify({
+        agent,
+        publicKeyCredentialRequestOptions,
+        webAuthnPublicKeyCredentialId,
+        publicKey,
+        counter,
+        userId,
+      }),
+    ).rejects.toThrowError(new CredentialOptionsEmpty());
   });
 
   test('should fail with wrong allowCredentials', async () => {
@@ -1782,6 +1792,99 @@ describe('VirtualAuthenticator.getCredential()', () => {
             origin: wrongOrigin,
           }),
       ).rejects.toThrowError();
+    });
+  });
+
+  describe('Client-side discovery', () => {
+    test('For multiple credentials', async () => {
+      const { webAuthnPublicKeyCredentialId, publicKey, counter } =
+        registrationInfo;
+
+      const publicKeyCredentialRequestOptions = set(
+        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        {
+          allowCredentials: undefined,
+          rpId: RP_ID,
+        },
+      );
+
+      const meta: AuthenticatorAgentMetaArgs = {
+        userId: USER_ID,
+        apiKeyId: null,
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+        origin: RP_ORIGIN,
+      };
+
+      const expectedAuthenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        allowCredentialDescriptorList: undefined,
+      } as AuthenticatorGetAssertionArgs;
+
+      const expectedAuthnenticatorMeta: AuthenticatorMetaArgs = {
+        userId: USER_ID,
+        apiKeyId: null,
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+      };
+
+      const expectedAuthenticatorHash = Hash.sha256JSON(
+        {
+          authenticatorGetAssertionArgs:
+            AuthenticatorGetAssertionArgsDtoSchema.encode(
+              expectedAuthenticatorGetAssertionArgs,
+            ),
+          meta: expectedAuthnenticatorMeta,
+        },
+        'hex',
+      );
+
+      const expectedHash = Hash.sha256JSON(
+        {
+          pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(
+            publicKeyCredentialRequestOptions,
+          ),
+          meta,
+        },
+        'hex',
+      );
+
+      // Create new credential first, then query expectedCredentialOptions
+      // so that it includes both credentials (from beforeEach and this new one)
+      await performPublicKeyCredentialRegistrationAndVerify({
+        agent,
+        publicKeyCredentialCreationOptions:
+          PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        meta,
+      });
+
+      const expectedCredentialOptions =
+        await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
+          {
+            rpId: RP_ID,
+            userId: USER_ID,
+            apiKeyId: null,
+            allowCredentialDescriptorList: undefined,
+          },
+        );
+
+      await expect(() =>
+        performPublicKeyCredentialRequestAndVerify({
+          agent,
+          publicKeyCredentialRequestOptions,
+          webAuthnPublicKeyCredentialId,
+          publicKey,
+          counter,
+        }),
+      ).rejects.toThrowError(
+        new VirtualAuthenticatorAgentCredentialSelectInterruption({
+          virtualAuthenticatorCredentialSelectInterruptionPayload: {
+            hash: expectedAuthenticatorHash,
+            credentialOptions: expectedCredentialOptions,
+          },
+          hash: expectedHash,
+        }),
+      );
     });
   });
 });

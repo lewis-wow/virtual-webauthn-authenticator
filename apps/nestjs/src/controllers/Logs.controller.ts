@@ -3,6 +3,7 @@ import { ActivityLog } from '@repo/activity-log';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import { ListLogsResponseSchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
+import { HttpStatusCode } from '@repo/http';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';
@@ -23,8 +24,8 @@ export class LogsController {
       });
 
       return {
-        status: 200,
-        body: ListLogsResponseSchema.encode(logs),
+        status: HttpStatusCode.OK,
+        body: ListLogsResponseSchema[HttpStatusCode.OK].encode(logs),
       };
     });
   }

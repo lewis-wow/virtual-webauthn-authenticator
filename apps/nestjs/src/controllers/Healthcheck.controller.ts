@@ -1,6 +1,7 @@
 import { Controller, UseFilters } from '@nestjs/common';
 import { GetHealthcheckResponseSchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
+import { HttpStatusCode } from '@repo/http';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { ExceptionFilter } from '../filters/Exception.filter';
@@ -12,8 +13,8 @@ export class HealthcheckController {
   async healthcheck() {
     return tsRestHandler(nestjsContract.api.healthcheck.get, async () => {
       return {
-        status: 200,
-        body: GetHealthcheckResponseSchema.encode({
+        status: HttpStatusCode.OK,
+        body: GetHealthcheckResponseSchema[HttpStatusCode.OK].encode({
           healthy: true,
         }),
       };

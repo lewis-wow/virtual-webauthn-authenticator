@@ -29,6 +29,7 @@
     "zod": "^4.1.12"
   },
   "dependencies": {
+    "@repo/http": "workspace:*",
     "@repo/assert": "workspace:*",
     "@azure/identity": "^4.13.0",
     "@azure/keyvault-keys": "^4.10.0",

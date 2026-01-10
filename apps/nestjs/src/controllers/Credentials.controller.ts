@@ -9,17 +9,21 @@ import {
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
+import { Jwt } from '@repo/crypto';
 import { Forbidden } from '@repo/exception/http';
+import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
+import { VirtualAuthenticatorAgentCredentialSelectInterruption } from '@repo/virtual-authenticator/interruption';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
 } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
+import { match, P } from 'ts-pattern';
 
-import { Jwt } from '../decorators/Jwt.decorator';
+import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 
@@ -30,6 +34,7 @@ export class CredentialsController {
     private readonly virtualAuthenticatorAgent: VirtualAuthenticatorAgent,
     private readonly logger: Logger,
     private readonly activityLog: ActivityLog,
+    private readonly jwt: Jwt,
   ) {}
 
   /**
@@ -59,7 +64,7 @@ export class CredentialsController {
 
   @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
-  async createCredential(@Jwt() jwtPayload: JwtPayload) {
+  async createCredential(@JwtDecorator() jwtPayload: JwtPayload) {
     return tsRestHandler(
       nestjsContract.api.credentials.create,
       async ({ body }) => {
@@ -100,13 +105,12 @@ export class CredentialsController {
             meta: {
               origin: meta.origin,
               userId: userId,
+              apiKeyId,
 
               userPresenceEnabled: true,
               userVerificationEnabled: true,
             },
-            context: {
-              apiKeyId: apiKeyId,
-            },
+            context: undefined,
           });
 
         await this._auditCredentialAction({
@@ -116,8 +120,10 @@ export class CredentialsController {
         });
 
         return {
-          status: 200,
-          body: CreateCredentialResponseSchema.encode(publicKeyCredential),
+          status: HttpStatusCode.OK,
+          body: CreateCredentialResponseSchema[HttpStatusCode.OK].encode(
+            publicKeyCredential,
+          ),
         };
       },
     );
@@ -125,7 +131,7 @@ export class CredentialsController {
 
   @TsRestHandler(nestjsContract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
-  async getCredential(@Jwt() jwtPayload: JwtPayload) {
+  async getCredential(@JwtDecorator() jwtPayload: JwtPayload) {
     return tsRestHandler(
       nestjsContract.api.credentials.get,
       async ({ body }) => {
@@ -140,36 +146,63 @@ export class CredentialsController {
           userId: userId,
         });
 
-        const publicKeyCredential =
-          await this.virtualAuthenticatorAgent.getAssertion({
-            origin: meta.origin,
-            options: {
-              publicKey: publicKeyCredentialRequestOptions,
-              signal: undefined,
-            },
-            sameOriginWithAncestors: true,
-
-            // Internal options
-            meta: {
+        try {
+          const publicKeyCredential =
+            await this.virtualAuthenticatorAgent.getAssertion({
               origin: meta.origin,
-              userId: userId,
+              options: {
+                publicKey: publicKeyCredentialRequestOptions,
+                signal: undefined,
+              },
+              sameOriginWithAncestors: true,
 
-              userPresenceEnabled: true,
-              userVerificationEnabled: true,
-            },
-            context: { apiKeyId },
+              // Internal options
+              meta: {
+                origin: meta.origin,
+                userId: userId,
+                apiKeyId,
+
+                userPresenceEnabled: true,
+                userVerificationEnabled: true,
+              },
+              context: undefined,
+            });
+
+          await this._auditCredentialAction({
+            action: LogAction.GET,
+            publicKeyCredentialRawId: publicKeyCredential.rawId,
+            jwtPayload,
           });
 
-        await this._auditCredentialAction({
-          action: LogAction.GET,
-          publicKeyCredentialRawId: publicKeyCredential.rawId,
-          jwtPayload,
-        });
-
-        return {
-          status: 200,
-          body: GetCredentialResponseSchema.encode(publicKeyCredential),
-        };
+          return {
+            status: HttpStatusCode.OK,
+            body: GetCredentialResponseSchema[HttpStatusCode.OK].encode(
+              publicKeyCredential,
+            ),
+          };
+        } catch (error) {
+          return await match(error)
+            .with(
+              P.instanceOf(
+                VirtualAuthenticatorAgentCredentialSelectInterruption,
+              ),
+              async (interaction) => {
+                return {
+                  status: HttpStatusCode.PRECONDITION_REQUIRED,
+                  body: GetCredentialResponseSchema[
+                    HttpStatusCode.PRECONDITION_REQUIRED
+                  ].encode({
+                    ...interaction.payload,
+                    token: await this.jwt.sign(interaction.payload),
+                  }),
+                };
+              },
+            )
+            .otherwise(() => {
+              // Rethrow original error.
+              throw error;
+            });
+        }
       },
     );
   }

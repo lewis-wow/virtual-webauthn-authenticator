@@ -7,27 +7,25 @@ export type ExceptionOptions = Omit<ExceptionShape, 'name'>;
 
 export class Exception extends Error implements ExceptionShape {
   static readonly message: string = 'An unexpected error occurred.';
-
   static readonly status?: number;
-  static readonly code?: string;
+  static readonly code: string;
 
   public readonly status?: number;
-  public readonly code?: string;
+  public readonly code: string;
 
   constructor(opts?: ExceptionOptions) {
     // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
     const status = opts?.status ?? ctor.status;
-    const code = opts?.code ?? ctor.code;
     const message = opts?.message ?? ctor.message;
 
     // Pass message and cause to the parent Error class
     super(message, { cause: opts?.cause });
+    Object.setPrototypeOf(this, new.target.prototype);
 
-    this.name = ctor.name;
+    this.code = ctor.code;
     this.status = status;
-    this.code = code;
   }
 
   static fromResponse(opts: {
@@ -48,7 +46,7 @@ export class Exception extends Error implements ExceptionShape {
   toJSON() {
     return {
       message: this.message,
-      name: this.name,
+      code: this.code,
     };
   }
 

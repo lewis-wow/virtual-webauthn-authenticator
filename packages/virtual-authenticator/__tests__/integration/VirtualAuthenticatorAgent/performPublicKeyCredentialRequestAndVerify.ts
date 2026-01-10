@@ -57,14 +57,13 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     // Internal options
     meta: {
       userId,
+      apiKeyId: null,
       origin,
 
       userPresenceEnabled: true,
       userVerificationEnabled: true,
     },
-    context: {
-      apiKeyId: null,
-    },
+    context: undefined,
   });
 
   const authenticationVerification = await verifyAuthenticationResponse({

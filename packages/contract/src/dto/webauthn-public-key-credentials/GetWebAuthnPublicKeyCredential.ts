@@ -1,3 +1,5 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { WebAuthnPublicKeyCredentialBaseDtoSchema } from './components/WebAuthnPublicKeyCredentialBaseDtoSchema';
 import { WebAuthnPublicKeyCredentialDtoSchema } from './components/WebAuthnPublicKeyCredentialDtoSchema';
 
@@ -27,5 +29,6 @@ export const GetWebAuthnPublicKeyCredentialParamsSchema =
 // Outputs
 // -------------------------------------
 
-export const GetWebAuthnPublicKeyCredentialResponseSchema =
-  WebAuthnPublicKeyCredentialDtoSchema;
+export const GetWebAuthnPublicKeyCredentialResponseSchema = {
+  [HttpStatusCode.OK]: WebAuthnPublicKeyCredentialDtoSchema,
+};

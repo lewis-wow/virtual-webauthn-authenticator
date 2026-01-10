@@ -1,7 +1,8 @@
 import { Exception } from '@repo/exception';
+import { HttpStatusCode } from '@repo/http';
 
 export class CredentialOptionsEmpty extends Exception {
-  static status = 400;
-  static code = 'CREDENTIAL_OPTIONS_EMPTY';
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly code = 'CredentialOptionsEmpty';
   static message = 'Credential options empty.';
 }

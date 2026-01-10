@@ -9,6 +9,8 @@ import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
 import type { AttestationObjectMap, AttestationStatementMap } from './cbor';
+import { AuthenticatorGetAssertionArgsDtoSchema } from './dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
+import { AuthenticatorMakeCredentialArgsDtoSchema } from './dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { UserVerificationNotAvailable } from './exceptions';
@@ -18,7 +20,7 @@ import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupp
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
-import { CredentialSelectInteraction } from './interactions/CredentialSelectInteraction';
+import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption/authenticator/VirtualAuthenticatorCredentialSelectInteraction';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
@@ -103,7 +105,7 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
    * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
    */
-  private _findFirstSupportedCredTypesAndPubKeyAlg(
+  private _findFirstSupportedCredTypesAndPubKeyAlgOrNull(
     pubKeyCredParams: PubKeyCredParam[],
   ): SupportedPubKeyCredParam | null {
     for (const pubKeyCredParam of pubKeyCredParams) {
@@ -419,6 +421,24 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
+  private _hashAuthenticatorMakeCredentialOptionsAsHex(opts: {
+    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+    meta: AuthenticatorMetaArgs;
+  }): string {
+    const { authenticatorMakeCredentialArgs, meta } = opts;
+
+    return Hash.sha256JSON(
+      {
+        authenticatorMakeCredentialArgs:
+          AuthenticatorMakeCredentialArgsDtoSchema.encode(
+            authenticatorMakeCredentialArgs,
+          ),
+        meta,
+      },
+      'hex',
+    );
+  }
+
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
@@ -440,7 +460,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     );
 
     // Meta validation
-    assertSchema(meta, AuthenticatorMetaArgsSchema);
+    assertSchema(
+      meta,
+      AuthenticatorMetaArgsSchema.extend({
+        userPresenceEnabled: z.literal(true),
+      }),
+    );
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
 
@@ -472,7 +497,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // PublicKeyCredentialType and cryptographic parameters in
     // credTypesAndPubKeyAlgs is supported.
     const selectedCredTypeAndAlg =
-      this._findFirstSupportedCredTypesAndPubKeyAlg(credTypesAndPubKeyAlgs);
+      this._findFirstSupportedCredTypesAndPubKeyAlgOrNull(
+        credTypesAndPubKeyAlgs,
+      );
 
     // If not, return an error code equivalent to "NotSupportedError" and
     // terminate the operation.
@@ -602,7 +629,7 @@ export class VirtualAuthenticator implements IAuthenticator {
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
                 userId: userHandle,
-                apiKeyId: context.apiKeyId,
+                apiKeyId: meta.apiKeyId,
                 isClientSideDiscoverable: true,
               },
             );
@@ -684,6 +711,24 @@ export class VirtualAuthenticator implements IAuthenticator {
     return authenticatorMakeCredentialResponse;
   }
 
+  private _hashAuthenticatorGetAssertionOptionsAsHex(opts: {
+    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
+    meta: AuthenticatorMetaArgs;
+  }) {
+    const { authenticatorGetAssertionArgs, meta } = opts;
+
+    return Hash.sha256JSON(
+      {
+        authenticatorGetAssertionArgs:
+          AuthenticatorGetAssertionArgsDtoSchema.encode(
+            authenticatorGetAssertionArgs,
+          ),
+        meta,
+      },
+      'hex',
+    );
+  }
+
   /**
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
@@ -708,6 +753,14 @@ export class VirtualAuthenticator implements IAuthenticator {
     assertSchema(meta, AuthenticatorMetaArgsSchema);
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
+
+    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
+      authenticatorGetAssertionArgs,
+      meta,
+    });
+
+    // Context hash validation
+    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
 
     const {
       hash,
@@ -746,18 +799,24 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 5: Filter by rpId
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
     //   NOTE: Implemented as part of the repository query filter.
-    const credentialOptions =
+    let credentialOptions =
       await this.webAuthnRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
         {
           userId: meta.userId,
           rpId,
-          apiKeyId: context.apiKeyId,
+          apiKeyId: meta.apiKeyId,
           allowCredentialDescriptorList: allowCredentialDescriptorList?.map(
             (allowCredentialDescriptor) =>
               UUIDMapper.bytesToUUID(allowCredentialDescriptor.id),
           ),
         },
       );
+
+    if (context?.selectedCredentailOptionId !== undefined) {
+      credentialOptions = credentialOptions.filter((credentialOption) => {
+        return credentialOption.id === context?.selectedCredentailOptionId;
+      });
+    }
 
     // Step 6: Check if credentialOptions is empty
     //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.
@@ -770,8 +829,9 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Prompt user to select credential.
     if (credentialOptions.length > 1) {
-      throw new CredentialSelectInteraction({
+      throw new VirtualAuthenticatorCredentialSelectInterruption({
         credentialOptions,
+        hash: optionsHash,
       });
     }
 

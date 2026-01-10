@@ -1,15 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const REQUEST_HEADER_FIELDS_TOO_LARGE =
-  'REQUEST_HEADER_FIELDS_TOO_LARGE';
-
 export class RequestHeaderFieldsTooLarge extends Exception {
-  static status = 431;
-  static code = REQUEST_HEADER_FIELDS_TOO_LARGE;
-
-  constructor(message = 'Request Header Fields Too Large.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.REQUEST_HEADER_FIELDS_TOO_LARGE;
+  static readonly code = 'RequestHeaderFieldsTooLarge';
+  static message = 'Request Header Fields Too Large.';
 }

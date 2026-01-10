@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const TOO_MANY_REQUESTS = 'TOO_MANY_REQUESTS';
-
 export class TooManyRequests extends Exception {
-  static status = 429;
-  static code = TOO_MANY_REQUESTS;
-
-  constructor(message = 'Too Many Requests.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.TOO_MANY_REQUESTS;
+  static readonly code = 'TooManyRequests';
+  static message = 'Too Many Requests.';
 }

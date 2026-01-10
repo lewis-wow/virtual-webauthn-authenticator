@@ -12,8 +12,6 @@ export const logsRouter = c.router({
     method: 'GET',
     path: '/audit-logs',
     query: ListLogsQuerySchema,
-    responses: {
-      200: ListLogsResponseSchema,
-    },
+    responses: ListLogsResponseSchema,
   },
 });

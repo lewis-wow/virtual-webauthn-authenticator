@@ -1,9 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const ATTESTATION_NOT_SUPPORTED = 'ATTESTATION_NOT_SUPPORTED';
+import { HttpStatusCode } from '@repo/http';
 
 export class AttestationNotSupported extends Exception {
-  static status = 400;
-  static code = ATTESTATION_NOT_SUPPORTED;
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly code = 'AttestationNotSupported';
   static message = 'Attestation not supported.';
 }

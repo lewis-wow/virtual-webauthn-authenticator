@@ -1,10 +1,10 @@
 import type { IWebAuthnRepository } from './repositories';
+import type { AuthenticatorContextArgs } from './validation/authenticator/AuthenticatorContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from './validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from './validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from './validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from './validation/authenticator/AuthenticatorMetaArgsSchema';
-import type { AuthenticatorAgentContextArgs } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 
 /**
  * Interface defining the authenticator operations as specified in the
@@ -27,7 +27,7 @@ export interface IAuthenticator {
    */
   authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    context: AuthenticatorAgentContextArgs;
+    context: AuthenticatorContextArgs;
     meta: AuthenticatorMetaArgs;
   }): Promise<AuthenticatorMakeCredentialResponse>;
 
@@ -39,7 +39,7 @@ export interface IAuthenticator {
    */
   authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    context: AuthenticatorAgentContextArgs;
+    context: AuthenticatorContextArgs;
     meta: AuthenticatorMetaArgs;
   }): Promise<AuthenticatorGetAssertionResponse>;
 

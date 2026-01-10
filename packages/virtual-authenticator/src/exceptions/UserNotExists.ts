@@ -1,7 +1,8 @@
 import { Exception } from '@repo/exception';
+import { HttpStatusCode } from '@repo/http';
 
 export class UserNotExists extends Exception {
-  static code = 'USER_NOT_EXISTS';
+  static status = HttpStatusCode.NOT_FOUND;
+  static readonly code = 'UserNotExists';
   static message = 'User not exists.';
-  static status = 404;
 }

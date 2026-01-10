@@ -28,6 +28,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/http": "workspace:*",
     "@repo/assert": "workspace:*",
     "@repo/cbor": "workspace:*",
     "@repo/exception": "workspace:*",

@@ -1,8 +1,13 @@
+import { HttpStatusCode } from '@repo/http';
 import {
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialUserEntityDtoSchema,
   AuthenticatorAgentCreateCredentialResponseDtoSchema,
 } from '@repo/virtual-authenticator/dto';
+import {
+  AuthenticatorAgentContextArgsSchema,
+  AuthenticatorAgentMetaArgsSchema,
+} from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 // =============================================================================
@@ -28,14 +33,16 @@ export const CreateCredentialBodySchema = z.object({
         })
         .optional(),
     }),
-  meta: z.object({
-    origin: z.url(),
+  meta: AuthenticatorAgentMetaArgsSchema.pick({
+    origin: true,
   }),
+  context: AuthenticatorAgentContextArgsSchema,
 });
 
 // -------------------------------------
 // Outputs
 // -------------------------------------
 
-export const CreateCredentialResponseSchema =
-  AuthenticatorAgentCreateCredentialResponseDtoSchema;
+export const CreateCredentialResponseSchema = {
+  [HttpStatusCode.OK]: AuthenticatorAgentCreateCredentialResponseDtoSchema,
+};

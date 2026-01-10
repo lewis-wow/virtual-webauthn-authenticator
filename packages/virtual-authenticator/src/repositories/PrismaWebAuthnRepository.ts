@@ -83,6 +83,9 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
             },
           },
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
 
     return webAuthnPublicKeyCredentialCandidates.map(

@@ -1,5 +1,11 @@
-import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
+import {
+  API_KEY_ID,
+  upsertTestingUser,
+  USER_ID,
+} from '../../../../auth/__tests__/helpers';
 
+import { TypeAssertionError } from '@repo/assert';
+import { Hash } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import {
   afterAll,
@@ -12,10 +18,11 @@ import {
 } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
-import { CredentialSelectInteraction } from '../../../src/interactions';
+import { VirtualAuthenticatorCredentialSelectInterruption } from '../../../src/interruption';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
   AuthenticatorGetAssertionArgs,
@@ -269,6 +276,13 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         allowCredentialDescriptorList: undefined,
       } as AuthenticatorGetAssertionArgs;
 
+      const meta: AuthenticatorMetaArgs = {
+        userId: USER_ID,
+        apiKeyId: null,
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+      };
+
       const expectedCredentialOptions =
         await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
           {
@@ -279,18 +293,116 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
+      const expectedHash = Hash.sha256JSON(
+        {
+          authenticatorGetAssertionArgs:
+            AuthenticatorGetAssertionArgsDtoSchema.encode(
+              authenticatorGetAssertionArgs,
+            ),
+          meta,
+        },
+        'hex',
+      );
+
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
           authenticator,
+          meta,
           prisma,
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
         }),
       ).rejects.toThrowError(
-        new CredentialSelectInteraction({
+        new VirtualAuthenticatorCredentialSelectInterruption({
           credentialOptions: expectedCredentialOptions,
+          hash: expectedHash,
         }),
       );
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        meta,
+        prisma,
+        authenticatorGetAssertionArgs,
+        authenticatorMakeCredentialResponse,
+        context: {
+          hash: expectedHash,
+          selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
+        },
+      });
+    });
+
+    test('Client-side discovery for multiple credential with invalid hash - different meta', async () => {
+      await performAuthenticatorMakeCredentialAndVerify({
+        authenticator,
+        authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        prisma,
+      });
+
+      const authenticatorGetAssertionArgs = {
+        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+        allowCredentialDescriptorList: undefined,
+      } as AuthenticatorGetAssertionArgs;
+
+      const meta: AuthenticatorMetaArgs = {
+        userId: USER_ID,
+        apiKeyId: null,
+        userPresenceEnabled: true,
+        userVerificationEnabled: true,
+      };
+
+      const expectedCredentialOptions =
+        await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
+          {
+            rpId: RP_ID,
+            userId: USER_ID,
+            apiKeyId: null,
+            allowCredentialDescriptorList: undefined,
+          },
+        );
+
+      const expectedHash = Hash.sha256JSON(
+        {
+          authenticatorGetAssertionArgs:
+            AuthenticatorGetAssertionArgsDtoSchema.encode(
+              authenticatorGetAssertionArgs,
+            ),
+          meta,
+        },
+        'hex',
+      );
+
+      await expect(() =>
+        performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          meta,
+          prisma,
+          authenticatorGetAssertionArgs,
+          authenticatorMakeCredentialResponse,
+        }),
+      ).rejects.toThrowError(
+        new VirtualAuthenticatorCredentialSelectInterruption({
+          credentialOptions: expectedCredentialOptions,
+          hash: expectedHash,
+        }),
+      );
+
+      await expect(() =>
+        performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          meta: {
+            ...meta,
+            apiKeyId: API_KEY_ID, // This was changed.
+          },
+          prisma,
+          authenticatorGetAssertionArgs,
+          authenticatorMakeCredentialResponse,
+          context: {
+            hash: expectedHash,
+            selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
+          },
+        }),
+      ).rejects.toThrowError(new TypeAssertionError());
     });
 
     test('Authentication with existing public key credential', async () => {

@@ -25,6 +25,7 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
+    "@repo/http": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/utils": "workspace:*",

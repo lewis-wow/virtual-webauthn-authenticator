@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const FORBIDDEN = 'FORBIDDEN';
-
 export class Forbidden extends Exception {
-  static status = 403;
-  static code = FORBIDDEN;
-
-  constructor(message = 'Forbidden.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.FORBIDDEN;
+  static readonly code = 'Forbidden';
+  static message = 'Forbidden.';
 }

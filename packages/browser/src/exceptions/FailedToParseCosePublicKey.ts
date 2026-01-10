@@ -1,9 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const FAILED_TO_PARSE_COSE_PUBLIC_KEY =
-  'FAILED_TO_PARSE_COSE_PUBLIC_KEY';
+import { HttpStatusCode } from '@repo/http';
 
 export class FailedToParseCosePublicKey extends Exception {
-  static code = FAILED_TO_PARSE_COSE_PUBLIC_KEY;
+  static status = HttpStatusCode.BAD_REQUEST;
+  static readonly code = 'FailedToParseCosePublicKey';
   static message = 'Failed to parse COSE public key';
 }

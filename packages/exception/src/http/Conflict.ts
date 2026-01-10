@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const CONFLICT = 'CONFLICT';
-
 export class Conflict extends Exception {
-  static status = 409;
-  static code = CONFLICT;
-
-  constructor(message = 'Conflict.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.CONFLICT;
+  static readonly code = 'Conflict';
+  static message = 'Conflict.';
 }

@@ -518,6 +518,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../../packages/exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../../packages/http
       '@repo/key-vault':
         specifier: workspace:*
         version: link:../../packages/key-vault
@@ -560,6 +563,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      ts-pattern:
+        specifier: ^5.8.0
+        version: 5.8.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -951,6 +957,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -973,15 +982,15 @@ importers:
 
   packages/auth:
     dependencies:
-      '@casl/ability':
-        specifier: ^6.7.3
-        version: 6.7.3
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/logger':
         specifier: workspace:*
         version: link:../logger
@@ -1080,6 +1089,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
@@ -1148,6 +1160,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../core
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/pagination':
         specifier: workspace:*
         version: link:../pagination
@@ -1261,6 +1276,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      fast-json-stable-stringify:
+        specifier: ^2.1.0
+        version: 2.1.0
       jose:
         specifier: ^6.1.0
         version: 6.1.0
@@ -1375,6 +1393,9 @@ importers:
 
   packages/exception:
     dependencies:
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1445,6 +1466,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
@@ -1506,6 +1530,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
@@ -2394,9 +2421,6 @@ packages:
 
   '@borewit/text-codec@0.1.1':
     resolution: {integrity: sha512-5L/uBxmjaCIX5h8Z+uu+kA9BQLkc/Wl06UGR5ajNRxu+/XjonB5i8JpgFMrPj3LXTCPA0pv8yxUvbUi+QthGGA==}
-
-  '@casl/ability@6.7.3':
-    resolution: {integrity: sha512-A4L28Ko+phJAsTDhRjzCOZWECQWN2jzZnJPnROWWHjJpyMq1h7h9ZqjwS2WbIUa3Z474X1ZPSgW0f1PboZGC0A==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -5063,18 +5087,6 @@ packages:
   '@typespec/ts-http-runtime@0.3.1':
     resolution: {integrity: sha512-SnbaqayTVFEA6/tYumdF0UmybY0KHyKwGPBXnyckFlrrKdhWFrL3a2HIPXHjht5ZOElKGcXfD2D63P36btb+ww==}
     engines: {node: '>=20.0.0'}
-
-  '@ucast/core@1.10.2':
-    resolution: {integrity: sha512-ons5CwXZ/51wrUPfoduC+cO7AS1/wRb0ybpQJ9RrssossDxVy4t49QxWoWgfBDvVKsz9VXzBk9z0wqTdZ+Cq8g==}
-
-  '@ucast/js@3.0.4':
-    resolution: {integrity: sha512-TgG1aIaCMdcaEyckOZKQozn1hazE0w90SVdlpIJ/er8xVumE11gYAtSbw/LBeUnA4fFnFWTcw3t6reqseeH/4Q==}
-
-  '@ucast/mongo2js@1.4.0':
-    resolution: {integrity: sha512-vR9RJ3BHlkI3RfKJIZFdVktxWvBCQRiSTeJSWN9NPxP5YJkpfXvcBWAMLwvyJx4HbB+qib5/AlSDEmQiuQyx2w==}
-
-  '@ucast/mongo@2.4.3':
-    resolution: {integrity: sha512-XcI8LclrHWP83H+7H2anGCEeDq0n+12FU2mXCTz6/Tva9/9ddK/iacvvhCyW6cijAAOILmt0tWplRyRhVyZLsA==}
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -10363,10 +10375,6 @@ snapshots:
 
   '@borewit/text-codec@0.1.1': {}
 
-  '@casl/ability@6.7.3':
-    dependencies:
-      '@ucast/mongo2js': 1.4.0
-
   '@colors/colors@1.5.0':
     optional: true
 
@@ -12810,22 +12818,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucast/core@1.10.2': {}
-
-  '@ucast/js@3.0.4':
-    dependencies:
-      '@ucast/core': 1.10.2
-
-  '@ucast/mongo2js@1.4.0':
-    dependencies:
-      '@ucast/core': 1.10.2
-      '@ucast/js': 3.0.4
-      '@ucast/mongo': 2.4.3
-
-  '@ucast/mongo@2.4.3':
-    dependencies:
-      '@ucast/core': 1.10.2
-
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     optional: true
 
@@ -12931,6 +12923,7 @@ snapshots:
       magic-string: 0.30.19
     optionalDependencies:
       vite: 5.4.20(@types/node@20.19.17)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+    optional: true
 
   '@vitest/mocker@3.2.4(vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0))':
     dependencies:
@@ -12977,7 +12970,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@20.19.17)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+      vitest: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -17953,6 +17946,7 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+    optional: true
 
   vite-node@3.2.4(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -18024,6 +18018,7 @@ snapshots:
       lightningcss: 1.30.2
       sass: 1.93.2
       terser: 5.44.0
+    optional: true
 
   vite@5.4.20(@types/node@22.15.3)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
@@ -18095,6 +18090,7 @@ snapshots:
       - sugarss
       - supports-color
       - terser
+    optional: true
 
   vitest@3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0):
     dependencies:
