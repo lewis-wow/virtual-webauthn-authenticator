@@ -11,8 +11,7 @@ import { upsertTestingWebAuthnPublicKeyCredential } from '@repo/virtual-authenti
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience, JwtIssuer } from '@repo/auth';
-import { PrismaClientExtended } from '@repo/prisma';
+import { JwtAudience } from '@repo/auth';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';
 
@@ -20,16 +19,10 @@ import { AppModule } from '../../../src/app.module';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
+import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
+import { prisma } from '../../helpers/prisma';
 
 const API_PATH = '/api/webauthn-public-key-credentials';
-
-const prisma = PrismaClientExtended.createInstance();
-
-const jwtIssuer = new JwtIssuer({
-  prisma,
-  encryptionKey: 'secret',
-  config: JWT_CONFIG,
-});
 
 const cleanupWebAuthnPublicKeyCredentials = async () => {
   await prisma.$transaction([
@@ -53,7 +46,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         new MockJwtAudience({
           config: JWT_CONFIG,
           jwksFactory: async () => {
-            return await jwtIssuer.jsonWebKeySet();
+            return await getJSONWebKeySet();
           },
         }),
       )
@@ -158,7 +151,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
         {
           "data": [
             {
-              "COSEPublicKey": "pQMmAQIgASFYIOOofxn9iPhgHtwJ8E92uLtm2IDyhReXkPHmeSy7vgz4IlggqNR4i6nXA6JNFkY8-Tf52KT82i3pT68spV2unkjceXY",
+              "COSEPublicKey": "pAECIAEhWCDjqH8Z_Yj4YB7cCfBPdri7ZtiA8oUXl5Dx5nksu74M-CJYIKjUeIup1wOiTRZGPPk3-dik_Not6U-vLKVdrp5I3Hl2",
               "counter": 0,
               "createdAt": "1970-01-01T00:00:00.000Z",
               "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",

@@ -12,7 +12,7 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience, JwtIssuer } from '@repo/auth';
+import { JwtAudience } from '@repo/auth';
 import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,
@@ -40,6 +40,7 @@ import { AppModule } from '../../../src/app.module';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
+import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
 import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
 import { performPublicKeyCredentialRequestAndVerify } from '../../helpers/performPublicKeyCredentialRequestAndVerify';
 import { prisma } from '../../helpers/prisma';
@@ -80,12 +81,6 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD = {
   },
 } as z.input<typeof GetCredentialBodySchema>;
 
-const jwtIssuer = new JwtIssuer({
-  prisma,
-  encryptionKey: 'secret',
-  config: JWT_CONFIG,
-});
-
 describe('CredentialsController - POST /api/credentials/get', () => {
   let app: INestApplication;
   let token: string;
@@ -104,7 +99,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
         new MockJwtAudience({
           config: JWT_CONFIG,
           jwksFactory: async () => {
-            return await jwtIssuer.jsonWebKeySet();
+            return await getJSONWebKeySet();
           },
         }),
       )
