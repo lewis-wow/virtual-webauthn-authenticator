@@ -4,7 +4,7 @@ import { BytesSchema } from '../BytesSchema';
 
 export const AuthenticatorContextArgsSchema = z
   .object({
-    selectedCredentailId: z.string().optional(),
+    selectedCredentailOptionId: z.string().optional(),
     hash: BytesSchema,
   })
   .optional();

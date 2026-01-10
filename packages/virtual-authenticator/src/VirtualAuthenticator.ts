@@ -804,7 +804,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 5: Filter by rpId
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
     //   NOTE: Implemented as part of the repository query filter.
-    const credentialOptions =
+    let credentialOptions =
       await this.webAuthnRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
         {
           userId: meta.userId,
@@ -816,6 +816,12 @@ export class VirtualAuthenticator implements IAuthenticator {
           ),
         },
       );
+
+    if (context?.selectedCredentailOptionId !== undefined) {
+      credentialOptions = credentialOptions.filter((credentialOption) => {
+        return credentialOption.id === context?.selectedCredentailOptionId;
+      });
+    }
 
     // Step 6: Check if credentialOptions is empty
     //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.

@@ -288,6 +288,14 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
+      const expectedHash = Hash.sha256JSON({
+        authenticatorGetAssertionArgs:
+          AuthenticatorGetAssertionArgsDtoSchema.encode(
+            authenticatorGetAssertionArgs,
+          ),
+        meta,
+      });
+
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
           authenticator,
@@ -299,15 +307,21 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       ).rejects.toThrowError(
         new VirtualAuthenticatorCredentialSelectInterruption({
           credentialOptions: expectedCredentialOptions,
-          hash: Hash.sha256JSON({
-            authenticatorGetAssertionArgs:
-              AuthenticatorGetAssertionArgsDtoSchema.encode(
-                authenticatorGetAssertionArgs,
-              ),
-            meta,
-          }),
+          hash: expectedHash,
         }),
       );
+
+      await performAuthenticatorGetAssertionAndVerify({
+        authenticator,
+        meta,
+        prisma,
+        authenticatorGetAssertionArgs,
+        authenticatorMakeCredentialResponse,
+        context: {
+          hash: expectedHash,
+          selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
+        },
+      });
     });
 
     test('Authentication with existing public key credential', async () => {
