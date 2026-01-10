@@ -16,9 +16,10 @@
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
+    "@repo/types": "workspace:*",
     "@repo/env-config": "workspace:*",
-    "@repo/contract": "workspace:*",
     "@repo/core": "workspace:*",
+    "@repo/contract": "workspace:*",
     "@repo/ui": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "@vitejs/plugin-react": "^5.1.1",

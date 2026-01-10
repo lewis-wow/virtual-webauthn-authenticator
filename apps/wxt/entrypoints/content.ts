@@ -15,17 +15,28 @@ export default defineContentScript({
 
     console.log(`[${LOG_PREFIX}]`, 'Injected.');
 
-    // Forward fetch requests from background script to main-world
-    extensionMessaging.onMessage('fetch', async (req) => {
-      console.log(`[${LOG_PREFIX}]`, 'fetch request from background', req.data);
+    mainWorldMessaging.onMessage('credentials.create', async (req) => {
+      console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
 
-      const response = await mainWorldMessaging.sendMessage('fetch', req.data);
-
-      console.log(
-        `[${LOG_PREFIX}]`,
-        'fetch response from main-world',
-        response,
+      const response = await extensionMessaging.sendMessage(
+        'credentials.create',
+        req.data,
       );
+
+      console.log(`[${LOG_PREFIX}]`, 'credentials.create response.', response);
+
+      return response;
+    });
+
+    mainWorldMessaging.onMessage('credentials.get', async (req) => {
+      console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
+
+      const response = await extensionMessaging.sendMessage(
+        'credentials.get',
+        req.data,
+      );
+
+      console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
 
       return response;
     });

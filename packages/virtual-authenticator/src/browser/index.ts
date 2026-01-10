@@ -10,4 +10,3 @@ export * from './PublicKeyCredentialUserEntityImpl';
 
 // Helper functions for type conversions
 export * from './helpers';
-export * from './VirtualAuthenticatorAgentClient';
