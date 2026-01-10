@@ -3,7 +3,7 @@ import {
   PublicKeyCredentialRequestOptionsDtoSchema,
   AuthenticatorAgentGetAssertionResponseDtoSchema,
 } from '@repo/virtual-authenticator/dto';
-import { VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema } from '@repo/virtual-authenticator/validation';
+import { AuthenticatorAgentContextArgsSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 // =============================================================================
@@ -22,6 +22,7 @@ export const GetCredentialBodySchema = z.object({
   meta: z.object({
     origin: z.url(),
   }),
+  context: AuthenticatorAgentContextArgsSchema,
 });
 
 // -------------------------------------
@@ -30,8 +31,4 @@ export const GetCredentialBodySchema = z.object({
 
 export const GetCredentialResponseSchema = {
   [HttpStatusCode.OK]: AuthenticatorAgentGetAssertionResponseDtoSchema,
-  [HttpStatusCode.PRECONDITION_REQUIRED]:
-    VirtualAuthenticatorAgentCredentialSelectInterruptionPayloadSchema.extend({
-      token: z.string(),
-    }),
 } as const;

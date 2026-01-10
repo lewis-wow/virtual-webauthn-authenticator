@@ -1,7 +1,7 @@
 import { HttpStatusCode } from '@repo/http';
 import type { ValueOfEnum } from '@repo/types';
 
-import { CredentialSelectInteraction } from '../interruption/authenticator/VirtualAuthenticatorCredentialSelectInteraction';
+import { CredentialSelectInteraction } from '../exceptions/CredentialSelectException';
 
 export const InteractionsToHttpStatusCode = {
   [CredentialSelectInteraction.code]: HttpStatusCode.PRECONDITION_REQUIRED,

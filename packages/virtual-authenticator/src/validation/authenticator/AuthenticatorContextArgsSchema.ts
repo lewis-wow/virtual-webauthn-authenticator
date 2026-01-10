@@ -3,7 +3,7 @@ import z from 'zod';
 export const AuthenticatorContextArgsSchema = z
   .object({
     selectedCredentailOptionId: z.string().optional(),
-    hash: z.string(),
+    hash: z.string().optional(),
   })
   .optional();
 

@@ -1,3 +1,4 @@
+import { assertSchema } from '@repo/assert';
 import {
   createLocalJWKSet,
   createRemoteJWKSet,
@@ -7,6 +8,7 @@ import {
   type JWTVerifyOptions,
 } from 'jose';
 import { match, P } from 'ts-pattern';
+import type z from 'zod';
 
 import type { Jwks } from './Jwks';
 
@@ -101,13 +103,14 @@ export class Jwt {
     return await jwt.sign(privateKey);
   }
 
-  static async validateToken(
+  static async validateToken<T extends z.ZodType<JwtPayload>>(
     token: string,
+    schema: T,
     opts: {
       jwks: JSONWebKeySet | string | URL;
       verifyOptions?: JWTVerifyOptions;
     },
-  ): Promise<JwtPayload> {
+  ): Promise<z.infer<T>> {
     const JWKS = match(opts.jwks)
       .when(
         (jwks) => typeof jwks === 'string',
@@ -117,6 +120,8 @@ export class Jwt {
       .otherwise((jwks) => createLocalJWKSet(jwks));
 
     const { payload } = await jwtVerify(token, JWKS, opts.verifyOptions);
+
+    assertSchema(payload, schema);
 
     return payload;
   }

@@ -3,29 +3,34 @@ import {
   type ExceptionShape,
 } from './validation/ExceptionShapeSchema';
 
-export type ExceptionOptions = Omit<ExceptionShape, 'name'>;
-
-export class Exception extends Error implements ExceptionShape {
+export class Exception<TData = undefined>
+  extends Error
+  implements ExceptionShape
+{
   static readonly message: string = 'An unexpected error occurred.';
   static readonly status?: number;
   static readonly code: string;
 
   public readonly status?: number;
   public readonly code: string;
+  public readonly data: TData;
 
-  constructor(opts?: ExceptionOptions) {
+  constructor(opts?: Partial<ExceptionShape>) {
     // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
     const status = opts?.status ?? ctor.status;
     const message = opts?.message ?? ctor.message;
+    const code = opts?.code ?? ctor.code;
+    const cause = opts?.cause;
+    const data = opts?.data as TData;
 
-    // Pass message and cause to the parent Error class
-    super(message, { cause: opts?.cause });
+    super(message, { cause });
     Object.setPrototypeOf(this, new.target.prototype);
 
-    this.code = ctor.code;
+    this.code = code;
     this.status = status;
+    this.data = data;
   }
 
   static fromResponse(opts: {

@@ -5,7 +5,7 @@ import {
 } from '../../../../auth/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
-import { Hash } from '@repo/crypto';
+import { Hash, HashOnion } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import {
   afterAll,
@@ -20,9 +20,9 @@ import {
 import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
+import { CredentialSelectException } from '../../../src/exceptions/CredentialSelectException';
 import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
-import { VirtualAuthenticatorCredentialSelectInterruption } from '../../../src/interruption';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type {
   AuthenticatorGetAssertionArgs,
@@ -293,16 +293,13 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
-      const expectedHash = Hash.sha256JSON(
-        {
-          authenticatorGetAssertionArgs:
-            AuthenticatorGetAssertionArgsDtoSchema.encode(
-              authenticatorGetAssertionArgs,
-            ),
-          meta,
-        },
-        'hex',
-      );
+      const expectedHash = Hash.sha256JSONHex({
+        authenticatorGetAssertionArgs:
+          AuthenticatorGetAssertionArgsDtoSchema.encode(
+            authenticatorGetAssertionArgs,
+          ),
+        meta,
+      });
 
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
@@ -313,9 +310,9 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorMakeCredentialResponse,
         }),
       ).rejects.toThrowError(
-        new VirtualAuthenticatorCredentialSelectInterruption({
+        new CredentialSelectException({
           credentialOptions: expectedCredentialOptions,
-          hash: expectedHash,
+          hash: HashOnion.fromArray([expectedHash]),
         }),
       );
 
@@ -326,7 +323,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
         context: {
-          hash: expectedHash,
+          hash: HashOnion.fromArray([expectedHash]),
           selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
         },
       });
@@ -361,16 +358,13 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
-      const expectedHash = Hash.sha256JSON(
-        {
-          authenticatorGetAssertionArgs:
-            AuthenticatorGetAssertionArgsDtoSchema.encode(
-              authenticatorGetAssertionArgs,
-            ),
-          meta,
-        },
-        'hex',
-      );
+      const expectedHash = Hash.sha256JSONHex({
+        authenticatorGetAssertionArgs:
+          AuthenticatorGetAssertionArgsDtoSchema.encode(
+            authenticatorGetAssertionArgs,
+          ),
+        meta,
+      });
 
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
@@ -381,9 +375,9 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorMakeCredentialResponse,
         }),
       ).rejects.toThrowError(
-        new VirtualAuthenticatorCredentialSelectInterruption({
+        new CredentialSelectException({
           credentialOptions: expectedCredentialOptions,
-          hash: expectedHash,
+          hash: HashOnion.fromArray([expectedHash]),
         }),
       );
 
@@ -398,7 +392,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
           context: {
-            hash: expectedHash,
+            hash: HashOnion.fromArray([expectedHash]),
             selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
           },
         }),

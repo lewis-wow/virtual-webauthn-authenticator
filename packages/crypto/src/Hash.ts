@@ -1,37 +1,49 @@
 import type { Uint8Array_ } from '@repo/types';
 import stableStringify from 'fast-json-stable-stringify';
-import type { BinaryToTextEncoding } from 'node:crypto';
 import * as crypto from 'node:crypto';
 
 export class Hash {
-  static sha256(data: crypto.BinaryLike): Uint8Array_;
-  static sha256(
-    data: crypto.BinaryLike,
-    encoding: BinaryToTextEncoding,
-  ): string;
-  static sha256(
-    data: crypto.BinaryLike,
-    encoding?: BinaryToTextEncoding,
-  ): Uint8Array_ | string {
-    const hash = crypto.createHash('sha256').update(data);
+  // A separator that won't appear in Hex or Base64
+  private static readonly DELIMITER = ':';
 
-    if (encoding === undefined) {
-      return new Uint8Array(hash.digest());
-    }
+  static sha256(data: crypto.BinaryLike): Uint8Array_ {
+    const hash = crypto.createHash('sha256').update(data).digest();
 
-    return hash.digest(encoding);
+    return new Uint8Array(hash);
   }
 
-  static sha256JSON(json: object): Uint8Array_;
-  static sha256JSON(json: object, encoding: BinaryToTextEncoding): string;
-  static sha256JSON(
-    json: object,
-    encoding?: BinaryToTextEncoding,
-  ): Uint8Array_ | string {
-    if (encoding === undefined) {
-      return Hash.sha256(stableStringify(json));
+  static sha256Hex(data: crypto.BinaryLike): string {
+    return crypto.createHash('sha256').update(data).digest('hex');
+  }
+
+  static sha256JSON(json: object): Uint8Array_ {
+    return Hash.sha256(stableStringify(json));
+  }
+
+  static sha256JSONHex(json: object): string {
+    return Hash.sha256Hex(stableStringify(json));
+  }
+
+  static initOnion(hash: string | undefined): string[] {
+    if (hash === undefined) {
+      return [];
     }
 
-    return Hash.sha256(stableStringify(json), encoding);
+    return [hash];
+  }
+
+  static pushOnion(hash: string, hashes: string[]): string[] {
+    return [hash, ...hashes];
+  }
+
+  static popOnion(
+    hashes: string[] | undefined,
+  ): [string | undefined, string[] | undefined] {
+    if (hashes === undefined) {
+      return [undefined, undefined];
+    }
+
+    const [first, ...rest] = hashes;
+    return [first, rest];
   }
 }

@@ -1,11 +1,12 @@
 import z from 'zod';
 
 export const ExceptionShapeSchema = z.object({
-  name: z.string(),
+  code: z.string(),
 
   message: z.string().optional(),
-  code: z.string().optional(),
   status: z.number().optional(),
+  data: z.unknown().optional(),
+
   cause: z.unknown().optional(),
 });
 

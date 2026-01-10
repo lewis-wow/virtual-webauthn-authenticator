@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
+import { Hash, HashOnion } from '@repo/crypto';
 import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -16,11 +16,11 @@ import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKe
 import { UserVerificationNotAvailable } from './exceptions';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
+import { CredentialSelectException } from './exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
-import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption/authenticator/VirtualAuthenticatorCredentialSelectInteraction';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
@@ -427,16 +427,13 @@ export class VirtualAuthenticator implements IAuthenticator {
   }): string {
     const { authenticatorMakeCredentialArgs, meta } = opts;
 
-    return Hash.sha256JSON(
-      {
-        authenticatorMakeCredentialArgs:
-          AuthenticatorMakeCredentialArgsDtoSchema.encode(
-            authenticatorMakeCredentialArgs,
-          ),
-        meta,
-      },
-      'hex',
-    );
+    return Hash.sha256JSONHex({
+      authenticatorMakeCredentialArgs:
+        AuthenticatorMakeCredentialArgsDtoSchema.encode(
+          authenticatorMakeCredentialArgs,
+        ),
+      meta,
+    });
   }
 
   /**
@@ -714,19 +711,16 @@ export class VirtualAuthenticator implements IAuthenticator {
   private _hashAuthenticatorGetAssertionOptionsAsHex(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
-  }) {
+  }): string {
     const { authenticatorGetAssertionArgs, meta } = opts;
 
-    return Hash.sha256JSON(
-      {
-        authenticatorGetAssertionArgs:
-          AuthenticatorGetAssertionArgsDtoSchema.encode(
-            authenticatorGetAssertionArgs,
-          ),
-        meta,
-      },
-      'hex',
-    );
+    return Hash.sha256JSONHex({
+      authenticatorGetAssertionArgs:
+        AuthenticatorGetAssertionArgsDtoSchema.encode(
+          authenticatorGetAssertionArgs,
+        ),
+      meta,
+    });
   }
 
   /**
@@ -829,9 +823,9 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Prompt user to select credential.
     if (credentialOptions.length > 1) {
-      throw new VirtualAuthenticatorCredentialSelectInterruption({
+      throw new CredentialSelectException({
         credentialOptions,
-        hash: optionsHash,
+        hash: HashOnion.push(optionsHash),
       });
     }
 

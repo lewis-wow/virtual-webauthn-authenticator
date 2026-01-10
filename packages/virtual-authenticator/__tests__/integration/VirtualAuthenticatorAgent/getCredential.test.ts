@@ -3,7 +3,7 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
+import { Hash, HashOnion } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import {
@@ -30,7 +30,7 @@ import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialT
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
-import { VirtualAuthenticatorAgentCredentialSelectInterruption } from '../../../src/interruption';
+import { CredentialSelectException } from '../../../src/exceptions/CredentialSelectException';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import {
   type AuthenticatorGetAssertionArgs,
@@ -1828,26 +1828,20 @@ describe('VirtualAuthenticator.getCredential()', () => {
         userVerificationEnabled: true,
       };
 
-      const expectedAuthenticatorHash = Hash.sha256JSON(
-        {
-          authenticatorGetAssertionArgs:
-            AuthenticatorGetAssertionArgsDtoSchema.encode(
-              expectedAuthenticatorGetAssertionArgs,
-            ),
-          meta: expectedAuthnenticatorMeta,
-        },
-        'hex',
-      );
-
-      const expectedHash = Hash.sha256JSON(
-        {
-          pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(
-            publicKeyCredentialRequestOptions,
+      const expectedAuthenticatorHash = Hash.sha256JSONHex({
+        authenticatorGetAssertionArgs:
+          AuthenticatorGetAssertionArgsDtoSchema.encode(
+            expectedAuthenticatorGetAssertionArgs,
           ),
-          meta,
-        },
-        'hex',
-      );
+        meta: expectedAuthnenticatorMeta,
+      });
+
+      const expectedHash = Hash.sha256JSONHex({
+        pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(
+          publicKeyCredentialRequestOptions,
+        ),
+        meta,
+      });
 
       // Create new credential first, then query expectedCredentialOptions
       // so that it includes both credentials (from beforeEach and this new one)
@@ -1877,12 +1871,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
           counter,
         }),
       ).rejects.toThrowError(
-        new VirtualAuthenticatorAgentCredentialSelectInterruption({
-          virtualAuthenticatorCredentialSelectInterruptionPayload: {
-            hash: expectedAuthenticatorHash,
-            credentialOptions: expectedCredentialOptions,
-          },
-          hash: expectedHash,
+        new CredentialSelectException({
+          credentialOptions: expectedCredentialOptions,
+          hash: HashOnion.fromArray([expectedHash, expectedAuthenticatorHash]),
         }),
       );
     });

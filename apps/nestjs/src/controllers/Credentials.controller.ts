@@ -9,20 +9,20 @@ import {
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Jwt } from '@repo/crypto';
+import { Jwks, Jwt } from '@repo/crypto';
 import { Forbidden } from '@repo/exception/http';
 import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
-import { VirtualAuthenticatorAgentCredentialSelectInterruption } from '@repo/virtual-authenticator/interruption';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
 } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-import { match, P } from 'ts-pattern';
+import z from 'zod';
 
+import { CredentialSelectException } from '../../../../packages/virtual-authenticator/src/exceptions/CredentialSelectException';
 import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
@@ -35,6 +35,7 @@ export class CredentialsController {
     private readonly logger: Logger,
     private readonly activityLog: ActivityLog,
     private readonly jwt: Jwt,
+    private readonly jwks: Jwks,
   ) {}
 
   /**
@@ -135,7 +136,7 @@ export class CredentialsController {
     return tsRestHandler(
       nestjsContract.api.credentials.get,
       async ({ body }) => {
-        const { publicKeyCredentialRequestOptions, meta } = body;
+        const { publicKeyCredentialRequestOptions, meta, context } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
         if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
@@ -145,6 +146,20 @@ export class CredentialsController {
         this.logger.debug('Getting credential', {
           userId: userId,
         });
+
+        let contextHash: string | undefined = undefined;
+
+        if (context?.hash !== undefined) {
+          const { hash } = await Jwt.validateToken(
+            context?.hash,
+            z.object({ hash: z.string() }),
+            {
+              jwks: await this.jwks.getJSONWebKeySet(),
+            },
+          );
+
+          contextHash = hash;
+        }
 
         try {
           const publicKeyCredential =
@@ -165,7 +180,10 @@ export class CredentialsController {
                 userPresenceEnabled: true,
                 userVerificationEnabled: true,
               },
-              context: undefined,
+              context: {
+                hash: contextHash,
+                selectedCredentailOptionId: context?.selectedCredentailOptionId,
+              },
             });
 
           await this._auditCredentialAction({
@@ -181,27 +199,14 @@ export class CredentialsController {
             ),
           };
         } catch (error) {
-          return await match(error)
-            .with(
-              P.instanceOf(
-                VirtualAuthenticatorAgentCredentialSelectInterruption,
-              ),
-              async (interaction) => {
-                return {
-                  status: HttpStatusCode.PRECONDITION_REQUIRED,
-                  body: GetCredentialResponseSchema[
-                    HttpStatusCode.PRECONDITION_REQUIRED
-                  ].encode({
-                    ...interaction.payload,
-                    token: await this.jwt.sign(interaction.payload),
-                  }),
-                };
-              },
-            )
-            .otherwise(() => {
-              // Rethrow original error.
-              throw error;
+          if (error instanceof CredentialSelectException) {
+            throw new CredentialSelectException({
+              credentialOptions: error.data.credentialOptions,
+              hash: await this.jwt.sign({ hash: error.data.hash }),
             });
+          }
+
+          throw error;
         }
       },
     );

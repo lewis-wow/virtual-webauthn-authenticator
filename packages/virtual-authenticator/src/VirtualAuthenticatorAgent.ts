@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
+import { Hash, HashOnion } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
 import z from 'zod';
@@ -25,13 +25,13 @@ import {
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
+import { CredentialSelectException } from './exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import { VirtualAuthenticatorCredentialSelectInterruption } from './interruption';
-import { VirtualAuthenticatorAgentCredentialSelectInterruption } from './interruption/authenticatorAgent/VirtualAuthenticatorAgentCredentialSelectInterruption';
 import {
   type AuthenticatorAgentContextArgs,
   type AuthenticatorAgentMetaArgs,
+  type AuthenticatorContextArgs,
   type AuthenticatorGetAssertionResponse,
   type PubKeyCredParam,
   type PublicKeyCredentialCreationOptions,
@@ -97,7 +97,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Custom options
     meta: AuthenticatorAgentMetaArgs;
-    context: AuthenticatorAgentContextArgs;
+    context: AuthenticatorContextArgs;
     optionsHash: string;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
@@ -219,7 +219,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
             userPresenceEnabled: meta.userPresenceEnabled,
             userVerificationEnabled: meta.userVerificationEnabled,
           },
-          context: context?.authenticatorContext,
+          context: context,
         });
 
       // Step 4: Return true.
@@ -227,11 +227,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // We have single authenticator, so we can directly return the payload.
       return authenticatorGetAssertionPayload;
     } catch (error) {
-      if (error instanceof VirtualAuthenticatorCredentialSelectInterruption) {
-        throw new VirtualAuthenticatorAgentCredentialSelectInterruption({
-          virtualAuthenticatorCredentialSelectInterruptionPayload:
-            error.payload,
-          hash: optionsHash,
+      if (error instanceof CredentialSelectException) {
+        throw new CredentialSelectException({
+          ...error.data,
+          hash: HashOnion.push(optionsHash, error.data.hash),
         });
       }
 
@@ -414,14 +413,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   }): string {
     const { pkOptions, meta } = opts;
 
-    return Hash.sha256JSON(
-      {
-        pkOptions:
-          PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
-        meta,
-      },
-      'hex',
-    );
+    return Hash.sha256JSONHex({
+      pkOptions: PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
+      meta,
+    });
   }
 
   /**
@@ -493,7 +488,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     });
 
     // Context hash validation
-    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
+    const [contextHash, authenticatorHash] = HashOnion.pop(opts.context?.hash);
+    assertSchema(contextHash, z.literal(optionsHash).optional());
 
     // Step 4: If pkOptions.timeout is present, check if its value lies
     // within a reasonable range as defined by the client and if not,
@@ -806,7 +802,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           userPresenceEnabled: meta.userPresenceEnabled,
           userVerificationEnabled: meta.userVerificationEnabled,
         },
-        context: context?.authenticatorContext,
+        context: {
+          hash: authenticatorHash,
+          selectedCredentailOptionId: context?.selectedCredentailOptionId,
+        },
       });
 
     // Step 22.UNAVAILABLE: If an authenticator ceases to be available on this client device
@@ -903,13 +902,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   }): string {
     const { pkOptions, meta } = opts;
 
-    return Hash.sha256JSON(
-      {
-        pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
-        meta,
-      },
-      'hex',
-    );
+    return Hash.sha256JSONHex({
+      pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
+      meta,
+    });
   }
 
   /**
@@ -966,7 +962,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     });
 
     // Context hash validation
-    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
+    const [contextHash, authenticatorHash] = HashOnion.pop(opts.context?.hash);
+    assertSchema(contextHash, z.literal(optionsHash).optional());
 
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
     // Step 3: If options.mediation is present with the value conditional:
@@ -1140,7 +1137,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
         // Custom options
         meta,
-        context,
+        context: {
+          hash: authenticatorHash,
+          selectedCredentailOptionId: context?.selectedCredentailOptionId,
+        },
         optionsHash,
       });
 

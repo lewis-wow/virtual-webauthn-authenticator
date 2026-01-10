@@ -25,7 +25,7 @@ export class JwtAudience {
   }
 
   async validateToken(token: string): Promise<JwtPayload> {
-    const payload = await Jwt.validateToken(token, {
+    const payload = await Jwt.validateToken(token, JwtPayloadSchema, {
       jwks: `${this.authServerBaseURL}/.well-known/jwks.json`,
       verifyOptions: {
         issuer: this.config.iss,
@@ -33,8 +33,6 @@ export class JwtAudience {
       },
     });
 
-    const paredPayload = JwtPayloadSchema.parse(payload);
-
-    return paredPayload;
+    return payload;
   }
 }
