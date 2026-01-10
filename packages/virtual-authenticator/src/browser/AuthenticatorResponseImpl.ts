@@ -1,3 +1,5 @@
+import type { AuthenticatorResponse } from '@repo/types/dom';
+
 export type AuthenticatorResponseImplOptions = {
   clientDataJSON: ArrayBuffer;
 };

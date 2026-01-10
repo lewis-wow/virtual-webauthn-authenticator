@@ -2,14 +2,18 @@ import { BytesMapper } from '@repo/core/mappers';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyParam } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
+import type {
+  AuthenticatorAttestationResponse,
+  COSEAlgorithmIdentifier,
+} from '@repo/types/dom';
+
 import {
   decodeAttestationObject,
   parseAuthenticatorData,
   type AttestationObjectMap,
-} from '@repo/virtual-authenticator/cbor';
-import type { AuthenticatorTransport } from '@repo/virtual-authenticator/enums';
-
-import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions/AlgorithmIdentifierNotFoundInCoseKey';
+} from '../cbor';
+import type { AuthenticatorTransport } from '../enums';
+import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions';
 import {
   AuthenticatorResponseImpl,
   type AuthenticatorResponseImplOptions,

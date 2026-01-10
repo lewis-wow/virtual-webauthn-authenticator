@@ -7,7 +7,6 @@
     ".": "./src/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
-    "./standard-impl": "./src/standard-impl/index.ts",
     "./main-world": "./src/main-world/index.ts",
     "./background": "./src/background/index.ts"
   },

@@ -1,4 +1,9 @@
 import {
+  AuthenticatorAssertionResponseImpl,
+  AuthenticatorAttestationResponseImpl,
+  PublicKeyCredentialImpl,
+} from '@repo/virtual-authenticator/browser';
+import {
   PublicKeyCredentialDtoSchema,
   PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema,
 } from '@repo/virtual-authenticator/dto';
@@ -7,10 +12,6 @@ import type {
   AuthenticatorAssertionResponse,
   AuthenticatorAttestationResponse,
 } from '@repo/virtual-authenticator/validation';
-
-import { AuthenticatorAssertionResponseImpl } from '../standard-impl/AuthenticatorAssertionResponseImpl';
-import { AuthenticatorAttestationResponseImpl } from '../standard-impl/AuthenticatorAttestationResponseImpl';
-import { PublicKeyCredentialImpl } from '../standard-impl/PublicKeyCredentialImpl';
 
 function createResponseImpl(
   publicKeyCredentialResponse:

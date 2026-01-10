@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./browser": "./src/browser/index.ts",
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
@@ -29,9 +30,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/keys": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
@@ -46,12 +45,15 @@
   "dependencies": {
     "@repo/assert": "workspace:*",
     "@repo/cbor": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
+    "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
+    "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
     "class-transformer": "^0.5.1",
     "effect": "^3.19.4",

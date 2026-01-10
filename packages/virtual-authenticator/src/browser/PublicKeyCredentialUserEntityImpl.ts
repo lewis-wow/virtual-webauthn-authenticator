@@ -1,3 +1,8 @@
+import type {
+  BufferSource,
+  PublicKeyCredentialUserEntity,
+} from '@repo/types/dom';
+
 import {
   PublicKeyCredentialEntityImpl,
   type PublicKeyCredentialEntityImplOptions,

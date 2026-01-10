@@ -13,10 +13,13 @@ import type {
 } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
+import {
+  AuthenticatorAssertionResponseImpl,
+  AuthenticatorAttestationResponseImpl,
+  PublicKeyCredentialImpl,
+} from '@repo/virtual-authenticator/browser';
+
 import { UnknownException } from './exceptions/UnknownException';
-import { AuthenticatorAssertionResponseImpl } from './standard-impl/AuthenticatorAssertionResponseImpl';
-import { AuthenticatorAttestationResponseImpl } from './standard-impl/AuthenticatorAttestationResponseImpl';
-import { PublicKeyCredentialImpl } from './standard-impl/PublicKeyCredentialImpl';
 import { PublicKeyCredentialCreationOptionsBrowserSchema } from './zod-validation/credentials/PublicKeyCredentialCreationOptionsBrowserSchema';
 import { PublicKeyCredentialRequestOptionsBrowserSchema } from './zod-validation/credentials/PublicKeyCredentialRequestOptionsBrowserSchema';
 

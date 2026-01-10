@@ -1,8 +1,5 @@
-import type { CollectedClientDataType } from '@repo/virtual-authenticator/enums';
-import type {
-  CollectedClientData,
-  TokenBinding,
-} from '@repo/virtual-authenticator/validation';
+import type { CollectedClientDataType } from '../enums';
+import type { CollectedClientData, TokenBinding } from '../validation';
 
 export class CollectedClientDataImpl implements CollectedClientData {
   public readonly type: CollectedClientDataType;

@@ -1,3 +1,5 @@
+import type { AuthenticatorAssertionResponse } from '@repo/types/dom';
+
 export class AuthenticatorAssertionResponseImpl
   implements AuthenticatorAssertionResponse
 {

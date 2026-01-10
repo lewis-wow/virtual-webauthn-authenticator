@@ -1,3 +1,4 @@
+export * from './AlgorithmIdentifierNotFoundInCoseKey';
 export * from './AttestationNotSupported';
 export * from './CredentialNotFound';
 export * from './CredentialOptionsEmpty';

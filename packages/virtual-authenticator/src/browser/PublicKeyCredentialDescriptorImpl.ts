@@ -1,4 +1,10 @@
-import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
+import type {
+  AuthenticatorTransport,
+  BufferSource,
+  PublicKeyCredentialDescriptor,
+} from '@repo/types/dom';
+
+import { PublicKeyCredentialType } from '../enums';
 
 export class PublicKeyCredentialDescriptorImpl
   implements PublicKeyCredentialDescriptor

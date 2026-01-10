@@ -1,6 +1,13 @@
 import { BytesMapper } from '@repo/core/mappers';
-import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
+import type {
+  AuthenticationExtensionsClientOutputs,
+  AuthenticatorAssertionResponse,
+  AuthenticatorAttestationResponse,
+  PublicKeyCredential,
+} from '@repo/types/dom';
 import { Buffer } from 'buffer';
+
+import { PublicKeyCredentialType } from '../enums';
 
 export type PublicKeyCredentialImplOptions = {
   id: string;
