@@ -316,6 +316,9 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         }),
       );
 
+      // Select index 1 because credentials are ordered by createdAt desc (newest first).
+      // Index 0 is the credential created in this test, index 1 is the credential
+      // from beforeEach which matches authenticatorMakeCredentialResponse.
       await performAuthenticatorGetAssertionAndVerify({
         authenticator,
         meta,
@@ -324,7 +327,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         authenticatorMakeCredentialResponse,
         context: {
           hash: HashOnion.fromArray([expectedHash]),
-          selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
+          selectedCredentailOptionId: expectedCredentialOptions[1]!.id,
         },
       });
     });
