@@ -4,7 +4,7 @@
 
 ## Run project in dev mode
 
-To run project in dev mode, you need to run all applications defined in `apps` folder.
+To start the project in development mode, run the command below. This will launch all applications in the `apps` directory, excluding the example Next.js application.
 
 ```bash
 pnpm dev --filter '!@repo/nextjs-example'
@@ -124,7 +124,7 @@ pnpm dev --filter '!@repo/nextjs-example'
 
 ## Example
 
-To run Next.js passkeys example, run following command:
+To run the Next.js passkeys example, navigate to the example directory, prepare the database, and start the server:
 
 ```bash
 cd examples/nextjs
@@ -132,7 +132,7 @@ pnpm db:generate
 pnpm start
 ```
 
-It will start Next.js server on `http://localhost:4000`.
+The server will be available at `http://localhost:4000`.
 
 ### Icons resources
 
