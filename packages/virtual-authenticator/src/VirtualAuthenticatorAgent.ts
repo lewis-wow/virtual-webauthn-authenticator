@@ -910,7 +910,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         },
         context: {
           hash: authenticatorHash,
-          selectedCredentailOptionId: context?.selectedCredentailOptionId,
+          selectedCredentialOptionId: context?.selectedCredentialOptionId,
         },
       });
 
@@ -967,12 +967,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           context: { requireResidentKey },
         });
     }
-
-    console.log(';clientExtensionResults', {
-      clientExtensions,
-      clientExtensionResults,
-      clientExtensionInput: pkOptions.extensions,
-    });
 
     const credentialCreationData = {
       // attestationObjectResult: whose value is the bytes returned from the successful authenticatorMakeCredential operation.
@@ -1324,7 +1318,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         meta,
         context: {
           hash: authenticatorHash,
-          selectedCredentailOptionId: context?.selectedCredentailOptionId,
+          selectedCredentialOptionId: context?.selectedCredentialOptionId,
         },
         optionsHash,
       });

@@ -809,9 +809,9 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
       );
 
-    if (context?.selectedCredentailOptionId !== undefined) {
+    if (context?.selectedCredentialOptionId !== undefined) {
       credentialOptions = credentialOptions.filter((credentialOption) => {
-        return credentialOption.id === context?.selectedCredentailOptionId;
+        return credentialOption.id === context?.selectedCredentialOptionId;
       });
     }
 

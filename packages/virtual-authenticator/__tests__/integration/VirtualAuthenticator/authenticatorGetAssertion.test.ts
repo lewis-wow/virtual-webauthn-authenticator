@@ -327,7 +327,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         authenticatorMakeCredentialResponse,
         context: {
           hash: HashOnion.fromArray([expectedHash]),
-          selectedCredentailOptionId: expectedCredentialOptions[1]!.id,
+          selectedCredentialOptionId: expectedCredentialOptions[1]!.id,
         },
       });
     });
@@ -396,7 +396,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorMakeCredentialResponse,
           context: {
             hash: HashOnion.fromArray([expectedHash]),
-            selectedCredentailOptionId: expectedCredentialOptions[0]!.id,
+            selectedCredentialOptionId: expectedCredentialOptions[0]!.id,
           },
         }),
       ).rejects.toThrowError(new TypeAssertionError());

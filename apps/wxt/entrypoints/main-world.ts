@@ -1,4 +1,4 @@
-import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
+import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToContentScriptMessaging';
 import { Exception } from '@repo/exception';
 import {
   convertBrowserCreationOptions,
@@ -32,7 +32,7 @@ export default defineUnlistedScript(() => {
       publicKeyCredentialCreationOptions!,
     );
 
-    const response = await mainWorldMessaging.sendMessage(
+    const response = await mainWorldToContentScriptMessaging.sendMessage(
       'credentials.create',
       {
         publicKeyCredentialCreationOptions: encodedPkOptions,
@@ -70,10 +70,13 @@ export default defineUnlistedScript(() => {
       publicKeyCredentialRequestOptions!,
     );
 
-    const response = await mainWorldMessaging.sendMessage('credentials.get', {
-      publicKeyCredentialRequestOptions: encodedPkOptions,
-      meta: { origin: window.location.origin },
-    });
+    const response = await mainWorldToContentScriptMessaging.sendMessage(
+      'credentials.get',
+      {
+        publicKeyCredentialRequestOptions: encodedPkOptions,
+        meta: { origin: window.location.origin },
+      },
+    );
 
     if (!response.ok) {
       throw new Exception(response.error);

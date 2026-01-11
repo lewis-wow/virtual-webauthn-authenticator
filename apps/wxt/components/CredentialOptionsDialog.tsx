@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogContent,
 } from '@repo/ui/components/ui/dialog';
+import { ScrollArea } from '@repo/ui/components/ui/scroll-area';
 import { cn } from '@repo/ui/lib/utils';
 import { Check } from 'lucide-react';
 import * as React from 'react';
@@ -15,8 +16,6 @@ import * as React from 'react';
 export type CredentialOptionsDialogProps = {
   onOpenChange: (open: boolean) => void;
   onConfirm: (credentialId: string) => void;
-
-  // Data props
   credentialOptions: { id: string; name: string | null }[];
 };
 
@@ -32,15 +31,12 @@ export const CredentialOptionsDialog = ({
   const handleConfirm = () => {
     if (selectedCredential) {
       onConfirm(selectedCredential);
-      onOpenChange(false); // Close dialog
+      onOpenChange(false);
     }
   };
 
   return (
-    // We use the 'open' prop from the parent
     <Dialog open={true} onOpenChange={onOpenChange}>
-      {/* NO DialogTrigger here anymore */}
-
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Select Credentials</DialogTitle>
@@ -50,34 +46,49 @@ export const CredentialOptionsDialog = ({
         </DialogHeader>
 
         <div className="py-4">
-          <div className="space-y-2">
-            {credentialOptions.map((credential) => (
-              <button
-                key={credential.id}
-                onClick={() => setSelectedCredential(credential.id)}
-                className={cn(
-                  'w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent',
-                  selectedCredential === credential.id &&
-                    'border-primary bg-accent',
-                )}
-              >
-                <div
+          <ScrollArea className="h-72 pr-4">
+            <div className="space-y-2">
+              {credentialOptions.map((credential) => (
+                <button
+                  key={credential.id}
+                  onClick={() => setSelectedCredential(credential.id)}
+                  // Added items-start so text aligns to top if it wraps
                   className={cn(
-                    'flex h-5 w-5 items-center justify-center rounded-full border',
-                    selectedCredential === credential.id
-                      ? 'border-primary bg-primary'
-                      : 'border-muted-foreground',
+                    'w-full flex items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent',
+                    selectedCredential === credential.id &&
+                      'border-primary bg-accent',
                   )}
                 >
-                  {selectedCredential === credential.id && (
-                    <Check className="h-3 w-3 text-primary-foreground" />
-                  )}
-                </div>
-                {credential.name && <span>{credential.name}</span>}
-                <span>{credential.id}</span>
-              </button>
-            ))}
-          </div>
+                  {/* 1. Added shrink-0 so the circle never deforms */}
+                  <div
+                    className={cn(
+                      'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border mt-0.5',
+                      selectedCredential === credential.id
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground',
+                    )}
+                  >
+                    {selectedCredential === credential.id && (
+                      <Check className="h-3 w-3 text-primary-foreground" />
+                    )}
+                  </div>
+
+                  {/* 2. Wrapped text in a flex-col div to handle layout */}
+                  <div className="flex flex-col w-full min-w-0">
+                    {credential.name && (
+                      <span className="font-medium text-sm">
+                        {credential.name}
+                      </span>
+                    )}
+                    {/* 3. Added break-all to handle long UUIDs */}
+                    <span className="text-muted-foreground text-xs break-all">
+                      {credential.id}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </ScrollArea>
         </div>
 
         <div className="flex justify-end gap-3">

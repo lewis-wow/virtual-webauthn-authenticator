@@ -1,26 +1,24 @@
-import { contentScriptErrorEventEmitter } from '@/messaging/contentScriptErrorEventEmitter';
-import { ErrorResponse, MessagingProtocol } from '@/types';
+import type { ListenerFn } from '@/utils/InteractionService';
+import { interaction, InteractionEventMap } from '@/utils/interaction';
 import { isExceptionShape } from '@repo/exception';
-import { AnyExceptionShape } from '@repo/exception/validation';
 import { useExtensionDialog } from '@repo/ui/context/ExtensionDialogContext';
 import { CredentialSelectException } from '@repo/virtual-authenticator/exceptions';
-import { Message } from '@webext-core/messaging';
 import { match } from 'ts-pattern';
 
 import { CredentialOptionsDialog } from './CredentialOptionsDialog';
 import { ErrorDialog } from './ErrorDialog';
 
+const LOG_PREFIX = 'ERROR_MESSAGE_HANDLER';
+
 export const App = () => {
   const { openDialog, closeDialog } = useExtensionDialog();
 
   useEffect(() => {
-    const handleErrorMessage = (opts: {
-      response: ErrorResponse;
-      request: Message<MessagingProtocol, keyof MessagingProtocol>;
-    }) => {
-      const { request, response } = opts;
-
-      const error = response.error;
+    const handleErrorMessage: ListenerFn<InteractionEventMap, 'error'> = (
+      args,
+      resolve,
+    ) => {
+      const { error } = args.response;
 
       const component = match(error)
         .when(isExceptionShape(CredentialSelectException), (error) => {
@@ -30,17 +28,24 @@ export const App = () => {
               onOpenChange={(isOpen) => {
                 if (!isOpen) closeDialog();
               }}
-              onConfirm={(selectedId) => {
-                console.log('User selected:', selectedId);
+              onConfirm={async (selectedCredentialOptionId) => {
+                console.log(`[${LOG_PREFIX}] User selected:`, {
+                  selectedCredentialOptionId,
+                });
 
-                console.log('request', request);
-                // TODO: Send response back to background/main world
+                resolve({
+                  hash: error.data.hash,
+                  selectedCredentialOptionId,
+                });
+
                 closeDialog();
               }}
             />
           );
         })
         .otherwise((error) => {
+          resolve(null);
+
           return (
             <ErrorDialog
               error={error}
@@ -55,11 +60,11 @@ export const App = () => {
     };
 
     // Add listener
-    contentScriptErrorEventEmitter.on('error', handleErrorMessage);
+    interaction.onInteraction('error', handleErrorMessage);
 
     // Cleanup
     return () => {
-      contentScriptErrorEventEmitter.off('error', handleErrorMessage);
+      interaction.offInteraction('error', handleErrorMessage);
     };
   }, [openDialog]);
 

@@ -1,6 +1,5 @@
 import { env } from '@/env';
-
-import { extensionMessaging } from '../messaging/extensionMessaging';
+import { contentScriptToBackgroundScriptMessaging } from '@/messaging/contentScriptToBackgroundScriptMessaging';
 
 const LOG_PREFIX = 'BACKGROUND';
 const API_CREDENTIALS_CREATE_PATH = '/api/credentials/create';
@@ -26,79 +25,85 @@ export default defineBackground(() => {
     id: browser.runtime.id,
   });
 
-  extensionMessaging.onMessage('credentials.create', async (req) => {
-    const apiKey = await apiKeyItem.getValue();
+  contentScriptToBackgroundScriptMessaging.onMessage(
+    'credentials.create',
+    async (req) => {
+      const apiKey = await apiKeyItem.getValue();
 
-    console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
-      request: req.data,
-    });
+      console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
+        request: req.data,
+      });
 
-    const response = await fetch(
-      `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
-      {
-        method: 'POST',
-        headers: createApiHeaders(apiKey),
-        body: JSON.stringify(req.data),
-      },
-    );
+      const response = await fetch(
+        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
+        {
+          method: 'POST',
+          headers: createApiHeaders(apiKey),
+          body: JSON.stringify(req.data),
+        },
+      );
 
-    console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
-      request: req.data,
-      response,
-    });
+      console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
+        request: req.data,
+        response,
+      });
 
-    const json = await response.json();
+      const json = await response.json();
 
-    if (response.ok) {
+      if (response.ok) {
+        return {
+          ok: true,
+          data: json,
+        };
+      }
+
+      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+
       return {
-        ok: true,
-        data: json,
+        ok: false,
+        error: json,
       };
-    }
+    },
+  );
 
-    console.log(`[${LOG_PREFIX}]`, 'Error', json);
+  contentScriptToBackgroundScriptMessaging.onMessage(
+    'credentials.get',
+    async (req) => {
+      const apiKey = await apiKeyItem.getValue();
 
-    return {
-      ok: false,
-      error: json,
-    };
-  });
+      console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
+        request: req.data,
+      });
 
-  extensionMessaging.onMessage('credentials.get', async (req) => {
-    const apiKey = await apiKeyItem.getValue();
+      const response = await fetch(
+        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
+        {
+          method: 'POST',
+          headers: createApiHeaders(apiKey),
+          body: JSON.stringify(req.data),
+        },
+      );
 
-    console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
-      request: req.data,
-    });
+      console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
+        request: req.data,
+        response,
+      });
 
-    const response = await fetch(
-      `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
-      {
-        method: 'POST',
-        headers: createApiHeaders(apiKey),
-        body: JSON.stringify(req.data),
-      },
-    );
+      const json = await response.json();
 
-    console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
-      request: req.data,
-      response,
-    });
+      if (response.ok) {
+        return {
+          ok: true,
+          data: json,
+        };
+      }
 
-    const json = await response.json();
+      console.log(`[${LOG_PREFIX}]`, 'Error', json);
 
-    if (response.ok) {
       return {
-        ok: true,
-        data: json,
+        ok: false,
+        error: json,
       };
-    }
-
-    console.log(`[${LOG_PREFIX}]`, 'Error', json);
-
-    return {
-      ok: false,
-      error: json,
-    };
-  });
+    },
+  );
 });

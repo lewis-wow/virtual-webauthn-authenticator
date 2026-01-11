@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogContent,
 } from '@repo/ui/components/ui/dialog';
+import { ScrollArea } from '@repo/ui/components/ui/scroll-area';
 import { AlertCircle } from 'lucide-react';
 
 export type ErrorDialogProps = {
@@ -30,14 +31,23 @@ export const ErrorDialog = ({ error, onOpenChange }: ErrorDialogProps) => {
           </div>
           <DialogDescription>{error.message}</DialogDescription>
         </DialogHeader>
+
         <div className="py-4">
           <div className="rounded-lg border bg-muted p-4">
             <div className="mb-2 font-medium text-sm">Error Details:</div>
-            <pre className="overflow-auto text-xs">
-              <code>{JSON.stringify(error, null, 2)}</code>
-            </pre>
+
+            {/* 2. Added ScrollArea
+                - h-[200px] limits the height of the code block.
+                - bg-background creates contrast against the bg-muted container.
+            */}
+            <ScrollArea className="h-[200px] w-full rounded-md border bg-background p-4">
+              <pre className="text-xs">
+                <code>{JSON.stringify(error, null, 2)}</code>
+              </pre>
+            </ScrollArea>
           </div>
         </div>
+
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close

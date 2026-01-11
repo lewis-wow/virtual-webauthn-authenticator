@@ -1,8 +1,8 @@
 import '@/assets/tailwindcss.css';
 import { App } from '@/components/App';
-import { contentScriptErrorEventEmitter } from '@/messaging/contentScriptErrorEventEmitter';
-import { extensionMessaging } from '@/messaging/extensionMessaging';
-import { mainWorldMessaging } from '@/messaging/mainWorldMessaging';
+import { contentScriptToBackgroundScriptMessaging } from '@/messaging/contentScriptToBackgroundScriptMessaging';
+import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToContentScriptMessaging';
+import { interaction } from '@/utils/interaction';
 import { ExtensionDialogProvider } from '@repo/ui/context/ExtensionDialogContext';
 import { ShadowRootProvider } from '@repo/ui/context/ShadowRootContext';
 import ReactDOM from 'react-dom/client';
@@ -48,44 +48,72 @@ export default defineContentScript({
 
     console.log(`[${LOG_PREFIX}]`, 'Injected.');
 
-    mainWorldMessaging.onMessage('credentials.create', async (request) => {
-      console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
+    mainWorldToContentScriptMessaging.onMessage(
+      'credentials.create',
+      async (request) => {
+        console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
 
-      const response = await extensionMessaging.sendMessage(
-        'credentials.create',
-        request.data,
-      );
+        let response =
+          await contentScriptToBackgroundScriptMessaging.sendMessage(
+            'credentials.create',
+            request.data,
+          );
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.create response.', response);
-
-      if (!response.ok) {
-        contentScriptErrorEventEmitter.emit('error', {
+        console.log(
+          `[${LOG_PREFIX}]`,
+          'credentials.create response.',
           response,
-          request,
-        });
-      }
+        );
 
-      return response;
-    });
+        if (!response.ok) {
+          const context = await interaction.emitInteraction('error', {
+            response,
+          });
 
-    mainWorldMessaging.onMessage('credentials.get', async (request) => {
-      console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
+          if (context === null) {
+            return response;
+          }
 
-      const response = await extensionMessaging.sendMessage(
-        'credentials.get',
-        request.data,
-      );
+          response = await contentScriptToBackgroundScriptMessaging.sendMessage(
+            'credentials.create',
+            { ...request.data },
+          );
+        }
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
+        return response;
+      },
+    );
 
-      if (!response.ok) {
-        contentScriptErrorEventEmitter.emit('error', {
-          response,
-          request,
-        });
-      }
+    mainWorldToContentScriptMessaging.onMessage(
+      'credentials.get',
+      async (request) => {
+        console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
 
-      return response;
-    });
+        let response =
+          await contentScriptToBackgroundScriptMessaging.sendMessage(
+            'credentials.get',
+            request.data,
+          );
+
+        console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
+
+        if (!response.ok) {
+          const context = await interaction.emitInteraction('error', {
+            response,
+          });
+
+          if (context === null) {
+            return response;
+          }
+
+          response = await contentScriptToBackgroundScriptMessaging.sendMessage(
+            'credentials.get',
+            { ...request.data, context },
+          );
+        }
+
+        return response;
+      },
+    );
   },
 });

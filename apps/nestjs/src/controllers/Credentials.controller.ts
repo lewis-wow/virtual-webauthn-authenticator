@@ -182,7 +182,7 @@ export class CredentialsController {
               },
               context: {
                 hash: contextHash,
-                selectedCredentailOptionId: context?.selectedCredentailOptionId,
+                selectedCredentialOptionId: context?.selectedCredentialOptionId,
               },
             });
 
