@@ -25,8 +25,9 @@ export const App = () => {
           return (
             <CredentialOptionsDialog
               credentialOptions={error.data.credentialOptions}
-              onOpenChange={(isOpen) => {
-                if (!isOpen) closeDialog();
+              onCancel={() => {
+                resolve(null);
+                closeDialog();
               }}
               onConfirm={async (selectedCredentialOptionId) => {
                 console.log(`[${LOG_PREFIX}] User selected:`, {

@@ -14,13 +14,13 @@ import { Check } from 'lucide-react';
 import * as React from 'react';
 
 export type CredentialOptionsDialogProps = {
-  onOpenChange: (open: boolean) => void;
+  onCancel: () => void;
   onConfirm: (credentialId: string) => void;
   credentialOptions: { id: string; name: string | null }[];
 };
 
 export const CredentialOptionsDialog = ({
-  onOpenChange,
+  onCancel,
   onConfirm,
   credentialOptions,
 }: CredentialOptionsDialogProps) => {
@@ -31,12 +31,11 @@ export const CredentialOptionsDialog = ({
   const handleConfirm = () => {
     if (selectedCredential) {
       onConfirm(selectedCredential);
-      onOpenChange(false);
     }
   };
 
   return (
-    <Dialog open={true} onOpenChange={onOpenChange}>
+    <Dialog open={true}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Select Credentials</DialogTitle>
@@ -92,7 +91,7 @@ export const CredentialOptionsDialog = ({
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onCancel()}>
             Cancel
           </Button>
           <Button onClick={handleConfirm} disabled={!selectedCredential}>
