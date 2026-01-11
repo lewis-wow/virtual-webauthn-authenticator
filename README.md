@@ -1,5 +1,7 @@
 # Virtual WebAuthn Authenticator
 
+[![codecov](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator/graph/badge.svg?token=4J12KNM8S0)](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator)
+
 ## WebAuthn spec
 
 <https://www.w3.org/TR/webauthn-3/>

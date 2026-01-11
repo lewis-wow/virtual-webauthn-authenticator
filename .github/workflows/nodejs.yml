@@ -50,15 +50,21 @@ jobs:
         run: pnpm check-types
 
       - name: Run unit tests
-        env:
-          ENVIRONMENT: test
-        run: pnpm test
+        run: pnpm test:unit
 
       - name: Run integration tests
         env:
           ENVIRONMENT: test
           DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/prisma?schema=public'
         run: pnpm test:integration
+
+      - name: Run coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       # - name: Log in to GitHub Container Registry
       #   # This step is only run on pushes to the main branch

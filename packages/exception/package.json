@@ -10,7 +10,7 @@
     "./mappers": "./src/mappers/index.ts"
   },
   "scripts": {
-    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
+    "test:unit:coverage": "vitest run --coverage --config __tests__/vitest.unit.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },

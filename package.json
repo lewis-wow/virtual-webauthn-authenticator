@@ -8,6 +8,8 @@
     "lint": "turbo run lint",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "test:unit:coverage": "vitest run --coverage --config vitest.unit.config.ts",
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:integration:coverage": "vitest run --coverage --config vitest.integration.config.ts",
     "test:ui": "vitest --ui",
@@ -39,6 +41,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@nestjs/core",
       "@parcel/watcher",
       "@prisma/client",
       "@prisma/engines",
@@ -50,6 +53,7 @@
       "msgpackr-extract",
       "prisma",
       "sharp",
+      "spawn-sync",
       "unrs-resolver"
     ]
   }

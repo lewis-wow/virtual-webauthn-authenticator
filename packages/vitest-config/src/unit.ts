@@ -1,14 +1,20 @@
-import { configDefaults, defineConfig } from 'vitest/config';
+import { COVERAGE_EXCLUDE } from '@repo/vitest-config/consts';
+import {
+  configDefaults,
+  defineConfig,
+  coverageConfigDefaults,
+} from 'vitest/config';
 
 export const unitConfig = defineConfig({
   test: {
     include: ['__tests__/unit/**/*.{test,spec}.{ts,mts}'],
-    exclude: [...configDefaults.exclude, 'dist/**/*'],
+    exclude: [...configDefaults.exclude, 'dist/**/*', 'node_modules'],
 
     coverage: {
       provider: 'v8',
-      exclude: ['__mocks__', '__tests__', 'src/index.ts'],
-      include: ['src'],
+      excludeAfterRemap: true,
+      exclude: [...coverageConfigDefaults.exclude, ...COVERAGE_EXCLUDE],
+      include: ['**/src/**'],
     },
   },
 });
