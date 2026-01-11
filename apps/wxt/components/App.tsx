@@ -47,14 +47,7 @@ export const App = () => {
         .otherwise((error) => {
           resolve(null);
 
-          return (
-            <ErrorDialog
-              error={error}
-              onOpenChange={(isOpen) => {
-                if (!isOpen) closeDialog();
-              }}
-            />
-          );
+          return <ErrorDialog error={error} onClose={closeDialog} />;
         });
 
       openDialog(component);

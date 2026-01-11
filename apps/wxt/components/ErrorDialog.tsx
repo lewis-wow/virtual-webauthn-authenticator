@@ -17,12 +17,12 @@ export type ErrorDialogProps = {
     code?: string;
     data?: Record<string, unknown>;
   };
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 };
 
-export const ErrorDialog = ({ error, onOpenChange }: ErrorDialogProps) => {
+export const ErrorDialog = ({ error, onClose }: ErrorDialogProps) => {
   return (
-    <Dialog open={true} onOpenChange={onOpenChange}>
+    <Dialog open={true}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export const ErrorDialog = ({ error, onOpenChange }: ErrorDialogProps) => {
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onClose()}>
             Close
           </Button>
           <Button
