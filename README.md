@@ -2,6 +2,50 @@
 
 [![codecov](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator/graph/badge.svg?token=4J12KNM8S0)](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator)
 
+```txt
++---------------------------------------------------------------+
+|                   BROWSER (Web Extension)                     |
++---------------------------------------------------------------+
+|                                                               |
+|   1. INTERCEPTION (Main World)                                |
+|   [ navigator.credentials proxy ] <--- Web App Call           |
+|             |                                                 |
+|             v window.postMessage                              |
+|                                                               |
+|   2. USER INTERFACE (Content Script)                          |
+|   [ PIN Entry / Confirmation DOM ]                            |
+|             |                                                 |
+|             v chrome.runtime.sendMessage                      |
+|                                                               |
+|   3. NETWORK LAYER (Background Service Worker)                |
+|   [ Fetch API Wrapper ]                                       |
+|             |                                                 |
++-------------|-------------------------------------------------+
+              |
+              v HTTPS / WebSocket
+              |
++-------------|-------------------------------------------------+
+|              VIRTUAL AUTHENTICATOR HOST (Server)              |
++---------------------------------------------------------------+
+|             |                                                 |
+|   4. GATEWAY                                                  |
+|   [ API Endpoint ]                                            |
+|             |                                                 |
+|             v                                                 |
+|                                                               |
+|   5. LOGIC CORE                                               |
+|   [ Virtual Authenticator Agent ]                             |
+|   (CTAP2 Parser / CBOR Logic)                                 |
+|             |                                                 |
+|             v                                                 |
+|                                                               |
+|   6. STORAGE & CRYPTO                                         |
+|   [ Virtual Authenticator ]                                   |
+|   (Key Vault / Signing / Counters)                            |
+|                                                               |
++---------------------------------------------------------------+
+```
+
 ## WebAuthn spec
 
 <https://www.w3.org/TR/webauthn-3/>
