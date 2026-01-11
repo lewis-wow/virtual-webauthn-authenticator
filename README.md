@@ -2,6 +2,14 @@
 
 [![codecov](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator/graph/badge.svg?token=4J12KNM8S0)](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator)
 
+## Run project in dev mode
+
+To run project in dev mode, you need to run all applications defined in `apps` folder.
+
+```bash
+pnpm dev --filter '!@repo/nextjs-example'
+```
+
 ## Authenticator flow
 
 ```plaintext
@@ -104,13 +112,9 @@
 
 <https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html>
 
-## Architecture
-
-![Architecture image](.architecture/export/architecture.svg)
-
 ## Key Vault
 
-[Azure Key Vault - TypeScript](https://learn.microsoft.com/en-us/azure/key-vault/secrets/quick-create-node?tabs=azure-cli%2Cwindows&pivots=programming-language-typescript)
+[Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/)
 
 [LowKey Vault for development](https://github.com/nagyesta/lowkey-vault)
 
@@ -118,7 +122,17 @@
 
 <https://webauthn.io/>
 
-### Icons
+## Example
+
+To run Next.js passkeys example, run following command:
+
+```bash
+pnpm start --filter @repo/nextjs-example
+```
+
+It will start Next.js server on `http://localhost:4000`.
+
+### Icons resources
 
 <https://simpleicons.org>
 
