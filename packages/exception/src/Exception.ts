@@ -1,3 +1,5 @@
+import { omitUndefined } from '@repo/utils';
+
 import {
   ExceptionShapeSchema,
   type AnyExceptionShape,
@@ -49,11 +51,11 @@ export class Exception<TData = undefined>
   }
 
   toJSON(opts?: { omitData?: boolean }) {
-    return {
+    return omitUndefined({
       message: this.message,
       code: this.code,
       data: opts?.omitData === true ? undefined : this.data,
-    };
+    });
   }
 
   toResponse(): Response {

@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "zod": "^4.1.12",
-    "@repo/http": "workspace:*"
+    "@repo/http": "workspace:*",
+    "@repo/utils": "workspace:*"
   }
 }

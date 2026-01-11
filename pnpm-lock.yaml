@@ -1365,6 +1365,9 @@ importers:
       '@repo/http':
         specifier: workspace:*
         version: link:../http
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
       zod:
         specifier: ^4.1.12
         version: 4.1.12

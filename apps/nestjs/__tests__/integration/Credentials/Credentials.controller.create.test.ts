@@ -21,10 +21,7 @@ import {
   PublicKeyCredentialType,
   UserVerification,
 } from '@repo/virtual-authenticator/enums';
-import {
-  AttestationNotSupported,
-  UserNotExists,
-} from '@repo/virtual-authenticator/exceptions';
+import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
 import { randomBytes } from 'node:crypto';
 import { afterEach } from 'node:test';
@@ -183,6 +180,12 @@ describe('CredentialsController - POST /api/credentials/create', () => {
       {
         attestation: Attestation.DIRECT,
       } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.ENTERPRISE,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.INDIRECT,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
     ])('With attestation $attestation', async ({ attestation }) => {
       const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
         publicKeyCredentialCreationOptions: {
@@ -197,36 +200,6 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         expectStatus: 200,
       });
     });
-
-    test.each([
-      {
-        attestation: Attestation.ENTERPRISE,
-      } satisfies Partial<PublicKeyCredentialCreationOptions>,
-      {
-        attestation: Attestation.INDIRECT,
-      } satisfies Partial<PublicKeyCredentialCreationOptions>,
-    ])(
-      `Should throw ${AttestationNotSupported.name} with attestation $attestation`,
-      async ({ attestation }) => {
-        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
-          publicKeyCredentialCreationOptions: {
-            attestation,
-          },
-        });
-
-        const { response } =
-          await performPublicKeyCredentialRegistrationAndVerify({
-            app: app.getHttpServer(),
-            token,
-            payload,
-            expectStatus: 400,
-          });
-
-        expect(response.body).toStrictEqual(
-          new AttestationNotSupported().toJSON(),
-        );
-      },
-    );
 
     test('Shold throw type mismatch when attestation is not in enum', async () => {
       const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
