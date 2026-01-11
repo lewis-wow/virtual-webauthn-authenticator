@@ -91,6 +91,7 @@ export type VirtualAuthenticatorAgentOptions = {
  * This class implements the client/browser-side logic of WebAuthn ceremonies.
  * It coordinates with the VirtualAuthenticator for authenticator operations.
  * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion
  */
 export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   // @see https://www.w3.org/TR/webauthn-3/#recommended-range-and-default-for-a-webauthn-ceremony-timeout
