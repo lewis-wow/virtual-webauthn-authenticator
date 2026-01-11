@@ -73,8 +73,8 @@ export const CredentialOptionsDialog = ({
                     <Check className="h-3 w-3 text-primary-foreground" />
                   )}
                 </div>
-                {/* Display name or fallback */}
-                <span>{credential.name || credential.id}</span>
+                {credential.name && <span>{credential.name}</span>}
+                <span>{credential.id}</span>
               </button>
             ))}
           </div>

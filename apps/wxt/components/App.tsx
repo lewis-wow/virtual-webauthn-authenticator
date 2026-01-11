@@ -1,8 +1,10 @@
 import { contentScriptErrorEventEmitter } from '@/messaging/contentScriptErrorEventEmitter';
+import { ErrorResponse, MessagingProtocol } from '@/types';
 import { isExceptionShape } from '@repo/exception';
 import { AnyExceptionShape } from '@repo/exception/validation';
 import { useExtensionDialog } from '@repo/ui/context/ExtensionDialogContext';
 import { CredentialSelectException } from '@repo/virtual-authenticator/exceptions';
+import { Message } from '@webext-core/messaging';
 import { match } from 'ts-pattern';
 
 import { CredentialOptionsDialog } from './CredentialOptionsDialog';
@@ -12,7 +14,14 @@ export const App = () => {
   const { openDialog, closeDialog } = useExtensionDialog();
 
   useEffect(() => {
-    const handleErrorMessage = (error: AnyExceptionShape) => {
+    const handleErrorMessage = (opts: {
+      response: ErrorResponse;
+      request: Message<MessagingProtocol, keyof MessagingProtocol>;
+    }) => {
+      const { request, response } = opts;
+
+      const error = response.error;
+
       const component = match(error)
         .when(isExceptionShape(CredentialSelectException), (error) => {
           return (
@@ -23,6 +32,8 @@ export const App = () => {
               }}
               onConfirm={(selectedId) => {
                 console.log('User selected:', selectedId);
+
+                console.log('request', request);
                 // TODO: Send response back to background/main world
                 closeDialog();
               }}
@@ -34,7 +45,6 @@ export const App = () => {
             <ErrorDialog
               error={error}
               onOpenChange={(isOpen) => {
-                console.log('Change');
                 if (!isOpen) closeDialog();
               }}
             />

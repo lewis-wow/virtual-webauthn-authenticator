@@ -48,35 +48,41 @@ export default defineContentScript({
 
     console.log(`[${LOG_PREFIX}]`, 'Injected.');
 
-    mainWorldMessaging.onMessage('credentials.create', async (req) => {
+    mainWorldMessaging.onMessage('credentials.create', async (request) => {
       console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
 
       const response = await extensionMessaging.sendMessage(
         'credentials.create',
-        req.data,
+        request.data,
       );
 
       console.log(`[${LOG_PREFIX}]`, 'credentials.create response.', response);
 
       if (!response.ok) {
-        contentScriptErrorEventEmitter.emit('error', response.error);
+        contentScriptErrorEventEmitter.emit('error', {
+          response,
+          request,
+        });
       }
 
       return response;
     });
 
-    mainWorldMessaging.onMessage('credentials.get', async (req) => {
+    mainWorldMessaging.onMessage('credentials.get', async (request) => {
       console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
 
       const response = await extensionMessaging.sendMessage(
         'credentials.get',
-        req.data,
+        request.data,
       );
 
       console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
 
       if (!response.ok) {
-        contentScriptErrorEventEmitter.emit('error', response.error);
+        contentScriptErrorEventEmitter.emit('error', {
+          response,
+          request,
+        });
       }
 
       return response;
