@@ -1,7 +1,7 @@
 import { OriginSchema } from '@repo/core/zod-validation';
 import z from 'zod';
 
-import { AuthenticatorMetaArgsSchema } from './AuthenticatorMetaArgsSchema';
+import { AuthenticatorMetaArgsSchema } from '../authenticator/AuthenticatorMetaArgsSchema';
 
 export const AuthenticatorAgentMetaArgsSchema =
   AuthenticatorMetaArgsSchema.safeExtend({

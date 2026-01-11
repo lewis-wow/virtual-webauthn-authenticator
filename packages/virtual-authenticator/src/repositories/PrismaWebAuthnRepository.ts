@@ -3,9 +3,9 @@ import { Prisma, PrismaClient } from '@repo/prisma';
 import z from 'zod';
 
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { ApiKeyNotExists } from '../exceptions/ApiKeyNotExists';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
-import { UserNotExists } from '../exceptions/UserNotExists';
+import { ApiKeyNotExists } from '../exceptions/repository/ApiKeyNotExists';
+import { UserNotExists } from '../exceptions/repository/UserNotExists';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 import type {

@@ -13,8 +13,8 @@ import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObje
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
-import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticator/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentContextArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import { RP_ORIGIN } from '../../helpers/consts';
 
@@ -34,7 +34,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
     publicKeyCredentialCreationOptions,
     meta: metaOptions,
-    context,
+    context: contextOptions,
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
@@ -46,6 +46,13 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     userVerificationEnabled: true,
     ...metaOptions,
   };
+
+  const context: AuthenticatorAgentContextArgs = {
+    ...contextOptions,
+  };
+
+  const expectedRPID =
+    publicKeyCredentialCreationOptions?.rp?.id ?? new URL(meta.origin).hostname;
 
   // Simulate the full WebAuthn registration ceremony.
   // This creates a new public key credential (passkey) using the
@@ -71,8 +78,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     ) as RegistrationResponseJSON,
     expectedChallenge: toB64(publicKeyCredentialCreationOptions.challenge),
     expectedOrigin: meta.origin,
-    expectedRPID:
-      publicKeyCredentialCreationOptions.rp.id ?? new URL(meta.origin).hostname,
+    expectedRPID,
     requireUserVerification:
       publicKeyCredentialCreationOptions.authenticatorSelection
         ?.userVerification === UserVerification.REQUIRED,
@@ -98,14 +104,15 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   expect(parsedAuthenticatorData.flags.be).toBe(true);
   expect(parsedAuthenticatorData.flags.bs).toBe(true);
 
-  const webAuthnPublicKeyCredentialId = UUIDMapper.bytesToUUID(
-    publicKeyCredential.rawId,
-  );
+  expect(registrationVerification.registrationInfo!.credential).toBeDefined();
+
+  const credentialUuid = UUIDMapper.bytesToUUID(publicKeyCredential.rawId);
 
   return {
+    webAuthnCredential: registrationVerification.registrationInfo!.credential,
     publicKeyCredential,
+    credentialUuid,
     registrationVerification,
-    webAuthnPublicKeyCredentialId,
     parsedAuthenticatorData,
     attestationObjectMap,
   };

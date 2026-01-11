@@ -1,98 +1,101 @@
 import { USER_ID } from '../../../../auth/__tests__/helpers';
 
-import type { Uint8Array_ } from '@repo/types';
+import { toB64 } from '@repo/utils';
 import {
   type AuthenticationResponseJSON,
   verifyAuthenticationResponse,
+  type WebAuthnCredential,
 } from '@simplewebauthn/server';
 import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
-import { PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema';
+import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
+import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import type { AuthenticatorAgentContextArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAssertionResponse } from '../../../src/validation/spec/AuthenticatorAssertionResponseSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
-import { CHALLENGE_BASE64URL, RP_ID, RP_ORIGIN } from '../../helpers/consts';
+import { RP_ORIGIN } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   agent: VirtualAuthenticatorAgent;
-
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
-  webAuthnPublicKeyCredentialId: string;
-  publicKey: Uint8Array_;
-  counter: number;
-  expectedNewCounter?: number;
-  expectedChallenge?: string;
-  userId?: string;
-  origin?: string;
-};
-
-export type PerformPublicKeyCredentialRequestAndVerifyResult = {
-  authenticationVerification: Awaited<
-    ReturnType<typeof verifyAuthenticationResponse>
-  >;
+  webAuthnCredential: WebAuthnCredential;
+  meta?: Partial<AuthenticatorAgentMetaArgs>;
+  context?: Partial<AuthenticatorAgentContextArgs>;
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
   opts: PerformPublicKeyCredentialRequestAndVerifyArgs,
-): Promise<PerformPublicKeyCredentialRequestAndVerifyResult> => {
+) => {
   const {
     agent,
     publicKeyCredentialRequestOptions,
-    webAuthnPublicKeyCredentialId,
-    publicKey,
-    counter,
-    expectedNewCounter,
-    expectedChallenge = CHALLENGE_BASE64URL,
-    userId = USER_ID,
-    origin = RP_ORIGIN,
+    webAuthnCredential,
+    meta: metaOptions,
+    context: contextOptions,
   } = opts;
 
+  const meta: AuthenticatorAgentMetaArgs = {
+    userId: USER_ID,
+    apiKeyId: null,
+    origin: RP_ORIGIN,
+
+    userPresenceEnabled: true,
+    userVerificationEnabled: true,
+    ...metaOptions,
+  };
+
+  const context: AuthenticatorAgentContextArgs = {
+    ...contextOptions,
+  };
+
+  const expectedRPID =
+    publicKeyCredentialRequestOptions.rpId ?? new URL(meta.origin).hostname;
+
   const publicKeyCredential = await agent.getAssertion({
-    origin,
+    origin: meta.origin,
     options: {
       publicKey: publicKeyCredentialRequestOptions,
     },
     sameOriginWithAncestors: true,
 
     // Internal options
-    meta: {
-      userId,
-      apiKeyId: null,
-      origin,
-
-      userPresenceEnabled: true,
-      userVerificationEnabled: true,
-    },
-    context: undefined,
+    meta,
+    context,
   });
 
-  const authenticationVerification = await verifyAuthenticationResponse({
-    response:
-      PublicKeyCredentialOrApplicablePublicKeyCredentialsListDtoSchema.encode(
+  const authenticationVerificationResponse = await verifyAuthenticationResponse(
+    {
+      response: PublicKeyCredentialDtoSchema.encode(
         publicKeyCredential,
       ) as AuthenticationResponseJSON,
-    expectedChallenge,
-    expectedOrigin: RP_ORIGIN,
-    expectedRPID: RP_ID,
-    credential: {
-      id: webAuthnPublicKeyCredentialId,
-      publicKey: publicKey,
-      counter,
+      expectedChallenge: toB64(publicKeyCredentialRequestOptions.challenge),
+      expectedOrigin: meta.origin,
+      expectedRPID,
+      credential: webAuthnCredential,
+      requireUserVerification:
+        publicKeyCredentialRequestOptions.userVerification ===
+        UserVerification.REQUIRED,
     },
-    requireUserVerification:
-      publicKeyCredentialRequestOptions.userVerification ===
-      UserVerification.REQUIRED,
-  });
+  );
+
+  const parsedAuthenticatorData = parseAuthenticatorData(
+    (publicKeyCredential.response as AuthenticatorAssertionResponse)
+      .authenticatorData,
+  );
 
   // The most important check: confirm that the authentication was successful.
-  expect(authenticationVerification.verified).toBe(true);
+  expect(authenticationVerificationResponse.verified).toBe(true);
 
-  // A critical security check: ensure the signature counter has incremented (if expected).
-  if (expectedNewCounter !== undefined) {
-    expect(authenticationVerification.authenticationInfo.newCounter).toBe(
-      expectedNewCounter,
-    );
-  }
+  expect(
+    authenticationVerificationResponse.authenticationInfo.credentialID,
+  ).toBe(webAuthnCredential.id);
 
-  return { authenticationVerification };
+  return {
+    parsedAuthenticatorData,
+    authenticationVerificationResponse,
+    publicKeyCredential,
+  };
 };
