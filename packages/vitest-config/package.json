@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     "./unit": "./src/unit.ts",
-    "./integration": "./src/integration.ts"
+    "./integration": "./src/integration.ts",
+    "./consts": "./src/consts.ts"
   },
   "scripts": {
     "lint": "eslint .",
