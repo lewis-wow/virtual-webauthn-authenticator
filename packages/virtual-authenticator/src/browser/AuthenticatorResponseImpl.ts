@@ -1,7 +1,7 @@
 import type { Uint8Array_ } from '@repo/types';
 import type { AuthenticatorResponse } from '@repo/types/dom';
 
-import { bytesToArrayBuffer } from './helpers';
+import { bytesToArrayBuffer } from './helpers/bytesConversion';
 
 export type AuthenticatorResponseImplOptions = {
   clientDataJSON: Uint8Array_;

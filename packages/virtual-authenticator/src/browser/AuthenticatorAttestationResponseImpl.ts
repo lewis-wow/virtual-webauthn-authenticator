@@ -18,7 +18,7 @@ import {
   AuthenticatorResponseImpl,
   type AuthenticatorResponseImplOptions,
 } from './AuthenticatorResponseImpl';
-import { bytesToArrayBuffer } from './helpers';
+import { bytesToArrayBuffer } from './helpers/bytesConversion';
 
 export type DecodedAttestationObject = {
   authData: Uint8Array_;
