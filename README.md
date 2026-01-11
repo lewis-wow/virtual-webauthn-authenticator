@@ -127,7 +127,9 @@ pnpm dev --filter '!@repo/nextjs-example'
 To run Next.js passkeys example, run following command:
 
 ```bash
-pnpm start --filter @repo/nextjs-example
+cd examples/nextjs
+pnpm db:generate
+pnpm start
 ```
 
 It will start Next.js server on `http://localhost:4000`.
