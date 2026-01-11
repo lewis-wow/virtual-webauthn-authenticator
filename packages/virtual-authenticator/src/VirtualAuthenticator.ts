@@ -1,51 +1,59 @@
 import { assertSchema } from '@repo/assert';
+import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
-import * as cbor from 'cbor2';
+import { Hash, HashOnion } from '@repo/crypto';
+import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
 
-import type {
-  AuthenticatorGetAssertionPayload,
-  AuthenticatorMakeCredentialPayload,
-  IAuthenticator,
-} from './IAuthenticator';
-import type { IAttestationObjectMap, IAttestationStatementMap } from './cbor';
+import type { IAuthenticator } from './IAuthenticator';
+import type { AttestationObjectMap } from './cbor/AttestationObjectMap';
+import type { AttestationStatementMap } from './cbor/AttestationStatementMap';
+import { AuthenticatorGetAssertionArgsDtoSchema } from './dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
+import { AuthenticatorMakeCredentialArgsDtoSchema } from './dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
+import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
+import { CredentialSelectException } from './exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
+import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
-} from './validation/AuthenticatorContextArgsSchema';
+} from './validation/authenticator/AuthenticatorContextArgsSchema';
 import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
-} from './validation/AuthenticatorGetAssertionArgsSchema';
+} from './validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import {
+  AuthenticatorGetAssertionResponseSchema,
+  type AuthenticatorGetAssertionResponse,
+} from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
-} from './validation/AuthenticatorMakeCredentialArgsSchema';
+} from './validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import {
+  AuthenticatorMakeCredentialResponseSchema,
+  type AuthenticatorMakeCredentialResponse,
+} from './validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
-} from './validation/AuthenticatorMetaArgsSchema';
+} from './validation/authenticator/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
-} from './validation/CredParamSchema';
-
-export type AuthenticatorBackendContext = {
-  apiKeyId: string;
-};
+} from './validation/spec/CredParamSchema';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
@@ -61,6 +69,8 @@ export type VirtualAuthenticatorOptions = {
  *
  * Through configurable metadata, it allows simulation of various hardware states (e.g., User Verification
  * availability, User Presence) and handles specific error scenarios like `UserVerificationNotAvailable`.
+ *
+ * @see https://www.w3.org/TR/webauthn-3/#sctn-automation-virtual-authenticators
  */
 export class VirtualAuthenticator implements IAuthenticator {
   public readonly webAuthnRepository: IWebAuthnRepository;
@@ -85,6 +95,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     Fmt.PACKED,
   ];
 
+  static readonly MOST_PREFFERED_ATTESTATION_FORMAT = Fmt.NONE;
+
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
    *
@@ -93,11 +105,10 @@ export class VirtualAuthenticator implements IAuthenticator {
    *
    * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
    * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
-   * @throws {CredentialTypesNotSupported} Throws this error if no parameter in the array is supported.
    */
-  private _findFirstSupportedCredTypesAndPubKeyAlgsOrThrow(
+  private _findFirstSupportedCredTypesAndPubKeyAlgOrNull(
     pubKeyCredParams: PubKeyCredParam[],
-  ): SupportedPubKeyCredParam {
+  ): SupportedPubKeyCredParam | null {
     for (const pubKeyCredParam of pubKeyCredParams) {
       const result = SupportedPubKeyCredParamSchema.safeParse(pubKeyCredParam);
       if (result.success) {
@@ -105,7 +116,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       }
     }
 
-    throw new CredentialTypesNotSupported();
+    return null;
   }
 
   /**
@@ -113,22 +124,22 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
    */
   private async _createAttestedCredentialData(opts: {
-    credentialID: Uint8Array;
-    COSEPublicKey: Uint8Array;
-  }): Promise<Uint8Array> {
-    const { credentialID, COSEPublicKey } = opts;
+    credentialId: Uint8Array_;
+    COSEPublicKey: Uint8Array_;
+  }): Promise<Uint8Array_> {
+    const { credentialId, COSEPublicKey } = opts;
 
     // Byte length L of Credential ID, 16-bit unsigned big-endian integer.
     // Length (in bytes): 2
     const credentialIdLength = Buffer.alloc(2);
-    credentialIdLength.writeUInt16BE(opts.credentialID.length, 0);
+    credentialIdLength.writeUInt16BE(opts.credentialId.length, 0);
 
     // Attested credential data: variable-length byte array for attestation object.
     // @see https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
     const attestedCredentialData = Buffer.concat([
       VirtualAuthenticator.AAGUID,
       credentialIdLength,
-      credentialID,
+      credentialId,
       // The credential public key encoded in COSEKey format, as defined using the CTAP2 canonical CBOR encoding form.
       // The COSEKey-encoded credential public key MUST contain the "alg" parameter
       // and MUST NOT contain any other OPTIONAL parameters.
@@ -150,11 +161,11 @@ export class VirtualAuthenticator implements IAuthenticator {
   private async _createAuthenticatorData(opts: {
     rpId: string;
     counter: number;
-    attestedCredentialData: Uint8Array | undefined;
+    attestedCredentialData: Uint8Array_ | undefined;
     requireUserVerification: boolean;
     userVerificationEnabled: boolean;
     userPresenceEnabled: boolean;
-  }): Promise<Uint8Array> {
+  }): Promise<Uint8Array_> {
     const {
       rpId,
       counter,
@@ -239,10 +250,13 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Bit 6: Attested Credential Data (AT)
     // Only set if we are creating a new credential (registration),
-    // indicated by the presence of credentialID
+    // indicated by the presence of credentialId
     if (attestedCredentialData) {
       flagsInt |= 0b01000000;
     }
+
+    // Bit 7: Extension data included
+    // NOTE: Extension data is never included.
 
     const flags = Buffer.from([flagsInt]);
 
@@ -280,9 +294,9 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (Step 11)
    */
   private _createDataToSign(opts: {
-    clientDataHash: Uint8Array;
-    authData: Uint8Array;
-  }): Uint8Array {
+    clientDataHash: Uint8Array_;
+    authData: Uint8Array_;
+  }): Uint8Array_ {
     const { clientDataHash, authData } = opts;
 
     const dataToSign = Buffer.concat([authData, clientDataHash]);
@@ -294,7 +308,7 @@ export class VirtualAuthenticator implements IAuthenticator {
    * Handles 'none' attestation (no attestation statement).
    * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
    */
-  private _handleAttestationNone(): IAttestationStatementMap {
+  private _handleAttestationNone(): AttestationStatementMap {
     // For "none" attestation, the attestation statement is an empty CBOR map
     const attStmt = new Map<never, never>();
 
@@ -308,10 +322,10 @@ export class VirtualAuthenticator implements IAuthenticator {
   private async _handleAttestationPacked(opts: {
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
     data: {
-      clientDataHash: Uint8Array;
-      authData: Uint8Array;
+      clientDataHash: Uint8Array_;
+      authData: Uint8Array_;
     };
-  }): Promise<IAttestationStatementMap> {
+  }): Promise<AttestationStatementMap> {
     const { webAuthnPublicKeyCredential, data } = opts;
 
     const dataToSign = this._createDataToSign(data);
@@ -332,7 +346,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     const attStmt = new Map<string, Uint8Array | number>([
       ['alg', alg],
       ['sig', new Uint8Array(signature)],
-    ]) as IAttestationStatementMap;
+    ]) as AttestationStatementMap;
 
     return attStmt;
   }
@@ -346,10 +360,12 @@ export class VirtualAuthenticator implements IAuthenticator {
    * If attestationFormats contains no supported value, use the most preferred format.
    *
    * @param attestationFormats - List of attestation format identifiers from the client
-   * @returns The first supported format, or the most preferred format (Fmt.NONE) if none are supported
+   * @returns The first supported format, or the most preferred format if none are supported
    */
   private _findFirstSupportedAttestationFormat(opts: {
     attestationFormats: string[];
+    // NOTE: Not used, as enterprise attestation is not supported.
+    enterpriseAttestationPossible: boolean;
   }): Fmt {
     const { attestationFormats } = opts;
 
@@ -362,8 +378,11 @@ export class VirtualAuthenticator implements IAuthenticator {
         ),
     );
 
-    // If no supported format found, return the most preferred format (Fmt.NONE)
-    return (firstSupportedAttestationFormat as Fmt) ?? Fmt.NONE;
+    // If no supported format found, return the most preferred format
+    return (
+      (firstSupportedAttestationFormat as Fmt) ??
+      VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT
+    );
   }
 
   /**
@@ -373,13 +392,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
 
     attestationFormat: Fmt;
-    authData: Uint8Array;
-    hash: Uint8Array;
-  }): Promise<IAttestationObjectMap> {
+    authData: Uint8Array_;
+    hash: Uint8Array_;
+  }): Promise<AttestationObjectMap> {
     const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } =
       opts;
 
-    let attStmt: IAttestationStatementMap;
+    let attStmt: AttestationStatementMap;
 
     switch (attestationFormat) {
       case Fmt.NONE:
@@ -401,21 +420,37 @@ export class VirtualAuthenticator implements IAuthenticator {
       ['fmt', attestationFormat],
       ['attStmt', attStmt],
       ['authData', authData],
-    ]) as IAttestationObjectMap;
+    ]) as AttestationObjectMap;
 
     return attestationObjectMap;
+  }
+
+  private _hashAuthenticatorMakeCredentialOptionsAsHex(opts: {
+    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+    meta: AuthenticatorMetaArgs;
+  }): string {
+    const { authenticatorMakeCredentialArgs, meta } = opts;
+
+    return Hash.sha256JSONHex({
+      authenticatorMakeCredentialArgs:
+        AuthenticatorMakeCredentialArgsDtoSchema.encode(
+          authenticatorMakeCredentialArgs,
+        ),
+      meta,
+    });
   }
 
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
   public async authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorMakeCredentialPayload> {
+  }): Promise<AuthenticatorMakeCredentialResponse> {
     const { authenticatorMakeCredentialArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -426,7 +461,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     );
 
     // Meta validation
-    assertSchema(meta, AuthenticatorMetaArgsSchema);
+    assertSchema(
+      meta,
+      AuthenticatorMetaArgsSchema.extend({
+        userPresenceEnabled: z.literal(true),
+      }),
+    );
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
 
@@ -434,6 +474,9 @@ export class VirtualAuthenticator implements IAuthenticator {
       hash,
       rpEntity,
       userEntity,
+
+      // NOTE: This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
+      // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
       // requireResidentKey,
 
       // NOTE: Should be always true. Just for compatibility with spec.
@@ -442,8 +485,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       requireUserVerification,
       credTypesAndPubKeyAlgs,
 
-      // NOTE: enterpriseAttestationPossible is always false. Just for compatibility with spec.
-      // enterpriseAttestationPossible,
+      enterpriseAttestationPossible,
 
       attestationFormats,
       excludeCredentialDescriptorList,
@@ -455,12 +497,16 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 2: Check if at least one of the specified combinations of
     // PublicKeyCredentialType and cryptographic parameters in
     // credTypesAndPubKeyAlgs is supported.
-    // If not, return an error code equivalent to "NotSupportedError" and
-    // terminate the operation.
     const selectedCredTypeAndAlg =
-      this._findFirstSupportedCredTypesAndPubKeyAlgsOrThrow(
+      this._findFirstSupportedCredTypesAndPubKeyAlgOrNull(
         credTypesAndPubKeyAlgs,
       );
+
+    // If not, return an error code equivalent to "NotSupportedError" and
+    // terminate the operation.
+    if (selectedCredTypeAndAlg === null) {
+      throw new CredentialTypesNotSupported();
+    }
 
     // Step 3: For each descriptor of excludeCredentialDescriptorList:
     if (
@@ -481,7 +527,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       // The authorization gesture MUST include a test of user presence.
       // If the user confirms consent to create a new credential, return an error code equivalent to "InvalidStateError" and terminate the operation.
       // If the user does not consent to create a new credential, return an error code equivalent to "NotAllowedError" and terminate the operation.
-      // NOTE: In this backend authenticator implementation, user consent and presence have already been collected by the agent/client.
+      // NOTE: In this backend authenticator implementation, user consent and presence is not implemented.
       // Finding a matching excluded credential throws CredentialExcluded error.
       // The search for finding existing credential is done as batch operation for effectivity.
       const credentialExists =
@@ -498,28 +544,31 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Step 4: If requireResidentKey is true and the authenticator cannot store a client-side discoverable credential:
     // Return an error code equivalent to "ConstraintError" and terminate the operation.
-    // NOTE: This backend authenticator can store credentials, so this check passes.
+    // NOTE: This virtual authenticator can store client-side discoverable credential.
+    // NOTE: Implemented without need to check.
 
-    // Step 5: If requireUserVerification is true and the authenticator
-    // cannot perform user verification
-    // NOTE: This authenticator's capability is determined by the
-    // agent/client that calls it.
-    // The agent ensures that if requireUserVerification is true, the
-    // authenticator can perform UV.
+    // Step 5: If requireUserVerification is true and the authenticator cannot perform user verification,
+    // return an error code equivalent to "ConstraintError" and terminate the operation.
+    if (
+      requireUserVerification === true &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
 
     // Step 6: Collect an authorization gesture confirming user consent for creating a new credential.
     // The authorization gesture MUST include a test of user presence.
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    // NOTE: In this backend authenticator, user consent and presence are assumed to have been collected by the agent/client before this operation is invoked. The requireUserPresence and requireUserVerification parameters indicate what was required.
+    // NOTE: Not implemented.
 
     // Step 7: Once the authorization gesture has been completed, generate
     // a new credential object
     // Step 7.1: Let (publicKey, privateKey) be a new pair of cryptographic
     // keys using the FIRST supported algorithm
     const webAuthnPublicKeyCredentialId = randomUUID();
-    const rawCredentialID = UUIDMapper.UUIDtoBytes(
+    const rawCredentialId = UUIDMapper.UUIDtoBytes(
       webAuthnPublicKeyCredentialId,
     );
 
@@ -548,15 +597,17 @@ export class VirtualAuthenticator implements IAuthenticator {
     // userHandle: userHandle
     // otherUI: Any other information the authenticator chooses to include.
 
-    // Step 7.4: If requireResidentKey is true or the authenticator chooses
-    // to create a client-side discoverable credential:
-    // Let credentialId be a new credential id.
-    // Set credentialSource.id to credentialId.
-    // Store credentialSource in the authenticator.
+    // Step 7.4:
+    // If requireResidentKey is true or the authenticator chooses to create a client-side discoverable credential:
+    //    Let credentialId be a new credential id.
+    //    Set credentialSource.id to credentialId.
+    //    Store credentialSource in the authenticator.
     // Otherwise:
-    // Let credentialId be the result of serializing and encrypting credentialSource.
-    // NOTE: In this implementation, we always store credentials in the
-    // repository (backend database).
+    //    Let credentialId be the result of serializing and encrypting credentialSource.
+    // NOTE: This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
+    // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
+    // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
+    // CONCLUSION: Authenticator always chooses to create client-side discoverable credential.
     const webAuthnPublicKeyCredentialWithMeta = await match({
       webAuthnPublicKeyCredentialKeyMetaType:
         webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyMetaType,
@@ -579,7 +630,8 @@ export class VirtualAuthenticator implements IAuthenticator {
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
                 userId: userHandle,
-                apiKeyId: context.apiKeyId,
+                apiKeyId: meta.apiKeyId,
+                isClientSideDiscoverable: true,
               },
             );
 
@@ -598,14 +650,18 @@ export class VirtualAuthenticator implements IAuthenticator {
     // - Zero (for U2F devices)
     // - Global signature counter's actual value
     // - Per-credential counter initialized to zero
-    // NOTE: The counter is initialized in the repository as part of credential creation.
+    // NOTE: Virtual authenticator supports Per-credential counter initialized to zero.
+    // The Per-credential counter is initialized in the repository as part of credential creation.
 
-    // Step 11: Let attestedCredentialData be the attested credential data
-    // byte array including:
+    // Step 11: Let attestedCredentialData be the attested credential data byte array including:
     // The authenticator's AAGUID.
     // The length of credentialId (2 bytes, big-endian).
     // credentialId.
     // The credential public key encoded in COSE_Key format.
+    const attestedCredentialData = await this._createAttestedCredentialData({
+      credentialId: rawCredentialId,
+      COSEPublicKey: webAuthnPublicKeyCredentialWithMeta.COSEPublicKey,
+    });
 
     // Step 12: Let attestationFormat be the first supported attestation
     // statement format identifier from attestationFormats, taking into
@@ -614,16 +670,12 @@ export class VirtualAuthenticator implements IAuthenticator {
     // preferred format.
     const attestationFormat = this._findFirstSupportedAttestationFormat({
       attestationFormats,
-    });
-
-    const attestedCredentialData = await this._createAttestedCredentialData({
-      credentialID: rawCredentialID,
-      COSEPublicKey: webAuthnPublicKeyCredentialWithMeta.COSEPublicKey,
+      enterpriseAttestationPossible: enterpriseAttestationPossible ?? false,
     });
 
     // Step 13: Let authenticatorData be the byte array specified in §6.1
     // Authenticator Data including attestedCredentialData and
-    // processedExtensions (if any).
+    // processedExtensions (if any) as the extensions.
     const authenticatorData = await this._createAuthenticatorData({
       rpId: rpEntity.id,
       counter: webAuthnPublicKeyCredentialWithMeta.counter,
@@ -647,22 +699,45 @@ export class VirtualAuthenticator implements IAuthenticator {
     const attestationObjectCborEncoded = cbor.encode(attestationObject);
 
     // Return the attestation object to the client
-    return {
-      credentialId: rawCredentialID,
+    const authenticatorMakeCredentialResponse = {
+      credentialId: rawCredentialId,
       attestationObject: attestationObjectCborEncoded,
     };
+
+    assertSchema(
+      authenticatorMakeCredentialResponse,
+      AuthenticatorMakeCredentialResponseSchema,
+    );
+
+    return authenticatorMakeCredentialResponse;
+  }
+
+  private _hashAuthenticatorGetAssertionOptionsAsHex(opts: {
+    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
+    meta: AuthenticatorMetaArgs;
+  }): string {
+    const { authenticatorGetAssertionArgs, meta } = opts;
+
+    return Hash.sha256JSONHex({
+      authenticatorGetAssertionArgs:
+        AuthenticatorGetAssertionArgsDtoSchema.encode(
+          authenticatorGetAssertionArgs,
+        ),
+      meta,
+    });
   }
 
   /**
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
   public async authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
     context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorGetAssertionPayload> {
+  }): Promise<AuthenticatorGetAssertionResponse> {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
@@ -677,13 +752,20 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Context validation
     assertSchema(context, AuthenticatorContextArgsSchema);
 
+    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
+      authenticatorGetAssertionArgs,
+      meta,
+    });
+
+    // Context hash validation
+    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
+
     const {
       hash,
       rpId,
       allowCredentialDescriptorList,
 
-      // NOTE: Should be always true. Just for compatibility with spec.
-      // requireUserPresence,
+      requireUserPresence,
       requireUserVerification,
 
       // NOTE: Extensions are not implemented.
@@ -691,12 +773,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     } = authenticatorGetAssertionArgs;
 
     // Step 2: Let credentialOptions be a new empty set of public key credential sources.
-    // NOTE: Not implemented as a separate data structure. Credential filtering is handled
-    // directly in the repository query below.
+    // NOTE: Implemented below as a part of next steps.
 
-    // Step 3-7 and Step 9: Credential selection, user consent, and counter increment
-    // This operation combines multiple spec steps into a single atomic repository operation:
-    //
     // Step 3: If allowCredentialDescriptorList was supplied, then for each descriptor of allowCredentialDescriptorList:
     //   If allowCredentialDescriptorList was supplied:
     //     For each descriptor of allowCredentialDescriptorList:
@@ -704,40 +782,27 @@ export class VirtualAuthenticator implements IAuthenticator {
     //       If credSource is not null, append it to credentialOptions.
     // Step 4: Otherwise (allowCredentialDescriptorList was not supplied):
     //     For each key → credSource of this authenticator's credentials map, append credSource to credentialOptions.
-    //   NOTE: Implemented via repository query with optional allowCredentialDescriptorList filter.
-    //
+    // NOTE: Implemented via repository query with optional allowCredentialDescriptorList filter.
+
+    // NOTE: All credentials created by this authenticator are client-side discoverable!
+    // This virtual authenticator always create client-side discoverable credential as the private key cannot leave Key Vault.
+    // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
+    // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
+    // @see https://www.w3.org/TR/webauthn-3/#client-side-discoverable-credential
+    // A discoverable credential capable authenticator can generate an assertion signature for
+    // a discoverable credential given only an RP ID, which in turn necessitates that the public key credential source is stored in the authenticator or client platform.
+    // @see https://www.w3.org/TR/webauthn-3/#server-side-credential
+    // Client-side storage of the public key credential source is not required for a server-side credential.
+
     // Step 5: Filter by rpId
     //   Remove any items from credentialOptions whose rpId is not equal to rpId.
     //   NOTE: Implemented as part of the repository query filter.
-    //
-    // Step 6: Check if credentialOptions is empty
-    //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    //   NOTE: Implemented via repository's orThrow - throws if no credential found.
-    //
-    // Step 7: Prompt user to select credential and collect authorization gesture
-    //   Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-    //   Collect an authorization gesture confirming user consent for using selectedCredential.
-    //   If requireUserVerification is true, the authorization gesture MUST include user verification.
-    //   If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
-    //   If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    //   NOTE: User prompts and gestures are not applicable to a backend virtual authenticator for testing.
-    //   The implementation automatically selects the first matching credential. User verification and presence
-    //   checks are handled later in Step 10 during authenticatorData creation.
-    //
-    // Step 9: Increment signature counter
-    //   Increment the credential associated signature counter or the global signature counter value,
-    //   depending on which approach is implemented by the authenticator, by some positive value.
-    //   If the authenticator does not implement a signature counter, let the signature counter value remain constant at zero.
-    //   NOTE: Implemented atomically in the repository operation to prevent race conditions.
-    //   The counter is incremented by 1 for each assertion operation.
-    //
-    // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (steps 3-7, 9)
-    const webAuthnPublicKeyCredentialWithMeta =
-      await this.webAuthnRepository.findFirstAndIncrementCounterAtomicallyOrThrow(
+    let credentialOptions =
+      await this.webAuthnRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
         {
           userId: meta.userId,
           rpId,
-          apiKeyId: context.apiKeyId,
+          apiKeyId: meta.apiKeyId,
           allowCredentialDescriptorList: allowCredentialDescriptorList?.map(
             (allowCredentialDescriptor) =>
               UUIDMapper.bytesToUUID(allowCredentialDescriptor.id),
@@ -745,18 +810,67 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
       );
 
+    if (context?.selectedCredentialOptionId !== undefined) {
+      credentialOptions = credentialOptions.filter((credentialOption) => {
+        return credentialOption.id === context?.selectedCredentialOptionId;
+      });
+    }
+
+    // Step 6: Check if credentialOptions is empty
+    //   If credentialOptions is now empty, return an error code equivalent to "NotAllowedError" and terminate the operation.
+    if (credentialOptions.length === 0) {
+      throw new CredentialOptionsEmpty();
+    }
+
+    // Step 7: Prompt user to select credential and collect authorization gesture
+    // Prompt the user to select a public key credential source selectedCredential from credentialOptions.
+
+    // Prompt user to select credential.
+    if (credentialOptions.length > 1) {
+      throw new CredentialSelectException({
+        credentialOptions,
+        hash: HashOnion.push(optionsHash),
+      });
+    }
+
+    // Collect an authorization gesture confirming user consent for using selectedCredential.
+    // If requireUserVerification is true, the authorization gesture MUST include user verification.
+    if (
+      requireUserVerification === true &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
+    // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
+    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
+      throw new UserPresenceNotAvailable();
+    }
+    // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
+
+    // IMPORTANT: The credential is selected ONLY if there is only one credential.
+    const selectedCredential = credentialOptions[0]!;
+
     // Step 8: Let processedExtensions be the result of authenticator extension processing for each supported extension identifier → authenticator extension input in extensions.
     // NOTE: Extension processing is skipped.
 
-    // Step 9: Increment the credential associated signature counter or the global signature counter value.
-    // NOTE: Already implemented in the webAuthnRepository.
+    // Step 9: Increment signature counter
+    //   Increment the credential associated signature counter or the global signature counter value,
+    //   depending on which approach is implemented by the authenticator, by some positive value.
+    //   If the authenticator does not implement a signature counter, let the signature counter value remain constant at zero.
+    //   NOTE: Implemented atomically in the repository operation to prevent race conditions.
+    //   The counter is incremented by 1 for each assertion operation.
+    const webAuthnPublicKeyCredentialWithMeta =
+      await this.webAuthnRepository.incrementCounter({
+        credentialId: selectedCredential.id,
+      });
 
     // Step 10: Let authenticatorData be the byte array specified in §6.1 Authenticator Data
     // including processedExtensions, if any, as the extensions
     // and excluding attestedCredentialData.
     // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
     const authenticatorData = await this._createAuthenticatorData({
-      // excluding attestedCredentialData
+      // IMPORTANT: exlude attestedCredentialData
       attestedCredentialData: undefined,
       rpId,
       counter: webAuthnPublicKeyCredentialWithMeta.counter,
@@ -802,12 +916,20 @@ export class VirtualAuthenticator implements IAuthenticator {
       webAuthnPublicKeyCredentialWithMeta.userId,
     );
 
-    return {
-      credentialId,
-      authenticatorData,
-      signature,
-      userHandle,
-    };
+    const authenticatorGetAssertionResponse: AuthenticatorGetAssertionResponse =
+      {
+        credentialId,
+        authenticatorData,
+        signature,
+        userHandle,
+      };
+
+    assertSchema(
+      authenticatorGetAssertionResponse,
+      AuthenticatorGetAssertionResponseSchema,
+    );
+
+    return authenticatorGetAssertionResponse;
   }
 
   public async authenticatorCancel() {

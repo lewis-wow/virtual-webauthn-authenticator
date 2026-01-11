@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const URI_TOO_LONG = 'URI_TOO_LONG';
-
 export class URITooLong extends Exception {
-  static status = 414;
-  static code = URI_TOO_LONG;
-
-  constructor(message = 'URI Too Long.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.URI_TOO_LONG_414;
+  static readonly code = 'URITooLong';
+  static message = 'URI Too Long.';
 }

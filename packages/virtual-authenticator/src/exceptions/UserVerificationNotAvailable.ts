@@ -1,10 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const USER_VERIFICATION_NOT_AVAILABLE =
-  'USER_VERIFICATION_NOT_AVAILABLE';
+import { HttpStatusCode } from '@repo/http';
 
 export class UserVerificationNotAvailable extends Exception {
-  static status = 400;
-  static code = USER_VERIFICATION_NOT_AVAILABLE;
+  static status = HttpStatusCode.BAD_REQUEST_400;
+  static readonly code = 'UserVerificationNotAvailable';
   static message = 'User verification not available.';
 }

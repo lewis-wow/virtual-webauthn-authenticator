@@ -1,9 +1,8 @@
 import { Exception } from '@repo/exception';
-
-export const API_KEY_NOT_FOUND = 'API_KEY_NOT_FOUND';
+import { HttpStatusCode } from '@repo/http';
 
 export class ApiKeyNotFound extends Exception {
-  static status = 404;
-  static code = API_KEY_NOT_FOUND;
+  static status = HttpStatusCode.NOT_FOUND_404;
+  static readonly code = 'ApiKeyNotFound';
   static message = 'Api key not found.';
 }

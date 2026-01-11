@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const I_M_A_TEAPOT = 'I_M_A_TEAPOT';
-
 export class ImATeapot extends Exception {
-  static status = 418;
-  static code = I_M_A_TEAPOT;
-
-  constructor(message = 'I am a teapot.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.IM_A_TEAPOT_418;
+  static readonly code = 'ImATeapot';
+  static message = 'I am a teapot.';
 }

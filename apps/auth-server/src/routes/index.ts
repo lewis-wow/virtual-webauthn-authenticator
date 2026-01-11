@@ -23,8 +23,8 @@ export const app = factory.createApp().use('*', async (ctx, next) => {
 app.route('/', apiKey);
 
 app.get('/.well-known/jwks.json', async (c) => {
-  const jwtIssuer = c.get('container').resolve('jwtIssuer');
-  return c.json(await jwtIssuer.jsonWebKeySet());
+  const jwks = c.get('container').resolve('jwks');
+  return c.json(await jwks.getJSONWebKeySet());
 });
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {

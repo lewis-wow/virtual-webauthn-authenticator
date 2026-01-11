@@ -15,10 +15,13 @@ import { AzureCredentialProvider } from './services/AzureCredential.provider';
 import { AzureKeyVaultKeyProviderProvider } from './services/AzureKeyVaultKeyProvider.provider';
 import { CryptographyClientFactoryProvider } from './services/CryptographyClientFactory.provider';
 import { EnvProvider } from './services/Env.provider';
+import { JwksProvider } from './services/Jwks.provider';
+import { JwtProvider } from './services/Jwt.provider';
 import { JwtAudienceProvider } from './services/JwtAudience.provider';
 import { KeyClientProvider } from './services/KeyClient.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
+import { PrismaVirtualAuthenticatorJwksRepositoryProvider } from './services/PrismaVirtualAuthenticatorJwksRepository.provider';
 import { PrismaWebAuthnRepositoryProvider } from './services/PrismaWebAuthnRepository.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticatorAgent.provider';
@@ -51,6 +54,9 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
+    JwksProvider,
+    JwtProvider,
+    PrismaVirtualAuthenticatorJwksRepositoryProvider,
   ],
   exports: [
     PrismaService,
@@ -66,6 +72,9 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
+    JwksProvider,
+    JwtProvider,
+    PrismaVirtualAuthenticatorJwksRepositoryProvider,
   ],
 })
 export class AppModule implements NestModule {

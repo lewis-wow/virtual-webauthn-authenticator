@@ -1,0 +1,47 @@
+import { BytesSchemaCodec } from '@repo/core/zod-validation';
+import z from 'zod';
+
+import { AuthenticatorMakeCredentialArgsSchema } from '../../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import { PublicKeyCredentialDescriptorDtoSchema } from '../spec/PublicKeyCredentialDescriptorDtoSchema';
+import { PublicKeyCredentialUserEntityDtoSchema } from '../spec/PublicKeyCredentialUserEntityDtoSchema';
+
+export const AuthenticatorMakeCredentialArgsDtoSchema =
+  AuthenticatorMakeCredentialArgsSchema.extend({
+    /**
+     * Hash of the serialized client data collected by the host.
+     *
+     * Correspoding parameter name: clientDataHash (0x02)
+     * CTAP Data type: Byte String
+     * Required
+     */
+    hash: BytesSchemaCodec,
+
+    /**
+     * The authenticator associates the created public key credential with the account identifier,
+     * and MAY also associate any or all of the user name, and user display name.
+     * The user name and display name are OPTIONAL for privacy reasons for single-factor scenarios where only user presence is required.
+     *
+     * Corresponding parameter name: name (0x03)
+     * CTAP Data type: PublicKeyCredentialUserEntity
+     * Required
+     */
+    userEntity: PublicKeyCredentialUserEntityDtoSchema,
+
+    /**
+     * An OPTIONAL list of PublicKeyCredentialDescriptor objects provided by the Relying Party
+     * with the intention that, if any of these are known to the authenticator,
+     * it SHOULD NOT create a new credential.
+     * excludeCredentialDescriptorList contains a list of known credentials.
+     *
+     * Corresponding parameter name: excludeList (0x05)
+     * CTAP Data type: PublicKeyCredentialDescriptor[]
+     * Optional
+     */
+    excludeCredentialDescriptorList: z
+      .array(PublicKeyCredentialDescriptorDtoSchema)
+      .optional()
+      .meta({
+        description:
+          'Optional list of credentials to exclude from creation (known credentials).',
+      }),
+  });

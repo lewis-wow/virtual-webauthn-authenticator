@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const EXPECTATION_FAILED = 'EXPECTATION_FAILED';
-
 export class ExpectationFailed extends Exception {
-  static status = 417;
-  static code = EXPECTATION_FAILED;
-
-  constructor(message = 'Expectation Failed.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.EXPECTATION_FAILED_417;
+  static readonly code = 'ExpectationFailed';
+  static message = 'Expectation Failed.';
 }

@@ -9,16 +9,21 @@ import {
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
+import { Jwks, Jwt } from '@repo/crypto';
 import { Forbidden } from '@repo/exception/http';
+import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
+import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
 } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
+import z from 'zod';
 
-import { Jwt } from '../decorators/Jwt.decorator';
+import { CredentialSelectException } from '../../../../packages/virtual-authenticator/src/exceptions/CredentialSelectException';
+import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 
@@ -29,6 +34,8 @@ export class CredentialsController {
     private readonly virtualAuthenticatorAgent: VirtualAuthenticatorAgent,
     private readonly logger: Logger,
     private readonly activityLog: ActivityLog,
+    private readonly jwt: Jwt,
+    private readonly jwks: Jwks,
   ) {}
 
   /**
@@ -39,7 +46,7 @@ export class CredentialsController {
    */
   private async _auditCredentialAction(opts: {
     action: LogAction;
-    publicKeyCredentialRawId: Uint8Array;
+    publicKeyCredentialRawId: Uint8Array_;
     jwtPayload: JwtPayload;
   }): Promise<void> {
     const { action, publicKeyCredentialRawId, jwtPayload } = opts;
@@ -58,7 +65,7 @@ export class CredentialsController {
 
   @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
-  async createCredential(@Jwt() jwtPayload: JwtPayload) {
+  async createCredential(@JwtDecorator() jwtPayload: JwtPayload) {
     return tsRestHandler(
       nestjsContract.api.credentials.create,
       async ({ body }) => {
@@ -99,10 +106,12 @@ export class CredentialsController {
             meta: {
               origin: meta.origin,
               userId: userId,
+              apiKeyId,
+
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
             },
-            context: {
-              apiKeyId: apiKeyId,
-            },
+            context: undefined,
           });
 
         await this._auditCredentialAction({
@@ -112,8 +121,10 @@ export class CredentialsController {
         });
 
         return {
-          status: 200,
-          body: CreateCredentialResponseSchema.encode(publicKeyCredential),
+          status: HttpStatusCode.OK_200,
+          body: CreateCredentialResponseSchema[HttpStatusCode.OK_200].encode(
+            publicKeyCredential,
+          ),
         };
       },
     );
@@ -121,11 +132,11 @@ export class CredentialsController {
 
   @TsRestHandler(nestjsContract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
-  async getCredential(@Jwt() jwtPayload: JwtPayload) {
+  async getCredential(@JwtDecorator() jwtPayload: JwtPayload) {
     return tsRestHandler(
       nestjsContract.api.credentials.get,
       async ({ body }) => {
-        const { publicKeyCredentialRequestOptions, meta } = body;
+        const { publicKeyCredentialRequestOptions, meta, context } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
         if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
@@ -136,33 +147,67 @@ export class CredentialsController {
           userId: userId,
         });
 
-        const publicKeyCredential =
-          await this.virtualAuthenticatorAgent.getAssertion({
-            origin: meta.origin,
-            options: {
-              publicKey: publicKeyCredentialRequestOptions,
-              signal: undefined,
-            },
-            sameOriginWithAncestors: true,
+        let contextHash: string | undefined = undefined;
 
-            // Internal options
-            meta: {
-              origin: meta.origin,
-              userId: userId,
+        if (context?.hash !== undefined) {
+          const { hash } = await Jwt.validateToken(
+            context?.hash,
+            z.object({ hash: z.string() }),
+            {
+              jwks: await this.jwks.getJSONWebKeySet(),
             },
-            context: { apiKeyId },
+          );
+
+          contextHash = hash;
+        }
+
+        try {
+          const publicKeyCredential =
+            await this.virtualAuthenticatorAgent.getAssertion({
+              origin: meta.origin,
+              options: {
+                publicKey: publicKeyCredentialRequestOptions,
+                signal: undefined,
+              },
+              sameOriginWithAncestors: true,
+
+              // Internal options
+              meta: {
+                origin: meta.origin,
+                userId: userId,
+                apiKeyId,
+
+                userPresenceEnabled: true,
+                userVerificationEnabled: true,
+              },
+              context: {
+                hash: contextHash,
+                selectedCredentialOptionId: context?.selectedCredentialOptionId,
+              },
+            });
+
+          await this._auditCredentialAction({
+            action: LogAction.GET,
+            publicKeyCredentialRawId: publicKeyCredential.rawId,
+            jwtPayload,
           });
 
-        await this._auditCredentialAction({
-          action: LogAction.GET,
-          publicKeyCredentialRawId: publicKeyCredential.rawId,
-          jwtPayload,
-        });
+          return {
+            status: HttpStatusCode.OK_200,
+            body: GetCredentialResponseSchema[HttpStatusCode.OK_200].encode(
+              publicKeyCredential,
+            ),
+          };
+        } catch (error) {
+          if (error instanceof CredentialSelectException) {
+            throw new CredentialSelectException({
+              credentialOptions: error.data.credentialOptions,
+              hash: await this.jwt.sign({ hash: error.data.hash }),
+            });
+          }
 
-        return {
-          status: 200,
-          body: GetCredentialResponseSchema.encode(publicKeyCredential),
-        };
+          throw error;
+        }
       },
     );
   }

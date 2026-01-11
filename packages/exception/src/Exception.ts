@@ -1,44 +1,67 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ExceptionMessage<T = any> = string | ((data: T) => string);
+import { omitUndefined } from '@repo/utils';
 
-export type ExceptionOptions<T = undefined> = {
-  status?: number;
-  code?: string;
-  message?: ExceptionMessage<T>;
-  cause?: unknown;
-} & (T extends undefined ? { data?: undefined } : { data: T });
+import {
+  ExceptionShapeSchema,
+  type AnyExceptionShape,
+} from './validation/ExceptionShapeSchema';
 
-export class Exception<T = undefined> extends Error {
-  static readonly status: number = 500;
-  static readonly code: string = 'INTERNAL_SERVER_ERROR';
-  static readonly message: ExceptionMessage = 'An unexpected error occurred.';
+export class Exception<TData = undefined>
+  extends Error
+  implements AnyExceptionShape
+{
+  static readonly message: string = 'An unexpected error occurred.';
+  static readonly status?: number;
+  static readonly code: string;
 
-  public readonly status: number;
+  public readonly status?: number;
   public readonly code: string;
+  public readonly data: TData;
 
-  constructor(opts?: ExceptionOptions<T>) {
+  constructor(opts?: Partial<AnyExceptionShape>) {
     // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
     const status = opts?.status ?? ctor.status;
+    const message = opts?.message ?? ctor.message;
     const code = opts?.code ?? ctor.code;
-    const data = opts && 'data' in opts ? opts.data : undefined;
+    const cause = opts?.cause;
+    const data = opts?.data as TData;
 
-    const messageFactory = opts?.message ?? ctor.message;
-    const message =
-      typeof messageFactory === 'function'
-        ? messageFactory(data as T)
-        : messageFactory;
+    super(message, { cause });
+    Object.setPrototypeOf(this, new.target.prototype);
 
-    // Pass message and cause to the parent Error class
-    super(message, { cause: opts?.cause });
-
-    this.name = ctor.name;
-    this.status = status;
     this.code = code;
+    this.status = status;
+    this.data = data;
+  }
 
-    if (!this.code) {
-      throw new Error(`Exception ${this.name} requires a 'code'.`);
+  static fromResponse(opts: {
+    json: unknown;
+    status: number;
+  }): Exception | null {
+    const { json, status } = opts;
+
+    const parseResult = ExceptionShapeSchema.safeParse(json);
+
+    if (!parseResult.success) {
+      return null;
     }
+
+    return new Exception({ ...parseResult.data, status });
+  }
+
+  toJSON(opts?: { omitData?: boolean }) {
+    return omitUndefined({
+      message: this.message,
+      code: this.code,
+      data: opts?.omitData === true ? undefined : this.data,
+    });
+  }
+
+  toResponse(): Response {
+    return Response.json(this.toJSON(), { status: this.status ?? 500 });
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyException = Exception<any>;

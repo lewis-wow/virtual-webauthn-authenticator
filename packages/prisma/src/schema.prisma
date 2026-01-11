@@ -118,15 +118,16 @@ model Jwks {
 }
 
 model WebAuthnPublicKeyCredential {
-  id            String   @id @default(uuid())
-  name          String?
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  apiKey        ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
-  apiKeyId      String?
-  COSEPublicKey Bytes
-  counter       Int      @default(0)
-  transports    String[]
+  id                       String   @id @default(uuid())
+  name                     String?
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                   String
+  apiKey                   ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  apiKeyId                 String?
+  COSEPublicKey            Bytes
+  counter                  Int      @default(0)
+  isClientSideDiscoverable Boolean
+  transports               String[]
 
   webAuthnPublicKeyCredentialKeyMetaType     WebAuthnPublicKeyCredentialKeyMetaType
   webAuthnPublicKeyCredentialKeyVaultKeyMeta WebAuthnPublicKeyCredentialKeyVaultKeyMeta?

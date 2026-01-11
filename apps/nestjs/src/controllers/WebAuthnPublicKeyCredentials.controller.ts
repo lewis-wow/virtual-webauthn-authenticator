@@ -11,6 +11,7 @@ import {
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { Forbidden } from '@repo/exception/http';
+import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { Prisma, WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
@@ -74,8 +75,10 @@ export class WebAuthnPublicKeyCredentialsController {
         });
 
         return {
-          status: 200,
-          body: ListWebAuthnPublicKeyCredentialsResponseSchema.encode(result),
+          status: HttpStatusCode.OK_200,
+          body: ListWebAuthnPublicKeyCredentialsResponseSchema[
+            HttpStatusCode.OK_200
+          ].encode(result),
         };
       },
     );
@@ -113,10 +116,10 @@ export class WebAuthnPublicKeyCredentialsController {
         }
 
         return {
-          status: 200,
-          body: GetWebAuthnPublicKeyCredentialResponseSchema.encode(
-            webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential,
-          ),
+          status: HttpStatusCode.OK_200,
+          body: GetWebAuthnPublicKeyCredentialResponseSchema[
+            HttpStatusCode.OK_200
+          ].encode(webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential),
         };
       },
     );
@@ -190,10 +193,10 @@ export class WebAuthnPublicKeyCredentialsController {
         });
 
         return {
-          status: 200,
-          body: DeleteWebAuthnPublicKeyCredentialResponseSchema.encode(
-            webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential,
-          ),
+          status: HttpStatusCode.OK_200,
+          body: DeleteWebAuthnPublicKeyCredentialResponseSchema[
+            HttpStatusCode.OK_200
+          ].encode(webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential),
         };
       },
     );

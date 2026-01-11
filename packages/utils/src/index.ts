@@ -5,3 +5,7 @@ export * from './isError';
 export * from './objectKeys';
 export * from './swapKeysAndValues';
 export * from './omitUndefined';
+export * from './omit';
+export * from './fromB64';
+export * from './toB64';
+export * from './uint8ArraysEqual';

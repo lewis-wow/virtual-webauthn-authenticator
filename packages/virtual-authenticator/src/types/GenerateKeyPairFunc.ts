@@ -1,6 +1,7 @@
+import type { Uint8Array_ } from '@repo/types';
 import type { PickDeep } from 'type-fest';
 
-import type { PubKeyCredParamStrict } from '../validation/PubKeyCredParamSchema';
+import type { PubKeyCredParamStrict } from '../validation/spec/PubKeyCredParamSchema';
 import type { WebAuthnPublicKeyCredentialMeta } from './WebAuthnPublicKeyCredentialMeta';
 
 export type GenerateKeyPairFunc = (args: {
@@ -8,7 +9,7 @@ export type GenerateKeyPairFunc = (args: {
   pubKeyCredParams: PubKeyCredParamStrict;
 }) => Promise<
   {
-    COSEPublicKey: Uint8Array;
+    COSEPublicKey: Uint8Array_;
   } & PickDeep<
     WebAuthnPublicKeyCredentialMeta,
     | 'webAuthnPublicKeyCredentialKeyMetaType'

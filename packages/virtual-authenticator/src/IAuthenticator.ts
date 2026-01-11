@@ -1,68 +1,10 @@
-import type { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
-import type { IWebAuthnRepository } from './repositories';
-import type { AuthenticatorAgentContextArgs } from './validation/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorGetAssertionArgs } from './validation/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorMakeCredentialArgs } from './validation/AuthenticatorMakeCredentialArgsSchema';
-
-/**
- * Payload returned by the authenticatorMakeCredential operation.
- * Contains the newly created credential ID and attestation object.
- * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
- */
-export type AuthenticatorMakeCredentialPayload = {
-  /** The credential ID of the newly created credential */
-  credentialId: Uint8Array;
-  /**
-   * The attestation object containing the authenticator data and
-   * attestation statement
-   */
-  attestationObject: Uint8Array;
-};
-
-/**
- * Payload returned by the authenticatorGetAssertion operation.
- * Contains the assertion data needed to verify the authentication.
- * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
- */
-export type AuthenticatorGetAssertionPayload = {
-  /** The credential ID used to create this assertion */
-  credentialId: Uint8Array;
-  /**
-   * The authenticator data, including RP ID hash, flags, and
-   * signature counter
-   */
-  authenticatorData: Uint8Array;
-  /** The assertion signature over the authenticator data and client data */
-  signature: Uint8Array;
-  /** The user handle associated with this credential */
-  userHandle: Uint8Array;
-};
-
-/**
- * Metadata for a discoverable credential used in silent credential
- * discovery.
- *
- * Discoverable credentials (also known as resident credentials or
- * passkeys) are stored credentials that can be discovered without
- * requiring the relying party to provide a credential ID list.
- * This metadata is used during the silent credential discovery process
- * to identify matching credentials for a given relying party.
- * @see https://www.w3.org/TR/webauthn-3/#silentcredentialdiscovery
- */
-export type DiscoverableCredentialMetadata = {
-  /** The type of the credential, typically "public-key" */
-  type: PublicKeyCredentialType;
-  /** The unique identifier for this credential */
-  credentialId: Uint8Array;
-  /** The relying party identifier that this credential is scoped to */
-  rpId: string;
-  /** The user handle (user ID) associated with this credential */
-  userHandle: Uint8Array;
-};
-
-export type AuthenticatorMetaArgs = {
-  userId: string;
-};
+import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
+import type { AuthenticatorContextArgs } from './validation/authenticator/AuthenticatorContextArgsSchema';
+import type { AuthenticatorGetAssertionArgs } from './validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
+import type { AuthenticatorMakeCredentialArgs } from './validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from './validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorMetaArgs } from './validation/authenticator/AuthenticatorMetaArgsSchema';
 
 /**
  * Interface defining the authenticator operations as specified in the
@@ -81,23 +23,25 @@ export interface IAuthenticator {
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
   authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    context: AuthenticatorAgentContextArgs;
+    context: AuthenticatorContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorMakeCredentialPayload>;
+  }): Promise<AuthenticatorMakeCredentialResponse>;
 
   /**
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
   authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    context: AuthenticatorAgentContextArgs;
+    context: AuthenticatorContextArgs;
     meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorGetAssertionPayload>;
+  }): Promise<AuthenticatorGetAssertionResponse>;
 
   /**
    * The authenticatorCancel operation.
@@ -115,27 +59,4 @@ export interface IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-cancel
    */
   authenticatorCancel(opts: { meta: AuthenticatorMetaArgs }): Promise<void>;
-
-  /**
-   * The authenticatorSilentCredentialDiscovery operation.
-   * This is an optional operation authenticators may support to enable
-   * conditional user mediation (conditional UI).
-   *
-   * When invoked with a relying party ID, this operation silently
-   * discovers and returns metadata for all discoverable credentials
-   * stored by the authenticator that are scoped to the given RP ID.
-   * This allows the user agent to present available credentials in
-   * autofill UI without requiring user interaction with the
-   * authenticator.
-   *
-   * The operation returns an array of credential metadata, which
-   * includes the credential ID, type, RP ID, and user handle for each
-   * matching discoverable credential. The operation must not involve
-   * any user interaction or verification.
-   * @see https://www.w3.org/TR/webauthn-3/#silentcredentialdiscovery
-   */
-  authenticatorSilentCredentialDiscovery?(opts: {
-    rpId: string;
-    meta: AuthenticatorMetaArgs;
-  }): Promise<DiscoverableCredentialMetadata[]>;
 }

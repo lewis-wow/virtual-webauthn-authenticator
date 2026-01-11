@@ -1,3 +1,4 @@
+import { HttpStatusCode } from '@repo/http';
 import { pick } from 'lodash-es';
 
 import { WebAuthnPublicKeyCredentialBaseDtoSchema } from './components/WebAuthnPublicKeyCredentialBaseDtoSchema';
@@ -29,5 +30,6 @@ export const DeleteWebAuthnPublicKeyCredentialParamsSchema =
 // Outputs
 // -------------------------------------
 
-export const DeleteWebAuthnPublicKeyCredentialResponseSchema =
-  WebAuthnPublicKeyCredentialDtoSchema;
+export const DeleteWebAuthnPublicKeyCredentialResponseSchema = {
+  [HttpStatusCode.OK_200]: WebAuthnPublicKeyCredentialDtoSchema,
+};

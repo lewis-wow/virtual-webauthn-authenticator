@@ -1,3 +1,4 @@
+import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
 // =============================================================================
@@ -8,6 +9,8 @@ import z from 'zod';
 // Outputs
 // -------------------------------------
 
-export const GetHealthcheckResponseSchema = z.object({
-  healthy: z.literal(true),
-});
+export const GetHealthcheckResponseSchema = {
+  [HttpStatusCode.OK_200]: z.object({
+    healthy: z.literal(true),
+  }),
+};

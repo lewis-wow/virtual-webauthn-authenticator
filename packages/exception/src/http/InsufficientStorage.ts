@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const INSUFFICIENT_STORAGE = 'INSUFFICIENT_STORAGE';
-
 export class InsufficientStorage extends Exception {
-  static status = 507;
-  static code = INSUFFICIENT_STORAGE;
-
-  constructor(message = 'Insufficient Storage.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.INSUFFICIENT_STORAGE_507;
+  static readonly code = 'InsufficientStorage';
+  static message = 'Insufficient Storage.';
 }

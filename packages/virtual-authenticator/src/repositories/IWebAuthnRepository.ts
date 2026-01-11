@@ -1,12 +1,16 @@
+import type { Uint8Array_ } from '@repo/types';
+
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
+import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 
 export type CreateKeyVaultDataArgs = {
   id: string;
   name?: string;
-  COSEPublicKey: Uint8Array;
+  COSEPublicKey: Uint8Array_;
   rpId: string;
   userId: string;
   apiKeyId: string | null;
+  isClientSideDiscoverable: boolean;
 } & {
   webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
     keyVaultKeyId: string | null;
@@ -16,14 +20,25 @@ export type CreateKeyVaultDataArgs = {
 };
 
 export interface IWebAuthnRepository {
+  createKeyVaultWebAuthnPublicKeyCredential(
+    data: CreateKeyVaultDataArgs,
+  ): Promise<WebAuthnPublicKeyCredentialWithMeta>;
+
   findAllByRpIdAndCredentialIds(opts: {
     rpId: string;
     credentialIds: string[];
   }): Promise<WebAuthnPublicKeyCredentialWithMeta[]>;
 
-  createKeyVaultWebAuthnPublicKeyCredential(
-    data: CreateKeyVaultDataArgs,
-  ): Promise<WebAuthnPublicKeyCredentialWithMeta>;
+  findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(opts: {
+    rpId: string;
+    userId: string;
+    apiKeyId: string | null;
+    allowCredentialDescriptorList: string[] | undefined;
+  }): Promise<ApplicablePublicKeyCredential[]>;
+
+  incrementCounter(opts: {
+    credentialId: string;
+  }): Promise<WebAuthnPublicKeyCredentialWithMeta>;
 
   findFirstAndIncrementCounterAtomicallyOrThrow(opts: {
     rpId: string;

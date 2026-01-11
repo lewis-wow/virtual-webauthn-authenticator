@@ -1,6 +1,7 @@
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
-import { JsonWebKey } from '@repo/keys/jwk';
-import { KeyMapper } from '@repo/keys/shared/mappers';
+import { KeyMapper } from '@repo/keys';
+import { encodeCOSEPublicKey } from '@repo/keys/cbor';
+import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
+import type { Uint8Array_ } from '@repo/types';
 import {
   createSign,
   generateKeyPairSync,
@@ -10,6 +11,7 @@ import {
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../src/enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import type { IKeyProvider } from '../../src/types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../../src/types/WebAuthnPublicKeyCredentialWithMeta';
+import type { PubKeyCredParamStrict } from '../../src/validation/spec/PubKeyCredParamSchema';
 import { KeyVaultKeyIdGenerator } from './KeyVaultKeyIdGenerator';
 
 export type MockKeyProviderOptions = {
@@ -25,8 +27,11 @@ export class MockKeyProvider implements IKeyProvider {
     this.keyVaultKeyIdGenerator = opts.keyVaultKeyIdGenerator;
   }
 
-  async generateKeyPair(opts: { webAuthnPublicKeyCredentialId: string }) {
-    const { webAuthnPublicKeyCredentialId } = opts;
+  async generateKeyPair(opts: {
+    webAuthnPublicKeyCredentialId: string;
+    pubKeyCredParams: PubKeyCredParamStrict;
+  }) {
+    const { webAuthnPublicKeyCredentialId, pubKeyCredParams } = opts;
 
     const keyPair = generateKeyPairSync('ec', {
       namedCurve: 'P-256',
@@ -34,18 +39,23 @@ export class MockKeyProvider implements IKeyProvider {
 
     this.keyPairStore[webAuthnPublicKeyCredentialId] = keyPair;
 
-    const credentialPublicKey = new JsonWebKey(
-      keyPair.publicKey.export({ format: 'jwk' }),
-    );
+    const credentialPublicKey = keyPair.publicKey.export({
+      format: 'jwk',
+    });
 
-    const coseKey = KeyMapper.JWKToCOSE(credentialPublicKey);
-    const COSEPublicKey = coseKey.toBytes();
+    const COSEPublicKey =
+      KeyMapper.JWKPublicKeyToCOSEPublicKey(credentialPublicKey);
+
+    // Set the algorithm parameter (required by WebAuthn spec)
+    COSEPublicKey.set(COSEKeyParam.alg, pubKeyCredParams.alg);
+
+    const COSEPublicKeyBytes = encodeCOSEPublicKey(COSEPublicKey);
 
     const { keyVaultKeyId, keyVaultKeyName } =
       this.keyVaultKeyIdGenerator.next();
 
     return {
-      COSEPublicKey,
+      COSEPublicKey: COSEPublicKeyBytes,
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
@@ -57,16 +67,16 @@ export class MockKeyProvider implements IKeyProvider {
   }
 
   async sign(opts: {
-    data: Uint8Array;
+    data: Uint8Array_;
     webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
   }) {
     const { data, webAuthnPublicKeyCredential } = opts;
 
     const keyPair = this.keyPairStore[webAuthnPublicKeyCredential.id]!;
 
-    const signature = createSign('sha256')
-      .update(data)
-      .sign(keyPair.privateKey);
+    const signature = new Uint8Array(
+      createSign('sha256').update(data).sign(keyPair.privateKey),
+    );
 
     return { signature, alg: COSEKeyAlgorithm.ES256 };
   }

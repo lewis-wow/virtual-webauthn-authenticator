@@ -186,6 +186,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@repo/dependency-container':
         specifier: workspace:*
         version: link:../../packages/dependency-container
@@ -506,12 +509,18 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@repo/crypto':
+        specifier: workspace:*
+        version: link:../../packages/crypto
       '@repo/env-config':
         specifier: workspace:*
         version: link:../../packages/env-config
       '@repo/exception':
         specifier: workspace:*
         version: link:../../packages/exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../../packages/http
       '@repo/key-vault':
         specifier: workspace:*
         version: link:../../packages/key-vault
@@ -554,6 +563,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      ts-pattern:
+        specifier: ^5.8.0
+        version: 5.8.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -654,9 +666,6 @@ importers:
       '@repo/auth':
         specifier: workspace:*
         version: link:../../packages/auth
-      '@repo/browser':
-        specifier: workspace:*
-        version: link:../../packages/browser
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -666,6 +675,12 @@ importers:
       '@repo/env-config':
         specifier: workspace:*
         version: link:../../packages/env-config
+      '@repo/exception':
+        specifier: workspace:*
+        version: link:../../packages/exception
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -684,6 +699,12 @@ importers:
       effect:
         specifier: ^3.19.4
         version: 3.19.4
+      events:
+        specifier: ^3.3.0
+        version: 3.3.0
+      lucide-react:
+        specifier: ^0.545.0
+        version: 0.545.0(react@19.2.0)
       react:
         specifier: ^19.1.1
         version: 19.2.0
@@ -696,6 +717,9 @@ importers:
       react-use-promise:
         specifier: ^0.5.0
         version: 0.5.0(react@19.2.0)
+      ts-pattern:
+        specifier: ^5.8.0
+        version: 5.8.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -706,9 +730,9 @@ importers:
       '@types/archiver':
         specifier: ^7.0.0
         version: 7.0.0
-      '@types/node':
-        specifier: ^24.10.1
-        version: 24.10.1
+      '@types/events':
+        specifier: ^3.0.3
+        version: 3.0.3
       '@types/react':
         specifier: ^19.1.12
         version: 19.2.2
@@ -945,6 +969,9 @@ importers:
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -967,15 +994,15 @@ importers:
 
   packages/auth:
     dependencies:
-      '@casl/ability':
-        specifier: ^6.7.3
-        version: 6.7.3
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/logger':
         specifier: workspace:*
         version: link:../logger
@@ -1066,33 +1093,18 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
-  packages/browser:
+  packages/cbor:
     dependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
-      '@repo/exception':
-        specifier: workspace:*
-        version: link:../exception
-      '@repo/virtual-authenticator':
-        specifier: workspace:*
-        version: link:../virtual-authenticator
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
       cbor2:
         specifier: ^2.0.1
         version: 2.0.1
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.12
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
       '@repo/types':
         specifier: workspace:*
         version: link:../types
@@ -1117,6 +1129,9 @@ importers:
       '@repo/core':
         specifier: workspace:*
         version: link:../core
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/pagination':
         specifier: workspace:*
         version: link:../pagination
@@ -1230,6 +1245,15 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      fast-json-stable-stringify:
+        specifier: ^2.1.0
+        version: 2.1.0
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
+      ts-pattern:
+        specifier: ^5.8.0
+        version: 5.8.0
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1337,6 +1361,16 @@ importers:
         version: 8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2)
 
   packages/exception:
+    dependencies:
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../utils
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -1363,6 +1397,30 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
+  packages/http:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+
   packages/key-vault:
     dependencies:
       '@azure/identity':
@@ -1371,9 +1429,18 @@ importers:
       '@azure/keyvault-keys':
         specifier: ^4.10.0
         version: 4.10.0
+      '@repo/assert':
+        specifier: workspace:*
+        version: link:../assert
+      '@repo/cbor':
+        specifier: workspace:*
+        version: link:../cbor
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/keys':
         specifier: workspace:*
         version: link:../keys
@@ -1383,6 +1450,9 @@ importers:
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
+      cbor2:
+        specifier: ^2.0.1
+        version: 2.0.1
       ecdsa-sig-formatter:
         specifier: ^1.0.11
         version: 1.0.11
@@ -1405,6 +1475,9 @@ importers:
       '@repo/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
+      '@simplewebauthn/server':
+        specifier: ^13.2.1
+        version: 13.2.2
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
@@ -1426,9 +1499,15 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/cbor':
+        specifier: workspace:*
+        version: link:../cbor
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1441,6 +1520,9 @@ importers:
       effect:
         specifier: ^3.19.4
         version: 3.19.4
+      jose:
+        specifier: ^6.1.0
+        version: 6.1.0
       ts-pattern:
         specifier: ^5.8.0
         version: 5.8.0
@@ -1735,6 +1817,9 @@ importers:
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
+      ts-morph:
+        specifier: ^27.0.2
+        version: 27.0.2
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
@@ -1906,9 +1991,9 @@ importers:
 
   packages/utils:
     dependencies:
-      effect:
-        specifier: ^3.19.4
-        version: 3.19.4
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -1922,9 +2007,6 @@ importers:
       '@repo/vitest-config':
         specifier: workspace:*
         version: link:../vitest-config
-      '@types/node':
-        specifier: ^22.5.2
-        version: 22.15.3
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -1933,7 +2015,7 @@ importers:
         version: 5.9.2
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
+        version: 3.2.4(@types/node@24.10.1)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -1943,12 +2025,24 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/cbor':
+        specifier: workspace:*
+        version: link:../cbor
+      '@repo/core':
+        specifier: workspace:*
+        version: link:../core
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
+      '@repo/http':
+        specifier: workspace:*
+        version: link:../http
+      '@repo/keys':
+        specifier: workspace:*
+        version: link:../keys
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
@@ -1958,6 +2052,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
+      buffer:
+        specifier: ^6.0.3
+        version: 6.0.3
       cbor2:
         specifier: ^2.0.1
         version: 2.0.1
@@ -1977,15 +2074,9 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -2001,6 +2092,9 @@ importers:
       '@types/node':
         specifier: ^22.5.2
         version: 22.15.3
+      ts-morph:
+        specifier: ^27.0.2
+        version: 27.0.2
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
@@ -2013,46 +2107,6 @@ importers:
       vitest-mock-extended:
         specifier: ^3.1.0
         version: 3.1.0(typescript@5.9.2)(vitest@3.2.4)
-
-  packages/virtual-authenticator-parser:
-    dependencies:
-      '@repo/assert':
-        specifier: workspace:*
-        version: link:../assert
-      '@repo/keys':
-        specifier: workspace:*
-        version: link:../keys
-      cbor2:
-        specifier: ^2.0.1
-        version: 2.0.1
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.12
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@repo/vitest-config':
-        specifier: workspace:*
-        version: link:../vitest-config
-      '@types/node':
-        specifier: ^22.5.2
-        version: 22.15.3
-      type-fest:
-        specifier: ^5.0.1
-        version: 5.0.1
-      typescript:
-        specifier: ^5.5.4
-        version: 5.9.2
-      vitest:
-        specifier: ^3.2.4
-        version: 3.2.4(@types/node@22.15.3)(@vitest/ui@3.2.4)(less@4.4.2)(lightningcss@1.30.2)(sass@1.93.2)(terser@5.44.0)
 
   packages/vitest-config:
     devDependencies:
@@ -2351,9 +2405,6 @@ packages:
 
   '@borewit/text-codec@0.1.1':
     resolution: {integrity: sha512-5L/uBxmjaCIX5h8Z+uu+kA9BQLkc/Wl06UGR5ajNRxu+/XjonB5i8JpgFMrPj3LXTCPA0pv8yxUvbUi+QthGGA==}
-
-  '@casl/ability@6.7.3':
-    resolution: {integrity: sha512-A4L28Ko+phJAsTDhRjzCOZWECQWN2jzZnJPnROWWHjJpyMq1h7h9ZqjwS2WbIUa3Z474X1ZPSgW0f1PboZGC0A==}
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -4730,6 +4781,9 @@ packages:
       svelte:
         optional: true
 
+  '@ts-morph/common@0.28.1':
+    resolution: {integrity: sha512-W74iWf7ILp1ZKNYXY5qbddNaml7e9Sedv5lvU1V8lftlitkc9Pq1A+jlH23ltDgWYeZFFEqGCD1Ies9hqu3O+g==}
+
   '@ts-rest/core@3.53.0-rc.1':
     resolution: {integrity: sha512-hDMXqKHSys6w+kXFW1Q6EvN8QgRvtXKXJ2TpYByKI4TquaPjiTOv99aLD26X4LNRzdna8Ci1PVyzr0jYZv0oNQ==}
     peerDependencies:
@@ -4846,6 +4900,9 @@ packages:
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
+
+  '@types/events@3.0.3':
+    resolution: {integrity: sha512-trOc4AAUThEz9hapPtSd7wf5tiQKvTtu5b371UxXdTuqzIh0ArcRspRP0i0Viu+LXstIQ1z96t1nsPxT9ol01g==}
 
   '@types/express-serve-static-core@5.1.0':
     resolution: {integrity: sha512-jnHMsrd0Mwa9Cf4IdOzbz543y4XJepXrbia2T4b6+spXC2We3t1y6K44D3mR8XMFSXMCf3/l7rCgddfx7UNVBA==}
@@ -5020,18 +5077,6 @@ packages:
   '@typespec/ts-http-runtime@0.3.1':
     resolution: {integrity: sha512-SnbaqayTVFEA6/tYumdF0UmybY0KHyKwGPBXnyckFlrrKdhWFrL3a2HIPXHjht5ZOElKGcXfD2D63P36btb+ww==}
     engines: {node: '>=20.0.0'}
-
-  '@ucast/core@1.10.2':
-    resolution: {integrity: sha512-ons5CwXZ/51wrUPfoduC+cO7AS1/wRb0ybpQJ9RrssossDxVy4t49QxWoWgfBDvVKsz9VXzBk9z0wqTdZ+Cq8g==}
-
-  '@ucast/js@3.0.4':
-    resolution: {integrity: sha512-TgG1aIaCMdcaEyckOZKQozn1hazE0w90SVdlpIJ/er8xVumE11gYAtSbw/LBeUnA4fFnFWTcw3t6reqseeH/4Q==}
-
-  '@ucast/mongo2js@1.4.0':
-    resolution: {integrity: sha512-vR9RJ3BHlkI3RfKJIZFdVktxWvBCQRiSTeJSWN9NPxP5YJkpfXvcBWAMLwvyJx4HbB+qib5/AlSDEmQiuQyx2w==}
-
-  '@ucast/mongo@2.4.3':
-    resolution: {integrity: sha512-XcI8LclrHWP83H+7H2anGCEeDq0n+12FU2mXCTz6/Tva9/9ddK/iacvvhCyW6cijAAOILmt0tWplRyRhVyZLsA==}
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     resolution: {integrity: sha512-ppLRUgHVaGRWUx0R0Ut06Mjo9gBaBkg3v/8AxusGLhsIotbBLuRk51rAzqLC8gq6NyyAojEXglNjzf6R948DNw==}
@@ -5862,6 +5907,9 @@ packages:
     peerDependencies:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
+
+  code-block-writer@13.0.3:
+    resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
 
   code-red@1.0.4:
     resolution: {integrity: sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw==}
@@ -8247,6 +8295,9 @@ packages:
   pascal-case@3.1.2:
     resolution: {integrity: sha512-uWlGT3YSnK9x3BQJaOdcZwrnV6hPpd8jFH1/ucpiLRPh/2zCVJKS19E4GvYHvaCcACn3foXZ0cLB9Wrx1KGe5g==}
 
+  path-browserify@1.0.1:
+    resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
+
   path-exists@3.0.0:
     resolution: {integrity: sha512-bpC7GYwiDYQ4wYLe+FA8lhRjhQCMcQGuSgGGqDkg/QerRWw9CmGRT0iSOVRSZJ29NMLZgIzqaljJ63oaL4NIJQ==}
     engines: {node: '>=4'}
@@ -9300,6 +9351,9 @@ packages:
       typescript: '*'
       webpack: ^5.0.0
 
+  ts-morph@27.0.2:
+    resolution: {integrity: sha512-fhUhgeljcrdZ+9DZND1De1029PrE+cMkIP7ooqkLRTrRLTqcki2AstsyJm0vRNbTbVCNJ0idGlbBrfqc7/nA8w==}
+
   ts-node@11.0.0-beta.1:
     resolution: {integrity: sha512-WMSROP+1pU22Q/Tm40mjfRg130yD8i0g6ROST04ZpocfH8sl1zD75ON4XQMcBEVViXMVemJBH0alflE7xePdRA==}
     hasBin: true
@@ -10319,10 +10373,6 @@ snapshots:
   '@better-fetch/fetch@1.1.21': {}
 
   '@borewit/text-codec@0.1.1': {}
-
-  '@casl/ability@6.7.3':
-    dependencies:
-      '@ucast/mongo2js': 1.4.0
 
   '@colors/colors@1.5.0':
     optional: true
@@ -12411,6 +12461,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@ts-morph/common@0.28.1':
+    dependencies:
+      minimatch: 10.1.1
+      path-browserify: 1.0.1
+      tinyglobby: 0.2.15
+
   '@ts-rest/core@3.53.0-rc.1(@types/node@22.15.3)':
     optionalDependencies:
       '@types/node': 22.15.3
@@ -12533,6 +12589,8 @@ snapshots:
       '@types/json-schema': 7.0.15
 
   '@types/estree@1.0.8': {}
+
+  '@types/events@3.0.3': {}
 
   '@types/express-serve-static-core@5.1.0':
     dependencies:
@@ -12766,22 +12824,6 @@ snapshots:
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
-
-  '@ucast/core@1.10.2': {}
-
-  '@ucast/js@3.0.4':
-    dependencies:
-      '@ucast/core': 1.10.2
-
-  '@ucast/mongo2js@1.4.0':
-    dependencies:
-      '@ucast/core': 1.10.2
-      '@ucast/js': 3.0.4
-      '@ucast/mongo': 2.4.3
-
-  '@ucast/mongo@2.4.3':
-    dependencies:
-      '@ucast/core': 1.10.2
 
   '@unrs/resolver-binding-android-arm-eabi@1.11.1':
     optional: true
@@ -13745,6 +13787,8 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
       - '@types/react-dom'
+
+  code-block-writer@13.0.3: {}
 
   code-red@1.0.4:
     dependencies:
@@ -15838,6 +15882,10 @@ snapshots:
     dependencies:
       react: 19.1.0
 
+  lucide-react@0.545.0(react@19.2.0):
+    dependencies:
+      react: 19.2.0
+
   magic-string@0.30.17:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -16354,6 +16402,8 @@ snapshots:
     dependencies:
       no-case: 3.0.4
       tslib: 2.8.1
+
+  path-browserify@1.0.1: {}
 
   path-exists@3.0.0: {}
 
@@ -17540,6 +17590,11 @@ snapshots:
       source-map: 0.7.6
       typescript: 5.9.2
       webpack: 5.102.1(@swc/core@1.13.5)
+
+  ts-morph@27.0.2:
+    dependencies:
+      '@ts-morph/common': 0.28.1
+      code-block-writer: 13.0.3
 
   ts-node@11.0.0-beta.1(@swc/core@1.13.5)(@types/node@22.15.3)(typescript@5.9.2):
     dependencies:
