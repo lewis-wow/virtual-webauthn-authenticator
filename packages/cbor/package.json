@@ -1,0 +1,23 @@
+{
+  "name": "@repo/cbor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/types": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3",
+    "cbor2": "^2.0.1"
+  }
+}

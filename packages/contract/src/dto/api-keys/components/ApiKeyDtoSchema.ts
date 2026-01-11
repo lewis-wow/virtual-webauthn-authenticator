@@ -1,6 +1,5 @@
 import { ApiKeySchema } from '@repo/auth/zod-validation';
-
-import { DateSchemaCodec } from '../../codecs/DateSchemaCodec';
+import { DateSchemaCodec } from '@repo/core/zod-validation';
 
 export const ApiKeyDtoSchema = ApiKeySchema.extend({
   expiresAt: DateSchemaCodec.nullable(),

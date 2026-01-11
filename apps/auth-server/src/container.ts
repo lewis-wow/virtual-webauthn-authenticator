@@ -2,8 +2,10 @@ import { env } from '@/env';
 import { ActivityLog } from '@repo/activity-log';
 import { ApiKeyManager, JwtIssuer } from '@repo/auth';
 import { JWT_ALG } from '@repo/auth';
+import { PrismaAuthJwksRepository } from '@repo/auth';
 import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
+import { Jwks, Jwt } from '@repo/crypto';
 import { DependencyContainer } from '@repo/dependency-container';
 import { Logger } from '@repo/logger';
 import { PrismaClientExtended } from '@repo/prisma';
@@ -28,10 +30,25 @@ export const container = new DependencyContainer()
       prisma,
     });
   })
-  .register('jwtIssuer', ({ prisma }) => {
-    return new JwtIssuer({
+  .register('prismaAuthJwksRepository', ({ prisma }) => {
+    return new PrismaAuthJwksRepository({
       prisma,
+    });
+  })
+  .register('jwks', ({ prismaAuthJwksRepository }) => {
+    return new Jwks({
       encryptionKey: env.ENCRYPTION_KEY,
+      jwksRepository: prismaAuthJwksRepository,
+    });
+  })
+  .register('jwt', ({ jwks }) => {
+    return new Jwt({
+      jwks,
+    });
+  })
+  .register('jwtIssuer', ({ jwt }) => {
+    return new JwtIssuer({
+      jwt,
       config: {
         iss: env.JWT_ISSUER,
         aud: env.JWT_AUDIENCE,

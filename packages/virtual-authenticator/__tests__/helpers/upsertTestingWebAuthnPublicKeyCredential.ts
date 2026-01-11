@@ -5,6 +5,7 @@ import {
 } from '../../../key-vault/__tests__/helpers';
 import { COSEPublicKey } from '../../../keys/__tests__/helpers/COSEPublicKey';
 
+import * as cbor from '@repo/cbor';
 import {
   WebAuthnPublicKeyCredentialKeyMetaType,
   type PrismaClient,
@@ -30,9 +31,10 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
       id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
       userId: USER_ID,
       rpId: RP_ID,
-      COSEPublicKey: COSEPublicKey.toBytes(),
+      COSEPublicKey: cbor.encode(COSEPublicKey),
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
+      isClientSideDiscoverable: true,
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         create: {
           id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,

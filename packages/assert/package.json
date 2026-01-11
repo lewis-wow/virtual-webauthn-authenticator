@@ -11,7 +11,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/exception": "workspace:*"
+    "@repo/exception": "workspace:*",
+    "@repo/http": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

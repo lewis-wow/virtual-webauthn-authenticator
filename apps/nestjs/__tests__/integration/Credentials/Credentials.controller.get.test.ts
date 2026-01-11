@@ -12,18 +12,17 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience, JwtIssuer } from '@repo/auth';
+import { JwtAudience } from '@repo/auth';
 import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,
 } from '@repo/contract/dto';
-import { ExceptionMapper } from '@repo/exception/mappers';
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   PublicKeyCredentialType,
   UserVerification,
 } from '@repo/virtual-authenticator/enums';
-import { CredentialNotFound } from '@repo/virtual-authenticator/exceptions';
+import { CredentialOptionsEmpty } from '@repo/virtual-authenticator/exceptions';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomUUID } from 'node:crypto';
 import {
@@ -41,6 +40,7 @@ import { AppModule } from '../../../src/app.module';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
+import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
 import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
 import { performPublicKeyCredentialRequestAndVerify } from '../../helpers/performPublicKeyCredentialRequestAndVerify';
 import { prisma } from '../../helpers/prisma';
@@ -81,12 +81,6 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD = {
   },
 } as z.input<typeof GetCredentialBodySchema>;
 
-const jwtIssuer = new JwtIssuer({
-  prisma,
-  encryptionKey: 'secret',
-  config: JWT_CONFIG,
-});
-
 describe('CredentialsController - POST /api/credentials/get', () => {
   let app: INestApplication;
   let token: string;
@@ -105,7 +99,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
         new MockJwtAudience({
           config: JWT_CONFIG,
           jwksFactory: async () => {
-            return await jwtIssuer.jsonWebKeySet();
+            return await getJSONWebKeySet();
           },
         }),
       )
@@ -238,11 +232,11 @@ describe('CredentialsController - POST /api/credentials/get', () => {
           userId: randomUUID(),
         }),
         payload,
-        expectStatus: 404,
+        expectStatus: 400,
       });
 
       expect(response.body).toStrictEqual(
-        ExceptionMapper.exceptionToResponseBody(new CredentialNotFound()),
+        new CredentialOptionsEmpty().toJSON(),
       );
     });
 

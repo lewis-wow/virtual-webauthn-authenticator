@@ -1,5 +1,4 @@
 import { env } from '@/env';
-import { ErrorMapper } from '@repo/core/mappers';
 
 import { extensionMessaging } from '../messaging/extensionMessaging';
 
@@ -29,53 +28,59 @@ export default defineBackground(() => {
 
   extensionMessaging.onMessage('credentials.create', async (req) => {
     const apiKey = await apiKeyItem.getValue();
-    let response: Response | undefined = undefined;
-    let rawContent: string | undefined = undefined;
 
-    try {
-      response = await fetch(
-        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
-        {
-          method: 'POST',
-          headers: createApiHeaders(apiKey),
-          body: JSON.stringify(req.data),
-        },
-      );
+    const response = await fetch(
+      `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
+      {
+        method: 'POST',
+        headers: createApiHeaders(apiKey),
+        body: JSON.stringify(req.data),
+      },
+    );
 
-      rawContent = await response.text();
+    const json = await response.json();
 
-      const json = JSON.parse(rawContent);
-
-      return { ok: response.ok, data: json };
-    } catch (error) {
+    if (response.ok) {
       return {
-        ok: false,
-        error: ErrorMapper.errorToErrorJSON({
-          data: rawContent,
-          error,
-        }),
+        ok: true,
+        data: json,
       };
     }
+
+    console.log(`[${LOG_PREFIX}]`, 'Error', json);
+
+    return {
+      ok: false,
+      error: json,
+    };
   });
 
   extensionMessaging.onMessage('credentials.get', async (req) => {
     const apiKey = await apiKeyItem.getValue();
 
-    try {
-      const response = await fetch(
-        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
-        {
-          method: 'POST',
-          headers: createApiHeaders(apiKey),
-          body: JSON.stringify(req.data),
-        },
-      );
+    const response = await fetch(
+      `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
+      {
+        method: 'POST',
+        headers: createApiHeaders(apiKey),
+        body: JSON.stringify(req.data),
+      },
+    );
 
-      const json = await response.json();
+    const json = await response.json();
 
-      return { ok: response.ok, data: json, apiKey };
-    } catch (error) {
-      return { ok: false, error: ErrorMapper.errorToErrorJSON(error), apiKey };
+    if (response.ok) {
+      return {
+        ok: true,
+        data: json,
+      };
     }
+
+    console.log(`[${LOG_PREFIX}]`, 'Error', json);
+
+    return {
+      ok: false,
+      error: json,
+    };
   });
 });

@@ -35,6 +35,7 @@
     "@ngneat/falso": "^8.0.2",
     "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.0",
     "@repo/auth": "workspace:*",
+    "@repo/http": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/pagination": "workspace:*",
     "@repo/utils": "workspace:*",

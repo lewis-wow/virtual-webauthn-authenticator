@@ -19,11 +19,6 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["src/generated/client/**"]
     },
-    "@repo/browser#build": {
-      "dependsOn": ["^build"],
-      "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["src/zod-validation/index.ts"]
-    },
     "@repo/keys#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"],

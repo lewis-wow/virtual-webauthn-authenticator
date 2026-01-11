@@ -13,6 +13,7 @@
     "@hono/standard-validator": "^0.1.5",
     "@repo/activity-log": "workspace:*",
     "@repo/auth": "workspace:*",
+    "@repo/crypto": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/env-config": "workspace:*",

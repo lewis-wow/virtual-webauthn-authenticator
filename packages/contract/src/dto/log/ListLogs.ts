@@ -1,3 +1,4 @@
+import { HttpStatusCode } from '@repo/http';
 import {
   PaginationRequestMetaSchema,
   PaginationResultSchema,
@@ -20,4 +21,6 @@ export const ListLogsQuerySchema = PaginationRequestMetaSchema(SortKeysSchema);
 // Outputs
 // -------------------------------------
 
-export const ListLogsResponseSchema = PaginationResultSchema(LogDtoSchema);
+export const ListLogsResponseSchema = {
+  [HttpStatusCode.OK_200]: PaginationResultSchema(LogDtoSchema),
+};

@@ -1,7 +1,9 @@
+import { Jwks, Jwt } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { JwtIssuer } from '../../src/JwtIssuer';
+import { PrismaAuthJwksRepository } from '../../src/PrismaAuthJwksRepository';
 import { MockJwtAudience } from '../helpers/MockJwtAudience';
 import {
   API_KEY_ID,
@@ -26,6 +28,17 @@ const JWT_CONFIG = {
   aud: 'test-audience',
 };
 
+const jwks = new Jwks({
+  encryptionKey: ENCRYPTION_KEY,
+  jwksRepository: new PrismaAuthJwksRepository({
+    prisma,
+  }),
+});
+
+const jwt = new Jwt({
+  jwks,
+});
+
 describe('JWT', () => {
   let jwtIssuer: JwtIssuer;
   let jwtAudience: MockJwtAudience;
@@ -35,15 +48,14 @@ describe('JWT', () => {
     await upsertTestingUser({ prisma });
 
     jwtIssuer = new JwtIssuer({
-      prisma,
-      encryptionKey: ENCRYPTION_KEY,
+      jwt,
       config: JWT_CONFIG,
     });
 
     jwtAudience = new MockJwtAudience({
       config: JWT_CONFIG,
       jwksFactory: async () => {
-        return await jwtIssuer.jsonWebKeySet();
+        return await jwks.getJSONWebKeySet();
       },
     });
   });

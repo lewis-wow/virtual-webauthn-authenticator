@@ -4,18 +4,21 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./dom": "./src/dom.ts"
   },
   "scripts": {
+    "build": "./scripts/extract-dom-types.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@azure/keyvault-keys": "^4.10.0",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "npm-run-all": "^4.1.5",
-    "typescript": "^5.5.4",
-    "@azure/keyvault-keys": "^4.10.0"
+    "ts-morph": "^27.0.2",
+    "typescript": "^5.5.4"
   }
 }

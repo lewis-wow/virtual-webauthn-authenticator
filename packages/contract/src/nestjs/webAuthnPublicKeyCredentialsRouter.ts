@@ -20,27 +20,21 @@ export const webAuthnPublicKeyCredentialsRouter = c.router({
     method: 'GET',
     path: '/webauthn-public-key-credentials',
     query: ListWebAuthnPublicKeyCredentialsQuerySchema,
-    responses: {
-      200: ListWebAuthnPublicKeyCredentialsResponseSchema,
-    },
+    responses: ListWebAuthnPublicKeyCredentialsResponseSchema,
     summary: 'List all WebAuthn credentials',
   },
   get: {
     method: 'GET',
     path: '/webauthn-public-key-credentials/:id',
     pathParams: GetWebAuthnPublicKeyCredentialParamsSchema,
-    responses: {
-      200: GetWebAuthnPublicKeyCredentialResponseSchema,
-    },
+    responses: GetWebAuthnPublicKeyCredentialResponseSchema,
     summary: 'Get a single WebAuthn credential',
   },
   delete: {
     method: 'DELETE',
     path: '/webauthn-public-key-credentials/:id',
     pathParams: DeleteWebAuthnPublicKeyCredentialParamsSchema,
-    responses: {
-      200: DeleteWebAuthnPublicKeyCredentialResponseSchema,
-    },
+    responses: DeleteWebAuthnPublicKeyCredentialResponseSchema,
     summary: 'Delete a WebAuthn credential',
   },
 });

@@ -10,3 +10,7 @@ export * from './UserVerification';
 export * from './TokenBindingStatus';
 export * from './WebAuthnPublicKeyCredentialKeyMetaType';
 export * from './CredentialMediationRequirement';
+
+// Envelope
+export * from './envelope/EnvelopeResponseControlReason';
+export * from './envelope/EnvelopeStatus';

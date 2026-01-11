@@ -1,7 +1,13 @@
+import { HttpStatusCode } from '@repo/http';
+import {
+  PublicKeyCredentialRequestOptionsDtoSchema,
+  AuthenticatorAgentGetAssertionResponseDtoSchema,
+} from '@repo/virtual-authenticator/dto';
+import {
+  AuthenticatorAgentContextArgsSchema,
+  AuthenticatorAgentMetaArgsSchema,
+} from '@repo/virtual-authenticator/validation';
 import z from 'zod';
-
-import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDtoSchema';
-import { PublicKeyCredentialRequestOptionsDtoSchema } from './components/PublicKeyCredentialRequestOptionsDtoSchema';
 
 // =============================================================================
 // OPERATION: GET
@@ -12,17 +18,17 @@ import { PublicKeyCredentialRequestOptionsDtoSchema } from './components/PublicK
 // -------------------------------------
 
 export const GetCredentialBodySchema = z.object({
-  publicKeyCredentialRequestOptions:
-    PublicKeyCredentialRequestOptionsDtoSchema.extend({
-      rpId: z.string(),
-    }),
-  meta: z.object({
-    origin: z.url(),
+  publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptionsDtoSchema,
+  meta: AuthenticatorAgentMetaArgsSchema.pick({
+    origin: true,
   }),
+  context: AuthenticatorAgentContextArgsSchema,
 });
 
 // -------------------------------------
 // Outputs
 // -------------------------------------
 
-export const GetCredentialResponseSchema = PublicKeyCredentialDtoSchema;
+export const GetCredentialResponseSchema = {
+  [HttpStatusCode.OK_200]: AuthenticatorAgentGetAssertionResponseDtoSchema,
+} as const;

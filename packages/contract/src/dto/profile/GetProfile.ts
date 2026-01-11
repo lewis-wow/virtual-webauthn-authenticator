@@ -1,4 +1,5 @@
 import { JwtPayloadSchema } from '@repo/auth/zod-validation';
+import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
 // =============================================================================
@@ -9,6 +10,8 @@ import z from 'zod';
 // Outputs
 // -------------------------------------
 
-export const GetProfileResponseSchema = z.object({
-  jwtPayload: JwtPayloadSchema.nullable(),
-});
+export const GetProfileResponseSchema = {
+  [HttpStatusCode.OK_200]: z.object({
+    jwtPayload: JwtPayloadSchema.nullable(),
+  }),
+};

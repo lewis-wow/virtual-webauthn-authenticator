@@ -4,6 +4,10 @@
 
 <https://www.w3.org/TR/webauthn-3/>
 
+## FIDO CTAP2 spec
+
+<https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html>
+
 ## Architecture
 
 ![Architecture image](.architecture/export/architecture.svg)

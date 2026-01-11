@@ -1,10 +1,10 @@
 import { USER_ID, USER_NAME } from '../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 
 import { PublicKeyCredentialType } from '../../src/enums/PublicKeyCredentialType';
-import type { PublicKeyCredentialCreationOptions } from '../../src/validation/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 
 export const CHALLENGE_BASE64URL = 'YN0gtCsuhL8HedwLHBEqmQ';
 export const CHALLENGE_BYTES = new Uint8Array(

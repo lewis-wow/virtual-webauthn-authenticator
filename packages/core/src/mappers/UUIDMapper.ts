@@ -1,15 +1,16 @@
 import { assertSchema } from '@repo/assert';
+import type { Uint8Array_ } from '@repo/types';
 import { Buffer } from 'buffer';
 import z from 'zod';
 
 export class UUIDMapper {
-  static UUIDtoBytes(uuid: string): Uint8Array {
+  static UUIDtoBytes(uuid: string): Uint8Array_ {
     assertSchema(uuid, z.uuid());
 
     return new Uint8Array(Buffer.from(uuid.replace(/-/g, ''), 'hex'));
   }
 
-  static tryUUIDtoBytes(uuid: string): Uint8Array | null {
+  static tryUUIDtoBytes(uuid: string): Uint8Array_ | null {
     try {
       return UUIDMapper.UUIDtoBytes(uuid);
     } catch {
@@ -17,7 +18,7 @@ export class UUIDMapper {
     }
   }
 
-  static bytesToUUID(bytes: Uint8Array) {
+  static bytesToUUID(bytes: Uint8Array_) {
     assertSchema(
       bytes,
       z.instanceof(Uint8Array).refine((b) => b.length === 16, {
@@ -31,7 +32,7 @@ export class UUIDMapper {
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
   }
 
-  static tryBytesToUUID(bytes: Uint8Array): string | null {
+  static tryBytesToUUID(bytes: Uint8Array_): string | null {
     try {
       return UUIDMapper.bytesToUUID(bytes);
     } catch {

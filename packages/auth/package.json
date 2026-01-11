@@ -34,7 +34,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@casl/ability": "^6.7.3",
+    "@repo/http": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",

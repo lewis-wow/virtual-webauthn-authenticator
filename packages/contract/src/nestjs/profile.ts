@@ -8,9 +8,7 @@ export const profileRouter = c.router({
   get: {
     method: 'GET',
     path: '/profile',
-    responses: {
-      200: GetProfileResponseSchema,
-    },
+    responses: GetProfileResponseSchema,
     summary: "Get the user's profile",
   },
 });

@@ -1,14 +1,9 @@
+import { HttpStatusCode } from '@repo/http';
+
 import { Exception } from '../Exception';
 
-export const NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
-
 export class NotImplemented extends Exception {
-  static status = 501;
-  static code = NOT_IMPLEMENTED;
-
-  constructor(message = 'Not Implemented.') {
-    super({
-      message,
-    });
-  }
+  static status = HttpStatusCode.NOT_IMPLEMENTED_501;
+  static readonly code = 'NotImplemented';
+  static message = 'Not Implemented.';
 }

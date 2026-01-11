@@ -16,18 +16,14 @@ export const credentialsRouter = c.router({
     method: 'POST',
     path: '/credentials/create',
     body: CreateCredentialBodySchema,
-    responses: {
-      200: CreateCredentialResponseSchema,
-    },
+    responses: CreateCredentialResponseSchema,
     summary: 'Create a new credential',
   },
   get: {
     method: 'POST',
     path: '/credentials/get',
     body: GetCredentialBodySchema,
-    responses: {
-      200: GetCredentialResponseSchema,
-    },
+    responses: GetCredentialResponseSchema,
     summary: 'Get a credential',
   },
 });

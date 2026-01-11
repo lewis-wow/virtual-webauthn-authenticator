@@ -12,11 +12,10 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience, JwtIssuer } from '@repo/auth';
+import { JwtAudience } from '@repo/auth';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
-import { ExceptionMapper } from '@repo/exception/mappers';
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   Attestation,
   PublicKeyCredentialType,
@@ -37,6 +36,7 @@ import { AppModule } from '../../../src/app.module';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
+import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
 import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
 import { prisma } from '../../helpers/prisma';
 
@@ -62,12 +62,6 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
   },
 } as z.input<typeof CreateCredentialBodySchema>;
 
-const jwtIssuer = new JwtIssuer({
-  prisma,
-  encryptionKey: 'secret',
-  config: JWT_CONFIG,
-});
-
 const cleanupWebAuthnPublicKeyCredentials = async () => {
   await prisma.$transaction([
     prisma.webAuthnPublicKeyCredential.deleteMany(),
@@ -90,7 +84,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         new MockJwtAudience({
           config: JWT_CONFIG,
           jwksFactory: async () => {
-            return await jwtIssuer.jsonWebKeySet();
+            return await getJSONWebKeySet();
           },
         }),
       )
@@ -166,9 +160,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           expectStatus: 404,
         });
 
-      expect(response.body).toStrictEqual(
-        ExceptionMapper.exceptionToResponseBody(new UserNotExists()),
-      );
+      expect(response.body).toStrictEqual(new UserNotExists().toJSON());
     });
   });
 
@@ -231,9 +223,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           });
 
         expect(response.body).toStrictEqual(
-          ExceptionMapper.exceptionToResponseBody(
-            new AttestationNotSupported(),
-          ),
+          new AttestationNotSupported().toJSON(),
         );
       },
     );
@@ -254,7 +244,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         });
 
       expect(response.body).toStrictEqual(
-        ExceptionMapper.exceptionToResponseBody(new RequestValidationFailed()),
+        new RequestValidationFailed().toJSON(),
       );
     });
   });
@@ -275,7 +265,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             { type: 'WRONG_TYPE', alg: COSEKeyAlgorithm.ES256 },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              alg: -8,
+              alg: -999, // Unsupported algorithm
             },
             {
               type: 'WRONG_TYPE',
@@ -317,7 +307,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         pubKeyCredParams: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            alg: -8,
+            alg: -999, // Unsupported algorithm
           },
         ],
       } satisfies Partial<PublicKeyCredentialCreationOptions>,
@@ -325,7 +315,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         pubKeyCredParams: [
           {
             type: PublicKeyCredentialType.PUBLIC_KEY,
-            alg: -8,
+            alg: -999, // Unsupported algorithm
           },
           {
             type: 'WRONG_TYPE',
@@ -351,9 +341,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           });
 
         expect(response.body).toStrictEqual(
-          ExceptionMapper.exceptionToResponseBody(
-            new CredentialTypesNotSupported(),
-          ),
+          new CredentialTypesNotSupported().toJSON(),
         );
       },
     );

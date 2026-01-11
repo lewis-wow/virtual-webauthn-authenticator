@@ -1,8 +1,0 @@
-{
-  "extends": "@repo/typescript-config/base.json",
-  "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ESNext"]
-  },
-  "include": ["src", "__tests__"],
-  "exclude": ["node_modules"]
-}

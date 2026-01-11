@@ -1,17 +1,17 @@
 import { assertSchema } from '@repo/assert';
+import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
-import { COSEKeyAlgorithm } from '@repo/keys/cose/enums';
-import * as cbor from 'cbor2';
+import { Hash, HashOnion } from '@repo/crypto';
+import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import type { Uint8Array_ } from '@repo/types';
 import z from 'zod';
 
-import type {
-  AuthenticatorGetAssertionPayload,
-  IAuthenticator,
-} from './IAuthenticator';
+import type { IAuthenticator } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
-import { AuthenticatorDataParser } from './cbor';
-import type { IAttestationObjectMap } from './cbor/IAttestationObjectMap';
+import { decodeAttestationObject } from './cbor';
+import { parseAuthenticatorData } from './cbor/parseAuthenticatorData';
+import { PublicKeyCredentialCreationOptionsDtoSchema } from './dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
+import { PublicKeyCredentialRequestOptionsDtoSchema } from './dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import {
   Attestation,
   AuthenticatorAttachment,
@@ -25,30 +25,34 @@ import {
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
 import { CredentialNotFound } from './exceptions';
 import { AttestationNotSupported } from './exceptions/AttestationNotSupported';
+import { CredentialSelectException } from './exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import type {
-  AuthenticatorAgentContextArgs,
-  AuthenticatorAgentMetaArgs,
-  PubKeyCredParam,
-  PublicKeyCredentialDescriptor,
-  PublicKeyCredentialRequestOptions,
+import {
+  type AuthenticatorAgentContextArgs,
+  type AuthenticatorAgentMetaArgs,
+  type AuthenticatorContextArgs,
+  type AuthenticatorGetAssertionResponse,
+  type PubKeyCredParam,
+  type PublicKeyCredentialCreationOptions,
+  type PublicKeyCredentialDescriptor,
+  type PublicKeyCredentialRequestOptions,
 } from './validation';
-import { AuthenticatorAgentContextArgsSchema } from './validation/AuthenticatorAgentContextArgsSchema';
-import { AuthenticatorAgentMetaArgsSchema } from './validation/AuthenticatorAgentMetaArgsSchema';
-import type { CollectedClientData } from './validation/CollectedClientDataSchema';
+import { AuthenticatorAgentMetaArgsSchema } from './validation/authenticator/AuthenticatorAgentMetaArgsSchema';
+import { AuthenticatorAgentContextArgsSchema } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import { createOriginMatchesRpIdSchema } from './validation/authenticatorAgent/createOriginMatchesRpIdSchema';
+import type { CollectedClientData } from './validation/spec/CollectedClientDataSchema';
 import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
-} from './validation/CredentialCreationOptionsSchema';
+} from './validation/spec/CredentialCreationOptionsSchema';
 import {
   CredentialRequestOptionsSchema,
   type CredentialRequestOptions,
-} from './validation/CredentialRequestOptionsSchema';
-import { PublicKeyCredentialCreationOptionsSchema } from './validation/PublicKeyCredentialCreationOptionsSchema';
-import { PublicKeyCredentialRequestOptionsSchema } from './validation/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './validation/PublicKeyCredentialSchema';
-import { createOriginMatchesRpIdSchema } from './validation/createOriginMatchesRpIdSchema';
+} from './validation/spec/CredentialRequestOptionsSchema';
+import { PublicKeyCredentialCreationOptionsSchema } from './validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import { PublicKeyCredentialRequestOptionsSchema } from './validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from './validation/spec/PublicKeyCredentialSchema';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
@@ -81,19 +85,21 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     authenticator: IAuthenticator;
     // savedCredentialIds: A map containing authenticator → credential ID. This argument will be modified in this algorithm.
     // NOTE: Not used, just for the compatibility with spec.
-    savedCredentialIds: Map<IAuthenticator, Uint8Array>;
+    savedCredentialIds: Map<IAuthenticator, Uint8Array_>;
     // pkOptions: This argument is a PublicKeyCredentialRequestOptions object specifying the desired attributes of the public key credential to discover.
     pkOptions: PublicKeyCredentialRequestOptions;
     // rpId: The request RP ID.
     rpId: string;
     // clientDataHash: The hash of the serialized client data represented by clientDataJSON.
-    clientDataHash: Uint8Array;
+    clientDataHash: Uint8Array_;
     // authenticatorExtensions: A map containing extension identifiers to the base64url encoding of the client extension processing output for authenticator extensions.
     authenticatorExtensions: Record<string, unknown>;
 
+    // Custom options
     meta: AuthenticatorAgentMetaArgs;
-    context: AuthenticatorAgentContextArgs;
-  }): Promise<AuthenticatorGetAssertionPayload> {
+    context: AuthenticatorContextArgs;
+    optionsHash: string;
+  }): Promise<AuthenticatorGetAssertionResponse> {
     const {
       authenticator,
       pkOptions,
@@ -103,6 +109,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
       meta,
       context,
+      optionsHash,
     } = opts;
 
     // Step 1: If pkOptions.userVerification is set to required and the authenticator is not capable of performing user verification, return false.
@@ -185,24 +192,50 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Using local configuration knowledge of the appropriate transport to use with authenticator,
     // invoke the authenticatorGetAssertion operation on authenticator
     // with rpId, clientDataHash, allowCredentialDescriptorList, userVerification, and authenticatorExtensions as parameters.
-    const authenticatorGetAssertionPayload =
-      await authenticator.authenticatorGetAssertion({
-        authenticatorGetAssertionArgs: {
-          allowCredentialDescriptorList,
-          extensions: authenticatorExtensions,
-          hash: clientDataHash,
-          rpId,
-          requireUserPresence: true,
-          requireUserVerification,
-        },
-        meta,
-        context,
-      });
 
-    // Step 4: Return true.
-    // NOTE: We don't need to use savedCredentialIds and saved authenticatorGetAssertion payload.
-    // We have single authenticator, so we can directly return the payload.
-    return authenticatorGetAssertionPayload;
+    // Note: In this case, the Relying Party did not supply a list of acceptable credential descriptors.
+    // Thus, the authenticator is being asked to exercise any credential
+    // it may possess that is scoped to the Relying Party, as identified by rpId.
+
+    // Before invoking the authenticatorGetAssertion operation,
+    // the client MUST invoke the authenticatorCancel operation in order to abort all other operations in progress in the authenticator session.
+    // @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+    await authenticator.authenticatorCancel({ meta });
+
+    try {
+      const authenticatorGetAssertionPayload =
+        await authenticator.authenticatorGetAssertion({
+          authenticatorGetAssertionArgs: {
+            allowCredentialDescriptorList,
+            extensions: authenticatorExtensions,
+            hash: clientDataHash,
+            rpId,
+            requireUserPresence: true,
+            requireUserVerification,
+          },
+          meta: {
+            userId: meta.userId,
+            apiKeyId: meta.apiKeyId,
+            userPresenceEnabled: meta.userPresenceEnabled,
+            userVerificationEnabled: meta.userVerificationEnabled,
+          },
+          context: context,
+        });
+
+      // Step 4: Return true.
+      // NOTE: We don't need to use savedCredentialIds and saved authenticatorGetAssertion payload.
+      // We have single authenticator, so we can directly return the payload.
+      return authenticatorGetAssertionPayload;
+    } catch (error) {
+      if (error instanceof CredentialSelectException) {
+        throw new CredentialSelectException({
+          ...error.data,
+          hash: HashOnion.push(optionsHash, error.data.hash),
+        });
+      }
+
+      throw error;
+    }
   }
 
   /**
@@ -315,17 +348,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    */
   private _constructCredentialAlg(opts: {
     attestationConveyancePreferenceOption: Attestation | undefined;
-    attestationObjectResult: Uint8Array;
-  }): Uint8Array {
+    attestationObjectResult: Uint8Array_;
+  }): Uint8Array_ {
     const { attestationConveyancePreferenceOption, attestationObjectResult } =
       opts;
 
     // Decode the CBOR attestation object
     // Note: cbor.decode returns a Map when the CBOR data contains a map
-    const attestationObject = cbor.decode<IAttestationObjectMap>(
-      attestationObjectResult,
-      { preferMap: true },
-    );
+    const attestationObject = decodeAttestationObject(attestationObjectResult);
 
     // Step 22.SUCCESS.3.1: If
     // credentialCreationData.attestationConveyancePreferenceOption's value is
@@ -339,11 +369,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const attStmt = attestationObject.get('attStmt');
       const authData = attestationObject.get('authData');
 
-      const authDataParser = new AuthenticatorDataParser(authData);
+      const parsedAuthenticatorData = parseAuthenticatorData(authData);
 
       // Check if aaguid (in authData) is 16 zero bytes
-      const aaguid = authDataParser.getAaguid();
-      const isAaguidZeroed = !!aaguid?.every((byte) => byte === 0);
+      const isAaguidZeroed = parsedAuthenticatorData.aaguid?.every(
+        (byte) => byte === 0,
+      );
 
       // If the aaguid in the attested credential data is 16 zero bytes
       // and credentialCreationData.attestationObjectResult.fmt is "packed"
@@ -376,6 +407,18 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return attestationObjectResult;
   }
 
+  private _hashCreateCredentialOptionsAsHex(opts: {
+    pkOptions: PublicKeyCredentialCreationOptions;
+    meta: AuthenticatorAgentMetaArgs;
+  }): string {
+    const { pkOptions, meta } = opts;
+
+    return Hash.sha256JSONHex({
+      pkOptions: PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
+      meta,
+    });
+  }
+
   /**
    * Creates a new public key credential (registration ceremony).
    * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
@@ -394,7 +437,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
-    context: AuthenticatorAgentContextArgs;
+
+    // Context is optional
+    context?: AuthenticatorAgentContextArgs;
   }): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
@@ -436,6 +481,15 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 3: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
+
+    const optionsHash = this._hashCreateCredentialOptionsAsHex({
+      pkOptions,
+      meta,
+    });
+
+    // Context hash validation
+    const [contextHash, authenticatorHash] = HashOnion.pop(opts.context?.hash);
+    assertSchema(contextHash, z.literal(optionsHash).optional());
 
     // Step 4: If pkOptions.timeout is present, check if its value lies
     // within a reasonable range as defined by the client and if not,
@@ -626,7 +680,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 22.SIGNAL: If options.signal is present and aborted
     // For each authenticator in issuedRequests invoke the authenticatorCancel operation on authenticator
     // and remove authenticator from issuedRequests. Throw a "NotAllowedError" DOMException.
-    // NOTE: Cancellation is not impelemented.
     if (options.signal?.aborted) {
       // NOTE: signal reason is used instead of NotAllowedError
       throw options.signal.reason;
@@ -717,7 +770,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // NOTE: Transport filtering not implemented. Virtual authenticator
     // accepts all credential descriptors as it represents a single
     // transport-agnostic authenticator.
-    const excludeCredentialDescriptorList = pkOptions.excludeCredentials ?? [];
+    const excludeCredentialDescriptorList = pkOptions.excludeCredentials;
 
     // Step 22.AVAILABLE.10: Invoke the authenticatorMakeCredential operation on
     // authenticator with clientDataHash, rpEntity, userEntity,
@@ -725,7 +778,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // credTypesAndPubKeyAlgs, excludeCredentialDescriptorList,
     // enterpriseAttestationPossible, and authenticatorExtensions as
     // parameters.
-    const { credentialId, attestationObject } =
+    const { attestationObject, credentialId } =
       await this.authenticator.authenticatorMakeCredential({
         authenticatorMakeCredentialArgs: {
           hash: clientDataHash,
@@ -735,7 +788,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           },
           userEntity: pkOptions.user,
           requireResidentKey,
-          requireUserPresence: meta.userPresenceEnabled !== false,
+          requireUserPresence: true,
           requireUserVerification,
           credTypesAndPubKeyAlgs,
           excludeCredentialDescriptorList,
@@ -743,8 +796,16 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           attestationFormats,
           extensions: pkOptions.extensions,
         },
-        meta,
-        context,
+        meta: {
+          userId: meta.userId,
+          apiKeyId: meta.apiKeyId,
+          userPresenceEnabled: meta.userPresenceEnabled,
+          userVerificationEnabled: meta.userVerificationEnabled,
+        },
+        context: {
+          hash: authenticatorHash,
+          selectedCredentailOptionId: context?.selectedCredentailOptionId,
+        },
       });
 
     // Step 22.UNAVAILABLE: If an authenticator ceases to be available on this client device
@@ -835,6 +896,18 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return pubKeyCred;
   }
 
+  private _hashGetAssertionOptionsAsHex(opts: {
+    pkOptions: PublicKeyCredentialRequestOptions;
+    meta: AuthenticatorAgentMetaArgs;
+  }): string {
+    const { pkOptions, meta } = opts;
+
+    return Hash.sha256JSONHex({
+      pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
+      meta,
+    });
+  }
+
   /**
    * Gets an existing credential (authentication ceremony).
    * This implements the agent/client-side steps of the WebAuthn getAssertion algorithm.
@@ -853,10 +926,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Internal options
     meta: AuthenticatorAgentMetaArgs;
+    // New context from client
     context: AuthenticatorAgentContextArgs;
   }): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
-
     // Step 1: Let options be the object passed to the
     // [[DiscoverFromExternalSource]](origin, options,
     // sameOriginWithAncestors) internal method.
@@ -883,6 +956,15 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 2: Let pkOptions be the value of options.publicKey.
     const pkOptions = options.publicKey;
 
+    const optionsHash = this._hashGetAssertionOptionsAsHex({
+      pkOptions,
+      meta,
+    });
+
+    // Context hash validation
+    const [contextHash, authenticatorHash] = HashOnion.pop(opts.context?.hash);
+    assertSchema(contextHash, z.literal(optionsHash).optional());
+
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
     // Step 3: If options.mediation is present with the value conditional:
     if (options.mediation === CredentialMediationRequirement.CONDITIONAL) {
@@ -890,7 +972,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       credentialIdFilter = pkOptions.allowCredentials ?? [];
 
       // Step 3.2: Set pkOptions.allowCredentials to empty.
-      // NOTE: Skipped
+      // NOTE: Skipped.
 
       // Step 3.3: Set a timer lifetimeTimer to a value of infinity.
       // NOTE: Not implemented.
@@ -1046,15 +1128,20 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       await this._issueCredentialRequestToAuthenticator({
         authenticator: this.authenticator,
         // NOTE: Not used. Just for compatibility with spec.
-        savedCredentialIds: new Map<IAuthenticator, Uint8Array>(),
+        savedCredentialIds: new Map<IAuthenticator, Uint8Array_>(),
         pkOptions,
         rpId,
         clientDataHash,
         // NOTE: Extensions are not implemented.
         authenticatorExtensions: {},
 
+        // Custom options
         meta,
-        context,
+        context: {
+          hash: authenticatorHash,
+          selectedCredentailOptionId: context?.selectedCredentailOptionId,
+        },
+        optionsHash,
       });
 
     // Step 20.AVAILABLE.2.1: If this returns false, continue.

@@ -8,9 +8,7 @@ export const healthcheckRouter = c.router({
   get: {
     method: 'GET',
     path: '/healthcheck',
-    responses: {
-      200: GetHealthcheckResponseSchema,
-    },
+    responses: GetHealthcheckResponseSchema,
     summary: 'Check the health of the service',
   },
 });

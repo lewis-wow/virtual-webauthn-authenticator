@@ -15,6 +15,9 @@ export const env = defineEnv({
 
     // Key vault
     AZURE_KEY_VAULT_BASE_URL: z.url(),
+
+    // JWKS
+    ENCRYPTION_KEY: z.string(),
   },
   runtimeEnv: process.env,
 });
