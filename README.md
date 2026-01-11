@@ -7,46 +7,46 @@
 ```plaintext
 +---------------------------------------------------------------+
 |                  RELYING PARTY (Web Server)                   |
-+---------------------------------------------------------------+
++-------------+-------------------------------------------------+
               |
               | 0. INITIATION (Challenge / Options)
               v
-+-------------|-------------------------------------------------+
++-------------+-------------------------------------------------+
 |                   BROWSER (Web Extension)                     |
-+-------------|-------------------------------------------------+
-|                                                               |
++-------------+-------------------------------------------------+
+|             |                                                 |
 |   1. INTERCEPTION (Main World)                                |
 |   [ navigator.credentials proxy ] <--- Web App Call           |
 |             |                                                 |
 |             v window.postMessage                              |
-|                                                               |
+|             |                                                 |
 |   2. USER INTERFACE (Content Script)                          |
 |   [ Confirmation DOM and UI ]                                 |
 |             |                                                 |
 |             v chrome.runtime.sendMessage                      |
-|                                                               |
+|             |                                                 |
 |   3. NETWORK LAYER (Background Service Worker)                |
 |   [ Fetch API Wrapper ]                                       |
 |             |                                                 |
-+-------------|-------------------------------------------------+
++-------------+-------------------------------------------------+
               |
               v HTTPS
               |
-+-------------|-------------------------------------------------+
++-------------+-------------------------------------------------+
 |              VIRTUAL AUTHENTICATOR HOST (Server)              |
-+-------------|-------------------------------------------------+
-|                                                               |
++-------------+-------------------------------------------------+
+|             |                                                 |
 |   4. GATEWAY                                                  |
 |   [ API Endpoint ]                                            |
 |             |                                                 |
 |             v                                                 |
-|                                                               |
+|             |                                                 |
 |   5. LOGIC CORE                                               |
 |   [ Virtual Authenticator Agent ]                             |
 |   (Validation / CBOR / Parameters / Extensions)               |
 |             |                                                 |
 |             v                                                 |
-|                                                               |
+|             |                                                 |
 |   6. STORAGE & CRYPTO                                         |
 |   [ Virtual Authenticator ]                                   |
 |   (Key Vault / Signing / Counters / Attestation / Extensions) |
