@@ -14,7 +14,6 @@ import { AuthenticatorGetAssertionArgsDtoSchema } from './dto/authenticator/Auth
 import { AuthenticatorMakeCredentialArgsDtoSchema } from './dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialSelectException } from './exceptions/CredentialSelectException';
@@ -22,6 +21,7 @@ import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupp
 import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from './exceptions/SignatureFailed';
 import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
 import type { IKeyProvider } from './types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
