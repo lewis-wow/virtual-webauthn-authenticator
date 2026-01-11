@@ -6,6 +6,12 @@
 
 ```txt
 +---------------------------------------------------------------+
+|                  RELYING PARTY (Web Server)                   |
++---------------------------------------------------------------+
+              |
+              | 0. INITIATION (Challenge / Options)
+              v
++---------------------------------------------------------------+
 |                   BROWSER (Web Extension)                     |
 +---------------------------------------------------------------+
 |                                                               |
@@ -15,7 +21,7 @@
 |             v window.postMessage                              |
 |                                                               |
 |   2. USER INTERFACE (Content Script)                          |
-|   [ PIN Entry / Confirmation DOM ]                            |
+|   [ Confirmation DOM and UI ]                                 |
 |             |                                                 |
 |             v chrome.runtime.sendMessage                      |
 |                                                               |
@@ -24,7 +30,7 @@
 |             |                                                 |
 +-------------|-------------------------------------------------+
               |
-              v HTTPS
+              v HTTPS / WebSocket
               |
 +-------------|-------------------------------------------------+
 |              VIRTUAL AUTHENTICATOR HOST (Server)              |
@@ -37,13 +43,13 @@
 |                                                               |
 |   5. LOGIC CORE                                               |
 |   [ Virtual Authenticator Agent ]                             |
-|   (CTAP2 Parser / CBOR Logic)                                 |
+|   (Validation / CBOR / Parameters / Extensions)               |
 |             |                                                 |
 |             v                                                 |
 |                                                               |
 |   6. STORAGE & CRYPTO                                         |
 |   [ Virtual Authenticator ]                                   |
-|   (Key Vault / Signing / Counters)                            |
+|   (Key Vault / Signing / Counters / Attestation / Extensions) |
 |                                                               |
 +---------------------------------------------------------------+
 ```
