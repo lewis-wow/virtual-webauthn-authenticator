@@ -1,4 +1,8 @@
-import { configDefaults, defineConfig } from 'vitest/config';
+import {
+  configDefaults,
+  coverageConfigDefaults,
+  defineConfig,
+} from 'vitest/config';
 
 export const integrationConfig = defineConfig({
   test: {
@@ -7,7 +11,12 @@ export const integrationConfig = defineConfig({
 
     coverage: {
       provider: 'v8',
-      exclude: ['__mocks__', '__tests__', 'src/index.ts'],
+      exclude: [
+        ...coverageConfigDefaults.exclude,
+        '__tests__',
+        'src/index.ts',
+        'dist',
+      ],
       include: ['src'],
     },
 

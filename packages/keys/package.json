@@ -12,8 +12,8 @@
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
-    "test": "vitest run --config __tests__/vitest.config.ts",
-    "test:coverage": "vitest run --coverage --config __tests__/vitest.config.ts",
+    "test:unit": "vitest run --config __tests__/vitest.unit.config.ts",
+    "test:unit:coverage": "vitest run --coverage --config __tests__/vitest.unit.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },

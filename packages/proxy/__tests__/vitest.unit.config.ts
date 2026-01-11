@@ -10,7 +10,7 @@ export default mergeConfig(
   unitConfig,
   defineConfig({
     test: {
-      name: pkg.name,
+      name: `${pkg.name}/unit`,
       root: projectRoot,
     },
   }),
