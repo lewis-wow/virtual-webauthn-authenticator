@@ -39,7 +39,7 @@ export const AUTHENTICATOR_GET_ASSERTION_ARGS: AuthenticatorGetAssertionArgs = {
   requireUserVerification: false,
   rpId: RP_ID,
   allowCredentialDescriptorList: undefined,
-  extensions: {},
+  authenticatorExtensions: {},
   hash: CLIENT_DATA_HASH,
 };
 

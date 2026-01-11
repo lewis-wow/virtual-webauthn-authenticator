@@ -47,7 +47,7 @@ export const AUTHENTICATOR_MAKE_CREDENTIAL_ARGS: AuthenticatorMakeCredentialArgs
     ],
     enterpriseAttestationPossible: false,
     excludeCredentialDescriptorList: undefined,
-    extensions: {},
+    authenticatorExtensions: {},
     hash: CLIENT_DATA_HASH,
     requireResidentKey: false,
     requireUserPresence: true,

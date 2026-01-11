@@ -280,7 +280,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         await authenticator.authenticatorGetAssertion({
           authenticatorGetAssertionArgs: {
             allowCredentialDescriptorList,
-            extensions: authenticatorExtensions,
+            authenticatorExtensions: authenticatorExtensions,
             hash: clientDataHash,
             rpId,
             requireUserPresence: true,
