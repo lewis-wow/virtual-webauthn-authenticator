@@ -10,13 +10,17 @@ import {
 } from '@repo/ui/components/ui/dialog';
 import { ScrollArea } from '@repo/ui/components/ui/scroll-area';
 import { cn } from '@repo/ui/lib/utils';
-import { Check } from 'lucide-react';
+import { Check, User } from 'lucide-react';
 import * as React from 'react';
 
 export type CredentialOptionsDialogProps = {
   onCancel: () => void;
   onConfirm: (credentialId: string) => void;
-  credentialOptions: { id: string; name: string | null }[];
+  credentialOptions: {
+    id: string;
+    name: string | null;
+    userDisplayName: string;
+  }[];
 };
 
 export const CredentialOptionsDialog = ({
@@ -51,14 +55,13 @@ export const CredentialOptionsDialog = ({
                 <button
                   key={credential.id}
                   onClick={() => setSelectedCredential(credential.id)}
-                  // Added items-start so text aligns to top if it wraps
                   className={cn(
                     'w-full flex items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent',
                     selectedCredential === credential.id &&
                       'border-primary bg-accent',
                   )}
                 >
-                  {/* 1. Added shrink-0 so the circle never deforms */}
+                  {/* Checkbox */}
                   <div
                     className={cn(
                       'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border mt-0.5',
@@ -72,16 +75,26 @@ export const CredentialOptionsDialog = ({
                     )}
                   </div>
 
-                  {/* 2. Wrapped text in a flex-col div to handle layout */}
-                  <div className="flex flex-col w-full min-w-0">
+                  {/* Text Container */}
+                  <div className="flex flex-col w-full min-w-0 gap-1">
+                    {/* Credential Name */}
                     {credential.name && (
-                      <span className="font-medium text-sm">
+                      <span className="font-medium text-sm leading-none">
                         {credential.name}
                       </span>
                     )}
-                    {/* 3. Added break-all to handle long UUIDs */}
-                    <span className="text-muted-foreground text-xs break-all">
-                      {credential.id}
+
+                    {/* User Display Name */}
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <User className="h-3 w-3 shrink-0" />
+                      <span className="truncate font-medium">
+                        {credential.userDisplayName}
+                      </span>
+                    </div>
+
+                    {/* Credential ID */}
+                    <span className="text-[10px] text-muted-foreground/60 break-all font-mono mt-1">
+                      ID: {credential.id}
                     </span>
                   </div>
                 </button>
