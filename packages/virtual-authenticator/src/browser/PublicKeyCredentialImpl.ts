@@ -8,7 +8,7 @@ import type {
 } from '@repo/types/dom';
 import { Buffer } from 'buffer';
 
-import { PublicKeyCredentialType } from '../enums';
+import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType';
 import { bytesToArrayBuffer } from './helpers';
 
 export type PublicKeyCredentialImplOptions = {

@@ -1,7 +1,7 @@
 import { BytesSchemaCodec } from '@repo/core/zod-validation';
 import z from 'zod';
 
-import { AuthenticatorGetAssertionArgsSchema } from '../../validation';
+import { AuthenticatorGetAssertionArgsSchema } from '../../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import { PublicKeyCredentialDescriptorDtoSchema } from '../spec/PublicKeyCredentialDescriptorDtoSchema';
 
 export const AuthenticatorGetAssertionArgsDtoSchema =

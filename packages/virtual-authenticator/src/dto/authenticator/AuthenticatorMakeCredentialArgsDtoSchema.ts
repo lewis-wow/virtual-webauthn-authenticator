@@ -1,7 +1,7 @@
 import { BytesSchemaCodec } from '@repo/core/zod-validation';
 import z from 'zod';
 
-import { AuthenticatorMakeCredentialArgsSchema } from '../../validation';
+import { AuthenticatorMakeCredentialArgsSchema } from '../../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import { PublicKeyCredentialDescriptorDtoSchema } from '../spec/PublicKeyCredentialDescriptorDtoSchema';
 import { PublicKeyCredentialUserEntityDtoSchema } from '../spec/PublicKeyCredentialUserEntityDtoSchema';
 

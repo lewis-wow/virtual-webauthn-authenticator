@@ -7,11 +7,9 @@ import type {
   COSEAlgorithmIdentifier,
 } from '@repo/types/dom';
 
-import {
-  decodeAttestationObject,
-  parseAuthenticatorData,
-  type AttestationObjectMap,
-} from '../cbor';
+import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
+import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
+import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
 import type { AuthenticatorTransport } from '../enums';
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../exceptions';
 import {

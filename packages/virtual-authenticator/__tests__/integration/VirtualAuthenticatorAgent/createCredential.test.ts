@@ -113,6 +113,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
       {
         attestation: Attestation.DIRECT,
       } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.ENTERPRISE,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
+      {
+        attestation: Attestation.INDIRECT,
+      } satisfies Partial<PublicKeyCredentialCreationOptions>,
     ])('With attestation $attestation', ({ attestation }) => {
       let registrationVerification: VerifiedRegistrationResponse;
       let webAuthnPublicKeyCredentialId: string;
@@ -1107,58 +1113,42 @@ describe('VirtualAuthenticator.createCredential()', () => {
       await cleanupWebAuthnPublicKeyCredentials();
     });
 
-    test('Should work with undefined excludeCredentials array', async () => {
-      // First, create a credential
-      const firstCredential =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions:
-            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        });
-
-      expect(firstCredential.registrationVerification.verified).toBe(true);
-
-      // Now try to create another credential, excluding no credential using empty array
-      // Per spec, the authenticator should still allow this (different credential)
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+    test.each([
+      {
         excludeCredentials: undefined,
-      } satisfies PublicKeyCredentialCreationOptions;
-
-      const secondCredential =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
-
-      expect(secondCredential.registrationVerification.verified).toBe(true);
-    });
-
-    test('Should not work with empty excludeCredentials array', async () => {
-      // First, create a credential
-      const firstCredential =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions:
-            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        });
-
-      expect(firstCredential.registrationVerification.verified).toBe(true);
-
-      // Now try to create another credential, excluding no credential using empty array
-      // Per spec, the authenticator should still allow this (different credential)
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+      },
+      {
         excludeCredentials: [],
-      } satisfies PublicKeyCredentialCreationOptions;
+      },
+    ])(
+      'Should work with excludeCredentials: $excludeCredentials',
+      async ({ excludeCredentials }) => {
+        // First, create a credential
+        const firstCredential =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions:
+              PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          });
 
-      await expect(() =>
-        performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        }),
-      ).rejects.toThrowError(new TypeAssertionError());
-    });
+        expect(firstCredential.registrationVerification.verified).toBe(true);
+
+        // Now try to create another credential, excluding no credential using empty array
+        // Per spec, the authenticator should still allow this (different credential)
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          excludeCredentials,
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const secondCredential =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        expect(secondCredential.registrationVerification.verified).toBe(true);
+      },
+    );
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialcreationoptions-excludecredentials

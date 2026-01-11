@@ -9,44 +9,37 @@ import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
 import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
-import { decodeAttestationObject } from './cbor';
+import { decodeAttestationObject } from './cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from './cbor/parseAuthenticatorData';
 import { PublicKeyCredentialCreationOptionsDtoSchema } from './dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
 import { PublicKeyCredentialRequestOptionsDtoSchema } from './dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
-import {
-  Attestation,
-  AuthenticatorAttachment,
-  AuthenticatorTransport,
-  CollectedClientDataType,
-  CredentialMediationRequirement,
-  Fmt,
-  ResidentKey,
-  UserVerification,
-} from './enums';
+import { Attestation } from './enums/Attestation';
+import { AuthenticatorAttachment } from './enums/AuthenticatorAttachment';
 import { AuthenticatorAuthenticationExtension } from './enums/AuthenticatorAuthenticationExtension';
 import { AuthenticatorRegistrationExtension } from './enums/AuthenticatorRegistrationExtension';
+import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
 import { ClientAuthenticationExtension } from './enums/ClientAuthenticationExtension';
 import { ClientRegistrationExtension } from './enums/ClientRegistrationExtension';
+import { CollectedClientDataType } from './enums/CollectedClientDataType';
+import { CredentialMediationRequirement } from './enums/CredentialMediationRequirement';
+import { Fmt } from './enums/Fmt';
 import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
-import { CredentialNotFound } from './exceptions';
+import { ResidentKey } from './enums/ResidentKey';
+import { UserVerification } from './enums/UserVerification';
+import { CredentialNotFound } from './exceptions/CredentialNotFound';
 import { CredentialSelectException } from './exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import {
-  type AuthenticationExtensionsClientOutputs,
-  type AuthenticatorAgentContextArgs,
-  type AuthenticatorAgentMetaArgs,
-  type AuthenticatorContextArgs,
-  type AuthenticatorGetAssertionResponse,
-  type PubKeyCredParam,
-  type PublicKeyCredentialCreationOptions,
-  type PublicKeyCredentialDescriptor,
-  type PublicKeyCredentialRequestOptions,
-} from './validation';
 import { AuthenticatorAgentMetaArgsSchema } from './validation/authenticator/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from './validation/authenticator/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorContextArgs } from './validation/authenticator/AuthenticatorContextArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentContextArgsSchema } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentContextArgs } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 import { createOriginMatchesRpIdSchema } from './validation/authenticatorAgent/createOriginMatchesRpIdSchema';
+import type { AuthenticationExtensionsClientOutputs } from './validation/spec/AuthenticationExtensionsClientOutputsSchema';
 import type { CollectedClientData } from './validation/spec/CollectedClientDataSchema';
+import type { PubKeyCredParam } from './validation/spec/CredParamSchema';
 import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
@@ -57,7 +50,10 @@ import {
   type CredentialRequestOptions,
 } from './validation/spec/CredentialRequestOptionsSchema';
 import { PublicKeyCredentialCreationOptionsSchema } from './validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialCreationOptions } from './validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialDescriptor } from './validation/spec/PublicKeyCredentialDescriptorSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from './validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from './validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from './validation/spec/PublicKeyCredentialSchema';
 
 /**

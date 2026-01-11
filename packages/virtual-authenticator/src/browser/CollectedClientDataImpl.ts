@@ -1,5 +1,6 @@
 import type { CollectedClientDataType } from '../enums';
-import type { CollectedClientData, TokenBinding } from '../validation';
+import type { CollectedClientData } from '../validation/spec/CollectedClientDataSchema';
+import type { TokenBinding } from '../validation/spec/TokenBindingSchema';
 
 export type CollectedClientDataImplOptions = {
   type: CollectedClientDataType;

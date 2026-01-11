@@ -8,12 +8,13 @@ import { match } from 'ts-pattern';
 import z from 'zod';
 
 import type { IAuthenticator } from './IAuthenticator';
-import type { AttestationObjectMap, AttestationStatementMap } from './cbor';
+import type { AttestationObjectMap } from './cbor/AttestationObjectMap';
+import type { AttestationStatementMap } from './cbor/AttestationStatementMap';
 import { AuthenticatorGetAssertionArgsDtoSchema } from './dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { AuthenticatorMakeCredentialArgsDtoSchema } from './dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from './enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { UserVerificationNotAvailable } from './exceptions';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
 import { CredentialExcluded } from './exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
 import { CredentialSelectException } from './exceptions/CredentialSelectException';

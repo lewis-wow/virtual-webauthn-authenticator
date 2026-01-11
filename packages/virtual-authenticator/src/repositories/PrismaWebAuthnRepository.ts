@@ -7,7 +7,7 @@ import { ApiKeyNotExists } from '../exceptions/ApiKeyNotExists';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { UserNotExists } from '../exceptions/UserNotExists';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import type { ApplicablePublicKeyCredential } from '../validation';
+import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,

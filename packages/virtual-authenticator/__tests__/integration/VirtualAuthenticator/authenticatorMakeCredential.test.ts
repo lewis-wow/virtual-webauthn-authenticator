@@ -26,10 +26,8 @@ import {
 } from '../../../src/exceptions';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import type {
-  AuthenticatorMakeCredentialArgs,
-  AuthenticatorMetaArgs,
-} from '../../../src/validation';
+import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
@@ -557,7 +555,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       ).rejects.toThrowError(new CredentialExcluded());
     });
 
-    test('Credential excluded with non-uuid credential ids', async () => {
+    test('No credential excluded with non-uuid credential ids', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
         excludeCredentialDescriptorList: [
@@ -608,33 +606,28 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       });
     });
 
-    test('Invalid empty args.excludeCredentialDescriptorList', async () => {
-      const authenticatorMakeCredentialArgs = {
-        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+    test.each([
+      {
         excludeCredentialDescriptorList: [],
-      } as AuthenticatorMakeCredentialArgs;
+      },
+      {
+        excludeCredentialDescriptorList: undefined,
+      },
+    ])(
+      'No credential excluded with args.excludeCredentialDescriptorList $excludeCredentialDescriptorList',
+      async ({ excludeCredentialDescriptorList }) => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          excludeCredentialDescriptorList,
+        } as AuthenticatorMakeCredentialArgs;
 
-      await expect(() =>
-        performAuthenticatorMakeCredentialAndVerify({
+        await performAuthenticatorMakeCredentialAndVerify({
           authenticator,
           prisma,
           authenticatorMakeCredentialArgs,
-        }),
-      ).rejects.toThrowError(new TypeAssertionError());
-    });
-
-    test('Valid undefined args.excludeCredentialDescriptorList - Should create new credential', async () => {
-      const authenticatorMakeCredentialArgs = {
-        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-        excludeCredentialDescriptorList: undefined,
-      } as AuthenticatorMakeCredentialArgs;
-
-      await performAuthenticatorMakeCredentialAndVerify({
-        authenticator,
-        prisma,
-        authenticatorMakeCredentialArgs,
-      });
-    });
+        });
+      },
+    );
   });
 
   describe('AuthenticatorMakeCredentialArgs.hash', () => {

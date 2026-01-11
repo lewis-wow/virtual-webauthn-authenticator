@@ -1,21 +1,23 @@
 import { USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
+import { Hash } from '@repo/crypto';
 import {
   type RegistrationResponseJSON,
   type VerifiedRegistrationResponse,
   verifyRegistrationResponse,
 } from '@simplewebauthn/server';
+import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
+import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
-import type {
-  PublicKeyCredential,
-  PublicKeyCredentialCreationOptions,
-} from '../../../src/validation';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticator/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentContextArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
 import { RP_ID, RP_ORIGIN } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
@@ -49,6 +51,16 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     requireUserPresence,
   } = opts;
 
+  const metaInternalOption: AuthenticatorAgentMetaArgs = {
+    userId: USER_ID,
+    apiKeyId: null,
+    origin: RP_ORIGIN,
+
+    userPresenceEnabled: true,
+    userVerificationEnabled: true,
+    ...meta,
+  };
+
   // Simulate the full WebAuthn registration ceremony.
   // This creates a new public key credential (passkey) using the
   // specified options, public key, and key vault metadata.
@@ -60,15 +72,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     sameOriginWithAncestors: true,
 
     // Internal options
-    meta: {
-      userId: USER_ID,
-      apiKeyId: null,
-      origin: RP_ORIGIN,
-
-      userPresenceEnabled: true,
-      userVerificationEnabled: true,
-      ...meta,
-    },
+    meta: metaInternalOption,
     context,
   });
 
@@ -90,6 +94,39 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
         ?.userVerification === UserVerification.REQUIRED,
     requireUserPresence: requireUserPresence ?? true,
   });
+
+  expect(registrationVerification.verified).toBe(true);
+
+  const attestationObjectMap = decodeAttestationObject(
+    registrationVerification.registrationInfo!.attestationObject,
+  );
+
+  const authData = attestationObjectMap.get('authData');
+
+  const parsedAuthenticatorData = parseAuthenticatorData(authData);
+
+  expect(parsedAuthenticatorData.extensionsData).toBe(undefined);
+
+  // New credential counter should be always 0
+  expect(parsedAuthenticatorData.counter).toBe(0);
+
+  expect(parsedAuthenticatorData.flags.up).toBe(true);
+  expect(parsedAuthenticatorData.flags.be).toBe(true);
+  expect(parsedAuthenticatorData.flags.bs).toBe(true);
+
+  if (
+    publicKeyCredentialCreationOptions.authenticatorSelection
+      ?.userVerification === UserVerification.REQUIRED
+  ) {
+    expect(parsedAuthenticatorData.flags.uv).toBe(true);
+  }
+
+  expect(parsedAuthenticatorData.rpIdHash).toStrictEqual(
+    Hash.sha256(
+      publicKeyCredentialCreationOptions.rp.id ??
+        new URL(metaInternalOption.origin!).hostname,
+    ),
+  );
 
   const webAuthnPublicKeyCredentialId = UUIDMapper.bytesToUUID(
     publicKeyCredential.rawId,

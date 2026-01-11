@@ -9,7 +9,13 @@ export class TypeAssertionError extends Exception<TypeAssertionErrorData> {
   static readonly code = 'TypeAssertionError';
   static message = 'Type mismatch';
 
-  constructor(data?: TypeAssertionErrorData) {
+  static readonly SHOULD_INCLUDE_DATA = false;
+
+  constructor(dataPayload?: TypeAssertionErrorData) {
+    const data = TypeAssertionError.SHOULD_INCLUDE_DATA
+      ? dataPayload
+      : undefined;
+
     super({ data });
   }
 }

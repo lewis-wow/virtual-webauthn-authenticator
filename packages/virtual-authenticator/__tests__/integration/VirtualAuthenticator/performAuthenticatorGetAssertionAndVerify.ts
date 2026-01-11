@@ -11,13 +11,11 @@ import { type IAuthenticator } from '../../../src';
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
-import type {
-  CollectedClientData,
-  AuthenticatorGetAssertionArgs,
-  AuthenticatorMakeCredentialResponse,
-  AuthenticatorMetaArgs,
-  AuthenticatorContextArgs,
-} from '../../../src/validation';
+import type { AuthenticatorContextArgs } from '../../../src/validation/authenticator/AuthenticatorContextArgsSchema';
+import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
 import { CHALLENGE_BYTES, RP_ORIGIN, RP_ID } from '../../helpers';
 
 export const COLLECTED_CLIENT_DATA: CollectedClientData = {

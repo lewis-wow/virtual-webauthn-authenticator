@@ -1,4 +1,4 @@
-import { KeyMapper } from '../../src';
+import { KeyMapper } from '../../src/KeyMapper';
 import { JsonWebPublicKey } from './JsonWebPublicKey';
 
 export const COSEPublicKey =
