@@ -41,6 +41,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@nestjs/core",
       "@parcel/watcher",
       "@prisma/client",
       "@prisma/engines",
@@ -52,6 +53,7 @@
       "msgpackr-extract",
       "prisma",
       "sharp",
+      "spawn-sync",
       "unrs-resolver"
     ]
   }

@@ -12,6 +12,7 @@ export const integrationConfig = defineConfig({
 
     coverage: {
       provider: 'v8',
+      excludeAfterRemap: true,
       exclude: [...coverageConfigDefaults.exclude, ...COVERAGE_EXCLUDE],
       include: ['**/src/**'],
     },
