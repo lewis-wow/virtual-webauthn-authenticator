@@ -1,6 +1,7 @@
 import type { PublicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptionsDOM } from '@repo/types/dom';
-import type { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
 
+import type { AuthenticationExtensionsClientInputs } from '../../validation/spec/AuthenticationExtensionsClientInputsSchema';
+import type { PublicKeyCredentialCreationOptions } from '../../validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import { bufferSourceToBytes } from './bytesConversion';
 
 /**
@@ -23,7 +24,9 @@ export const convertBrowserCreationOptions = (
       ...cred,
       id: bufferSourceToBytes(cred.id),
     })),
-    // TODO: use proper type for extensions
-    extensions: {},
+    // TODO: use proper type for extensions instead of casting
+    extensions: publicKey.extensions as
+      | AuthenticationExtensionsClientInputs
+      | undefined,
   };
 };

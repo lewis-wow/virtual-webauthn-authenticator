@@ -1,12 +1,16 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
+import { CredentialPropertiesOutputSchema } from './CredentialPropertiesOutputSchema';
 
 /**
  * @see https://www.w3.org/TR/webauthn/#dictdef-authenticationextensionsclientoutputs
  */
 export const AuthenticationExtensionsClientOutputsSchema = z
-  .record(z.string(), z.unknown())
+  .object({
+    credProps: CredentialPropertiesOutputSchema,
+  })
+  .partial()
   .meta({
     id: 'AuthenticationExtensionsClientOutputs',
     ref: 'AuthenticationExtensionsClientOutputs',

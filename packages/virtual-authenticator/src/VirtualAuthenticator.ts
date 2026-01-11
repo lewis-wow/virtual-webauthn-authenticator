@@ -254,6 +254,9 @@ export class VirtualAuthenticator implements IAuthenticator {
       flagsInt |= 0b01000000;
     }
 
+    // Bit 7: Extension data included
+    // NOTE: Extension data is never included.
+
     const flags = Buffer.from([flagsInt]);
 
     // Signature counter, 32-bit unsigned big-endian integer.

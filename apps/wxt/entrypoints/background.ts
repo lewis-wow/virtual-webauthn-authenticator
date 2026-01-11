@@ -29,6 +29,10 @@ export default defineBackground(() => {
   extensionMessaging.onMessage('credentials.create', async (req) => {
     const apiKey = await apiKeyItem.getValue();
 
+    console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
+      request: req.data,
+    });
+
     const response = await fetch(
       `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
       {
@@ -37,6 +41,11 @@ export default defineBackground(() => {
         body: JSON.stringify(req.data),
       },
     );
+
+    console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
+      request: req.data,
+      response,
+    });
 
     const json = await response.json();
 
@@ -58,6 +67,10 @@ export default defineBackground(() => {
   extensionMessaging.onMessage('credentials.get', async (req) => {
     const apiKey = await apiKeyItem.getValue();
 
+    console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
+      request: req.data,
+    });
+
     const response = await fetch(
       `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
       {
@@ -66,6 +79,11 @@ export default defineBackground(() => {
         body: JSON.stringify(req.data),
       },
     );
+
+    console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
+      request: req.data,
+      response,
+    });
 
     const json = await response.json();
 

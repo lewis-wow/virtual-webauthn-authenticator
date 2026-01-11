@@ -175,7 +175,7 @@ export const AuthenticatorMakeCredentialArgsSchema = z
      * CTAP Data type: CBOR map of extension identifier -> authenticator extension input values
      * Optional
      */
-    extensions: z.record(z.string(), z.unknown()).optional(),
+    authenticatorExtensions: z.record(z.string(), z.unknown()).optional(),
 
     /**
      * UNMAPPED CTAP FIELDS:
