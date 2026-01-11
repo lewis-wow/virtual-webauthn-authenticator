@@ -2,6 +2,8 @@
 
 [![codecov](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator/graph/badge.svg?token=4J12KNM8S0)](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator)
 
+## Authenticator flow
+
 ```txt
 +---------------------------------------------------------------+
 |                   BROWSER (Web Extension)                     |
