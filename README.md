@@ -7,6 +7,7 @@
 To start the project in development mode, run the command below. This will launch all applications in the `apps` directory, excluding the example Next.js application.
 
 ```bash
+./docker-compose-test.sh
 pnpm dev --filter '!@repo/nextjs-example'
 ```
 
@@ -129,6 +130,7 @@ To run the Next.js passkeys example, navigate to the example directory, prepare 
 ```bash
 cd examples/nextjs
 pnpm db:generate
+pnpm db:push
 pnpm start
 ```
 
