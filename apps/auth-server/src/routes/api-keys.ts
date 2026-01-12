@@ -30,13 +30,13 @@ apiKey.on(
     const plaintextKey = bearerToken?.replace('Bearer ', '');
 
     if (!plaintextKey) {
-      throw new Unauthorized('API key is invalid.');
+      throw new Unauthorized();
     }
 
     const apiKey = await apiKeyManager.verify(plaintextKey);
 
     if (!apiKey) {
-      throw new Unauthorized('API key is invalid.');
+      throw new Unauthorized();
     }
 
     const user = await prisma.user.findUniqueOrThrow({
