@@ -26,3 +26,4 @@ web-ext.config.ts
 *.sw?
 
 Keyless.crx
+test-results
