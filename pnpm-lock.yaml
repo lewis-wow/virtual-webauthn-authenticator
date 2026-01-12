@@ -684,6 +684,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@repo/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../../packages/virtual-authenticator

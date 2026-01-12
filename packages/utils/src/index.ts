@@ -9,3 +9,5 @@ export * from './omit';
 export * from './fromB64';
 export * from './toB64';
 export * from './uint8ArraysEqual';
+export * from './randomInt';
+export * from './delayPromise';
