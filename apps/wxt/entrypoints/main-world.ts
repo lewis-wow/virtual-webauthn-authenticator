@@ -61,11 +61,11 @@ export default defineUnlistedScript(() => {
       clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
 
-    console.log(`[${LOG_PREFIX}] Public key credentail:`, publicKeyCredential);
+    console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
 
     const throttling = randomInt(3_500, 9_000);
 
-    console.log(`[${LOG_PREFIX}] Throttling :`, `+${throttling}ms`);
+    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
 
     await delayPromise(throttling);
 
@@ -110,11 +110,11 @@ export default defineUnlistedScript(() => {
       clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
 
-    console.log(`[${LOG_PREFIX}] Public key credentail:`, publicKeyCredential);
+    console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
 
     const throttling = randomInt(3_500, 9_000);
 
-    console.log(`[${LOG_PREFIX}] Throttling :`, `+${throttling}ms`);
+    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
 
     await delayPromise(throttling);
 
