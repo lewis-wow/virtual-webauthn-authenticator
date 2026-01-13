@@ -16,19 +16,21 @@
     "test:ui": "vitest --ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "knip": "knip"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/ejs": "^3.1.5",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.10.1",
     "@vitest/coverage-v8": "3.2.4",
     "@vitest/ui": "^3.2.4",
     "barrelsby": "^2.8.1",
     "copyfiles": "^2.4.1",
     "ejs": "^3.1.10",
     "eslint": "^9.34.0",
+    "knip": "^5.80.2",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.6.2",
     "tsx": "^4.20.6",
