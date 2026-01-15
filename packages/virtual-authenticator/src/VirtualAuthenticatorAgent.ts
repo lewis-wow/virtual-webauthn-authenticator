@@ -1410,7 +1410,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
       if (containsCredentialId === undefined) {
         // continue.
-        throw new Error('No credential was found.');
+        throw new CredentialNotFound();
       }
     }
 
@@ -1421,7 +1421,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       assertionCreationData.userHandleResult === null
     ) {
       // continue.
-      throw new Error('No credential was found.');
+      throw new CredentialNotFound();
     }
 
     // Step 20.SUCCESS.4: Let settings be the current settings object. Let

@@ -11,6 +11,12 @@ To start the project in development mode, run the command below. This will launc
 pnpm dev --filter '!@repo/nextjs-example'
 ```
 
+Without extension:
+
+```bash
+pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
+```
+
 ## Authenticator flow
 
 ```plaintext

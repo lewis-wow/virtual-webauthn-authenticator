@@ -1,11 +1,13 @@
 import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToContentScriptMessaging';
 import { Exception } from '@repo/exception';
+import { delayPromise, randomInt } from '@repo/utils';
 import {
   convertBrowserCreationOptions,
   convertBrowserRequestOptions,
   createPublicKeyCredentialResponseImpl,
   PublicKeyCredentialImpl,
 } from '@repo/virtual-authenticator/browser';
+import { parseAuthenticatorData } from '@repo/virtual-authenticator/cbor';
 import {
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialDtoSchema,
@@ -44,19 +46,30 @@ export default defineUnlistedScript(() => {
       throw new Exception(response.error);
     }
 
-    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(
+    const parsedPublicKeyCredential = PublicKeyCredentialDtoSchema.parse(
       response.data,
     );
 
-    return new PublicKeyCredentialImpl({
-      id: publicKeyCredential.id,
-      rawId: publicKeyCredential.rawId,
+    const publicKeyCredential = new PublicKeyCredentialImpl({
+      id: parsedPublicKeyCredential.id,
+      rawId: parsedPublicKeyCredential.rawId,
       response: createPublicKeyCredentialResponseImpl(
-        publicKeyCredential.response,
+        parsedPublicKeyCredential.response,
       ),
-      authenticatorAttachment: publicKeyCredential.authenticatorAttachment,
-      clientExtensionResults: publicKeyCredential.clientExtensionResults,
+      authenticatorAttachment:
+        parsedPublicKeyCredential.authenticatorAttachment,
+      clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
+
+    console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
+
+    const throttling = randomInt(3_500, 9_000);
+
+    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
+
+    await delayPromise(throttling);
+
+    return publicKeyCredential;
   };
 
   navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
@@ -82,18 +95,29 @@ export default defineUnlistedScript(() => {
       throw new Exception(response.error);
     }
 
-    const publicKeyCredential = PublicKeyCredentialDtoSchema.parse(
+    const parsedPublicKeyCredential = PublicKeyCredentialDtoSchema.parse(
       response.data,
     );
 
-    return new PublicKeyCredentialImpl({
-      id: publicKeyCredential.id,
-      rawId: publicKeyCredential.rawId,
+    const publicKeyCredential = new PublicKeyCredentialImpl({
+      id: parsedPublicKeyCredential.id,
+      rawId: parsedPublicKeyCredential.rawId,
       response: createPublicKeyCredentialResponseImpl(
-        publicKeyCredential.response,
+        parsedPublicKeyCredential.response,
       ),
-      authenticatorAttachment: publicKeyCredential.authenticatorAttachment,
-      clientExtensionResults: publicKeyCredential.clientExtensionResults,
+      authenticatorAttachment:
+        parsedPublicKeyCredential.authenticatorAttachment,
+      clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
+
+    console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
+
+    const throttling = randomInt(3_500, 9_000);
+
+    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
+
+    await delayPromise(throttling);
+
+    return publicKeyCredential;
   };
 });
