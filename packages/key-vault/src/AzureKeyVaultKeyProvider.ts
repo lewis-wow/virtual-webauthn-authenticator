@@ -191,6 +191,15 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       algorithm === JWKKeyAlgorithm.ES384 ||
       algorithm === JWKKeyAlgorithm.ES512;
 
+    /**
+     * For COSEAlgorithmIdentifier -7 (ES256), and other ECDSA-based algorithms,
+     * the sig value MUST be encoded as an ASN.1 DER Ecdsa-Sig-Value
+     * @see https://www.w3.org/TR/webauthn-3/#sctn-signature-attestation-types
+     *
+     * It is RECOMMENDED that any new attestation formats defined not use ASN.1 encodings, but instead represent signatures as equivalent fixed-length byte arrays without internal structure, using the same representations as used by COSE signatures as defined in [RFC9053] and [RFC8230].
+     * For COSEAlgorithmIdentifier -257 (RS256), sig MUST contain the signature generated using the RSASSA-PKCS1-v1_5 signature scheme defined in Section 8.2.1 of [RFC8017] with SHA-256 as the hash function. The signature is not ASN.1 wrapped.
+     * For COSEAlgorithmIdentifier -37 (PS256), sig MUST contain the signature generated using the RSASSA-PSS signature scheme defined in Section 8.1.1 of [RFC8017] with SHA-256 as the hash function. The signature is not ASN.1 wrapped.
+     */
     const signature = isECAlgorithm
       ? new Uint8Array(
           ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
