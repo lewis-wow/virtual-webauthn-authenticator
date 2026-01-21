@@ -56,7 +56,7 @@ export default defineContentScript({
         let response =
           await contentScriptToBackgroundScriptMessaging.sendMessage(
             'credentials.create',
-            request.data,
+            { ...request.data, meta: { origin: window.location.origin } },
           );
 
         console.log(
@@ -76,7 +76,7 @@ export default defineContentScript({
 
           response = await contentScriptToBackgroundScriptMessaging.sendMessage(
             'credentials.create',
-            { ...request.data },
+            { ...request.data, meta: { origin: window.location.origin } },
           );
         }
 
@@ -92,7 +92,7 @@ export default defineContentScript({
         let response =
           await contentScriptToBackgroundScriptMessaging.sendMessage(
             'credentials.get',
-            request.data,
+            { ...request.data, meta: { origin: window.location.origin } },
           );
 
         console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
@@ -108,7 +108,11 @@ export default defineContentScript({
 
           response = await contentScriptToBackgroundScriptMessaging.sendMessage(
             'credentials.get',
-            { ...request.data, context },
+            {
+              ...request.data,
+              meta: { origin: window.location.origin },
+              context,
+            },
           );
         }
 

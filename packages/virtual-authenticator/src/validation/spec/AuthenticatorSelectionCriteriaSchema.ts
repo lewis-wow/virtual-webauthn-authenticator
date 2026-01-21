@@ -26,9 +26,7 @@ export const AuthenticatorSelectionCriteriaSchema = z
      *
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorselectioncriteria-requireresidentkey
      */
-    requireResidentKey: z.boolean().optional().meta({
-      deprecated: true,
-    }),
+    requireResidentKey: z.boolean().optional(),
     /**
      * Specifies the extent to which the Relying Party desires to create a client-side
      * discoverable credential. For historical reasons the naming retains the deprecated
@@ -38,9 +36,7 @@ export const AuthenticatorSelectionCriteriaSchema = z
      *
      * @see https://www.w3.org/TR/webauthn/#dom-authenticatorselectioncriteria-residentkey
      */
-    residentKey: ResidentKeyRequirementSchema.optional().meta({
-      deprecated: true,
-    }),
+    residentKey: ResidentKeyRequirementSchema.optional(),
     /**
      * This member describes the Relying Party's requirements regarding user verification for the create() operation.
      * Eligible authenticators are filtered to only those capable of satisfying this requirement.
