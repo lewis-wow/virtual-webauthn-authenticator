@@ -38,7 +38,7 @@
     "@repo/exception": "workspace:*",
     "@ngneat/falso": "^8.0.2",
     "effect": "^3.19.4",
-    "lodash-es": "^4.17.21",
+    "lodash-es": "^4.17.23",
     "zod": "^4.1.12"
   },
   "peerDependencies": {
