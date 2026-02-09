@@ -23,6 +23,7 @@ import {
   CredPropsExtension,
   ExtensionProcessor,
   ExtensionRegistry,
+  HmacSecretExtension,
 } from '../../../src/agent/extensions';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
@@ -78,6 +79,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   });
   const extensionRegistry = new ExtensionRegistry().registerAll([
     new CredPropsExtension(),
+    new HmacSecretExtension(),
   ]);
   const extensionProcessor = new ExtensionProcessor(extensionRegistry);
   const agent = new VirtualAuthenticatorAgent({
@@ -875,7 +877,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           (resultCredential.clientExtensionResults as Record<string, unknown>)[
             'hmac-secret'
           ],
-        ).toBeUndefined();
+        ).toBe(true);
       });
     });
 

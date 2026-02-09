@@ -11,6 +11,7 @@ import type { ValueOfEnum } from '@repo/types';
  */
 export const ClientRegistrationExtension = {
   CRED_PROPS: 'credProps',
+  HMAC_SECRET: 'hmac-secret',
 } as const;
 
 export type ClientRegistrationExtension = ValueOfEnum<

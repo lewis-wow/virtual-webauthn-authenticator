@@ -3,6 +3,7 @@ import {
   CredPropsExtension,
   ExtensionProcessor,
   ExtensionRegistry,
+  HmacSecretExtension,
   VirtualAuthenticator,
   VirtualAuthenticatorAgent,
 } from '@repo/virtual-authenticator';
@@ -12,6 +13,7 @@ export const VirtualAuthenticatorAgentProvider: Provider = {
   useFactory: (authenticator: VirtualAuthenticator) => {
     const extensionRegistry = new ExtensionRegistry().registerAll([
       new CredPropsExtension(),
+      new HmacSecretExtension(),
     ]);
     const extensionProcessor = new ExtensionProcessor(extensionRegistry);
 
