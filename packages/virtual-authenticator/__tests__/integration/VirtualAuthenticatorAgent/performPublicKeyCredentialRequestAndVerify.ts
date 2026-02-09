@@ -48,6 +48,10 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   };
 
   const context: AuthenticatorAgentContextArgs = {
+    up: true,
+    uv:
+      publicKeyCredentialRequestOptions.userVerification ===
+      UserVerification.REQUIRED,
     ...contextOptions,
   };
 

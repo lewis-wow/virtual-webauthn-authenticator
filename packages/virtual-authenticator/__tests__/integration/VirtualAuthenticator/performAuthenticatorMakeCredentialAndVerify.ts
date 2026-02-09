@@ -92,7 +92,11 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
         apiKeyId: null,
         ...meta,
       },
-      context,
+      context: {
+        up: true,
+        uv: authenticatorMakeCredentialArgs.requireUserVerification,
+        ...context,
+      },
     });
 
   const attestationObjectMap = decodeAttestationObject(

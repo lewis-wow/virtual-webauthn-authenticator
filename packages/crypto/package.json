@@ -23,6 +23,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@repo/prisma": "workspace:*",
     "@repo/assert": "workspace:*",
     "fast-json-stable-stringify": "^2.1.0",
     "jose": "^6.1.0",

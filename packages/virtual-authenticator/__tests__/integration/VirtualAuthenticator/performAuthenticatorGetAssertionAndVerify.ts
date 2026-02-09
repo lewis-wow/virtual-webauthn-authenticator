@@ -75,7 +75,11 @@ export const performAuthenticatorGetAssertionAndVerify = async (
         apiKeyId: null,
         ...meta,
       },
-      context,
+      context: {
+        up: true,
+        uv: authenticatorGetAssertionArgs.requireUserVerification,
+        ...context,
+      },
     });
 
   const parsedGetAssertionAuthenticatorData = parseAuthenticatorData(

@@ -1248,6 +1248,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/prisma':
+        specifier: workspace:*
+        version: link:../prisma
       fast-json-stable-stringify:
         specifier: ^2.1.0
         version: 2.1.0

@@ -9,6 +9,10 @@ import z from 'zod';
 
 import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
 import type { AttestationStatementMap } from '../cbor/AttestationStatementMap';
+import {
+  ContextSchema,
+  type Context,
+} from '../context/validation/ContextSchema';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { AuthenticatorMakeCredentialArgsDtoSchema } from '../dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from '../enums/Fmt';
@@ -20,14 +24,12 @@ import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSup
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
 import { UserPresenceNotAvailable } from '../exceptions/UserPresenceNotAvailable';
+import { UserPresenceRequired } from '../exceptions/UserPresenceRequired';
 import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
+import { UserVerificationRequired } from '../exceptions/UserVerificationRequired';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import {
-  AuthenticatorContextArgsSchema,
-  type AuthenticatorContextArgs,
-} from '../validation/authenticator/AuthenticatorContextArgsSchema';
 import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
@@ -449,7 +451,7 @@ export class VirtualAuthenticator implements IAuthenticator {
   public async authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
     meta: AuthenticatorMetaArgs;
-    context: AuthenticatorContextArgs;
+    context: Context;
   }): Promise<AuthenticatorMakeCredentialResponse> {
     const { authenticatorMakeCredentialArgs, meta, context } = opts;
 
@@ -468,7 +470,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       }),
     );
     // Context validation
-    assertSchema(context, AuthenticatorContextArgsSchema);
+    assertSchema(context, ContextSchema.optional());
 
     const {
       hash,
@@ -480,7 +482,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       // requireResidentKey,
 
       // NOTE: Should be always true. Just for compatibility with spec.
-      // requireUserPresence,
+      requireUserPresence,
 
       requireUserVerification,
       credTypesAndPubKeyAlgs,
@@ -561,7 +563,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    // NOTE: Not implemented.
+    if (requireUserPresence && !context?.up) {
+      throw new UserPresenceRequired();
+    }
+
+    if (requireUserVerification && !context?.uv) {
+      throw new UserVerificationRequired();
+    }
 
     // Step 7: Once the authorization gesture has been completed, generate
     // a new credential object
@@ -736,7 +744,7 @@ export class VirtualAuthenticator implements IAuthenticator {
   public async authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
     meta: AuthenticatorMetaArgs;
-    context: AuthenticatorContextArgs;
+    context: Context;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const { authenticatorGetAssertionArgs, meta, context } = opts;
 
@@ -750,7 +758,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Meta validation
     assertSchema(meta, AuthenticatorMetaArgsSchema);
     // Context validation
-    assertSchema(context, AuthenticatorContextArgsSchema);
+    assertSchema(context, ContextSchema.optional());
 
     const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
       authenticatorGetAssertionArgs,
@@ -810,9 +818,9 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
       );
 
-    if (context?.selectedCredentialOptionId !== undefined) {
+    if (context?.credentialId !== undefined) {
       credentialOptions = credentialOptions.filter((credentialOption) => {
-        return credentialOption.id === context?.selectedCredentialOptionId;
+        return credentialOption.id === context?.credentialId;
       });
     }
 
@@ -842,9 +850,17 @@ export class VirtualAuthenticator implements IAuthenticator {
       throw new UserVerificationNotAvailable();
     }
 
+    if (requireUserVerification === true && !context?.uv) {
+      throw new UserVerificationRequired();
+    }
+
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     if (requireUserPresence === true && meta.userPresenceEnabled === false) {
       throw new UserPresenceNotAvailable();
+    }
+
+    if (requireUserPresence === true && !context?.up) {
+      throw new UserPresenceRequired();
     }
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
 

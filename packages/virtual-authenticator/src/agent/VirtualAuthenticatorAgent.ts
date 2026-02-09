@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, HashOnion } from '@repo/crypto';
+import { Hash, HashOnion, Jwt } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
 import z from 'zod';
@@ -9,6 +9,20 @@ import z from 'zod';
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
 import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
+import { ContextAction } from '../context/enums/ContextAction';
+import {
+  ContextArgsSchema,
+  type ContextArgs,
+} from '../context/validation/ContextArgsSchema';
+import {
+  ContextBaseSchema,
+  ContextCredentialSelectionSchema,
+  ContextTokenPayloadSchema,
+  ContextUserPresenceSchema,
+  ContextUserVerificationSchema,
+  type Context,
+  type ContextTokenPayload,
+} from '../context/validation/ContextSchema';
 import { PublicKeyCredentialCreationOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
 import { PublicKeyCredentialRequestOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import { Attestation } from '../enums/Attestation';
@@ -28,10 +42,7 @@ import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { CredentialSelectException } from '../exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
-import type { AuthenticatorContextArgs } from '../validation/authenticator/AuthenticatorContextArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
-import { AuthenticatorAgentContextArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorAgentContextArgs } from '../validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import { createOriginMatchesRpIdSchema } from '../validation/authenticatorAgent/createOriginMatchesRpIdSchema';
@@ -51,12 +62,17 @@ import type { PublicKeyCredentialDescriptor } from '../validation/spec/PublicKey
 import { PublicKeyCredentialRequestOptionsSchema } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredentialRequestOptions } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from '../validation/spec/PublicKeyCredentialSchema';
-import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
+import type {
+  AuthenticatorAgentCreateCredentialArgs,
+  AuthenticatorAgentGetAssertionArgs,
+  IAuthenticatorAgent,
+} from './IAuthenticatorAgent';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
   extensionProcessor: ExtensionProcessor;
+  jwt: Jwt;
 };
 
 /**
@@ -74,10 +90,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
   private readonly authenticator: IAuthenticator;
   private readonly extensionProcessor: ExtensionProcessor;
+  private readonly jwt: Jwt;
 
   constructor(opts: VirtualAuthenticatorAgentOptions) {
     this.authenticator = opts.authenticator;
     this.extensionProcessor = opts.extensionProcessor;
+    this.jwt = opts.jwt;
   }
 
   /**
@@ -101,7 +119,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Custom options
     meta: AuthenticatorAgentMetaArgs;
-    context: AuthenticatorContextArgs;
+    context: ContextTokenPayload;
     optionsHash: string;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
@@ -223,7 +241,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
             userPresenceEnabled: meta.userPresenceEnabled,
             userVerificationEnabled: meta.userVerificationEnabled,
           },
-          context: context,
+          context: {
+            ...context,
+            up: context?.up ?? true,
+            uv: context?.uv ?? requireUserVerification,
+          },
         });
 
       // Step 4: Return true.
@@ -428,23 +450,57 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
    */
-  public async createCredential(opts: {
-    // origin: This argument is the relevant settings object’s origin, as determined by the calling create() implementation.
-    // NOTE: It must match the meta.origin value
-    origin: string;
-    // options: This argument is a CredentialCreationOptions object whose options.publicKey member
-    // contains a PublicKeyCredentialCreationOptions object specifying the desired attributes of the to-be-created public key credential.
-    options: CredentialCreationOptions;
-    // sameOriginWithAncestors: This argument is a Boolean value which is true if and only if the caller’s environment settings object is same-origin with its ancestors.
-    // It is false if caller is cross-origin.
-    sameOriginWithAncestors: boolean;
+  public async createCredential(
+    opts: AuthenticatorAgentCreateCredentialArgs,
+  ): Promise<PublicKeyCredential> {
+    const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
-    // Internal options
-    meta: AuthenticatorAgentMetaArgs;
+    assertSchema(context, ContextBaseSchema.optional());
 
-    // Context is optional
-    context?: AuthenticatorAgentContextArgs;
-  }): Promise<PublicKeyCredential> {
+    if (context !== undefined) {
+      const contextTokenPayload = await Jwt.validateToken(
+        context.token,
+        ContextTokenPayloadSchema,
+        {
+          jwks: await this.jwt.jwks.getJSONWebKeySet(),
+        },
+      );
+
+      switch (contextTokenPayload.action) {
+        case ContextAction.USER_PRESENCE:
+          assertSchema(context, ContextUserPresenceSchema);
+          break;
+        case ContextAction.USER_VERIFICATION:
+          assertSchema(context, ContextUserVerificationSchema);
+          break;
+        case ContextAction.CREDENTIAL_SELECTION:
+          throw new Error('TODO');
+        default:
+          throw new Error('TODO');
+      }
+    }
+
+    const publicKeyCredential = await this._createCredential({
+      origin,
+      options,
+      sameOriginWithAncestors,
+      meta,
+      context,
+    });
+
+    return publicKeyCredential;
+  }
+
+  /**
+   * Creates a new public key credential (registration ceremony).
+   * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
+   */
+  private async _createCredential(
+    opts: Omit<AuthenticatorAgentCreateCredentialArgs, 'context'> & {
+      context: Context | undefined;
+    },
+  ): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
 
     // Step 1: Let options be the object passed to the
@@ -468,7 +524,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       }),
     );
     // Context validation
-    assertSchema(context, AuthenticatorAgentContextArgsSchema);
+    assertSchema(context, ContextArgsSchema.optional());
 
     // Step 2: If sameOriginWithAncestors is false, throw a
     // "NotAllowedError" DOMException.
@@ -797,7 +853,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         },
         context: {
           hash: authenticatorHash,
-          selectedCredentialOptionId: context?.selectedCredentialOptionId,
+          token: context.token,
+          credentialId: context?.credentialId,
+          up: context?.up ?? true,
+          uv: context?.uv ?? requireUserVerification,
         },
       });
 
@@ -918,26 +977,62 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   }
 
   /**
+   * Creates a new public key credential (registration ceremony).
+   * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
+   */
+  public async getAssertion(
+    opts: AuthenticatorAgentGetAssertionArgs,
+  ): Promise<PublicKeyCredential> {
+    const { origin, options, sameOriginWithAncestors, meta, context } = opts;
+
+    assertSchema(context, ContextBaseSchema.optional());
+
+    if (context !== undefined) {
+      const contextTokenPayload = await Jwt.validateToken(
+        context.token,
+        ContextTokenPayloadSchema,
+        {
+          jwks: await this.jwt.jwks.getJSONWebKeySet(),
+        },
+      );
+
+      switch (contextTokenPayload.action) {
+        case ContextAction.USER_PRESENCE:
+          assertSchema(context, ContextUserPresenceSchema);
+          break;
+        case ContextAction.USER_VERIFICATION:
+          assertSchema(context, ContextUserVerificationSchema);
+          break;
+        case ContextAction.CREDENTIAL_SELECTION:
+          assertSchema(context, ContextCredentialSelectionSchema);
+          break;
+        default:
+          throw new Error('TODO');
+      }
+    }
+
+    const publicKeyCredential = await this._getAssertion({
+      origin,
+      options,
+      sameOriginWithAncestors,
+      meta,
+      context,
+    });
+
+    return publicKeyCredential;
+  }
+
+  /**
    * Gets an existing credential (authentication ceremony).
    * This implements the agent/client-side steps of the WebAuthn getAssertion algorithm.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion
    */
-  public async getAssertion(opts: {
-    // origin: This argument is the relevant settings object’s origin, as determined by the calling get() implementation, i.e., CredentialsContainer’s Request a Credential abstract operation.
-    // NOTE: It must match the meta.origin value
-    origin: string;
-    // options: This argument is a CredentialRequestOptions object whose options.publicKey member
-    // contains a PublicKeyCredentialRequestOptions object specifying the desired attributes of the public key credential to discover.
-    options: CredentialRequestOptions;
-    // sameOriginWithAncestors: This argument is a Boolean value which is true if and only if the caller’s environment settings object is same-origin with its ancestors.
-    // It is false if caller is cross-origin.
-    sameOriginWithAncestors: boolean;
-
-    // Internal options
-    meta: AuthenticatorAgentMetaArgs;
-    // New context from client
-    context: AuthenticatorAgentContextArgs;
-  }): Promise<PublicKeyCredential> {
+  private async _getAssertion(
+    opts: Omit<AuthenticatorAgentGetAssertionArgs, 'context'> & {
+      context: Context | undefined;
+    },
+  ): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, context } = opts;
     // Step 1: Let options be the object passed to the
     // [[DiscoverFromExternalSource]](origin, options,

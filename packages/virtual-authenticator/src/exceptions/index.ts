@@ -9,3 +9,5 @@ export * from './UserVerificationNotAvailable';
 export * from './repository/UserNotExists';
 export * from './repository/ApiKeyNotExists';
 export * from './CredentialSelectException';
+export * from './UserPresenceRequired';
+export * from './UserVerificationRequired';

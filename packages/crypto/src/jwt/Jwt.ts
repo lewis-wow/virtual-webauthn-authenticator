@@ -71,8 +71,7 @@ export type JwtOptions = {
 
 export class Jwt {
   static readonly DEFAULT_EXP = '15m';
-
-  private readonly jwks: Jwks;
+  readonly jwks: Jwks;
 
   constructor(opts: JwtOptions) {
     this.jwks = opts.jwks;

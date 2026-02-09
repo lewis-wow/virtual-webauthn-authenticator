@@ -1,5 +1,5 @@
+import type { Context } from '../context/validation/ContextSchema';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
-import type { AuthenticatorContextArgs } from '../validation/authenticator/AuthenticatorContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
@@ -27,7 +27,7 @@ export interface IAuthenticator {
    */
   authenticatorMakeCredential(opts: {
     authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    context: AuthenticatorContextArgs;
+    context: Context;
     meta: AuthenticatorMetaArgs;
   }): Promise<AuthenticatorMakeCredentialResponse>;
 
@@ -39,7 +39,7 @@ export interface IAuthenticator {
    */
   authenticatorGetAssertion(opts: {
     authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    context: AuthenticatorContextArgs;
+    context: Context;
     meta: AuthenticatorMetaArgs;
   }): Promise<AuthenticatorGetAssertionResponse>;
 

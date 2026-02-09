@@ -1,5 +1,12 @@
-import type { IJwksRepository, Jwk } from '@repo/crypto';
 import type { PrismaClient } from '@repo/prisma';
+
+import type {
+  IJwksRepository,
+  Jwk,
+  JwksRepositoryCreateOptions,
+  JwksRepositoryFindAllOptions,
+  JwksRepositoryFindLatestOptions,
+} from './IJwksRepository';
 
 export type PrismaAuthJwksRepositoryOptions = {
   prisma: PrismaClient;
@@ -12,21 +19,29 @@ export class PrismaAuthJwksRepository implements IJwksRepository {
     this.prisma = opts.prisma;
   }
 
-  async create(opts: { publicKey: string; privateKey: string }): Promise<Jwk> {
-    const { publicKey, privateKey } = opts;
+  async create(opts: JwksRepositoryCreateOptions): Promise<Jwk> {
+    const { publicKey, privateKey, label } = opts;
 
     const jwk = await this.prisma.jwks.create({
       data: {
         publicKey,
         privateKey,
+        label,
       },
     });
 
     return jwk;
   }
 
-  async findLatest(): Promise<Jwk | null> {
+  async findLatest(
+    opts?: JwksRepositoryFindLatestOptions,
+  ): Promise<Jwk | null> {
+    const { label } = opts ?? {};
+
     const key = await this.prisma.jwks.findMany({
+      where: {
+        label,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -36,8 +51,13 @@ export class PrismaAuthJwksRepository implements IJwksRepository {
     return key[0] ?? null;
   }
 
-  async findAll(): Promise<Jwk[]> {
+  async findAll(opts?: JwksRepositoryFindAllOptions): Promise<Jwk[]> {
+    const { label } = opts ?? {};
+
     const keys = await this.prisma.jwks.findMany({
+      where: {
+        label,
+      },
       orderBy: {
         createdAt: 'desc',
       },
