@@ -591,9 +591,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         extensions: pkOptions.extensions,
         context: {},
         isClientExtension: (extensionId) =>
-          extensionId in ClientRegistrationExtension,
+          Object.values(ClientRegistrationExtension).includes(
+            extensionId as ClientRegistrationExtension,
+          ),
         isAuthenticatorExtension: (extensionId) =>
-          extensionId in AuthenticatorRegistrationExtension,
+          Object.values(AuthenticatorRegistrationExtension).includes(
+            extensionId as AuthenticatorRegistrationExtension,
+          ),
       });
 
     // Step 13: Let collectedClientData be a new CollectedClientData
@@ -1042,9 +1046,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         extensions: pkOptions.extensions,
         context: {},
         isClientExtension: (extensionId) =>
-          extensionId in ClientAuthenticationExtension,
+          Object.values(ClientAuthenticationExtension).includes(
+            extensionId as ClientAuthenticationExtension,
+          ),
         isAuthenticatorExtension: (extensionId) =>
-          extensionId in AuthenticatorAuthenticationExtension,
+          Object.values(AuthenticatorAuthenticationExtension).includes(
+            extensionId as AuthenticatorAuthenticationExtension,
+          ),
       });
 
     // Step 10: Let collectedClientData be a new CollectedClientData

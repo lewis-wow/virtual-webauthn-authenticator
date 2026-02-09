@@ -86,6 +86,11 @@ export class ExtensionProcessor {
         continue;
       }
 
+      // Skip extensions with falsy input (e.g., credProps: false means don't use extension)
+      if (!clientExtensionInput) {
+        continue;
+      }
+
       // Set clientExtensions[extensionId] to clientExtensionInput.
       clientExtensions[extensionId] = clientExtensionInput;
 
@@ -146,10 +151,8 @@ export class ExtensionProcessor {
         continue;
       }
 
-      clientExtensionResults[clientExtensionId] = extension.processOutput({
-        clientInputOrAuthenticatorOutput: null,
-        context,
-      });
+      clientExtensionResults[clientExtensionId] =
+        extension.processOutput(context);
     }
 
     return clientExtensionResults;
