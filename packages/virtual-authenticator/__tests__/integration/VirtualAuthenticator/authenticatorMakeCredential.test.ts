@@ -17,7 +17,7 @@ import {
   test,
 } from 'vitest';
 
-import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import {

@@ -18,8 +18,13 @@ import {
   test,
 } from 'vitest';
 
-import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
-import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
+import {
+  CredPropsExtension,
+  ExtensionProcessor,
+  ExtensionRegistry,
+} from '../../../src/agent/extensions';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialRequestOptionsDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
@@ -71,7 +76,14 @@ describe('VirtualAuthenticator.getCredential()', () => {
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
   });
-  const agent = new VirtualAuthenticatorAgent({ authenticator });
+  const extensionRegistry = new ExtensionRegistry().registerAll([
+    new CredPropsExtension(),
+  ]);
+  const extensionProcessor = new ExtensionProcessor(extensionRegistry);
+  const agent = new VirtualAuthenticatorAgent({
+    authenticator,
+    extensionProcessor,
+  });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {
     await prisma.$transaction([
@@ -791,111 +803,152 @@ describe('VirtualAuthenticator.getCredential()', () => {
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-appid-extension
      * Per spec: appid extension allows authentication with credentials registered with FIDO U2F
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('should work with appid extension', async () => {
-      const publicKeyCredentialRequestOptions = set(
-        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        {
-          allowCredentials: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: publicKeyCredential.rawId,
+    describe('appid extension (not implemented)', () => {
+      test('should work with appid extension and return undefined result', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            extensions: {
+              appid: 'https://example.com/appid.json',
             },
-          ],
-          extensions: {
-            appid: 'https://example.com/appid.json',
           },
-        },
-      );
+        );
 
-      await performPublicKeyCredentialRequestAndVerify({
-        agent,
-        publicKeyCredentialRequestOptions,
-        webAuthnCredential,
+        const { publicKeyCredential: resultCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        // Extension not implemented - result should be undefined
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'appid'
+          ],
+        ).toBeUndefined();
       });
     });
 
     /**
      * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-hmac-secret-extension
      * Per CTAP2: hmac-secret extension for symmetric secret operations
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('should work with hmac-secret extension - Even it is not supported', async () => {
-      const publicKeyCredentialRequestOptions = set(
-        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        {
-          allowCredentials: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: publicKeyCredential.rawId,
-            },
-          ],
-          extensions: {
-            'hmac-secret': {
-              salt1: new Uint8Array(32),
-              salt2: new Uint8Array(32),
+    describe('hmac-secret extension (not implemented)', () => {
+      test('should work with hmac-secret extension and return undefined result', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            extensions: {
+              'hmac-secret': {
+                salt1: new Uint8Array(32),
+                salt2: new Uint8Array(32),
+              },
             },
           },
-        },
-      );
+        );
 
-      await performPublicKeyCredentialRequestAndVerify({
-        agent,
-        publicKeyCredentialRequestOptions,
-        webAuthnCredential,
+        const { publicKeyCredential: resultCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        // Extension not implemented - result should be undefined
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'hmac-secret'
+          ],
+        ).toBeUndefined();
       });
     });
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-large-blob-extension
      * Per spec: largeBlob extension for reading/writing large blob data
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('should work with largeBlob extension (read) - Even it is not supported', async () => {
-      const publicKeyCredentialRequestOptions = set(
-        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        {
-          allowCredentials: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: publicKeyCredential.rawId,
-            },
-          ],
-          extensions: {
-            largeBlob: {
-              read: true,
+    describe('largeBlob extension (not implemented)', () => {
+      test('should work with largeBlob extension (read) and return undefined result', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            extensions: {
+              largeBlob: {
+                read: true,
+              },
             },
           },
-        },
-      );
+        );
 
-      await performPublicKeyCredentialRequestAndVerify({
-        agent,
-        publicKeyCredentialRequestOptions,
-        webAuthnCredential,
+        const { publicKeyCredential: resultCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        // Extension not implemented - result should be undefined
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'largeBlob'
+          ],
+        ).toBeUndefined();
       });
-    });
 
-    test('should work with largeBlob extension (write) - Even it is not supported', async () => {
-      const publicKeyCredentialRequestOptions = set(
-        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        {
-          allowCredentials: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: publicKeyCredential.rawId,
-            },
-          ],
-          extensions: {
-            largeBlob: {
-              write: new Uint8Array([1, 2, 3, 4, 5]),
+      test('should work with largeBlob extension (write) and return undefined result', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            extensions: {
+              largeBlob: {
+                write: new Uint8Array([1, 2, 3, 4, 5]),
+              },
             },
           },
-        },
-      );
+        );
 
-      await performPublicKeyCredentialRequestAndVerify({
-        agent,
-        publicKeyCredentialRequestOptions,
-        webAuthnCredential,
+        const { publicKeyCredential: resultCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        // Extension not implemented - result should be undefined
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'largeBlob'
+          ],
+        ).toBeUndefined();
       });
     });
 
@@ -903,55 +956,89 @@ describe('VirtualAuthenticator.getCredential()', () => {
      * @see https://www.w3.org/TR/webauthn-3/#sctn-extensions
      * Per spec: "Authenticators MUST ignore any extensions that they do not recognize."
      */
-    test('should ignore unknown/unsupported extensions', async () => {
-      const publicKeyCredentialRequestOptions = set(
-        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        {
-          allowCredentials: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: publicKeyCredential.rawId,
+    describe('Unknown extensions', () => {
+      test('should ignore unknown/unsupported extensions and return undefined results', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            extensions: {
+              unknownExtension: 'some-value',
+              anotherUnknown: { complex: 'object' },
             },
-          ],
-          extensions: {
-            unknownExtension: 'some-value',
-            anotherUnknown: { complex: 'object' },
           },
-        },
-      );
+        );
 
-      // Per spec, unknown extensions should be ignored, not cause errors
-      await performPublicKeyCredentialRequestAndVerify({
-        agent,
-        publicKeyCredentialRequestOptions,
-        webAuthnCredential,
+        const { publicKeyCredential: resultCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        // Unknown extensions should not appear in the results
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'unknownExtension'
+          ],
+        ).toBeUndefined();
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'anotherUnknown'
+          ],
+        ).toBeUndefined();
       });
     });
 
-    test('should work with multiple extensions combined - Even it is not supported', async () => {
-      const publicKeyCredentialRequestOptions = set(
-        PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        {
-          allowCredentials: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: publicKeyCredential.rawId,
+    describe('Multiple extensions combined', () => {
+      test('should work with multiple extensions and return undefined results for all unimplemented', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            extensions: {
+              appid: 'https://example.com/appid.json',
+              largeBlob: {
+                read: true,
+              },
+              unknownExtension: 'ignored',
             },
-          ],
-          extensions: {
-            appid: 'https://example.com/appid.json',
-            largeBlob: {
-              read: true,
-            },
-            unknownExtension: 'ignored',
           },
-        },
-      );
+        );
 
-      await performPublicKeyCredentialRequestAndVerify({
-        agent,
-        publicKeyCredentialRequestOptions,
-        webAuthnCredential,
+        const { publicKeyCredential: resultCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        // All extensions not implemented - results should be undefined
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'appid'
+          ],
+        ).toBeUndefined();
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'largeBlob'
+          ],
+        ).toBeUndefined();
+        expect(
+          (resultCredential.clientExtensionResults as Record<string, unknown>)[
+            'unknownExtension'
+          ],
+        ).toBeUndefined();
       });
     });
   });

@@ -3,87 +3,60 @@ import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash, HashOnion } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
-import type { MaybePromise, Uint8Array_ } from '@repo/types';
-import { toB64 } from '@repo/utils';
+import type { Uint8Array_ } from '@repo/types';
 import z from 'zod';
 
-import type { IAuthenticator } from './IAuthenticator';
-import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
-import { decodeAttestationObject } from './cbor/decodeAttestationObject';
-import { parseAuthenticatorData } from './cbor/parseAuthenticatorData';
-import { PublicKeyCredentialCreationOptionsDtoSchema } from './dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
-import { PublicKeyCredentialRequestOptionsDtoSchema } from './dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
-import { Attestation } from './enums/Attestation';
-import { AuthenticatorAttachment } from './enums/AuthenticatorAttachment';
-import { AuthenticatorAuthenticationExtension } from './enums/AuthenticatorAuthenticationExtension';
-import { AuthenticatorRegistrationExtension } from './enums/AuthenticatorRegistrationExtension';
-import { AuthenticatorTransport } from './enums/AuthenticatorTransport';
-import { ClientAuthenticationExtension } from './enums/ClientAuthenticationExtension';
-import { ClientRegistrationExtension } from './enums/ClientRegistrationExtension';
-import { CollectedClientDataType } from './enums/CollectedClientDataType';
-import { CredentialMediationRequirement } from './enums/CredentialMediationRequirement';
-import { Fmt } from './enums/Fmt';
-import { PublicKeyCredentialType } from './enums/PublicKeyCredentialType';
-import { ResidentKey } from './enums/ResidentKey';
-import { UserVerification } from './enums/UserVerification';
-import { CredentialNotFound } from './exceptions/CredentialNotFound';
-import { CredentialSelectException } from './exceptions/CredentialSelectException';
-import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
-import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import type { AuthenticatorContextArgs } from './validation/authenticator/AuthenticatorContextArgsSchema';
-import type { AuthenticatorGetAssertionResponse } from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
-import { AuthenticatorAgentContextArgsSchema } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorAgentContextArgs } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
-import { AuthenticatorAgentMetaArgsSchema } from './validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
-import type { AuthenticatorAgentMetaArgs } from './validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
-import { createOriginMatchesRpIdSchema } from './validation/authenticatorAgent/createOriginMatchesRpIdSchema';
-import type { AuthenticationExtensionsClientOutputs } from './validation/spec/AuthenticationExtensionsClientOutputsSchema';
-import type { CollectedClientData } from './validation/spec/CollectedClientDataSchema';
-import type { PubKeyCredParam } from './validation/spec/CredParamSchema';
+import type { IAuthenticator } from '../authenticator/IAuthenticator';
+import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
+import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
+import { PublicKeyCredentialCreationOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
+import { PublicKeyCredentialRequestOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
+import { Attestation } from '../enums/Attestation';
+import { AuthenticatorAttachment } from '../enums/AuthenticatorAttachment';
+import { AuthenticatorAuthenticationExtension } from '../enums/AuthenticatorAuthenticationExtension';
+import { AuthenticatorRegistrationExtension } from '../enums/AuthenticatorRegistrationExtension';
+import { AuthenticatorTransport } from '../enums/AuthenticatorTransport';
+import { ClientAuthenticationExtension } from '../enums/ClientAuthenticationExtension';
+import { ClientRegistrationExtension } from '../enums/ClientRegistrationExtension';
+import { CollectedClientDataType } from '../enums/CollectedClientDataType';
+import { CredentialMediationRequirement } from '../enums/CredentialMediationRequirement';
+import { Fmt } from '../enums/Fmt';
+import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType';
+import { ResidentKey } from '../enums/ResidentKey';
+import { UserVerification } from '../enums/UserVerification';
+import { CredentialNotFound } from '../exceptions/CredentialNotFound';
+import { CredentialSelectException } from '../exceptions/CredentialSelectException';
+import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
+import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
+import type { AuthenticatorContextArgs } from '../validation/authenticator/AuthenticatorContextArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
+import { AuthenticatorAgentContextArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentContextArgs } from '../validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
+import { createOriginMatchesRpIdSchema } from '../validation/authenticatorAgent/createOriginMatchesRpIdSchema';
+import type { CollectedClientData } from '../validation/spec/CollectedClientDataSchema';
+import type { PubKeyCredParam } from '../validation/spec/CredParamSchema';
 import {
   CredentialCreationOptionsSchema,
   type CredentialCreationOptions,
-} from './validation/spec/CredentialCreationOptionsSchema';
-import type { CredentialPropertiesOutput } from './validation/spec/CredentialPropertiesOutputSchema';
+} from '../validation/spec/CredentialCreationOptionsSchema';
 import {
   CredentialRequestOptionsSchema,
   type CredentialRequestOptions,
-} from './validation/spec/CredentialRequestOptionsSchema';
-import { PublicKeyCredentialCreationOptionsSchema } from './validation/spec/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialCreationOptions } from './validation/spec/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialDescriptor } from './validation/spec/PublicKeyCredentialDescriptorSchema';
-import { PublicKeyCredentialRequestOptionsSchema } from './validation/spec/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredentialRequestOptions } from './validation/spec/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './validation/spec/PublicKeyCredentialSchema';
-
-/**
- * @see https://www.w3.org/TR/webauthn-3/#sctn-client-extension-processing
- */
-export type ExtensionHandler = {
-  /**
-   * Converts RP JSON input into Authenticator CBOR input.
-   */
-  processInput: (opts: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clientInput: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context: any;
-  }) => MaybePromise<Uint8Array_ | null>;
-
-  /**
-   * Converts Authenticator CBOR output into RP JSON output.
-   */
-  processOutput: (opts: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clientInputOrauthenticatorOutput: any | null;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    context: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) => MaybePromise<any | null>;
-};
+} from '../validation/spec/CredentialRequestOptionsSchema';
+import { PublicKeyCredentialCreationOptionsSchema } from '../validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialCreationOptions } from '../validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import type { PublicKeyCredentialDescriptor } from '../validation/spec/PublicKeyCredentialDescriptorSchema';
+import { PublicKeyCredentialRequestOptionsSchema } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredentialRequestOptions } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from '../validation/spec/PublicKeyCredentialSchema';
+import type { IAuthenticatorAgent } from './IAuthenticatorAgent';
+import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
+  extensionProcessor: ExtensionProcessor;
 };
 
 /**
@@ -99,51 +72,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   static readonly MIN_TIMEOUT_MILLIS = 30_000;
   static readonly MAX_TIMEOUT_MILLIS = 600_000;
 
-  /**
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-client-extension-processing
-   *
-   * Extensions that require authenticator processing MUST define the process
-   * by which the client extension input can be used to determine the
-   * CBOR authenticator extension input and the process by which the
-   * CBOR authenticator extension output, and the unsigned extension output if used,
-   * can be used to determine the client extension output.
-   */
-  private static readonly EXTENSION_HANDLERS: Record<
-    ClientAuthenticationExtension | ClientRegistrationExtension,
-    ExtensionHandler
-  > = {
-    [ClientRegistrationExtension.credProps]: {
-      processInput: () => {
-        // usage: 'credProps' is purely for the Client to report info back.
-        // We do NOT send this to the Authenticator hardware.
-        return null;
-      },
-      /**
-       * Sets rk to the value of the requireResidentKey parameter that was used
-       * in the invocation of the authenticatorMakeCredential operation.
-       *
-       * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-credential-properties-extension
-       */
-      processOutput: (opts: {
-        clientInputOrauthenticatorOutput: null;
-        context: { requireResidentKey: boolean };
-      }): CredentialPropertiesOutput => {
-        const { clientInputOrauthenticatorOutput, context } = opts;
-
-        assertSchema(clientInputOrauthenticatorOutput, z.null());
-        assertSchema(context, z.object({ requireResidentKey: z.boolean() }));
-
-        return {
-          rk: context.requireResidentKey,
-        };
-      },
-    },
-  };
-
   private readonly authenticator: IAuthenticator;
+  private readonly extensionProcessor: ExtensionProcessor;
 
   constructor(opts: VirtualAuthenticatorAgentOptions) {
     this.authenticator = opts.authenticator;
+    this.extensionProcessor = opts.extensionProcessor;
   }
 
   /**
@@ -650,65 +584,17 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       }
     }
 
-    // Step 11: Let clientExtensions be a new map and let
-    // authenticatorExtensions be a new map.
-    const clientExtensions: Partial<
-      Record<ClientRegistrationExtension, unknown>
-    > = {};
-    const authenticatorExtensions: Partial<
-      Record<AuthenticatorRegistrationExtension, unknown>
-    > = {};
-
     // Step 12: If pkOptions.extensions is present:
-    if (pkOptions.extensions) {
-      // For each extensionId -> clientExtensionInput of pkOptions.extensions:
-      for (const [extensionId, clientExtensionInput] of Object.entries(
-        pkOptions.extensions,
-      )) {
-        // If extensionId is not supported by this client platform or is not a
-        // registration extension, continue.
-        if (!(extensionId in ClientRegistrationExtension)) {
-          continue;
-        }
-
-        // Set clientExtensions[extensionId] to clientExtensionInput.
-        clientExtensions[extensionId as ClientRegistrationExtension] =
-          clientExtensionInput;
-
-        // If extensionId is not an authenticator extension, continue.
-        if (!(extensionId in AuthenticatorRegistrationExtension)) {
-          continue;
-        }
-
-        // Let authenticatorExtensionInput be the (CBOR) result of running extensionId’s client extension processing algorithm on clientExtensionInput.
-        // If the algorithm returned an error, continue.
-        // NOTE: Basically convert RP JSON input into Authenticator CBOR input.
-        // NOTE: Casting to ExtensionHandler, because AuthenticatorRegistrationExtension is empty.
-        let authenticatorExtensionInput: Uint8Array_;
-        try {
-          const authenticatorExtensionInputResult = await (
-            VirtualAuthenticatorAgent.EXTENSION_HANDLERS[
-              extensionId as AuthenticatorRegistrationExtension
-            ] as ExtensionHandler
-          ).processInput({ clientInput: clientExtensionInput, context: {} });
-
-          if (authenticatorExtensionInputResult === null) {
-            continue;
-          }
-
-          authenticatorExtensionInput = authenticatorExtensionInputResult;
-        } catch {
-          // If the algorithm returned an error, continue.
-          continue;
-        }
-
-        // Set authenticatorExtensions[extensionId] to the base64url encoding of authenticatorExtensionInput.
-        // NOTE: Casting to never, because AuthenticatorRegistrationExtension is empty.
-        authenticatorExtensions[
-          extensionId as AuthenticatorRegistrationExtension
-        ] = toB64(authenticatorExtensionInput) as never;
-      }
-    }
+    // Process all extension inputs using the ExtensionProcessor
+    const { clientExtensions, authenticatorExtensions } =
+      await this.extensionProcessor.processInputs({
+        extensions: pkOptions.extensions,
+        context: {},
+        isClientExtension: (extensionId) =>
+          extensionId in ClientRegistrationExtension,
+        isAuthenticatorExtension: (extensionId) =>
+          extensionId in AuthenticatorRegistrationExtension,
+      });
 
     // Step 13: Let collectedClientData be a new CollectedClientData
     // instance whose fields are:
@@ -952,18 +838,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     //    for each client extension in pkOptions.extensions.
     //    @see https://www.w3.org/TR/webauthn-3/#assertioncreationdata-clientextensionresults
 
-    const clientExtensionResults: Partial<AuthenticationExtensionsClientOutputs> =
-      {};
-
-    for (const [clientExtensionId] of Object.entries(clientExtensions)) {
-      clientExtensionResults[clientExtensionId as ClientRegistrationExtension] =
-        VirtualAuthenticatorAgent.EXTENSION_HANDLERS[
-          clientExtensionId as ClientRegistrationExtension
-        ].processOutput({
-          clientInputOrauthenticatorOutput: null,
-          context: { requireResidentKey },
-        });
-    }
+    // Process extension outputs using ExtensionProcessor
+    const clientExtensionResults = this.extensionProcessor.processOutputs({
+      clientExtensions,
+      context: { requireResidentKey },
+    });
 
     const credentialCreationData = {
       // attestationObjectResult: whose value is the bytes returned from the successful authenticatorMakeCredential operation.
@@ -1156,62 +1035,17 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Step 8: Let clientExtensions be a new map and let
     // authenticatorExtensions be a new map.
-    const clientExtensions: Record<ClientAuthenticationExtension, unknown> = {};
-    const authenticatorExtensions: Record<
-      AuthenticatorAuthenticationExtension,
-      unknown
-    > = {};
-
     // Step 9: If pkOptions.extensions is present:
-    if (pkOptions.extensions) {
-      // For each extensionId -> clientExtensionInput of pkOptions.extensions:
-      for (const [extensionId, clientExtensionInput] of Object.entries(
-        pkOptions.extensions,
-      )) {
-        // If extensionId is not supported by this client platform or is not
-        // an authentication extension, then continue.
-        if (!(extensionId in ClientAuthenticationExtension)) {
-          continue;
-        }
-
-        // Set clientExtensions[extensionId] to clientExtensionInput.
-        clientExtensions[extensionId as ClientAuthenticationExtension] =
-          clientExtensionInput as never;
-
-        // If extensionId is not an authenticator extension, continue.
-        if (!(extensionId in AuthenticatorAuthenticationExtension)) {
-          continue;
-        }
-
-        // Let authenticatorExtensionInput be the (CBOR) result of running extensionId’s client extension processing algorithm on clientExtensionInput.
-        // If the algorithm returned an error, continue.
-        // NOTE: Basically convert RP JSON input into Authenticator CBOR input.
-        // NOTE: Casting to ExtensionHandler, because AuthenticatorAuthenticationExtension is empty.
-        let authenticatorExtensionInput: Uint8Array_;
-        try {
-          const authenticatorExtensionInputResult = await (
-            VirtualAuthenticatorAgent.EXTENSION_HANDLERS[
-              extensionId as AuthenticatorAuthenticationExtension
-            ] as ExtensionHandler
-          ).processInput({ clientInput: clientExtensionInput, context: {} });
-
-          if (authenticatorExtensionInputResult === null) {
-            continue;
-          }
-
-          authenticatorExtensionInput = authenticatorExtensionInputResult;
-        } catch {
-          // If the algorithm returned an error, continue.
-          continue;
-        }
-
-        // Set authenticatorExtensions[extensionId] to the base64url encoding of authenticatorExtensionInput.
-        // NOTE: Casting to never, because AuthenticatorRegistrationExtension is empty.
-        authenticatorExtensions[
-          extensionId as AuthenticatorRegistrationExtension
-        ] = toB64(authenticatorExtensionInput) as never;
-      }
-    }
+    // Process all extension inputs using the ExtensionProcessor
+    const { clientExtensions, authenticatorExtensions } =
+      await this.extensionProcessor.processInputs({
+        extensions: pkOptions.extensions,
+        context: {},
+        isClientExtension: (extensionId) =>
+          extensionId in ClientAuthenticationExtension,
+        isAuthenticatorExtension: (extensionId) =>
+          extensionId in AuthenticatorAuthenticationExtension,
+      });
 
     // Step 10: Let collectedClientData be a new CollectedClientData
     // instance whose fields are:
@@ -1344,22 +1178,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Remove authenticator from issuedRequests.
     // NOTE: Not implemented.
 
-    const clientExtensionResults: Partial<AuthenticationExtensionsClientOutputs> =
-      {};
-
-    // NOTE: casting to ExtensionHandler, because the ClientAuthenticationExtension is empty.
-    for (const [clientExtensionId] of Object.entries(clientExtensions)) {
-      clientExtensionResults[
-        clientExtensionId as ClientAuthenticationExtension
-      ] = (
-        VirtualAuthenticatorAgent.EXTENSION_HANDLERS[
-          clientExtensionId as ClientAuthenticationExtension
-        ] as ExtensionHandler
-      ).processOutput({
-        clientInputOrauthenticatorOutput: null,
-        context: {},
-      }) as never;
-    }
+    // Process extension outputs using ExtensionProcessor
+    const clientExtensionResults = this.extensionProcessor.processOutputs({
+      clientExtensions,
+      context: {},
+    });
 
     // Step 20.SUCCESS.1: Let assertionCreationData be a struct with the following fields:
     // credentialIdResult:

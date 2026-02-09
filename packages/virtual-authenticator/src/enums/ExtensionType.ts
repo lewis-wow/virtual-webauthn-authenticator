@@ -1,0 +1,10 @@
+import type { ValueOfEnum } from '@repo/types';
+
+export const ExtensionType = {
+  CLIENT_REGISTRATION: 'CLIENT_REGISTRATION',
+  CLIENT_AUTHENTICATION: 'CLIENT_AUTHENTICATION',
+  AUTHENTICATOR_REGISTRATION: 'AUTHENTICATOR_REGISTRATION',
+  AUTHENTICATOR_AUTHENTICATION: 'AUTHENTICATOR_AUTHENTICATION',
+} as const;
+
+export type ExtensionType = ValueOfEnum<typeof ExtensionType>;

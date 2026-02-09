@@ -14,8 +14,13 @@ import type { Uint8Array_ } from '@repo/types';
 import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
-import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
-import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
+import {
+  CredPropsExtension,
+  ExtensionProcessor,
+  ExtensionRegistry,
+} from '../../../src/agent/extensions';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
 import { AuthenticatorTransport } from '../../../src/enums/AuthenticatorTransport';
@@ -75,7 +80,14 @@ describe('VirtualAuthenticator.createCredential()', () => {
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     keyProvider,
   });
-  const agent = new VirtualAuthenticatorAgent({ authenticator });
+  const extensionRegistry = new ExtensionRegistry().registerAll([
+    new CredPropsExtension(),
+  ]);
+  const extensionProcessor = new ExtensionProcessor(extensionRegistry);
+  const agent = new VirtualAuthenticatorAgent({
+    authenticator,
+    extensionProcessor,
+  });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {
     await prisma.$transaction([
@@ -1585,163 +1597,402 @@ describe('VirtualAuthenticator.createCredential()', () => {
      * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-credential-properties-extension
      * Per spec: credProps extension returns whether the credential is client-side discoverable (rk)
      */
-    test('Should work with credProps extension', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          credProps: true,
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+    describe('credProps extension', () => {
+      test('Should return credProps with rk=true when residentKey is required', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            residentKey: ResidentKey.REQUIRED,
+          },
+          extensions: {
+            credProps: true,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification, publicKeyCredential } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      expect(registrationVerification.verified).toBe(true);
-      // Per spec, credProps extension should return rk (resident key) property
-      // The authenticator should include this in the response
-      // Note: Implementation may vary - this tests that it doesn't break registration
-      expect(publicKeyCredential).toBeDefined();
+        // Verify credProps extension output exists and has correct rk value
+        expect(publicKeyCredential.clientExtensionResults).toBeDefined();
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeDefined();
+        expect(publicKeyCredential.clientExtensionResults.credProps?.rk).toBe(
+          true,
+        );
+      });
+
+      test('Should return credProps with rk=true when residentKey is preferred', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            residentKey: ResidentKey.PREFERRED,
+          },
+          extensions: {
+            credProps: true,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        // Verify credProps extension output exists and has correct rk value
+        expect(publicKeyCredential.clientExtensionResults).toBeDefined();
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeDefined();
+        expect(publicKeyCredential.clientExtensionResults.credProps?.rk).toBe(
+          true,
+        );
+      });
+
+      test('Should return credProps with rk=false when residentKey is discouraged', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            residentKey: ResidentKey.DISCOURAGED,
+          },
+          extensions: {
+            credProps: true,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        // Verify credProps extension output exists with rk=false
+        expect(publicKeyCredential.clientExtensionResults).toBeDefined();
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeDefined();
+        expect(publicKeyCredential.clientExtensionResults.credProps?.rk).toBe(
+          false,
+        );
+      });
+
+      test('Should return credProps with rk based on default residentKey when not specified', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            credProps: true,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        // Verify credProps extension output exists
+        expect(publicKeyCredential.clientExtensionResults).toBeDefined();
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeDefined();
+        // Default residentKey should result in rk=false (preferred defaults to true if eligible)
+        expect(
+          typeof publicKeyCredential.clientExtensionResults.credProps?.rk,
+        ).toBe('boolean');
+      });
+
+      test('Should not include credProps in response when extension is not requested', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            residentKey: ResidentKey.REQUIRED,
+          },
+          // No extensions specified
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        // credProps should not be in the response when not requested
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeUndefined();
+      });
+
+      test('Should not include credProps when credProps extension is set to false', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            credProps: false,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        // credProps should not be processed when set to false
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeUndefined();
+      });
     });
 
     /**
      * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-hmac-secret-extension
      * Per CTAP2: Enables symmetric secret generation for HMAC operations
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('Should work with hmac-secret extension', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          'hmac-secret': true,
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+    describe('hmac-secret extension (not implemented)', () => {
+      test('Should work with hmac-secret extension and return undefined result', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            'hmac-secret': true,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { registrationVerification, publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.verified).toBe(true);
+        // Extension not implemented - result should be undefined
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['hmac-secret'],
+        ).toBeUndefined();
+      });
     });
 
     /**
      * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-credProtect-extension
      * Per CTAP2: Allows RPs to specify credential protection policy
      * Values: userVerificationOptional, userVerificationOptionalWithCredentialIDList, userVerificationRequired
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('Should work with credProtect extension', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          credProtect: 'userVerificationOptional', // or 'userVerificationOptionalWithCredentialIDList', 'userVerificationRequired'
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+    describe('credProtect extension (not implemented)', () => {
+      test('Should work with credProtect extension and return undefined result', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            credProtect: 'userVerificationOptional',
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { registrationVerification, publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.verified).toBe(true);
+        // Extension not implemented - result should be undefined
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['credProtect'],
+        ).toBeUndefined();
+      });
     });
 
     /**
      * @see https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-errata-20220621.html#sctn-minpinlength-extension
      * Per CTAP2: Returns the minimum PIN length required by the authenticator
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('Should work with minPinLength extension', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          minPinLength: true,
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+    describe('minPinLength extension (not implemented)', () => {
+      test('Should work with minPinLength extension and return undefined result', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            minPinLength: true,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { registrationVerification, publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.verified).toBe(true);
+        // Extension not implemented - result should be undefined
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['minPinLength'],
+        ).toBeUndefined();
+      });
     });
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-large-blob-extension
      * Per spec: Allows storage and retrieval of large blob data associated with credential
      * support values: 'required' or 'preferred'
+     * Note: This extension is not implemented - result should be undefined
      */
-    test('Should work with largeBlob extension', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          largeBlob: {
-            support: 'required', // or 'preferred'
+    describe('largeBlob extension (not implemented)', () => {
+      test('Should work with largeBlob extension and return undefined result', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            largeBlob: {
+              support: 'required',
+            },
           },
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { registrationVerification, publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.verified).toBe(true);
+        // Extension not implemented - result should be undefined
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['largeBlob'],
+        ).toBeUndefined();
+      });
     });
 
     /**
      * @see https://www.w3.org/TR/webauthn-3/#sctn-extensions
      * Per spec: "Authenticators MUST ignore any extensions that they do not recognize."
      */
-    test('Should ignore unknown/unsupported extensions', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          unknownExtension: 'some-value',
-          anotherUnknown: { complex: 'object' },
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+    describe('Unknown extensions', () => {
+      test('Should ignore unknown/unsupported extensions and return undefined results', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          extensions: {
+            unknownExtension: 'some-value',
+            anotherUnknown: { complex: 'object' },
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { registrationVerification, publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      // Per spec, unknown extensions should be ignored, not cause errors
-      expect(registrationVerification.verified).toBe(true);
+        // Per spec, unknown extensions should be ignored, not cause errors
+        expect(registrationVerification.verified).toBe(true);
+        // Unknown extensions should not appear in the results
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['unknownExtension'],
+        ).toBeUndefined();
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['anotherUnknown'],
+        ).toBeUndefined();
+      });
     });
 
-    test('Should work with multiple extensions combined', async () => {
-      const publicKeyCredentialCreationOptions = {
-        ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        attestation: Attestation.NONE,
-        extensions: {
-          credProps: true,
-          'hmac-secret': true,
-          minPinLength: true,
-          credProtect: 'userVerificationOptional',
-        },
-      } satisfies PublicKeyCredentialCreationOptions;
+    describe('Multiple extensions combined', () => {
+      test('Should work with multiple extensions and only return implemented extension results', async () => {
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          authenticatorSelection: {
+            residentKey: ResidentKey.REQUIRED,
+          },
+          extensions: {
+            credProps: true,
+            'hmac-secret': true,
+            minPinLength: true,
+            credProtect: 'userVerificationOptional',
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
 
-      const { registrationVerification } =
-        await performPublicKeyCredentialRegistrationAndVerify({
-          agent,
-          publicKeyCredentialCreationOptions,
-        });
+        const { registrationVerification, publicKeyCredential } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
 
-      expect(registrationVerification.verified).toBe(true);
+        expect(registrationVerification.verified).toBe(true);
+
+        // Only credProps is implemented - should have result
+        expect(
+          publicKeyCredential.clientExtensionResults.credProps,
+        ).toBeDefined();
+        expect(publicKeyCredential.clientExtensionResults.credProps?.rk).toBe(
+          true,
+        );
+
+        // Other extensions not implemented - results should be undefined
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['hmac-secret'],
+        ).toBeUndefined();
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['minPinLength'],
+        ).toBeUndefined();
+        expect(
+          (
+            publicKeyCredential.clientExtensionResults as Record<
+              string,
+              unknown
+            >
+          )['credProtect'],
+        ).toBeUndefined();
+      });
     });
   });
 

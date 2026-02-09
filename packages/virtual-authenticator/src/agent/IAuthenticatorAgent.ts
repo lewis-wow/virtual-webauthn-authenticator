@@ -1,8 +1,8 @@
-import type { AuthenticatorAgentContextArgs } from './validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
-import type { AuthenticatorAgentMetaArgs } from './validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
-import type { CredentialCreationOptions } from './validation/spec/CredentialCreationOptionsSchema';
-import type { CredentialRequestOptions } from './validation/spec/CredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from './validation/spec/PublicKeyCredentialSchema';
+import type { AuthenticatorAgentContextArgs } from '../validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
+import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
+import type { CredentialCreationOptions } from '../validation/spec/CredentialCreationOptionsSchema';
+import type { CredentialRequestOptions } from '../validation/spec/CredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from '../validation/spec/PublicKeyCredentialSchema';
 
 /**
  * Virtual WebAuthn Agent (Client) implementation.

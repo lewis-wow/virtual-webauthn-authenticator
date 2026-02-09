@@ -17,7 +17,7 @@ import {
   test,
 } from 'vitest';
 
-import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { CredentialSelectException } from '../../../src/exceptions/CredentialSelectException';

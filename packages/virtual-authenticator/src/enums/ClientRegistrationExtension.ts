@@ -10,7 +10,7 @@ import type { ValueOfEnum } from '@repo/types';
  * It defines extension request parameters and response values specific to generating a public key credential.
  */
 export const ClientRegistrationExtension = {
-  credProps: 'credProps',
+  CRED_PROPS: 'credProps',
 } as const;
 
 export type ClientRegistrationExtension = ValueOfEnum<
