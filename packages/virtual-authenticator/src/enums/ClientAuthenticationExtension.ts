@@ -9,7 +9,9 @@ import type { ValueOfEnum } from '@repo/types';
  * Authentication extension is invoked during the `navigator.credentials.get()` call.
  * It defines extension request parameters and response values specific to requesting an authentication assertion.
  */
-export const ClientAuthenticationExtension = {} as const;
+export const ClientAuthenticationExtension = {
+  HMAC_SECRET: 'hmac-secret',
+} as const;
 
 export type ClientAuthenticationExtension = ValueOfEnum<
   typeof ClientAuthenticationExtension

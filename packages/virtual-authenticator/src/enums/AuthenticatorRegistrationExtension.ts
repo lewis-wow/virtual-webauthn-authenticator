@@ -9,7 +9,9 @@ import type { ValueOfEnum } from '@repo/types';
  * Registration extension is invoked during the `navigator.credentials.create()` call.
  * It defines extension request parameters and response values specific to generating a public key credential.
  */
-export const AuthenticatorRegistrationExtension = {} as const;
+export const AuthenticatorRegistrationExtension = {
+  HMAC_SECRET: 'hmac-secret',
+} as const;
 
 export type AuthenticatorRegistrationExtension = ValueOfEnum<
   typeof AuthenticatorRegistrationExtension

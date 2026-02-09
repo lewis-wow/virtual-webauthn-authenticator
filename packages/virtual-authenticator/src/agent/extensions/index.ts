@@ -14,3 +14,12 @@ export {
   type CredPropsOutput,
   type CredPropsOutputOptions,
 } from './CredPropsExtension';
+
+export {
+  HmacSecretExtension,
+  type HmacSecretRegistrationInputOptions,
+  type HmacSecretAuthenticationInputOptions,
+  type HmacSecretRegistrationOutput,
+  type HmacSecretAuthenticationOutput,
+  type HmacSecretCredentialContext,
+} from './HmacSecretExtension';

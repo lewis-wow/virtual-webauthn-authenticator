@@ -12,6 +12,12 @@ export class Hash {
     return new Uint8Array(hash);
   }
 
+  static hmacSha256(key: Uint8Array, data: Uint8Array): Uint8Array_ {
+    const hmac = crypto.createHmac('sha256', key).update(data).digest();
+
+    return new Uint8Array(hmac);
+  }
+
   static sha256Hex(data: crypto.BinaryLike): string {
     return crypto.createHash('sha256').update(data).digest('hex');
   }
