@@ -6,8 +6,8 @@ import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { PrismaClient } from '@repo/prisma';
 import { expect } from 'vitest';
 
-import type { IAuthenticator } from '../../../src/IAuthenticator';
-import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import type { IAuthenticator } from '../../../src/authenticator/IAuthenticator';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';

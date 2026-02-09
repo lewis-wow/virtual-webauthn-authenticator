@@ -8,7 +8,7 @@ import {
 } from '@simplewebauthn/server';
 import { expect } from 'vitest';
 
-import { VirtualAuthenticatorAgent } from '../../../src/VirtualAuthenticatorAgent';
+import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';

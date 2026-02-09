@@ -7,53 +7,53 @@ import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
 
-import type { IAuthenticator } from './IAuthenticator';
-import type { AttestationObjectMap } from './cbor/AttestationObjectMap';
-import type { AttestationStatementMap } from './cbor/AttestationStatementMap';
-import { AuthenticatorGetAssertionArgsDtoSchema } from './dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
-import { AuthenticatorMakeCredentialArgsDtoSchema } from './dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
-import { Fmt } from './enums/Fmt';
-import { WebAuthnPublicKeyCredentialKeyMetaType } from './enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { CredentialExcluded } from './exceptions/CredentialExcluded';
-import { CredentialOptionsEmpty } from './exceptions/CredentialOptionsEmpty';
-import { CredentialSelectException } from './exceptions/CredentialSelectException';
-import { CredentialTypesNotSupported } from './exceptions/CredentialTypesNotSupported';
-import { GenerateKeyPairFailed } from './exceptions/GenerateKeyPairFailed';
-import { SignatureFailed } from './exceptions/SignatureFailed';
-import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
-import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import type { IWebAuthnRepository } from './repositories/IWebAuthnRepository';
-import type { IKeyProvider } from './types/IKeyProvider';
-import type { WebAuthnPublicKeyCredentialWithMeta } from './types/WebAuthnPublicKeyCredentialWithMeta';
+import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
+import type { AttestationStatementMap } from '../cbor/AttestationStatementMap';
+import { AuthenticatorGetAssertionArgsDtoSchema } from '../dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
+import { AuthenticatorMakeCredentialArgsDtoSchema } from '../dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
+import { Fmt } from '../enums/Fmt';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
+import { CredentialExcluded } from '../exceptions/CredentialExcluded';
+import { CredentialOptionsEmpty } from '../exceptions/CredentialOptionsEmpty';
+import { CredentialSelectException } from '../exceptions/CredentialSelectException';
+import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
+import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
+import { SignatureFailed } from '../exceptions/SignatureFailed';
+import { UserPresenceNotAvailable } from '../exceptions/UserPresenceNotAvailable';
+import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
+import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import type { IKeyProvider } from '../types/IKeyProvider';
+import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import {
   AuthenticatorContextArgsSchema,
   type AuthenticatorContextArgs,
-} from './validation/authenticator/AuthenticatorContextArgsSchema';
+} from '../validation/authenticator/AuthenticatorContextArgsSchema';
 import {
   AuthenticatorGetAssertionArgsSchema,
   type AuthenticatorGetAssertionArgs,
-} from './validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+} from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import {
   AuthenticatorGetAssertionResponseSchema,
   type AuthenticatorGetAssertionResponse,
-} from './validation/authenticator/AuthenticatorGetAssertionResponseSchema';
+} from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import {
   AuthenticatorMakeCredentialArgsSchema,
   type AuthenticatorMakeCredentialArgs,
-} from './validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+} from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import {
   AuthenticatorMakeCredentialResponseSchema,
   type AuthenticatorMakeCredentialResponse,
-} from './validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
+} from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
-} from './validation/authenticator/AuthenticatorMetaArgsSchema';
+} from '../validation/authenticator/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
-} from './validation/spec/CredParamSchema';
+} from '../validation/spec/CredParamSchema';
+import type { IAuthenticator } from './IAuthenticator';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
