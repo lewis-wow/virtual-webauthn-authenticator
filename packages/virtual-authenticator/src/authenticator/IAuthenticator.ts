@@ -1,10 +1,23 @@
-import type { Context } from '../context/validation/ContextSchema';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import type { AuthenticationState } from '../state/AuthenticationStateSchema';
+import type { RegistrationState } from '../state/RegistrationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../validation/authenticator/AuthenticatorMetaArgsSchema';
+
+export type VirtualAuthenticatorMakeCredentialArgs = {
+  authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+  meta: AuthenticatorMetaArgs;
+  state?: RegistrationState;
+};
+
+export type VirtualAuthenticatorGetAssertionArgs = {
+  authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
+  meta: AuthenticatorMetaArgs;
+  state?: AuthenticationState;
+};
 
 /**
  * Interface defining the authenticator operations as specified in the
@@ -25,11 +38,9 @@ export interface IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
    * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
-  authenticatorMakeCredential(opts: {
-    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    context: Context;
-    meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorMakeCredentialResponse>;
+  authenticatorMakeCredential(
+    opts: VirtualAuthenticatorMakeCredentialArgs,
+  ): Promise<AuthenticatorMakeCredentialResponse>;
 
   /**
    * The authenticatorGetAssertion operation.
@@ -37,11 +48,9 @@ export interface IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
    * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
-  authenticatorGetAssertion(opts: {
-    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    context: Context;
-    meta: AuthenticatorMetaArgs;
-  }): Promise<AuthenticatorGetAssertionResponse>;
+  authenticatorGetAssertion(
+    opts: VirtualAuthenticatorGetAssertionArgs,
+  ): Promise<AuthenticatorGetAssertionResponse>;
 
   /**
    * The authenticatorCancel operation.
@@ -58,5 +67,5 @@ export interface IAuthenticator {
    * authenticatorGetAssertion operation currently in progress.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-cancel
    */
-  authenticatorCancel(opts: { meta: AuthenticatorMetaArgs }): Promise<void>;
+  // authenticatorCancel(): Promise<void>;
 }

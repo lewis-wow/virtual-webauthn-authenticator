@@ -18,7 +18,6 @@ export class CredentialSelectException extends Exception<CredentialSelectExcepti
 }
 
 export const CredentialSelectExceptionDataSchema = z.object({
-  hash: z.string(),
   credentialOptions: z.array(ApplicablePublicKeyCredentialSchema),
 });
 

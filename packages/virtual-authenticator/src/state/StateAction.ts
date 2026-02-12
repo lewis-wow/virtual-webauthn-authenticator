@@ -1,9 +1,9 @@
 import type { ValueOfEnum } from '@repo/types';
 
-export const ContextAction = {
+export const StateAction = {
   USER_PRESENCE: 'USER_PRESENCE',
   USER_VERIFICATION: 'USER_VERIFICATION',
   CREDENTIAL_SELECTION: 'CREDENTIAL_SELECTION',
 } as const;
 
-export type ContextAction = ValueOfEnum<typeof ContextAction>;
+export type StateAction = ValueOfEnum<typeof StateAction>;

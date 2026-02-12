@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, HashOnion } from '@repo/crypto';
+import { Hash } from '@repo/crypto';
 import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -9,10 +9,6 @@ import z from 'zod';
 
 import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
 import type { AttestationStatementMap } from '../cbor/AttestationStatementMap';
-import {
-  ContextSchema,
-  type Context,
-} from '../context/validation/ContextSchema';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { AuthenticatorMakeCredentialArgsDtoSchema } from '../dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from '../enums/Fmt';
@@ -28,6 +24,8 @@ import { UserPresenceRequired } from '../exceptions/UserPresenceRequired';
 import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
 import { UserVerificationRequired } from '../exceptions/UserVerificationRequired';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import { AuthenticationStateSchema } from '../state/AuthenticationStateSchema';
+import { RegistrationStateSchema } from '../state/RegistrationStateSchema';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import {
@@ -55,7 +53,11 @@ import {
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from '../validation/spec/CredParamSchema';
-import type { IAuthenticator } from './IAuthenticator';
+import type {
+  IAuthenticator,
+  VirtualAuthenticatorGetAssertionArgs,
+  VirtualAuthenticatorMakeCredentialArgs,
+} from './IAuthenticator';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
@@ -448,12 +450,45 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
    * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
-  public async authenticatorMakeCredential(opts: {
-    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    meta: AuthenticatorMetaArgs;
-    context: Context;
-  }): Promise<AuthenticatorMakeCredentialResponse> {
-    const { authenticatorMakeCredentialArgs, meta, context } = opts;
+  public async authenticatorMakeCredential(
+    opts: VirtualAuthenticatorMakeCredentialArgs,
+  ): Promise<AuthenticatorMakeCredentialResponse> {
+    const { authenticatorMakeCredentialArgs, meta, state } = opts;
+
+    // State validation
+    assertSchema(state, RegistrationStateSchema.optional());
+
+    const optionsHash = this._hashAuthenticatorMakeCredentialOptionsAsHex({
+      authenticatorMakeCredentialArgs,
+      meta,
+    });
+
+    // State options hash validation
+    assertSchema(state?.optionsHash, z.literal(optionsHash).optional());
+
+    const authenticatorMakeCredentialResponse =
+      await this._authenticatorMakeCredential({
+        authenticatorMakeCredentialArgs,
+        meta,
+        state,
+        optionsHash,
+      });
+
+    return authenticatorMakeCredentialResponse;
+  }
+
+  /**
+   * The authenticatorMakeCredential operation.
+   * This is the authenticator-side operation for creating a new credential.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
+   */
+  private async _authenticatorMakeCredential(
+    opts: VirtualAuthenticatorMakeCredentialArgs & {
+      optionsHash: string;
+    },
+  ): Promise<AuthenticatorMakeCredentialResponse> {
+    const { authenticatorMakeCredentialArgs, meta, state } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
     // If not, return an error code equivalent to "UnknownError" and terminate the operation.
@@ -469,8 +504,6 @@ export class VirtualAuthenticator implements IAuthenticator {
         userPresenceEnabled: z.literal(true),
       }),
     );
-    // Context validation
-    assertSchema(context, ContextSchema.optional());
 
     const {
       hash,
@@ -563,11 +596,11 @@ export class VirtualAuthenticator implements IAuthenticator {
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    if (requireUserPresence && !context?.up) {
+    if (requireUserPresence && !state?.up) {
       throw new UserPresenceRequired();
     }
 
-    if (requireUserVerification && !context?.uv) {
+    if (requireUserVerification && !state?.uv) {
       throw new UserVerificationRequired();
     }
 
@@ -741,12 +774,45 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
    * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
-  public async authenticatorGetAssertion(opts: {
-    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    meta: AuthenticatorMetaArgs;
-    context: Context;
-  }): Promise<AuthenticatorGetAssertionResponse> {
-    const { authenticatorGetAssertionArgs, meta, context } = opts;
+  public async authenticatorGetAssertion(
+    opts: VirtualAuthenticatorGetAssertionArgs,
+  ): Promise<AuthenticatorGetAssertionResponse> {
+    const { authenticatorGetAssertionArgs, meta, state } = opts;
+
+    // State validation
+    assertSchema(state, AuthenticationStateSchema.optional());
+
+    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
+      authenticatorGetAssertionArgs,
+      meta,
+    });
+
+    // State options hash validation
+    assertSchema(state?.optionsHash, z.literal(optionsHash).optional());
+
+    const authenticatorGetAssertionResponse =
+      await this._authenticatorGetAssertion({
+        authenticatorGetAssertionArgs,
+        meta,
+        state,
+        optionsHash,
+      });
+
+    return authenticatorGetAssertionResponse;
+  }
+
+  /**
+   * The authenticatorGetAssertion operation.
+   * This is the authenticator-side operation for generating an assertion.
+   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
+   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
+   */
+  private async _authenticatorGetAssertion(
+    opts: VirtualAuthenticatorGetAssertionArgs & {
+      optionsHash: string;
+    },
+  ): Promise<AuthenticatorGetAssertionResponse> {
+    const { authenticatorGetAssertionArgs, meta, state } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
     // If not, return an error code equivalent to "UnknownError" and terminate the operation.
@@ -757,16 +823,6 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Meta validation
     assertSchema(meta, AuthenticatorMetaArgsSchema);
-    // Context validation
-    assertSchema(context, ContextSchema.optional());
-
-    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
-      authenticatorGetAssertionArgs,
-      meta,
-    });
-
-    // Context hash validation
-    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
 
     const {
       hash,
@@ -818,9 +874,9 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
       );
 
-    if (context?.credentialId !== undefined) {
+    if (state?.credentialId !== undefined) {
       credentialOptions = credentialOptions.filter((credentialOption) => {
-        return credentialOption.id === context?.credentialId;
+        return credentialOption.id === state?.credentialId;
       });
     }
 
@@ -837,7 +893,6 @@ export class VirtualAuthenticator implements IAuthenticator {
     if (credentialOptions.length > 1) {
       throw new CredentialSelectException({
         credentialOptions,
-        hash: HashOnion.push(optionsHash),
       });
     }
 
@@ -850,7 +905,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       throw new UserVerificationNotAvailable();
     }
 
-    if (requireUserVerification === true && !context?.uv) {
+    if (requireUserVerification === true && !state?.uv) {
       throw new UserVerificationRequired();
     }
 
@@ -859,7 +914,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       throw new UserPresenceNotAvailable();
     }
 
-    if (requireUserPresence === true && !context?.up) {
+    if (requireUserPresence === true && !state?.up) {
       throw new UserPresenceRequired();
     }
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.

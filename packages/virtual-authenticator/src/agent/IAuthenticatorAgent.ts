@@ -1,10 +1,11 @@
-import type { ContextBase } from '../context/validation/ContextSchema';
+import type { AuthenticationState } from '../state/AuthenticationStateSchema';
+import type { RegistrationState } from '../state/RegistrationStateSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { CredentialCreationOptions } from '../validation/spec/CredentialCreationOptionsSchema';
 import type { CredentialRequestOptions } from '../validation/spec/CredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from '../validation/spec/PublicKeyCredentialSchema';
 
-export type AuthenticatorAgentCreateCredentialArgs = {
+export type VirtualAuthenticatorAgentCreateCredentialArgs = {
   // origin: This argument is the relevant settings object’s origin, as determined by the calling create() implementation.
   // NOTE: It must match the meta.origin value
   origin: string;
@@ -17,10 +18,10 @@ export type AuthenticatorAgentCreateCredentialArgs = {
 
   // Internal options
   meta: AuthenticatorAgentMetaArgs;
-  context: ContextBase;
+  state?: RegistrationState;
 };
 
-export type AuthenticatorAgentGetAssertionArgs = {
+export type VirtualAuthenticatorAgentGetAssertionArgs = {
   // origin: This argument is the relevant settings object’s origin, as determined by the calling get() implementation, i.e., CredentialsContainer’s Request a Credential abstract operation.
   // NOTE: It must match the meta.origin value
   origin: string;
@@ -33,7 +34,7 @@ export type AuthenticatorAgentGetAssertionArgs = {
 
   // Internal options
   meta: AuthenticatorAgentMetaArgs;
-  context: ContextBase;
+  state?: AuthenticationState;
 };
 
 /**
@@ -48,7 +49,7 @@ export interface IAuthenticatorAgent {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-createCredential
    */
   createCredential(
-    opts: AuthenticatorAgentCreateCredentialArgs,
+    opts: VirtualAuthenticatorAgentCreateCredentialArgs,
   ): Promise<PublicKeyCredential>;
 
   /**
@@ -57,6 +58,6 @@ export interface IAuthenticatorAgent {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-getAssertion
    */
   getAssertion(
-    opts: AuthenticatorAgentGetAssertionArgs,
+    opts: VirtualAuthenticatorAgentGetAssertionArgs,
   ): Promise<PublicKeyCredential>;
 }
