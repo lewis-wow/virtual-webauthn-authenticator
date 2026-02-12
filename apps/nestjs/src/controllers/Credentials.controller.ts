@@ -22,7 +22,7 @@ import type {
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 import z from 'zod';
 
-import { CredentialSelectException } from '../../../../packages/virtual-authenticator/src/exceptions/CredentialSelectException';
+import { CredentialSelectException } from '../../../../packages/virtual-authenticator/src/authenticator/exceptions/CredentialSelectException';
 import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';

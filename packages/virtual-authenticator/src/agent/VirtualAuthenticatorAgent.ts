@@ -8,6 +8,7 @@ import { match, P } from 'ts-pattern';
 import z from 'zod';
 
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
+import { CredentialSelectException } from '../authenticator/exceptions/CredentialSelectException';
 import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
 import { PublicKeyCredentialCreationOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
@@ -26,7 +27,6 @@ import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType';
 import { ResidentKey } from '../enums/ResidentKey';
 import { UserVerification } from '../enums/UserVerification';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
-import { CredentialSelectException } from '../exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
 import {

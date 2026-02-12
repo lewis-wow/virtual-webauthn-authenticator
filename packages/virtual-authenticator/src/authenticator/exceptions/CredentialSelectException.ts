@@ -3,7 +3,7 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
-import { ApplicablePublicKeyCredentialSchema } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
+import { ApplicablePublicKeyCredentialSchema } from '../../validation/spec/ApplicablePublicKeyCredentialSchema';
 
 export class CredentialSelectException extends Exception<CredentialSelectExceptionData> {
   static readonly code = 'CredentialSelectException';

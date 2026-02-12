@@ -15,7 +15,6 @@ import { Fmt } from '../enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from '../exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from '../exceptions/CredentialOptionsEmpty';
-import { CredentialSelectException } from '../exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
@@ -58,6 +57,7 @@ import type {
   VirtualAuthenticatorGetAssertionArgs,
   VirtualAuthenticatorMakeCredentialArgs,
 } from './IAuthenticator';
+import { CredentialSelectException } from './exceptions/CredentialSelectException';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;

@@ -25,13 +25,13 @@ import {
   ExtensionRegistry,
 } from '../../../src/agent/extensions';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialRequestOptionsDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
-import { CredentialSelectException } from '../../../src/exceptions/CredentialSelectException';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { type AuthenticatorGetAssertionArgs } from '../../../src/validation';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
