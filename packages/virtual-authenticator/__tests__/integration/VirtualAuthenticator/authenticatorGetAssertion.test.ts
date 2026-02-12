@@ -19,10 +19,10 @@ import {
 
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
+import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
+import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
-import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
-import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';

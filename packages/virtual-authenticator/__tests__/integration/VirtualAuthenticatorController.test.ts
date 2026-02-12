@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 
 import type { IAuthenticator } from '../../src/authenticator/IAuthenticator';
+import { UserPresenceRequired } from '../../src/authenticator/exceptions/UserPresenceRequired';
 import { GenerateKeyPairFailed } from '../../src/exceptions/GenerateKeyPairFailed';
-import { UserPresenceRequired } from '../../src/exceptions/UserPresenceRequired';
 import { VirtualAuthenticatorController } from '../../src/http/VirtualAuthenticatorController';
 import { ContextService } from '../../src/services/ContextService';
 import { AuthenticatorMakeCredentialArgs } from '../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';

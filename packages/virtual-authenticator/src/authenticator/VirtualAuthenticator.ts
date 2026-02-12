@@ -16,10 +16,6 @@ import { CredentialOptionsEmpty } from '../exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
-import { UserPresenceNotAvailable } from '../exceptions/UserPresenceNotAvailable';
-import { UserPresenceRequired } from '../exceptions/UserPresenceRequired';
-import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
-import { UserVerificationRequired } from '../exceptions/UserVerificationRequired';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
@@ -45,6 +41,10 @@ import type {
   VirtualAuthenticatorMakeCredentialArgs,
 } from './IAuthenticator';
 import { CredentialSelectException } from './exceptions/CredentialSelectException';
+import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
+import { UserPresenceRequired } from './exceptions/UserPresenceRequired';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
+import { UserVerificationRequired } from './exceptions/UserVerificationRequired';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;

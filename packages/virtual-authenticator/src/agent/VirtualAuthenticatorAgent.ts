@@ -4,11 +4,11 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash, HashOnion } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import { match, P } from 'ts-pattern';
 import z from 'zod';
 
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
 import { CredentialSelectException } from '../authenticator/exceptions/CredentialSelectException';
+import { UserVerificationNotAvailable } from '../authenticator/exceptions/UserVerificationNotAvailable';
 import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
 import { PublicKeyCredentialCreationOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
@@ -26,14 +26,17 @@ import { Fmt } from '../enums/Fmt';
 import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType';
 import { ResidentKey } from '../enums/ResidentKey';
 import { UserVerification } from '../enums/UserVerification';
+import { UserPresenceRequired, UserVerificationRequired } from '../exceptions';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
-import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
 import {
   AuthenticationStateSchema,
   type AuthenticationState,
 } from '../state/AuthenticationStateSchema';
-import { RegistrationStateSchema } from '../state/RegistrationStateSchema';
+import {
+  RegistrationStateSchema,
+  type RegistrationState,
+} from '../state/RegistrationStateSchema';
 import { StateAction } from '../state/StateAction';
 import { StateManager } from '../state/StateManager';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
@@ -56,6 +59,8 @@ import type {
   VirtualAuthenticatorAgentGetAssertionArgs,
 } from './IAuthenticatorAgent';
 import { CredentialSelectAgentException } from './exceptions/CredentialSelectAgentException';
+import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceRequiredAgentException';
+import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
 
 export type VirtualAuthenticatorAgentOptions = {
@@ -85,6 +90,53 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     this.authenticator = opts.authenticator;
     this.extensionProcessor = opts.extensionProcessor;
     this.stateManager = opts.stateManager;
+  }
+
+  private async _mapAuthenticatorErrorToAgentError(opts: {
+    error: unknown;
+    state: RegistrationState | AuthenticationState | undefined;
+    optionsHash: string;
+  }): Promise<unknown> {
+    const { error, state, optionsHash } = opts;
+
+    if (error instanceof CredentialSelectException) {
+      const nextState = await this.stateManager.createToken({
+        action: StateAction.CREDENTIAL_SELECTION,
+        current: state,
+        optionsHash,
+      });
+
+      return new CredentialSelectAgentException({
+        ...error.data,
+        state: nextState,
+      });
+    }
+
+    if (error instanceof UserPresenceRequired) {
+      const nextState = await this.stateManager.createToken({
+        action: StateAction.USER_PRESENCE,
+        current: state,
+        optionsHash,
+      });
+
+      return new UserPresenceRequiredAgentException({
+        state: nextState,
+      });
+    }
+
+    if (error instanceof UserVerificationRequired) {
+      const nextState = await this.stateManager.createToken({
+        action: StateAction.USER_VERIFICATION,
+        current: state,
+        optionsHash,
+      });
+
+      return new UserVerificationRequiredAgentException({
+        state: nextState,
+      });
+    }
+
+    return error;
   }
 
   /**
@@ -238,21 +290,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // We have single authenticator, so we can directly return the payload.
       return authenticatorGetAssertionPayload;
     } catch (error) {
-      return await match(error)
-        .returnType<Promise<never>>()
-        .with(P.instanceOf(CredentialSelectException), async (error) => {
-          throw new CredentialSelectAgentException({
-            ...error.data,
-            state: await this.stateManager.createToken({
-              action: StateAction.CREDENTIAL_SELECTION,
-              current: state,
-              optionsHash,
-            }),
-          });
-        })
-        .otherwise(() => {
-          throw error;
-        });
+      throw await this._mapAuthenticatorErrorToAgentError({
+        error,
+        optionsHash,
+        state,
+      });
     }
   }
 
@@ -480,7 +522,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       optionsHash: string;
     },
   ): Promise<PublicKeyCredential> {
-    const { origin, options, sameOriginWithAncestors, meta, state } = opts;
+    const {
+      origin,
+      options,
+      sameOriginWithAncestors,
+      meta,
+      state,
+      optionsHash,
+    } = opts;
 
     // Step 1: Let options be the object passed to the
     // [[Create]](origin, options, sameOriginWithAncestors) internal method.
@@ -795,8 +844,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // credTypesAndPubKeyAlgs, excludeCredentialDescriptorList,
     // enterpriseAttestationPossible, and authenticatorExtensions as
     // parameters.
-    const { attestationObject, credentialId } =
-      await this.authenticator.authenticatorMakeCredential({
+    const { attestationObject, credentialId } = await this.authenticator
+      .authenticatorMakeCredential({
         authenticatorMakeCredentialArgs: {
           hash: clientDataHash,
           rpEntity: {
@@ -820,6 +869,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           userVerificationEnabled: meta.userVerificationEnabled,
         },
         state: state,
+      })
+      .catch(async (error) => {
+        throw await this._mapAuthenticatorErrorToAgentError({
+          error,
+          state,
+          optionsHash,
+        });
       });
 
     // Step 22.UNAVAILABLE: If an authenticator ceases to be available on this client device
