@@ -9,8 +9,6 @@ import z from 'zod';
 
 import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
 import type { AttestationStatementMap } from '../cbor/AttestationStatementMap';
-import { AuthenticatorGetAssertionArgsDtoSchema } from '../dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
-import { AuthenticatorMakeCredentialArgsDtoSchema } from '../dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from '../enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from '../exceptions/CredentialExcluded';
@@ -23,30 +21,19 @@ import { UserPresenceRequired } from '../exceptions/UserPresenceRequired';
 import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
 import { UserVerificationRequired } from '../exceptions/UserVerificationRequired';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
-import { AuthenticationStateSchema } from '../state/AuthenticationStateSchema';
-import { RegistrationStateSchema } from '../state/RegistrationStateSchema';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import {
-  AuthenticatorGetAssertionArgsSchema,
-  type AuthenticatorGetAssertionArgs,
-} from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import { AuthenticatorGetAssertionArgsSchema } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import {
   AuthenticatorGetAssertionResponseSchema,
   type AuthenticatorGetAssertionResponse,
 } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
-import {
-  AuthenticatorMakeCredentialArgsSchema,
-  type AuthenticatorMakeCredentialArgs,
-} from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import { AuthenticatorMakeCredentialArgsSchema } from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import {
   AuthenticatorMakeCredentialResponseSchema,
   type AuthenticatorMakeCredentialResponse,
 } from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
-import {
-  AuthenticatorMetaArgsSchema,
-  type AuthenticatorMetaArgs,
-} from '../validation/authenticator/AuthenticatorMetaArgsSchema';
+import { AuthenticatorMetaArgsSchema } from '../validation/authenticator/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
@@ -429,21 +416,6 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
-  private _hashAuthenticatorMakeCredentialOptionsAsHex(opts: {
-    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    meta: AuthenticatorMetaArgs;
-  }): string {
-    const { authenticatorMakeCredentialArgs, meta } = opts;
-
-    return Hash.sha256JSONHex({
-      authenticatorMakeCredentialArgs:
-        AuthenticatorMakeCredentialArgsDtoSchema.encode(
-          authenticatorMakeCredentialArgs,
-        ),
-      meta,
-    });
-  }
-
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
@@ -452,41 +424,6 @@ export class VirtualAuthenticator implements IAuthenticator {
    */
   public async authenticatorMakeCredential(
     opts: VirtualAuthenticatorMakeCredentialArgs,
-  ): Promise<AuthenticatorMakeCredentialResponse> {
-    const { authenticatorMakeCredentialArgs, meta, state } = opts;
-
-    // State validation
-    assertSchema(state, RegistrationStateSchema.optional());
-
-    const optionsHash = this._hashAuthenticatorMakeCredentialOptionsAsHex({
-      authenticatorMakeCredentialArgs,
-      meta,
-    });
-
-    // State options hash validation
-    assertSchema(state?.optionsHash, z.literal(optionsHash).optional());
-
-    const authenticatorMakeCredentialResponse =
-      await this._authenticatorMakeCredential({
-        authenticatorMakeCredentialArgs,
-        meta,
-        state,
-        optionsHash,
-      });
-
-    return authenticatorMakeCredentialResponse;
-  }
-
-  /**
-   * The authenticatorMakeCredential operation.
-   * This is the authenticator-side operation for creating a new credential.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
-   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
-   */
-  private async _authenticatorMakeCredential(
-    opts: VirtualAuthenticatorMakeCredentialArgs & {
-      optionsHash: string;
-    },
   ): Promise<AuthenticatorMakeCredentialResponse> {
     const { authenticatorMakeCredentialArgs, meta, state } = opts;
 
@@ -753,21 +690,6 @@ export class VirtualAuthenticator implements IAuthenticator {
     return authenticatorMakeCredentialResponse;
   }
 
-  private _hashAuthenticatorGetAssertionOptionsAsHex(opts: {
-    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    meta: AuthenticatorMetaArgs;
-  }): string {
-    const { authenticatorGetAssertionArgs, meta } = opts;
-
-    return Hash.sha256JSONHex({
-      authenticatorGetAssertionArgs:
-        AuthenticatorGetAssertionArgsDtoSchema.encode(
-          authenticatorGetAssertionArgs,
-        ),
-      meta,
-    });
-  }
-
   /**
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
@@ -776,41 +698,6 @@ export class VirtualAuthenticator implements IAuthenticator {
    */
   public async authenticatorGetAssertion(
     opts: VirtualAuthenticatorGetAssertionArgs,
-  ): Promise<AuthenticatorGetAssertionResponse> {
-    const { authenticatorGetAssertionArgs, meta, state } = opts;
-
-    // State validation
-    assertSchema(state, AuthenticationStateSchema.optional());
-
-    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
-      authenticatorGetAssertionArgs,
-      meta,
-    });
-
-    // State options hash validation
-    assertSchema(state?.optionsHash, z.literal(optionsHash).optional());
-
-    const authenticatorGetAssertionResponse =
-      await this._authenticatorGetAssertion({
-        authenticatorGetAssertionArgs,
-        meta,
-        state,
-        optionsHash,
-      });
-
-    return authenticatorGetAssertionResponse;
-  }
-
-  /**
-   * The authenticatorGetAssertion operation.
-   * This is the authenticator-side operation for generating an assertion.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
-   * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
-   */
-  private async _authenticatorGetAssertion(
-    opts: VirtualAuthenticatorGetAssertionArgs & {
-      optionsHash: string;
-    },
   ): Promise<AuthenticatorGetAssertionResponse> {
     const { authenticatorGetAssertionArgs, meta, state } = opts;
 
