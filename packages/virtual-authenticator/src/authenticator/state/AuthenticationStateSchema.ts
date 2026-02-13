@@ -8,7 +8,6 @@ export const AuthenticationStateSchema = z.object({
   uv: z.boolean().optional(),
   credentialId: z.string().optional(),
 });
-
 export type AuthenticationState = z.infer<typeof AuthenticationStateSchema>;
 
 export const AuthenticationStateWithTokenSchema =

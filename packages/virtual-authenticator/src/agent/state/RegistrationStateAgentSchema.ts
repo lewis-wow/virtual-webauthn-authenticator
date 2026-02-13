@@ -12,7 +12,7 @@ export type RegistrationStateAgent = z.infer<
 
 export const RegistrationStateWithTokenAgentSchema =
   RegistrationStateAgentSchema.extend({
-    current: z.string(),
+    current: RegistrationStateAgentSchema,
   });
 
 export type RegistrationStateWithTokenAgent = z.infer<

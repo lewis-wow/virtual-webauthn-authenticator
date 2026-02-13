@@ -54,12 +54,12 @@ import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceReq
 import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
 import {
-  AuthenticationStateSchema,
-  type AuthenticationState,
+  AuthenticationStateAgentSchema,
+  type AuthenticationStateAgent,
 } from './state/AuthenticationStateAgentSchema';
 import {
-  RegistrationStateSchema,
-  type RegistrationState,
+  RegistrationStateAgentSchema,
+  type RegistrationStateAgent,
 } from './state/RegistrationStateAgentSchema';
 import { StateManager } from './state/StateManager';
 
@@ -94,7 +94,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
   private async _mapAuthenticatorErrorToAgentError(opts: {
     error: unknown;
-    state: RegistrationState | AuthenticationState | undefined;
+    state: RegistrationStateAgent | AuthenticationStateAgent | undefined;
     optionsHash: string;
   }): Promise<unknown> {
     const { error, state, optionsHash } = opts;
@@ -160,7 +160,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Custom options
     meta: AuthenticatorAgentMetaArgs;
-    state?: AuthenticationState;
+    state?: AuthenticationStateAgent;
     optionsHash: string;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
@@ -489,7 +489,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   ): Promise<PublicKeyCredential> {
     const { origin, options, sameOriginWithAncestors, meta, state } = opts;
 
-    assertSchema(state, RegistrationStateSchema.optional());
+    assertSchema(state, RegistrationStateAgentSchema.optional());
 
     const optionsHash = this._hashCreateCredentialOptionsAsHex({
       pkOptions: options.publicKey!,
@@ -1005,7 +1005,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     const { origin, options, sameOriginWithAncestors, meta, state } = opts;
 
     // State validation
-    assertSchema(state, AuthenticationStateSchema.optional());
+    assertSchema(state, AuthenticationStateAgentSchema.optional());
 
     const optionsHash = this._hashGetAssertionOptionsAsHex({
       pkOptions: options.publicKey!, // Assume validated by caller or schema

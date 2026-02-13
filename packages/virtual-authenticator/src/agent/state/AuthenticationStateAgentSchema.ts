@@ -7,12 +7,12 @@ export const AuthenticationStateAgentSchema = AuthenticationStateSchema.extend({
 });
 
 export type AuthenticationStateAgent = z.infer<
-  typeof AuthenticationStateSchema
+  typeof AuthenticationStateAgentSchema
 >;
 
 export const AuthenticationStateWithTokenAgentSchema =
   AuthenticationStateAgentSchema.extend({
-    current: z.string(),
+    current: AuthenticationStateAgentSchema,
   });
 
 export type AuthenticationStateWithTokenAgent = z.infer<
