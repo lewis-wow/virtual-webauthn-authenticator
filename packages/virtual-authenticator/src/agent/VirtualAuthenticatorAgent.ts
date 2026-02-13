@@ -9,6 +9,7 @@ import z from 'zod';
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
 import { CredentialSelectException } from '../authenticator/exceptions/CredentialSelectException';
 import { UserVerificationNotAvailable } from '../authenticator/exceptions/UserVerificationNotAvailable';
+import { StateAction } from '../authenticator/state/StateAction';
 import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
 import { PublicKeyCredentialCreationOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
@@ -29,16 +30,6 @@ import { UserVerification } from '../enums/UserVerification';
 import { UserPresenceRequired, UserVerificationRequired } from '../exceptions';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
-import {
-  AuthenticationStateSchema,
-  type AuthenticationState,
-} from '../state/AuthenticationStateSchema';
-import {
-  RegistrationStateSchema,
-  type RegistrationState,
-} from '../state/RegistrationStateSchema';
-import { StateAction } from '../state/StateAction';
-import { StateManager } from '../state/StateManager';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -62,6 +53,15 @@ import { CredentialSelectAgentException } from './exceptions/CredentialSelectAge
 import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
+import {
+  AuthenticationStateSchema,
+  type AuthenticationState,
+} from './state/AuthenticationStateAgentSchema';
+import {
+  RegistrationStateSchema,
+  type RegistrationState,
+} from './state/RegistrationStateAgentSchema';
+import { StateManager } from './state/StateManager';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;

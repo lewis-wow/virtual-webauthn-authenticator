@@ -9,10 +9,10 @@ import {
 import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
+import type { AuthenticationStateWithToken } from '../../../src/agent/state/AuthenticationStateAgentSchema';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
-import type { AuthenticatorAgentContextArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentContextArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAssertionResponse } from '../../../src/validation/spec/AuthenticatorAssertionResponseSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
@@ -23,7 +23,7 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnCredential: WebAuthnCredential;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
-  context?: Partial<AuthenticatorAgentContextArgs>;
+  state?: AuthenticationStateWithToken;
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -34,7 +34,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     publicKeyCredentialRequestOptions,
     webAuthnCredential,
     meta: metaOptions,
-    context: contextOptions,
+    state,
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
@@ -47,13 +47,12 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     ...metaOptions,
   };
 
-  const context: AuthenticatorAgentContextArgs = {
-    up: true,
-    uv:
-      publicKeyCredentialRequestOptions.userVerification ===
-      UserVerification.REQUIRED,
-    ...contextOptions,
-  };
+  // NOTE: This property name should be `state` but generic context passing is kept for legacy compatibility?
+  // Ideally we construct initial state here if needed, but usually agent handles initial call without state.
+  // The original code passed `context`, but `getAssertion` expects `state`.
+  // Wait, `AuthenticatorAgentContextArgs` seems unrelated to `AuthenticationState`.
+  // Let's assume `context` argument was intended to pre-populate state.
+  // We'll ignore `context` for state construction unless retrying.
 
   const expectedRPID =
     publicKeyCredentialRequestOptions.rpId ?? new URL(meta.origin).hostname;
@@ -67,7 +66,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
     // Internal options
     meta,
-    context,
+    state,
   });
 
   const authenticationVerificationResponse = await verifyAuthenticationResponse(

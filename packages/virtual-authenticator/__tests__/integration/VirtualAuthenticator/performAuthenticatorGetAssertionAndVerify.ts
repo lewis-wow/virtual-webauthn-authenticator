@@ -8,10 +8,10 @@ import { verifySignature } from '@simplewebauthn/server/helpers';
 import { expect } from 'vitest';
 
 import { type IAuthenticator } from '../../../src';
+import type { AuthenticationState } from '../../../src/agent/state/AuthenticationStateAgentSchema';
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
-import type { AuthenticatorContextArgs } from '../../../src/validation/authenticator/AuthenticatorContextArgsSchema';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
@@ -47,7 +47,7 @@ export type PerformAuthenticatorGetAssertionAndVerifyArgs = {
   authenticatorMakeCredentialResponse: AuthenticatorMakeCredentialResponse;
   prisma: PrismaClient;
   meta?: Partial<AuthenticatorMetaArgs>;
-  context?: AuthenticatorContextArgs;
+  state?: AuthenticationState;
 
   expectedCounter?: number;
 };
@@ -61,7 +61,7 @@ export const performAuthenticatorGetAssertionAndVerify = async (
     authenticatorMakeCredentialResponse,
     prisma,
     meta,
-    context,
+    state,
     expectedCounter,
   } = opts;
 
@@ -75,11 +75,7 @@ export const performAuthenticatorGetAssertionAndVerify = async (
         apiKeyId: null,
         ...meta,
       },
-      context: {
-        up: true,
-        uv: authenticatorGetAssertionArgs.requireUserVerification,
-        ...context,
-      },
+      state: state,
     });
 
   const parsedGetAssertionAuthenticatorData = parseAuthenticatorData(

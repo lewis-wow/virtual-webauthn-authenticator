@@ -6,13 +6,13 @@ import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { PrismaClient } from '@repo/prisma';
 import { expect } from 'vitest';
 
+import type { RegistrationState } from '../../../src/agent/state/RegistrationStateAgentSchema';
 import type { IAuthenticator } from '../../../src/authenticator/IAuthenticator';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import type { AuthenticatorContextArgs } from '../../../src/validation/authenticator/AuthenticatorContextArgsSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
@@ -68,7 +68,7 @@ export type PerformAuthenticatorMakeCredentialAndVerifyArgs = {
   authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
   prisma: PrismaClient;
   meta?: Partial<AuthenticatorMetaArgs>;
-  context?: AuthenticatorContextArgs;
+  state?: RegistrationState;
 };
 
 export const performAuthenticatorMakeCredentialAndVerify = async (
@@ -79,7 +79,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
     authenticatorMakeCredentialArgs,
     prisma,
     meta,
-    context,
+    state,
   } = opts;
 
   const authenticatorMakeCredentialResponse =
@@ -92,11 +92,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
         apiKeyId: null,
         ...meta,
       },
-      context: {
-        up: true,
-        uv: authenticatorMakeCredentialArgs.requireUserVerification,
-        ...context,
-      },
+      state: state,
     });
 
   const attestationObjectMap = decodeAttestationObject(

@@ -23,6 +23,7 @@ import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/
 import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
+import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
@@ -310,7 +311,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       ).rejects.toThrowError(
         new CredentialSelectException({
           credentialOptions: expectedCredentialOptions,
-          hash: HashOnion.fromArray([expectedHash]),
+          //  hash: HashOnion.fromArray([expectedHash]), // Removed as it is not part of schema
         }),
       );
 
@@ -378,7 +379,6 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       ).rejects.toThrowError(
         new CredentialSelectException({
           credentialOptions: expectedCredentialOptions,
-          hash: HashOnion.fromArray([expectedHash]),
         }),
       );
 
@@ -397,7 +397,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             selectedCredentialOptionId: expectedCredentialOptions[0]!.id,
           },
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(new CredentialOptionsEmpty());
     });
 
     test('Authentication with existing public key credential', async () => {

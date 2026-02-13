@@ -3,7 +3,7 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, HashOnion } from '@repo/crypto';
+import { Hash, HashOnion, Jwks, Jwt } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import { type WebAuthnCredential } from '@simplewebauthn/server';
@@ -17,13 +17,16 @@ import {
   expect,
   test,
 } from 'vitest';
+import { ZodError } from 'zod';
 
 import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
+import { CredentialSelectAgentException } from '../../../src/agent/exceptions/CredentialSelectAgentException';
 import {
   CredPropsExtension,
   ExtensionProcessor,
   ExtensionRegistry,
 } from '../../../src/agent/extensions';
+import { StateManager } from '../../../src/agent/state/StateManager';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
@@ -38,6 +41,7 @@ import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticato
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
+import { InMemoryJwksRepository } from '../../helpers/InMemoryJwksRepository';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import {
@@ -80,9 +84,17 @@ describe('VirtualAuthenticator.getCredential()', () => {
     new CredPropsExtension(),
   ]);
   const extensionProcessor = new ExtensionProcessor(extensionRegistry);
+  const jwksRepository = new InMemoryJwksRepository();
+  const jwks = new Jwks({
+    encryptionKey: 'test-encryption-key',
+    jwksRepository,
+  });
+  const jwt = new Jwt({ jwks });
+  const stateManager = new StateManager({ jwt });
   const agent = new VirtualAuthenticatorAgent({
     authenticator,
     extensionProcessor,
+    stateManager,
   });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {
@@ -112,6 +124,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   beforeEach(async () => {
     const performPublicKeyCredentialRegistrationAndVerifyResponse =
       await performPublicKeyCredentialRegistrationAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialCreationOptions:
           PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -141,6 +154,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     );
 
     await performPublicKeyCredentialRequestAndVerify({
+      stateManager,
       agent,
       publicKeyCredentialRequestOptions,
       webAuthnCredential,
@@ -161,6 +175,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     );
 
     await performPublicKeyCredentialRequestAndVerify({
+      stateManager,
       agent,
       publicKeyCredentialRequestOptions,
       webAuthnCredential,
@@ -187,6 +202,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     );
 
     await performPublicKeyCredentialRequestAndVerify({
+      stateManager,
       agent,
       publicKeyCredentialRequestOptions,
       webAuthnCredential,
@@ -217,6 +233,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(
       async () =>
         await performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -243,6 +260,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
     await expect(() =>
       performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -265,6 +283,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
     await expect(
       async () =>
         await performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -313,6 +332,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         );
 
         await performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -336,6 +356,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -370,6 +391,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       const { parsedAuthenticatorData } =
         await performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -394,6 +416,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -415,6 +438,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       const { parsedAuthenticatorData } =
         await performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -457,6 +481,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -483,6 +508,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -515,6 +541,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -547,6 +574,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -570,6 +598,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await expect(
         async () =>
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -601,6 +630,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       };
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -626,6 +656,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await expect(
         async () =>
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -651,6 +682,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -672,6 +704,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       };
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -694,6 +727,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -722,6 +756,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       };
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -742,6 +777,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       };
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -773,6 +809,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -794,6 +831,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -824,6 +862,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
         const { publicKeyCredential: resultCredential } =
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -865,6 +904,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
         const { publicKeyCredential: resultCredential } =
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -905,6 +945,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
         const { publicKeyCredential: resultCredential } =
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -938,6 +979,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
         const { publicKeyCredential: resultCredential } =
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -976,6 +1018,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
         const { publicKeyCredential: resultCredential } =
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -1018,6 +1061,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
         const { publicKeyCredential: resultCredential } =
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions,
             webAuthnCredential,
@@ -1065,6 +1109,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       };
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1096,6 +1141,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1127,6 +1173,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -1166,6 +1213,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       };
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1180,6 +1228,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       await expect(
         async () =>
           await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
             agent,
             publicKeyCredentialRequestOptions:
               malformedOptions as unknown as PublicKeyCredentialRequestOptions,
@@ -1204,6 +1253,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -1227,11 +1277,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(ZodError);
     });
   });
 
@@ -1259,6 +1310,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       // First assertion
       const firstResult = await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1271,6 +1323,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       // Second assertion - counter should increment again
       const secondResult = await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1283,6 +1336,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       // Third assertion - counter should increment yet again
       const thirdResult = await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1321,6 +1375,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -1348,6 +1403,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -1376,6 +1432,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -1406,6 +1463,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       );
 
       await performPublicKeyCredentialRequestAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialRequestOptions,
         webAuthnCredential,
@@ -1431,6 +1489,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
@@ -1488,6 +1547,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       // Create new credential first, then query expectedCredentialOptions
       // so that it includes both credentials (from beforeEach and this new one)
       await performPublicKeyCredentialRegistrationAndVerify({
+        stateManager,
         agent,
         publicKeyCredentialCreationOptions:
           PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -1506,16 +1566,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
+          stateManager,
           agent,
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-      ).rejects.toThrowError(
-        new CredentialSelectException({
-          credentialOptions: expectedCredentialOptions,
-          hash: HashOnion.fromArray([expectedHash, expectedAuthenticatorHash]),
-        }),
-      );
+      ).rejects.toThrow(CredentialSelectAgentException);
     });
   });
 });
