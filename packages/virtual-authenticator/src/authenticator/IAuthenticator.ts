@@ -1,11 +1,11 @@
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import type { AuthenticationState } from '../state/AuthenticationStateSchema';
+import type { RegistrationState } from '../state/RegistrationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../validation/authenticator/AuthenticatorMetaArgsSchema';
-import type { AuthenticationState } from './state/AuthenticationStateSchema';
-import type { RegistrationState } from './state/RegistrationStateSchema';
 
 export type VirtualAuthenticatorMakeCredentialArgs = {
   authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;

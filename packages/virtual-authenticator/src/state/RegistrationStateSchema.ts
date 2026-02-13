@@ -1,9 +1,6 @@
 import z from 'zod';
 
-import { StateType } from './StateType';
-
 export const RegistrationStateSchema = z.object({
-  type: z.literal(StateType.REGISTRATION),
   up: z.boolean().optional(),
   uv: z.boolean().optional(),
 });

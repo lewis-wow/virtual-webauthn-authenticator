@@ -15,7 +15,7 @@ export class UserVerificationRequiredAgentException extends Exception {
 }
 
 export const UserVerificationRequiredAgentExceptionDataSchema = z.object({
-  state: z.string(),
+  stateToken: z.string(),
 });
 
 export type UserVerificationRequiredAgentExceptionData = z.infer<

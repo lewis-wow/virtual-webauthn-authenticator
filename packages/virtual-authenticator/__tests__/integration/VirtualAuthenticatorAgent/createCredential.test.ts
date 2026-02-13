@@ -22,7 +22,6 @@ import {
   ExtensionProcessor,
   ExtensionRegistry,
 } from '../../../src/agent/extensions';
-import { StateManager } from '../../../src/agent/state/StateManager';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
@@ -34,6 +33,7 @@ import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { StateManager } from '../../../src/state/StateManager';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 // import { mock } from 'vitest-mock-extended'; // Remove mock if unused
 import { InMemoryJwksRepository } from '../../helpers/InMemoryJwksRepository';

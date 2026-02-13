@@ -9,21 +9,33 @@ import {
 import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
-import type { AuthenticationStateWithToken } from '../../../src/agent/state/AuthenticationStateAgentSchema';
+import {
+  UserPresenceRequiredAgentException,
+  type UserPresenceRequiredAgentExceptionData,
+} from '../../../src/agent/exceptions/UserPresenceRequiredAgentException';
+import {
+  UserVerificationRequiredAgentException,
+  type UserVerificationRequiredAgentExceptionData,
+} from '../../../src/agent/exceptions/UserVerificationRequiredAgentException';
+import type { AuthenticationStateWithTokenAgent } from '../../../src/agent/state/AuthenticationStateAgentSchema';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { StateManager } from '../../../src/state/StateManager';
+import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAssertionResponse } from '../../../src/validation/spec/AuthenticatorAssertionResponseSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
 import { RP_ORIGIN } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
+  stateManager: StateManager;
   agent: VirtualAuthenticatorAgent;
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnCredential: WebAuthnCredential;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
-  state?: AuthenticationStateWithToken;
+  state?: AuthenticationStateWithTokenAgent;
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -57,17 +69,59 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   const expectedRPID =
     publicKeyCredentialRequestOptions.rpId ?? new URL(meta.origin).hostname;
 
-  const publicKeyCredential = await agent.getAssertion({
-    origin: meta.origin,
-    options: {
-      publicKey: publicKeyCredentialRequestOptions,
-    },
-    sameOriginWithAncestors: true,
+  // Simulate the full WebAuthn authentication ceremony.
+  let publicKeyCredential: PublicKeyCredential | undefined;
+  let currentState = state;
+  let attempts = 0;
+  const MAX_ATTEMPTS = 5;
 
-    // Internal options
-    meta,
-    state,
-  });
+  while (!publicKeyCredential && attempts < MAX_ATTEMPTS) {
+    attempts++;
+    try {
+      publicKeyCredential = await agent.getAssertion({
+        origin: meta.origin,
+        options: {
+          publicKey: publicKeyCredentialRequestOptions,
+        },
+        sameOriginWithAncestors: true,
+
+        // Internal options
+        meta,
+        state: currentState,
+      });
+    } catch (error) {
+      if (error instanceof UserPresenceRequiredAgentException) {
+        const data =
+          error.data as unknown as UserPresenceRequiredAgentExceptionData;
+        const decodedState = await opts.stateManager.validateToken(data.state);
+
+        currentState = {
+          type: StateType.AUTHENTICATION,
+          optionsHash: decodedState.optionsHash,
+          ...decodedState.current,
+          up: true,
+        } as AuthenticationStateWithTokenAgent;
+      } else if (error instanceof UserVerificationRequiredAgentException) {
+        const data =
+          error.data as unknown as UserVerificationRequiredAgentExceptionData;
+        const decodedState = await opts.stateManager.validateToken(data.state);
+
+        currentState = {
+          type: StateType.AUTHENTICATION,
+          optionsHash: decodedState.optionsHash,
+          ...decodedState.current,
+          uv: true,
+          up: true,
+        } as AuthenticationStateWithTokenAgent;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (!publicKeyCredential) {
+    throw new Error('Failed to get assertion after maximum attempts');
+  }
 
   const authenticationVerificationResponse = await verifyAuthenticationResponse(
     {

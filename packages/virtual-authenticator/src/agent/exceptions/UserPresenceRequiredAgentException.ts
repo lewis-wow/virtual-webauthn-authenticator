@@ -15,7 +15,7 @@ export class UserPresenceRequiredAgentException extends Exception {
 }
 
 export const UserPresenceRequiredAgentExceptionDataSchema = z.object({
-  state: z.string(),
+  stateToken: z.string(),
 });
 
 export type UserPresenceRequiredAgentExceptionData = z.infer<

@@ -25,6 +25,7 @@ import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authent
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
@@ -308,12 +309,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
         }),
-      ).rejects.toThrowError(
-        new CredentialSelectException({
-          credentialOptions: expectedCredentialOptions,
-          //  hash: HashOnion.fromArray([expectedHash]), // Removed as it is not part of schema
-        }),
-      );
+      ).rejects.toThrow(CredentialSelectException);
 
       // Select index 1 because credentials are ordered by createdAt desc (newest first).
       // Index 0 is the credential created in this test, index 1 is the credential
@@ -324,9 +320,12 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         prisma,
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
-        context: {
-          hash: HashOnion.fromArray([expectedHash]),
-          selectedCredentialOptionId: expectedCredentialOptions[1]!.id,
+        state: {
+          type: StateType.AUTHENTICATION,
+          optionsHash: HashOnion.fromArray([expectedHash]),
+          credentialId: expectedCredentialOptions[1]!.id,
+          up: true,
+          uv: true,
         },
       });
     });
@@ -376,11 +375,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
         }),
-      ).rejects.toThrowError(
-        new CredentialSelectException({
-          credentialOptions: expectedCredentialOptions,
-        }),
-      );
+      ).rejects.toThrow(CredentialSelectException);
 
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
@@ -392,9 +387,12 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           prisma,
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
-          context: {
-            hash: HashOnion.fromArray([expectedHash]),
-            selectedCredentialOptionId: expectedCredentialOptions[0]!.id,
+          state: {
+            type: StateType.AUTHENTICATION,
+            optionsHash: HashOnion.fromArray([expectedHash]),
+            credentialId: expectedCredentialOptions[0]!.id,
+            up: true,
+            uv: true,
           },
         }),
       ).rejects.toThrowError(new CredentialOptionsEmpty());

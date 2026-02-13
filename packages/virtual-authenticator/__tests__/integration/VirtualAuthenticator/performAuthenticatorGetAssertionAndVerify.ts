@@ -9,9 +9,12 @@ import { expect } from 'vitest';
 
 import { type IAuthenticator } from '../../../src';
 import type { AuthenticationState } from '../../../src/agent/state/AuthenticationStateAgentSchema';
+import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
+import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
@@ -65,18 +68,44 @@ export const performAuthenticatorGetAssertionAndVerify = async (
     expectedCounter,
   } = opts;
 
-  const authenticatorGetAssertionResponse =
-    await authenticator.authenticatorGetAssertion({
-      authenticatorGetAssertionArgs,
-      meta: {
-        userId: USER_ID,
-        userPresenceEnabled: true,
-        userVerificationEnabled: true,
-        apiKeyId: null,
-        ...meta,
-      },
-      state: state,
-    });
+  let currentState: AuthenticationState | undefined = state;
+  let authenticatorGetAssertionResponse:
+    | AuthenticatorGetAssertionResponse
+    | undefined;
+
+  while (!authenticatorGetAssertionResponse) {
+    try {
+      authenticatorGetAssertionResponse =
+        await authenticator.authenticatorGetAssertion({
+          authenticatorGetAssertionArgs,
+          meta: {
+            userId: USER_ID,
+            userPresenceEnabled: true,
+            userVerificationEnabled: true,
+            apiKeyId: null,
+            ...meta,
+          },
+          state: currentState,
+        });
+    } catch (error) {
+      if (error instanceof UserPresenceRequired) {
+        currentState = {
+          ...currentState,
+          type: StateType.AUTHENTICATION,
+          up: true,
+        };
+      } else if (error instanceof UserVerificationRequired) {
+        currentState = {
+          ...currentState,
+          type: StateType.AUTHENTICATION,
+          uv: true,
+          up: true,
+        };
+      } else {
+        throw error;
+      }
+    }
+  }
 
   const parsedGetAssertionAuthenticatorData = parseAuthenticatorData(
     authenticatorGetAssertionResponse.authenticatorData,

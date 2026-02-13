@@ -9,10 +9,13 @@ import { expect } from 'vitest';
 import type { RegistrationState } from '../../../src/agent/state/RegistrationStateAgentSchema';
 import type { IAuthenticator } from '../../../src/authenticator/IAuthenticator';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
+import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
@@ -82,18 +85,46 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
     state,
   } = opts;
 
-  const authenticatorMakeCredentialResponse =
-    await authenticator.authenticatorMakeCredential({
-      authenticatorMakeCredentialArgs,
-      meta: {
-        userId: USER_ID,
-        userPresenceEnabled: true,
-        userVerificationEnabled: true,
-        apiKeyId: null,
-        ...meta,
-      },
-      state: state,
-    });
+  let currentState: RegistrationState | undefined = state;
+  let authenticatorMakeCredentialResponse:
+    | AuthenticatorMakeCredentialResponse
+    | undefined;
+
+  // Simple loop to retry if user presence or verification is required
+  // The VirtualAuthenticator is stateless but expects state arguments to be passed for multi-step operations
+  while (!authenticatorMakeCredentialResponse) {
+    try {
+      authenticatorMakeCredentialResponse =
+        await authenticator.authenticatorMakeCredential({
+          authenticatorMakeCredentialArgs,
+          meta: {
+            userId: USER_ID,
+            userPresenceEnabled: true,
+            userVerificationEnabled: true,
+            apiKeyId: null,
+            ...meta,
+          },
+          state: currentState,
+        });
+    } catch (error) {
+      if (error instanceof UserPresenceRequired) {
+        currentState = {
+          ...currentState,
+          type: StateType.REGISTRATION,
+          up: true,
+        };
+      } else if (error instanceof UserVerificationRequired) {
+        currentState = {
+          ...currentState,
+          type: StateType.REGISTRATION,
+          uv: true,
+          up: true,
+        };
+      } else {
+        throw error;
+      }
+    }
+  }
 
   const attestationObjectMap = decodeAttestationObject(
     authenticatorMakeCredentialResponse.attestationObject,

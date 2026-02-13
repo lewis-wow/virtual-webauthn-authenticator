@@ -26,7 +26,6 @@ import {
   ExtensionProcessor,
   ExtensionRegistry,
 } from '../../../src/agent/extensions';
-import { StateManager } from '../../../src/agent/state/StateManager';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
@@ -36,6 +35,7 @@ import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { StateManager } from '../../../src/state/StateManager';
 import { type AuthenticatorGetAssertionArgs } from '../../../src/validation';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';

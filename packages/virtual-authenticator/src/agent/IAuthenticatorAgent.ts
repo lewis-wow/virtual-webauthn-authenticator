@@ -2,8 +2,6 @@ import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgen
 import type { CredentialCreationOptions } from '../validation/spec/CredentialCreationOptionsSchema';
 import type { CredentialRequestOptions } from '../validation/spec/CredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from '../validation/spec/PublicKeyCredentialSchema';
-import type { AuthenticationStateAgent } from './state/AuthenticationStateAgentSchema';
-import type { RegistrationStateAgent } from './state/RegistrationStateAgentSchema';
 
 export type VirtualAuthenticatorAgentCreateCredentialArgs = {
   // origin: This argument is the relevant settings object’s origin, as determined by the calling create() implementation.
@@ -18,7 +16,6 @@ export type VirtualAuthenticatorAgentCreateCredentialArgs = {
 
   // Internal options
   meta: AuthenticatorAgentMetaArgs;
-  state?: RegistrationStateAgent;
 };
 
 export type VirtualAuthenticatorAgentGetAssertionArgs = {
@@ -34,7 +31,6 @@ export type VirtualAuthenticatorAgentGetAssertionArgs = {
 
   // Internal options
   meta: AuthenticatorAgentMetaArgs;
-  state?: AuthenticationStateAgent;
 };
 
 /**

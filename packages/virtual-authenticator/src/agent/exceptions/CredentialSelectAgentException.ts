@@ -18,7 +18,7 @@ export class CredentialSelectAgentException extends Exception<CredentialSelectAg
 }
 
 export const CredentialSelectAgentExceptionDataSchema = z.object({
-  state: z.string(),
+  stateToken: z.string(),
   credentialOptions: z.array(ApplicablePublicKeyCredentialSchema),
 });
 
