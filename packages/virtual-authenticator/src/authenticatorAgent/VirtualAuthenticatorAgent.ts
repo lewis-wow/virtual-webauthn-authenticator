@@ -475,7 +475,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   public async createCredential(
     opts: VirtualAuthenticatorAgentCreateCredentialArgs & {
       prevStateToken?: string;
-      nextState: RegistrationState;
+      nextState?: RegistrationState;
     },
   ): Promise<PublicKeyCredential> {
     const {
@@ -550,7 +550,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       options,
       sameOriginWithAncestors,
       meta,
-      state: nextState,
+      state: nextState ?? {},
       optionsHash,
     });
 
@@ -1015,7 +1015,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   public async getAssertion(
     opts: VirtualAuthenticatorAgentGetAssertionArgs & {
       prevStateToken?: string;
-      nextState: AuthenticationState;
+      nextState?: AuthenticationState;
     },
   ): Promise<PublicKeyCredential> {
     const {
@@ -1097,7 +1097,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       options,
       sameOriginWithAncestors,
       meta,
-      state: nextState,
+      state: nextState ?? {},
       optionsHash,
     });
 

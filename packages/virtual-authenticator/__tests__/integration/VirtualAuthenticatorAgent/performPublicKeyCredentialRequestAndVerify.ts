@@ -50,13 +50,6 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     ...metaOptions,
   };
 
-  // NOTE: This property name should be `state` but generic context passing is kept for legacy compatibility?
-  // Ideally we construct initial state here if needed, but usually agent handles initial call without state.
-  // The original code passed `context`, but `getAssertion` expects `state`.
-  // Wait, `AuthenticatorAgentContextArgs` seems unrelated to `AuthenticationState`.
-  // Let's assume `context` argument was intended to pre-populate state.
-  // We'll ignore `context` for state construction unless retrying.
-
   const expectedRPID =
     publicKeyCredentialRequestOptions.rpId ?? new URL(meta.origin).hostname;
 

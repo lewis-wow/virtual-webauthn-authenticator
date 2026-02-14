@@ -4,11 +4,7 @@ import * as winston from 'winston';
 
 export type LoggerOptions = {
   prefix: string;
-  // logLevel is removed, as the level is now controlled
-  // globally by the single parent logger.
 };
-
-// --- Parent Logger Setup ---
 
 /**
  * Define the log format for the parent logger.
@@ -62,12 +58,10 @@ const parentLogger = winston.createLogger({
   exitOnError: false,
 });
 
-// --- Logger Class ---
-
 /**
  * A custom logger class that creates a CHILD of the main winston logger.
  * It provides standard logging methods (info, warn, error, debug)
- * and automatically adds its context (prefix) to every log message.
+ * and automatically adds its prefix to every log message.
  */
 export class Logger {
   private logger: winston.Logger;

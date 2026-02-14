@@ -1,5 +1,5 @@
-import { PrismaAuthJwksRepository } from '@repo/auth';
 import { JwtIssuer } from '@repo/auth';
+import { PrismaAuthJwksRepository } from '@repo/auth/repositories';
 import { Jwks, Jwt } from '@repo/crypto';
 
 import { JWT_CONFIG } from './consts';
