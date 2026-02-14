@@ -16,13 +16,15 @@ import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 import { ZodError } from 'zod';
 
-import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
+import { CreateCredentialActionNotDefined } from '../../../src/authenticatorAgent/exceptions/CreateCredentialActionNotDefined';
 import {
   CredPropsExtension,
   ExtensionProcessor,
   ExtensionRegistry,
-} from '../../../src/agent/extensions';
-import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+} from '../../../src/authenticatorAgent/extensions';
+import { hashCreateCredentialOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashCreateCredentialOptionsAsHex';
 import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
 import { AuthenticatorTransport } from '../../../src/enums/AuthenticatorTransport';
@@ -33,6 +35,7 @@ import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 // import { mock } from 'vitest-mock-extended'; // Remove mock if unused
@@ -3206,6 +3209,107 @@ describe('VirtualAuthenticator.createCredential()', () => {
         );
         expect(publicKeyCredential.id).toBe(expectedId);
       });
+    });
+  });
+  describe('Wrong State Handling', () => {
+    const META = {
+      userId: USER_ID,
+      origin: RP_ORIGIN,
+      apiKeyId: null,
+      userVerificationEnabled: true,
+      userPresenceEnabled: true,
+    };
+
+    test('Should throw error when state token signature is invalid', async () => {
+      const optionsHash = hashCreateCredentialOptionsAsHex({
+        pkOptions: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        meta: META,
+      });
+      const validToken = await stateManager.createToken({
+        action: StateAction.USER_PRESENCE,
+        prevOptionsHash: optionsHash,
+        prevState: {},
+      });
+
+      const loops = validToken.split('.');
+      loops[2] = 'invalid-signature';
+      const invalidToken = loops.join('.');
+
+      await expect(async () =>
+        agent.createCredential({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: invalidToken,
+          nextState: { up: true },
+        }),
+      ).rejects.toThrow();
+    });
+
+    test('Should throw TypeAssertionError when options hash in state does not match current options', async () => {
+      const validToken = await stateManager.createToken({
+        action: StateAction.USER_PRESENCE,
+        prevOptionsHash: 'invalid-hash',
+        prevState: {},
+      });
+
+      await expect(async () =>
+        agent.createCredential({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: validToken,
+          nextState: { up: true },
+        }),
+      ).rejects.toThrowError(TypeAssertionError);
+    });
+
+    test('Should throw TypeAssertionError when nextState does not match expected shape for USER_PRESENCE action', async () => {
+      const optionsHash = hashCreateCredentialOptionsAsHex({
+        pkOptions: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        meta: META,
+      });
+      const validToken = await stateManager.createToken({
+        action: StateAction.USER_PRESENCE,
+        prevOptionsHash: optionsHash,
+        prevState: {},
+      });
+
+      await expect(async () =>
+        agent.createCredential({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: validToken,
+          nextState: {},
+        }),
+      ).rejects.toThrowError(TypeAssertionError);
+    });
+
+    test('Should throw CreateCredentialActionNotDefined when action is unknown', async () => {
+      const optionsHash = hashCreateCredentialOptionsAsHex({
+        pkOptions: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+        meta: META,
+      });
+      const validToken = await stateManager.createToken({
+        action: StateAction.CREDENTIAL_SELECTION,
+        prevOptionsHash: optionsHash,
+        prevState: {},
+      });
+
+      await expect(async () =>
+        agent.createCredential({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: validToken,
+          nextState: {},
+        }),
+      ).rejects.toThrowError(CreateCredentialActionNotDefined);
     });
   });
 });

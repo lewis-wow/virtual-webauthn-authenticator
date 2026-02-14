@@ -11,8 +11,6 @@ import { CredentialSelectException } from '../authenticator/exceptions/Credentia
 import { UserVerificationNotAvailable } from '../authenticator/exceptions/UserVerificationNotAvailable';
 import { decodeAttestationObject } from '../cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../cbor/parseAuthenticatorData';
-import { PublicKeyCredentialCreationOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialCreationOptionsDtoSchema';
-import { PublicKeyCredentialRequestOptionsDtoSchema } from '../dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import { Attestation } from '../enums/Attestation';
 import { AuthenticatorAttachment } from '../enums/AuthenticatorAttachment';
 import { AuthenticatorAuthenticationExtension } from '../enums/AuthenticatorAuthenticationExtension';
@@ -53,7 +51,6 @@ import type { PubKeyCredParam } from '../validation/spec/CredParamSchema';
 import { CredentialCreationOptionsSchema } from '../validation/spec/CredentialCreationOptionsSchema';
 import { CredentialRequestOptionsSchema } from '../validation/spec/CredentialRequestOptionsSchema';
 import { PublicKeyCredentialCreationOptionsSchema } from '../validation/spec/PublicKeyCredentialCreationOptionsSchema';
-import type { PublicKeyCredentialCreationOptions } from '../validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import type { PublicKeyCredentialDescriptor } from '../validation/spec/PublicKeyCredentialDescriptorSchema';
 import { PublicKeyCredentialRequestOptionsSchema } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredentialRequestOptions } from '../validation/spec/PublicKeyCredentialRequestOptionsSchema';
@@ -68,6 +65,8 @@ import { CredentialSelectAgentException } from './exceptions/CredentialSelectAge
 import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
+import { hashCreateCredentialOptionsAsHex } from './helpers/hashCreateCredentialOptionsAsHex';
+import { hashGetAssertionOptionsAsHex } from './helpers/hashGetAssertionOptionsAsHex';
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
@@ -473,18 +472,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return attestationObjectResult;
   }
 
-  private _hashCreateCredentialOptionsAsHex(opts: {
-    pkOptions: PublicKeyCredentialCreationOptions;
-    meta: AuthenticatorAgentMetaArgs;
-  }): string {
-    const { pkOptions, meta } = opts;
-
-    return Hash.sha256JSONHex({
-      pkOptions: PublicKeyCredentialCreationOptionsDtoSchema.encode(pkOptions),
-      meta,
-    });
-  }
-
   /**
    * Creates a new public key credential (registration ceremony).
    * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
@@ -505,7 +492,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       nextState,
     } = opts;
 
-    const optionsHash = this._hashCreateCredentialOptionsAsHex({
+    const optionsHash = hashCreateCredentialOptionsAsHex({
       pkOptions: options.publicKey!,
       meta,
     });
@@ -1027,18 +1014,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     return pubKeyCred;
   }
 
-  private _hashGetAssertionOptionsAsHex(opts: {
-    pkOptions: PublicKeyCredentialRequestOptions;
-    meta: AuthenticatorAgentMetaArgs;
-  }): string {
-    const { pkOptions, meta } = opts;
-
-    return Hash.sha256JSONHex({
-      pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(pkOptions),
-      meta,
-    });
-  }
-
   /**
    * Creates a new public key credential (registration ceremony).
    * This implements the agent/client-side steps of the WebAuthn createCredential algorithm.
@@ -1059,10 +1034,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       nextState,
     } = opts;
 
-    const optionsHash = this._hashGetAssertionOptionsAsHex({
-      pkOptions: options.publicKey!, // Assume validated by caller or schema
+    const optionsHash = hashGetAssertionOptionsAsHex({
+      pkOptions: options.publicKey!,
       meta,
     });
+
     if (prevStateToken !== undefined) {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);

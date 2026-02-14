@@ -8,9 +8,9 @@ import {
 } from '@simplewebauthn/server';
 import { expect } from 'vitest';
 
-import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
-import { UserPresenceRequiredAgentException } from '../../../src/agent/exceptions/UserPresenceRequiredAgentException';
-import { UserVerificationRequiredAgentException } from '../../../src/agent/exceptions/UserVerificationRequiredAgentException';
+import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
+import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
+import { UserVerificationRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserVerificationRequiredAgentException';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';

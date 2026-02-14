@@ -3,7 +3,7 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, Jwks, Jwt } from '@repo/crypto';
+import { Jwks, Jwt } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import { type WebAuthnCredential } from '@simplewebauthn/server';
@@ -19,24 +19,22 @@ import {
 } from 'vitest';
 import { ZodError } from 'zod';
 
-import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
-import { CredentialSelectAgentException } from '../../../src/agent/exceptions/CredentialSelectAgentException';
+import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
+import { CredentialSelectAgentException } from '../../../src/authenticatorAgent/exceptions/CredentialSelectAgentException';
 import {
   CredPropsExtension,
   ExtensionProcessor,
   ExtensionRegistry,
-} from '../../../src/agent/extensions';
-import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
-import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
-import { PublicKeyCredentialRequestOptionsDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
+} from '../../../src/authenticatorAgent/extensions';
+import { hashGetAssertionOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashGetAssertionOptionsAsHex';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
-import { type AuthenticatorGetAssertionArgs } from '../../../src/validation';
-import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
@@ -50,7 +48,6 @@ import {
   RP_ORIGIN,
 } from '../../helpers/consts';
 import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
-import { AUTHENTICATOR_GET_ASSERTION_ARGS } from '../VirtualAuthenticator/performAuthenticatorGetAssertionAndVerify';
 import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 import { performPublicKeyCredentialRequestAndVerify } from './performPublicKeyCredentialRequestAndVerify';
 
@@ -1516,33 +1513,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         origin: RP_ORIGIN,
       };
 
-      const expectedAuthenticatorGetAssertionArgs = {
-        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
-        allowCredentialDescriptorList: undefined,
-      } as AuthenticatorGetAssertionArgs;
-
-      const expectedAuthnenticatorMeta: AuthenticatorMetaArgs = {
-        userId: USER_ID,
-        apiKeyId: null,
-        userPresenceEnabled: true,
-        userVerificationEnabled: true,
-      };
-
-      const expectedAuthenticatorHash = Hash.sha256JSONHex({
-        authenticatorGetAssertionArgs:
-          AuthenticatorGetAssertionArgsDtoSchema.encode(
-            expectedAuthenticatorGetAssertionArgs,
-          ),
-        meta: expectedAuthnenticatorMeta,
-      });
-
-      const expectedHash = Hash.sha256JSONHex({
-        pkOptions: PublicKeyCredentialRequestOptionsDtoSchema.encode(
-          publicKeyCredentialRequestOptions,
-        ),
-        meta,
-      });
-
       // Create new credential first, then query expectedCredentialOptions
       // so that it includes both credentials (from beforeEach and this new one)
       await performPublicKeyCredentialRegistrationAndVerify({
@@ -1553,16 +1523,6 @@ describe('VirtualAuthenticator.getCredential()', () => {
         meta,
       });
 
-      const expectedCredentialOptions =
-        await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
-          {
-            rpId: RP_ID,
-            userId: USER_ID,
-            apiKeyId: null,
-            allowCredentialDescriptorList: undefined,
-          },
-        );
-
       await expect(() =>
         performPublicKeyCredentialRequestAndVerify({
           stateManager,
@@ -1571,6 +1531,84 @@ describe('VirtualAuthenticator.getCredential()', () => {
           webAuthnCredential,
         }),
       ).rejects.toThrow(CredentialSelectAgentException);
+    });
+  });
+  describe('Wrong State Handling', () => {
+    const META = {
+      userId: USER_ID,
+      origin: RP_ORIGIN,
+      apiKeyId: null,
+      userVerificationEnabled: true,
+      userPresenceEnabled: true,
+    };
+
+    test('Should throw error when state token signature is invalid', async () => {
+      const optionsHash = hashGetAssertionOptionsAsHex({
+        pkOptions: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        meta: META,
+      });
+      const validToken = await stateManager.createToken({
+        action: StateAction.CREDENTIAL_SELECTION,
+        prevOptionsHash: optionsHash,
+        prevState: {},
+      });
+
+      const loops = validToken.split('.');
+      loops[2] = 'invalid-signature';
+      const invalidToken = loops.join('.');
+
+      await expect(async () =>
+        agent.getAssertion({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: invalidToken,
+          nextState: { credentialId: 'some-id' },
+        }),
+      ).rejects.toThrow();
+    });
+
+    test('Should throw TypeAssertionError when options hash in state does not match current options', async () => {
+      const validToken = await stateManager.createToken({
+        action: StateAction.CREDENTIAL_SELECTION,
+        prevOptionsHash: 'invalid-hash',
+        prevState: {},
+      });
+
+      await expect(async () =>
+        agent.getAssertion({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: validToken,
+          nextState: { credentialId: 'some-id' },
+        }),
+      ).rejects.toThrowError(TypeAssertionError);
+    });
+
+    test('Should throw TypeAssertionError when nextState does not match expected shape for CREDENTIAL_SELECTION action', async () => {
+      const optionsHash = hashGetAssertionOptionsAsHex({
+        pkOptions: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+        meta: META,
+      });
+      const validToken = await stateManager.createToken({
+        action: StateAction.CREDENTIAL_SELECTION,
+        prevOptionsHash: optionsHash,
+        prevState: {},
+      });
+
+      await expect(async () =>
+        agent.getAssertion({
+          origin: RP_ORIGIN,
+          options: { publicKey: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS },
+          sameOriginWithAncestors: true,
+          meta: META,
+          prevStateToken: validToken,
+          nextState: {},
+        }),
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 });
