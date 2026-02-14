@@ -4,7 +4,6 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import { omit } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
@@ -45,6 +44,7 @@ import { StateManager } from '../state/StateManager';
 import { BaseStateSchema } from '../state/states/BaseStateSchema';
 import { CredentialSelectionStateSchema } from '../state/states/CredentialSelectionStateSchema';
 import { UserPresenceStateSchema } from '../state/states/UserPresenceStateSchema';
+import { UserVerificationStateSchema } from '../state/states/UserVerificationStateSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -1055,63 +1055,40 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     let authenticationPrevState: AuthenticationPrevState | undefined =
       undefined;
     if (prevStateToken !== undefined) {
-      const prevState = await this.stateManager.validateToken(prevStateToken);
+      const prevStatetokenPayload =
+        await this.stateManager.validateToken(prevStateToken);
+
+      const { action, prevState } = prevStatetokenPayload;
 
       assertSchema(prevState, AuthenticationPrevStateSchema);
 
       // State options hash validation
       assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
 
-      const prevStateAction = prevState.action;
-      const prevStateWithoutAction = omit(
-        prevState as unknown as Record<string, unknown>,
-        'action',
-        'iat',
-        'exp',
-        'nbf',
-        'iss',
-        'aud',
-        'sub',
-        'jti',
-      );
-
-      switch (prevStateAction) {
+      switch (action) {
         case StateAction.CREDENTIAL_SELECTION:
-          // Pre-selection state is Base
           assertSchema(
-            prevStateWithoutAction,
-            z.strictObject(BaseStateSchema.shape),
+            prevState,
+            z.strictObject(CredentialSelectionStateSchema.shape),
           );
           break;
         case StateAction.USER_PRESENCE:
-          // Pre-UP state can be Base (if no credential selection) or CredentialSelectionState
           assertSchema(
-            prevStateWithoutAction,
-            z
-              .strictObject(BaseStateSchema.shape)
-              .or(z.strictObject(CredentialSelectionStateSchema.shape)),
+            prevState,
+            z.strictObject(UserPresenceStateSchema.shape),
           );
           break;
         case StateAction.USER_VERIFICATION:
-          // Pre-UV state is UserPresenceState (which has UP).
-          // However, if Credential Selection happened, it also has credentialId.
           assertSchema(
-            prevStateWithoutAction,
-            z
-              .strictObject(UserPresenceStateSchema.shape)
-              .or(
-                z.strictObject(
-                  UserPresenceStateSchema.merge(CredentialSelectionStateSchema)
-                    .shape,
-                ),
-              ),
+            prevState,
+            z.strictObject(UserVerificationStateSchema.shape),
           );
           break;
         default:
           throw new CreateCredentialActionNotDefined();
       }
 
-      authenticationPrevState = prevStateWithoutAction;
+      authenticationPrevState = prevState;
     }
 
     const nextState: AuthenticationPrevState = authenticationPrevState

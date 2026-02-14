@@ -975,6 +975,9 @@ importers:
       '@repo/http':
         specifier: workspace:*
         version: link:../http
+      '@repo/logger':
+        specifier: workspace:*
+        version: link:../logger
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*

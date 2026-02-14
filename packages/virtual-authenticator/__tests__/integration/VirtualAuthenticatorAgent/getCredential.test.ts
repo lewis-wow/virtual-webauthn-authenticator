@@ -3,7 +3,7 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, HashOnion, Jwks, Jwt } from '@repo/crypto';
+import { Hash, Jwks, Jwt } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import { type WebAuthnCredential } from '@simplewebauthn/server';
@@ -27,7 +27,6 @@ import {
   ExtensionRegistry,
 } from '../../../src/agent/extensions';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
-import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialRequestOptionsDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialRequestOptionsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
