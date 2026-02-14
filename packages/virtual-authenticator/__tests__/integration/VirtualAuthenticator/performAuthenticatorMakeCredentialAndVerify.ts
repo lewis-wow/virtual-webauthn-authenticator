@@ -6,7 +6,6 @@ import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { PrismaClient } from '@repo/prisma';
 import { expect } from 'vitest';
 
-import type { RegistrationState } from '../../../src/agent/state/RegistrationStateAgentSchema';
 import type { IAuthenticator } from '../../../src/authenticator/IAuthenticator';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
@@ -15,8 +14,9 @@ import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObje
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { StateType } from '../../../src/state/StateType';
+import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
 import {
@@ -110,15 +110,12 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
       if (error instanceof UserPresenceRequired) {
         currentState = {
           ...currentState,
-          type: StateType.REGISTRATION,
           up: true,
         };
       } else if (error instanceof UserVerificationRequired) {
         currentState = {
           ...currentState,
-          type: StateType.REGISTRATION,
           uv: true,
-          up: true,
         };
       } else {
         throw error;
