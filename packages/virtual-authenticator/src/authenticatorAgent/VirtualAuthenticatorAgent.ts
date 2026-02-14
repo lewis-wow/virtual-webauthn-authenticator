@@ -492,6 +492,25 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       nextState,
     } = opts;
 
+    // Step 1: Assert that options.publicKey is present.
+    assertSchema(
+      options,
+      CredentialCreationOptionsSchema.safeExtend({
+        publicKey: PublicKeyCredentialCreationOptionsSchema,
+      }),
+    );
+
+    assertSchema(sameOriginWithAncestors, z.literal(true));
+
+    // Meta validation
+    assertSchema(
+      meta,
+      AuthenticatorAgentMetaArgsSchema.safeExtend({
+        userId: z.literal(UUIDMapper.bytesToUUID(options.publicKey.user.id)),
+        origin: z.literal(origin),
+      }),
+    );
+
     const optionsHash = hashCreateCredentialOptionsAsHex({
       pkOptions: options.publicKey!,
       meta,
@@ -555,34 +574,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     },
   ): Promise<PublicKeyCredential> {
     const {
-      origin,
+      // origin,
       options,
-      sameOriginWithAncestors,
+      // sameOriginWithAncestors,
       meta,
       state,
       optionsHash,
     } = opts;
-
-    // Step 1: Let options be the object passed to the
-    // [[Create]](origin, options, sameOriginWithAncestors) internal method.
-    // Assert that options.publicKey is present.
-    assertSchema(
-      options,
-      CredentialCreationOptionsSchema.safeExtend({
-        publicKey: PublicKeyCredentialCreationOptionsSchema,
-      }),
-    );
-
-    assertSchema(sameOriginWithAncestors, z.literal(true));
-
-    // Meta validation
-    assertSchema(
-      meta,
-      AuthenticatorAgentMetaArgsSchema.safeExtend({
-        userId: z.literal(UUIDMapper.bytesToUUID(options.publicKey.user.id)),
-        origin: z.literal(origin),
-      }),
-    );
 
     // Step 2: If sameOriginWithAncestors is false, throw a
     // "NotAllowedError" DOMException.
@@ -598,7 +596,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // contexts don't exist.
 
     // Step 3: Let pkOptions be the value of options.publicKey.
-    const pkOptions = options.publicKey;
+    const pkOptions = options.publicKey!;
 
     // Step 4: If pkOptions.timeout is present, check if its value lies
     // within a reasonable range as defined by the client and if not,
@@ -1034,6 +1032,24 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       nextState,
     } = opts;
 
+    // Step 1: Assert that options.publicKey is present.
+    assertSchema(
+      options,
+      CredentialRequestOptionsSchema.safeExtend({
+        publicKey: PublicKeyCredentialRequestOptionsSchema,
+      }),
+    );
+
+    assertSchema(sameOriginWithAncestors, z.literal(true));
+
+    // Meta validation
+    assertSchema(
+      meta,
+      AuthenticatorAgentMetaArgsSchema.safeExtend({
+        origin: z.literal(origin),
+      }),
+    );
+
     const optionsHash = hashGetAssertionOptionsAsHex({
       pkOptions: options.publicKey!,
       meta,
@@ -1105,37 +1121,16 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     },
   ): Promise<PublicKeyCredential> {
     const {
-      origin,
+      // origin,
       options,
-      sameOriginWithAncestors,
+      // sameOriginWithAncestors,
       meta,
       state,
       optionsHash,
     } = opts;
 
-    // Step 1: Let options be the object passed to the
-    // [[DiscoverFromExternalSource]](origin, options,
-    // sameOriginWithAncestors) internal method.
-    // Assert that options.publicKey is present.
-    assertSchema(
-      options,
-      CredentialRequestOptionsSchema.safeExtend({
-        publicKey: PublicKeyCredentialRequestOptionsSchema,
-      }),
-    );
-
-    assertSchema(sameOriginWithAncestors, z.literal(true));
-
-    // Meta validation
-    assertSchema(
-      meta,
-      AuthenticatorAgentMetaArgsSchema.safeExtend({
-        origin: z.literal(origin),
-      }),
-    );
-
     // Step 2: Let pkOptions be the value of options.publicKey.
-    const pkOptions = options.publicKey;
+    const pkOptions = options.publicKey!;
 
     let credentialIdFilter: PublicKeyCredentialDescriptor[] = [];
     // Step 3: If options.mediation is present with the value conditional:

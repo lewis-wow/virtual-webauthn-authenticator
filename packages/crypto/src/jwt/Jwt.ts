@@ -146,15 +146,20 @@ export class Jwt {
       .with(P.instanceOf(URL), (jwks) => createRemoteJWKSet(jwks))
       .otherwise((jwks) => createLocalJWKSet(jwks));
 
-    try {
-      const { payload } = await jwtVerify(token, JWKS, opts.verifyOptions);
+    const { payload } = await jwtVerify(token, JWKS, opts.verifyOptions).catch(
+      (error) => {
+        const exception = mapJoseErrorToException(error);
 
-      assertSchema(payload, schema);
+        if (exception !== undefined) {
+          throw exception;
+        }
 
-      return payload;
-    } catch (e) {
-      mapJoseErrorToException(e);
-      throw e;
-    }
+        throw error;
+      },
+    );
+
+    assertSchema(payload, schema);
+
+    return payload;
   }
 }

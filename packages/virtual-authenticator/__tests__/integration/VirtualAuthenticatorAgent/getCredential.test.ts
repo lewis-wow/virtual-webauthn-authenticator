@@ -21,7 +21,6 @@ import {
   expect,
   test,
 } from 'vitest';
-import { ZodError } from 'zod';
 
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
@@ -238,7 +237,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-    ).to.rejects.toThrowError(new TypeAssertionError());
+    ).to.rejects.toThrowError(TypeAssertionError);
   });
 
   test('should fail with different user ID', async () => {
@@ -266,7 +265,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         webAuthnCredential,
         meta,
       }),
-    ).rejects.toThrowError(new CredentialOptionsEmpty());
+    ).rejects.toThrowError(CredentialOptionsEmpty);
   });
 
   test('should fail with wrong allowCredentials', async () => {
@@ -288,7 +287,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-    ).to.rejects.toThrowError(new CredentialNotFound());
+    ).to.rejects.toThrowError(CredentialNotFound);
   });
 
   /**
@@ -1178,7 +1177,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-      ).rejects.toThrowError(new CredentialNotFound());
+      ).rejects.toThrowError(CredentialNotFound);
     });
 
     test('should work with all fields at maximum complexity', async () => {
@@ -1282,7 +1281,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -1534,7 +1533,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           publicKeyCredentialRequestOptions,
           webAuthnCredential,
         }),
-      ).rejects.toThrow(CredentialSelectAgentException);
+      ).rejects.toThrowError(CredentialSelectAgentException);
     });
   });
 
@@ -1573,7 +1572,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           prevStateToken: invalidToken,
           nextState: { credentialId: 'some-id' },
         }),
-      ).rejects.toThrow(JwsSignatureVerificationFailedException);
+      ).rejects.toThrowError(JwsSignatureVerificationFailedException);
     });
 
     test('Should throw TypeAssertionError when options hash in state does not match current options', async () => {
@@ -1592,7 +1591,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           prevStateToken: validToken,
           nextState: { credentialId: 'some-id' },
         }),
-      ).rejects.toThrow(TypeAssertionError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should throw TypeAssertionError when nextState does not match expected shape for CREDENTIAL_SELECTION action', async () => {
@@ -1615,7 +1614,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           prevStateToken: validToken,
           nextState: {},
         }),
-      ).rejects.toThrow(TypeAssertionError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 });

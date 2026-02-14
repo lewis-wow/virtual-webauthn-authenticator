@@ -18,7 +18,6 @@ import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
-import { ZodError } from 'zod';
 
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
@@ -41,6 +40,7 @@ import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialT
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
+import type { AuthenticatorAgentMetaArgs } from '../../../src/validation';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 // import { mock } from 'vitest-mock-extended'; // Remove mock if unused
 import { InMemoryJwksRepository } from '../../helpers/InMemoryJwksRepository';
@@ -192,7 +192,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -349,7 +349,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             origin: RP_ORIGIN,
           },
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -377,7 +377,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           agent,
           publicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should throw TypeError when user.id exceeds 64 bytes', async () => {
@@ -395,7 +395,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           agent,
           publicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should work with valid user.id (16 bytes for UUID)', async () => {
@@ -477,7 +477,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
     });
 
@@ -533,7 +533,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
     });
 
@@ -590,7 +590,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
     });
 
@@ -645,7 +645,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
     });
 
@@ -872,7 +872,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             agent,
             publicKeyCredentialCreationOptions,
           }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should throw type mismatch when timeout is not a number', async () => {
@@ -888,7 +888,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -979,7 +979,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             agent,
             publicKeyCredentialCreationOptions,
           }),
-      ).rejects.toThrowError(new CredentialExcluded());
+      ).rejects.toThrowError(CredentialExcluded);
     });
 
     /**
@@ -1069,7 +1069,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should fail with invalid credential id (not Uint8Array)', async () => {
@@ -1090,7 +1090,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     /**
@@ -1258,7 +1258,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -1314,7 +1314,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
 
       /**
@@ -1337,7 +1337,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
 
       test('Should work with special characters in name', async () => {
@@ -1414,7 +1414,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
 
       test('Should fail with non-string displayName', async () => {
@@ -1432,7 +1432,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             publicKeyCredentialCreationOptions:
               publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
           }),
-        ).rejects.toThrowError(ZodError);
+        ).rejects.toThrowError(TypeAssertionError);
       });
     });
   });
@@ -1485,7 +1485,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     /**
@@ -1580,7 +1580,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           agent,
           publicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should work with subdomain as RP id', async () => {
@@ -2316,7 +2316,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             malformedOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('Should fail with null in required field', async () => {
@@ -2332,7 +2332,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           publicKeyCredentialCreationOptions:
             publicKeyCredentialCreationOptions as unknown as PublicKeyCredentialCreationOptions,
         }),
-      ).rejects.toThrowError(ZodError);
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -2778,7 +2778,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
               },
             },
           }),
-        ).rejects.toThrowError(new TypeAssertionError());
+        ).rejects.toThrowError(TypeAssertionError);
       });
 
       /**
@@ -2800,7 +2800,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
               },
             },
           }),
-        ).rejects.toThrowError(new TypeAssertionError());
+        ).rejects.toThrowError(TypeAssertionError);
       });
     });
 
@@ -3215,8 +3215,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
     });
   });
-  describe('Wrong State Handling', () => {
-    const META = {
+
+  describe('Invalid State Handling', () => {
+    const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
@@ -3227,28 +3228,30 @@ describe('VirtualAuthenticator.createCredential()', () => {
     test('Should throw error when state token signature is invalid', async () => {
       const optionsHash = hashCreateCredentialOptionsAsHex({
         pkOptions: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        meta: META,
+        meta,
       });
+
       const validToken = await stateManager.createToken({
         action: StateAction.USER_PRESENCE,
         prevOptionsHash: optionsHash,
         prevState: {},
       });
 
-      const loops = validToken.split('.');
-      loops[2] = Buffer.from('invalid-signature').toString('base64url');
-      const invalidToken = loops.join('.');
+      const [header, payload] = validToken.split('.');
+      const invalidSignature =
+        Buffer.from('invalid-signature').toString('base64url');
+      const invalidToken = `${header}.${payload}.${invalidSignature}`;
 
       await expect(async () =>
         agent.createCredential({
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: invalidToken,
           nextState: { up: true },
         }),
-      ).rejects.toThrow(JwsSignatureVerificationFailedException);
+      ).rejects.toThrowError(JwsSignatureVerificationFailedException);
     });
 
     test('Should throw TypeAssertionError when options hash in state does not match current options', async () => {
@@ -3263,7 +3266,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: validToken,
           nextState: { up: true },
         }),
@@ -3273,8 +3276,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
     test('Should throw TypeAssertionError when nextState does not match expected shape for USER_PRESENCE action', async () => {
       const optionsHash = hashCreateCredentialOptionsAsHex({
         pkOptions: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        meta: META,
+        meta,
       });
+
       const validToken = await stateManager.createToken({
         action: StateAction.USER_PRESENCE,
         prevOptionsHash: optionsHash,
@@ -3286,7 +3290,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: validToken,
           nextState: {},
         }),
@@ -3296,8 +3300,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
     test('Should throw CreateCredentialActionNotDefined when action is unknown', async () => {
       const optionsHash = hashCreateCredentialOptionsAsHex({
         pkOptions: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-        meta: META,
+        meta,
       });
+
       const validToken = await stateManager.createToken({
         action: StateAction.CREDENTIAL_SELECTION,
         prevOptionsHash: optionsHash,
@@ -3309,7 +3314,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: validToken,
           nextState: {},
         }),
