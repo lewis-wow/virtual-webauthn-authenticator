@@ -11,4 +11,3 @@ export * from './toB64';
 export * from './uint8ArraysEqual';
 export * from './randomInt';
 export * from './delayPromise';
-export * from './validateShape';

@@ -1,10 +1,9 @@
-import { assertSchema } from '@repo/assert';
+import { assertSchema, assertShape } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import { validateShape } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
@@ -494,7 +493,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   public async createCredential(
     opts: VirtualAuthenticatorAgentCreateCredentialArgs & {
       prevStateToken?: string;
-      nextPartialState?: RegistrationState;
+      nextState: RegistrationState;
     },
   ): Promise<PublicKeyCredential> {
     const {
@@ -503,17 +502,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       sameOriginWithAncestors,
       meta,
       prevStateToken,
-      nextPartialState,
+      nextState,
     } = opts;
-
-    assertSchema(nextPartialState, RegistrationStateSchema);
 
     const optionsHash = this._hashCreateCredentialOptionsAsHex({
       pkOptions: options.publicKey!,
       meta,
     });
 
-    let registrationPrevState: RegistrationPrevState | undefined = undefined;
     if (prevStateToken !== undefined) {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);
@@ -522,14 +518,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       assertSchema(prevState, RegistrationPrevStateSchema);
 
       // State options hash validation
-      validateShape(optionsHash, prevOptionsHash);
+      assertShape(optionsHash, prevOptionsHash);
       // State shape validation
-      validateShape(nextPartialState, prevState);
+      assertShape(nextState, prevState);
 
       switch (action) {
         case StateAction.USER_PRESENCE:
           assertSchema(
-            nextPartialState,
+            nextState,
             RegistrationStateSchema.extend({
               up: z.boolean(),
             }),
@@ -537,7 +533,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           break;
         case StateAction.USER_VERIFICATION:
           assertSchema(
-            nextPartialState,
+            nextState,
             RegistrationStateSchema.extend({
               uv: z.boolean(),
             }),
@@ -546,14 +542,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         default:
           throw new CreateCredentialActionNotDefined();
       }
-
-      registrationPrevState = prevState;
     }
-
-    const nextState: RegistrationPrevState = {
-      ...registrationPrevState,
-      ...nextPartialState,
-    };
 
     const publicKeyCredential = await this._createCredential({
       origin,
@@ -1058,7 +1047,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   public async getAssertion(
     opts: VirtualAuthenticatorAgentGetAssertionArgs & {
       prevStateToken?: string;
-      nextPartialState?: AuthenticationState;
+      nextState: AuthenticationState;
     },
   ): Promise<PublicKeyCredential> {
     const {
@@ -1067,16 +1056,13 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       sameOriginWithAncestors,
       meta,
       prevStateToken,
-      nextPartialState,
+      nextState,
     } = opts;
 
     const optionsHash = this._hashGetAssertionOptionsAsHex({
       pkOptions: options.publicKey!, // Assume validated by caller or schema
       meta,
     });
-
-    let authenticationPrevState: AuthenticationPrevState | undefined =
-      undefined;
     if (prevStateToken !== undefined) {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);
@@ -1085,14 +1071,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       assertSchema(prevState, AuthenticationPrevStateSchema);
 
       // State options hash validation
-      validateShape(prevState, prevOptionsHash);
+      assertShape(optionsHash, prevOptionsHash);
       // State shape validation
-      validateShape(nextPartialState, prevState);
+      assertShape(nextState, prevState);
 
       switch (action) {
         case StateAction.CREDENTIAL_SELECTION:
           assertSchema(
-            nextPartialState,
+            nextState,
             AuthenticationPrevStateSchema.extend({
               credentialId: z.string(),
             }),
@@ -1100,7 +1086,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           break;
         case StateAction.USER_PRESENCE:
           assertSchema(
-            nextPartialState,
+            nextState,
             AuthenticationPrevStateSchema.extend({
               up: z.boolean(),
             }),
@@ -1108,7 +1094,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           break;
         case StateAction.USER_VERIFICATION:
           assertSchema(
-            nextPartialState,
+            nextState,
             AuthenticationPrevStateSchema.extend({
               uv: z.boolean(),
             }),
@@ -1117,14 +1103,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         default:
           throw new CreateCredentialActionNotDefined();
       }
-
-      authenticationPrevState = prevState;
     }
-
-    const nextState: AuthenticationPrevState = {
-      ...authenticationPrevState,
-      ...nextPartialState,
-    };
 
     const publicKeyCredential = await this._getAssertion({
       origin,

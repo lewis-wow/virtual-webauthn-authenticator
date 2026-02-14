@@ -63,7 +63,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
   // Simulate the full WebAuthn authentication ceremony.
   let publicKeyCredential: PublicKeyCredential | undefined;
   let prevStateToken: string | undefined;
-  let nextPartialState: AuthenticationState | undefined;
+  let nextState: AuthenticationState = {};
 
   while (!publicKeyCredential) {
     try {
@@ -77,19 +77,21 @@ export const performPublicKeyCredentialRequestAndVerify = async (
         // Internal options
         meta,
         prevStateToken,
-        nextPartialState,
+        nextState,
       });
     } catch (error) {
       if (error instanceof UserPresenceRequiredAgentException) {
         prevStateToken = error.data.stateToken;
 
-        nextPartialState = {
+        nextState = {
+          ...nextState,
           up: true,
         };
       } else if (error instanceof UserVerificationRequiredAgentException) {
         prevStateToken = error.data.stateToken;
 
-        nextPartialState = {
+        nextState = {
+          ...nextState,
           uv: true,
         };
       } else {
