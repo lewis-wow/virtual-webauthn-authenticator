@@ -4,6 +4,7 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
+import { omit } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
@@ -39,7 +40,11 @@ import {
   type RegistrationPrevState,
 } from '../state/RegistrationPrevStateSchema';
 import type { RegistrationState } from '../state/RegistrationStateSchema';
+import { StateAction } from '../state/StateAction';
 import { StateManager } from '../state/StateManager';
+import { CredentialSelectionStateSchema } from '../state/states/CredentialSelectionStateSchema';
+import { UserPresenceStateSchema } from '../state/states/UserPresenceStateSchema';
+import { UserVerificationStateSchema } from '../state/states/UserVerificationStateSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -59,6 +64,7 @@ import type {
   VirtualAuthenticatorAgentCreateCredentialArgs,
   VirtualAuthenticatorAgentGetAssertionArgs,
 } from './IAuthenticatorAgent';
+import { CreateCredentialActionNotDefined } from './exceptions/CreateCredentialActionNotDefined';
 import { CredentialSelectAgentException } from './exceptions/CredentialSelectAgentException';
 import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
@@ -98,9 +104,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     prevState: RegistrationPrevState | AuthenticationPrevState;
   }): Promise<unknown> {
     const { error, prevState } = opts;
-    const stateToken = await this.stateManager.createToken(prevState);
-
     if (error instanceof CredentialSelectException) {
+      const stateToken = await this.stateManager.createToken({
+        ...prevState,
+        action: StateAction.CREDENTIAL_SELECTION,
+      });
+
       return new CredentialSelectAgentException({
         ...error.data,
         stateToken,
@@ -108,12 +117,22 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     }
 
     if (error instanceof UserPresenceRequired) {
+      const stateToken = await this.stateManager.createToken({
+        ...prevState,
+        action: StateAction.USER_PRESENCE,
+      });
+
       return new UserPresenceRequiredAgentException({
         stateToken,
       });
     }
 
     if (error instanceof UserVerificationRequired) {
+      const stateToken = await this.stateManager.createToken({
+        ...prevState,
+        action: StateAction.USER_VERIFICATION,
+      });
+
       return new UserVerificationRequiredAgentException({
         stateToken,
       });
@@ -489,11 +508,30 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const prevState = await this.stateManager.validateToken(prevStateToken);
 
       assertSchema(prevState, RegistrationPrevStateSchema);
-
       // State options hash validation
       assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
 
-      registrationPrevState = prevState;
+      const prevStateAction = prevState.action;
+      const prevStateWithoutAction = omit(prevState, 'action');
+
+      switch (prevStateAction) {
+        case StateAction.USER_PRESENCE:
+          assertSchema(
+            prevStateWithoutAction,
+            z.strictObject(UserPresenceStateSchema.shape),
+          );
+          break;
+        case StateAction.USER_VERIFICATION:
+          assertSchema(
+            prevStateWithoutAction,
+            z.strictObject(UserVerificationStateSchema.shape),
+          );
+          break;
+        default:
+          throw new CreateCredentialActionNotDefined();
+      }
+
+      registrationPrevState = prevStateWithoutAction;
     }
 
     const nextState: RegistrationPrevState = registrationPrevState
@@ -1025,7 +1063,33 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       // State options hash validation
       assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
 
-      authenticationPrevState = prevState;
+      const prevStateAction = prevState.action;
+      const prevStateWithoutAction = omit(prevState, 'action');
+
+      switch (prevStateAction) {
+        case StateAction.CREDENTIAL_SELECTION:
+          assertSchema(
+            prevStateWithoutAction,
+            z.strictObject(CredentialSelectionStateSchema.shape),
+          );
+          break;
+        case StateAction.USER_PRESENCE:
+          assertSchema(
+            prevStateWithoutAction,
+            z.strictObject(UserPresenceStateSchema.shape),
+          );
+          break;
+        case StateAction.USER_VERIFICATION:
+          assertSchema(
+            prevStateWithoutAction,
+            z.strictObject(UserVerificationStateSchema.shape),
+          );
+          break;
+        default:
+          throw new CreateCredentialActionNotDefined();
+      }
+
+      authenticationPrevState = prevStateWithoutAction;
     }
 
     const nextState: AuthenticationPrevState = authenticationPrevState

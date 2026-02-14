@@ -1,3 +1,5 @@
+import type { Simplify } from 'type-fest';
+
 /**
  * Returns a copy of the object with the specified keys removed.
  *
@@ -8,7 +10,7 @@
 export const omit = <T extends object, K extends keyof T>(
   obj: T,
   ...keys: (K | (string & {}))[]
-): Omit<T, K> => {
+): Simplify<Omit<T, K>> => {
   const result = { ...obj }; // Create a shallow copy to avoid mutation
 
   for (const key of keys) {

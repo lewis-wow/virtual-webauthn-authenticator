@@ -1,12 +1,12 @@
 import { Jwt } from '@repo/crypto';
 
 import {
-  AuthenticationPrevStateSchema,
-  type AuthenticationPrevState,
+  AuthenticationPrevStateWithActionSchema,
+  type AuthenticationPrevStateWithAction,
 } from './AuthenticationPrevStateSchema';
 import {
-  RegistrationPrevStateSchema,
-  type RegistrationPrevState,
+  RegistrationPrevStateWithActionSchema,
+  type RegistrationPrevStateWithAction,
 } from './RegistrationPrevStateSchema';
 
 export type StateManagerOptions = {
@@ -21,18 +21,24 @@ export class StateManager {
   }
 
   async createToken(
-    payload: RegistrationPrevState | AuthenticationPrevState,
+    payload:
+      | RegistrationPrevStateWithAction
+      | AuthenticationPrevStateWithAction,
   ): Promise<string> {
     return await this.jwt.sign(payload);
   }
 
   async validateToken(
     token: string,
-  ): Promise<RegistrationPrevState | AuthenticationPrevState> {
+  ): Promise<
+    RegistrationPrevStateWithAction | AuthenticationPrevStateWithAction
+  > {
     const jwks = await this.jwt.jwks.getJSONWebKeySet();
     return await Jwt.validateToken(
       token,
-      RegistrationPrevStateSchema.or(AuthenticationPrevStateSchema),
+      RegistrationPrevStateWithActionSchema.or(
+        AuthenticationPrevStateWithActionSchema,
+      ),
       {
         jwks,
       },

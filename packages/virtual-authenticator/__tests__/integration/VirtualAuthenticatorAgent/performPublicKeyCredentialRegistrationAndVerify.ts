@@ -17,13 +17,12 @@ import {
   UserVerificationRequiredAgentException,
   type UserVerificationRequiredAgentExceptionData,
 } from '../../../src/agent/exceptions/UserVerificationRequiredAgentException';
-import type { RegistrationStateWithTokenAgent } from '../../../src/agent/state/RegistrationStateAgentSchema';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import { StateManager } from '../../../src/state/StateManager';
-import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
@@ -34,7 +33,6 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   agent: VirtualAuthenticatorAgent;
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
-  state?: RegistrationStateWithTokenAgent;
 };
 
 export const performPublicKeyCredentialRegistrationAndVerify = async (
@@ -44,7 +42,6 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     agent,
     publicKeyCredentialCreationOptions,
     meta: metaOptions = {},
-    state,
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
@@ -65,7 +62,8 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   // specified options, public key, and key vault metadata.
   // Simulate the full WebAuthn registration ceremony.
   let publicKeyCredential: PublicKeyCredential | undefined;
-  let currentState = state;
+  let prevStateToken: string | undefined;
+  let nextPartialState: RegistrationState | undefined;
   let attempts = 0;
   const MAX_ATTEMPTS = 5;
 
@@ -81,32 +79,29 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
         // Internal options
         meta,
-        state: currentState,
+        prevStateToken,
+        nextPartialState,
       });
     } catch (error) {
       if (error instanceof UserPresenceRequiredAgentException) {
         const data =
           error.data as unknown as UserPresenceRequiredAgentExceptionData;
-        const decodedState = await opts.stateManager.validateToken(data.state);
+        prevStateToken = data.stateToken;
 
-        currentState = {
-          type: StateType.REGISTRATION,
-          optionsHash: decodedState.optionsHash,
-          ...decodedState.current,
+        nextPartialState = {
+          ...nextPartialState,
           up: true,
-        } as RegistrationStateWithTokenAgent;
+        };
       } else if (error instanceof UserVerificationRequiredAgentException) {
         const data =
           error.data as unknown as UserVerificationRequiredAgentExceptionData;
-        const decodedState = await opts.stateManager.validateToken(data.state);
+        prevStateToken = data.stateToken;
 
-        currentState = {
-          type: StateType.REGISTRATION,
-          optionsHash: decodedState.optionsHash,
-          ...decodedState.current,
+        nextPartialState = {
+          ...nextPartialState,
           uv: true,
           up: true, // UV implies UP usually
-        } as RegistrationStateWithTokenAgent;
+        };
       } else {
         throw error;
       }

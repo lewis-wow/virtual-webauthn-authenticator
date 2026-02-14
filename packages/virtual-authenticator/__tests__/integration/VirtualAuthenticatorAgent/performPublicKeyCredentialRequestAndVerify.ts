@@ -17,12 +17,11 @@ import {
   UserVerificationRequiredAgentException,
   type UserVerificationRequiredAgentExceptionData,
 } from '../../../src/agent/exceptions/UserVerificationRequiredAgentException';
-import type { AuthenticationStateWithTokenAgent } from '../../../src/agent/state/AuthenticationStateAgentSchema';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
 import { StateManager } from '../../../src/state/StateManager';
-import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAssertionResponse } from '../../../src/validation/spec/AuthenticatorAssertionResponseSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
@@ -35,7 +34,6 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnCredential: WebAuthnCredential;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
-  state?: AuthenticationStateWithTokenAgent;
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -46,7 +44,6 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     publicKeyCredentialRequestOptions,
     webAuthnCredential,
     meta: metaOptions,
-    state,
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
@@ -71,7 +68,8 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
   // Simulate the full WebAuthn authentication ceremony.
   let publicKeyCredential: PublicKeyCredential | undefined;
-  let currentState = state;
+  let prevStateToken: string | undefined;
+  let nextPartialState: AuthenticationState | undefined;
   let attempts = 0;
   const MAX_ATTEMPTS = 5;
 
@@ -87,32 +85,29 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
         // Internal options
         meta,
-        state: currentState,
+        prevStateToken,
+        nextPartialState,
       });
     } catch (error) {
       if (error instanceof UserPresenceRequiredAgentException) {
         const data =
           error.data as unknown as UserPresenceRequiredAgentExceptionData;
-        const decodedState = await opts.stateManager.validateToken(data.state);
+        prevStateToken = data.stateToken;
 
-        currentState = {
-          type: StateType.AUTHENTICATION,
-          optionsHash: decodedState.optionsHash,
-          ...decodedState.current,
+        nextPartialState = {
+          ...nextPartialState,
           up: true,
-        } as AuthenticationStateWithTokenAgent;
+        };
       } else if (error instanceof UserVerificationRequiredAgentException) {
         const data =
           error.data as unknown as UserVerificationRequiredAgentExceptionData;
-        const decodedState = await opts.stateManager.validateToken(data.state);
+        prevStateToken = data.stateToken;
 
-        currentState = {
-          type: StateType.AUTHENTICATION,
-          optionsHash: decodedState.optionsHash,
-          ...decodedState.current,
+        nextPartialState = {
+          ...nextPartialState,
           uv: true,
           up: true,
-        } as AuthenticationStateWithTokenAgent;
+        };
       } else {
         throw error;
       }
