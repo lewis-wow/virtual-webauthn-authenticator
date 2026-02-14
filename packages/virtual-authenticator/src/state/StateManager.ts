@@ -17,9 +17,9 @@ export class StateManager {
   }
 
   async createToken(opts: StateTokenPayload): Promise<string> {
-    const { action, prevState } = opts;
+    const { action, prevState, prevOptionsHash } = opts;
 
-    return await this.jwt.sign({ action, prevState });
+    return await this.jwt.sign({ action, prevState, prevOptionsHash });
   }
 
   async validateToken(token: string): Promise<StateTokenPayload> {

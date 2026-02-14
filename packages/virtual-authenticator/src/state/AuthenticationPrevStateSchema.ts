@@ -3,9 +3,9 @@ import z from 'zod';
 import { AuthenticationStateSchema } from './AuthenticationStateSchema';
 import { StateActionSchema } from './StateActionSchema';
 
-export const AuthenticationPrevStateSchema = AuthenticationStateSchema.extend({
-  optionsHash: z.string(),
-});
+export const AuthenticationPrevStateSchema = AuthenticationStateSchema.extend(
+  {},
+);
 export type AuthenticationPrevState = z.infer<
   typeof AuthenticationPrevStateSchema
 >;

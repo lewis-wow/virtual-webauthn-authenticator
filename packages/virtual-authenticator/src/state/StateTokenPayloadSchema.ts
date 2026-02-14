@@ -6,6 +6,7 @@ import { StateActionSchema } from './StateActionSchema';
 
 export const StateTokenPayloadSchema = z.object({
   action: StateActionSchema,
+  prevOptionsHash: z.string(),
   prevState: RegistrationPrevStateSchema.or(AuthenticationPrevStateSchema),
 });
 

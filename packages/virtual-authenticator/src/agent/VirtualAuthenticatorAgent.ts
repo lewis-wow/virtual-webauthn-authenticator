@@ -4,6 +4,7 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
+import { validateShape } from '@repo/utils';
 import z from 'zod';
 
 import type { IAuthenticator } from '../authenticator/IAuthenticator';
@@ -38,13 +39,12 @@ import {
   RegistrationPrevStateSchema,
   type RegistrationPrevState,
 } from '../state/RegistrationPrevStateSchema';
-import type { RegistrationState } from '../state/RegistrationStateSchema';
+import {
+  RegistrationStateSchema,
+  type RegistrationState,
+} from '../state/RegistrationStateSchema';
 import { StateAction } from '../state/StateAction';
 import { StateManager } from '../state/StateManager';
-import { BaseStateSchema } from '../state/states/BaseStateSchema';
-import { CredentialSelectionStateSchema } from '../state/states/CredentialSelectionStateSchema';
-import { UserPresenceStateSchema } from '../state/states/UserPresenceStateSchema';
-import { UserVerificationStateSchema } from '../state/states/UserVerificationStateSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -69,8 +69,6 @@ import { CredentialSelectAgentException } from './exceptions/CredentialSelectAge
 import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
-
-// ... (existing imports)
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
@@ -103,12 +101,15 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
   private async _mapAuthenticatorErrorToAgentError(opts: {
     error: unknown;
-    prevState: RegistrationPrevState | AuthenticationPrevState;
+    state: RegistrationPrevState | AuthenticationPrevState;
+    optionsHash: string;
   }): Promise<unknown> {
-    const { error, prevState } = opts;
+    const { error, state, optionsHash } = opts;
+
     if (error instanceof CredentialSelectException) {
       const stateToken = await this.stateManager.createToken({
-        prevState,
+        prevState: state,
+        prevOptionsHash: optionsHash,
         action: StateAction.CREDENTIAL_SELECTION,
       });
 
@@ -120,7 +121,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     if (error instanceof UserPresenceRequired) {
       const stateToken = await this.stateManager.createToken({
-        prevState,
+        prevState: state,
+        prevOptionsHash: optionsHash,
         action: StateAction.USER_PRESENCE,
       });
 
@@ -131,7 +133,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     if (error instanceof UserVerificationRequired) {
       const stateToken = await this.stateManager.createToken({
-        prevState,
+        prevState: state,
+        prevOptionsHash: optionsHash,
         action: StateAction.USER_VERIFICATION,
       });
 
@@ -165,6 +168,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Custom options
     meta: AuthenticatorAgentMetaArgs;
     state: AuthenticationPrevState;
+    optionsHash: string;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
       authenticator,
@@ -175,6 +179,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       authenticatorExtensions,
       meta,
       state,
+      optionsHash,
     } = opts;
 
     // Step 1: If pkOptions.userVerification is set to required and the authenticator is not capable of performing user verification, return false.
@@ -294,7 +299,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     } catch (error) {
       throw await this._mapAuthenticatorErrorToAgentError({
         error,
-        prevState: state,
+        state,
+        optionsHash,
       });
     }
   }
@@ -500,6 +506,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       nextPartialState,
     } = opts;
 
+    assertSchema(nextPartialState, RegistrationStateSchema);
+
     const optionsHash = this._hashCreateCredentialOptionsAsHex({
       pkOptions: options.publicKey!,
       meta,
@@ -510,20 +518,29 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);
 
-      const { action, prevState } = prevStatetokenPayload;
-
+      const { action, prevState, prevOptionsHash } = prevStatetokenPayload;
       assertSchema(prevState, RegistrationPrevStateSchema);
+
       // State options hash validation
-      assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
+      validateShape(optionsHash, prevOptionsHash);
+      // State shape validation
+      validateShape(nextPartialState, prevState);
 
       switch (action) {
         case StateAction.USER_PRESENCE:
-          assertSchema(prevState, z.strictObject(BaseStateSchema.shape));
+          assertSchema(
+            nextPartialState,
+            RegistrationStateSchema.extend({
+              up: z.boolean(),
+            }),
+          );
           break;
         case StateAction.USER_VERIFICATION:
           assertSchema(
-            prevState,
-            z.strictObject(UserPresenceStateSchema.shape),
+            nextPartialState,
+            RegistrationStateSchema.extend({
+              uv: z.boolean(),
+            }),
           );
           break;
         default:
@@ -533,14 +550,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       registrationPrevState = prevState;
     }
 
-    const nextState: RegistrationPrevState = registrationPrevState
-      ? {
-          ...registrationPrevState,
-          ...nextPartialState,
-        }
-      : {
-          optionsHash,
-        };
+    const nextState: RegistrationPrevState = {
+      ...registrationPrevState,
+      ...nextPartialState,
+    };
 
     const publicKeyCredential = await this._createCredential({
       origin,
@@ -548,6 +561,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       sameOriginWithAncestors,
       meta,
       state: nextState,
+      optionsHash,
     });
 
     return publicKeyCredential;
@@ -561,9 +575,17 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   private async _createCredential(
     opts: VirtualAuthenticatorAgentCreateCredentialArgs & {
       state: RegistrationPrevState;
+      optionsHash: string;
     },
   ): Promise<PublicKeyCredential> {
-    const { origin, options, sameOriginWithAncestors, meta, state } = opts;
+    const {
+      origin,
+      options,
+      sameOriginWithAncestors,
+      meta,
+      state,
+      optionsHash,
+    } = opts;
 
     // Step 1: Let options be the object passed to the
     // [[Create]](origin, options, sameOriginWithAncestors) internal method.
@@ -907,7 +929,8 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       .catch(async (error) => {
         throw await this._mapAuthenticatorErrorToAgentError({
           error,
-          prevState: state,
+          optionsHash,
+          state,
         });
       });
 
@@ -1058,30 +1081,37 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);
 
-      const { action, prevState } = prevStatetokenPayload;
-
+      const { action, prevState, prevOptionsHash } = prevStatetokenPayload;
       assertSchema(prevState, AuthenticationPrevStateSchema);
 
       // State options hash validation
-      assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
+      validateShape(prevState, prevOptionsHash);
+      // State shape validation
+      validateShape(nextPartialState, prevState);
 
       switch (action) {
         case StateAction.CREDENTIAL_SELECTION:
           assertSchema(
-            prevState,
-            z.strictObject(CredentialSelectionStateSchema.shape),
+            nextPartialState,
+            AuthenticationPrevStateSchema.extend({
+              credentialId: z.string(),
+            }),
           );
           break;
         case StateAction.USER_PRESENCE:
           assertSchema(
-            prevState,
-            z.strictObject(UserPresenceStateSchema.shape),
+            nextPartialState,
+            AuthenticationPrevStateSchema.extend({
+              up: z.boolean(),
+            }),
           );
           break;
         case StateAction.USER_VERIFICATION:
           assertSchema(
-            prevState,
-            z.strictObject(UserVerificationStateSchema.shape),
+            nextPartialState,
+            AuthenticationPrevStateSchema.extend({
+              uv: z.boolean(),
+            }),
           );
           break;
         default:
@@ -1091,14 +1121,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       authenticationPrevState = prevState;
     }
 
-    const nextState: AuthenticationPrevState = authenticationPrevState
-      ? {
-          ...authenticationPrevState,
-          ...nextPartialState,
-        }
-      : {
-          optionsHash,
-        };
+    const nextState: AuthenticationPrevState = {
+      ...authenticationPrevState,
+      ...nextPartialState,
+    };
 
     const publicKeyCredential = await this._getAssertion({
       origin,
@@ -1106,6 +1132,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       sameOriginWithAncestors,
       meta,
       state: nextState,
+      optionsHash,
     });
 
     return publicKeyCredential;
@@ -1119,9 +1146,17 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
   private async _getAssertion(
     opts: VirtualAuthenticatorAgentGetAssertionArgs & {
       state: AuthenticationPrevState;
+      optionsHash: string;
     },
   ): Promise<PublicKeyCredential> {
-    const { origin, options, sameOriginWithAncestors, meta, state } = opts;
+    const {
+      origin,
+      options,
+      sameOriginWithAncestors,
+      meta,
+      state,
+      optionsHash,
+    } = opts;
 
     // Step 1: Let options be the object passed to the
     // [[DiscoverFromExternalSource]](origin, options,
@@ -1329,6 +1364,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         // Custom options
         meta,
         state: state,
+        optionsHash,
       });
 
     // Step 20.AVAILABLE.2.1: If this returns false, continue.
