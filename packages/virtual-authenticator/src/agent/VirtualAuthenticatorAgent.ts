@@ -518,13 +518,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
       switch (action) {
         case StateAction.USER_PRESENCE:
-          // When resuming from UserPresenceRequired, the PREVIOUS state was just the base state
-          // (optionsHash) because we haven't collected UP yet.
           assertSchema(prevState, z.strictObject(BaseStateSchema.shape));
           break;
         case StateAction.USER_VERIFICATION:
-          // When resuming from UserVerificationRequired, the PREVIOUS state should have
-          // User Presence collected (optionsHash + up).
           assertSchema(
             prevState,
             z.strictObject(UserPresenceStateSchema.shape),
