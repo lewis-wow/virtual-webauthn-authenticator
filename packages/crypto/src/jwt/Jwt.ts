@@ -2,6 +2,7 @@ import { assertSchema } from '@repo/assert';
 import {
   createLocalJWKSet,
   createRemoteJWKSet,
+  decodeJwt,
   jwtVerify,
   SignJWT,
   type JSONWebKeySet,
@@ -11,6 +12,7 @@ import { match, P } from 'ts-pattern';
 import type z from 'zod';
 
 import type { Jwks } from './Jwks';
+import { mapJoseErrorToException } from './helpers/mapJoseErrorToException';
 
 /**
  * JWT Registered Claims
@@ -36,10 +38,11 @@ export type JwtPayload = {
   aud?: string | string[];
 
   /**
-   * JWT ID
-   * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.7 RFC7519#section-4.1.7}
+   * JWT Expiration Time
+   * Per RFC, this is a "NumericDate" (seconds since epoch).
+   * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4 RFC7519#section-4.1.4}
    */
-  jti?: string;
+  exp?: number;
 
   /**
    * JWT Not Before
@@ -49,26 +52,31 @@ export type JwtPayload = {
   nbf?: number;
 
   /**
-   * JWT Expiration Time
-   * Per RFC, this is a "NumericDate" (seconds since epoch).
-   * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.4 RFC7519#section-4.1.4}
-   */
-  exp?: number;
-
-  /**
    * JWT Issued At
    * Per RFC, this is a "NumericDate" (seconds since epoch).
    * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.6 RFC7519#section-4.1.6}
    */
   iat?: number;
 
+  /**
+   * JWT ID
+   * @see {@link https://www.rfc-editor.org/rfc/rfc7519#section-4.1.7 RFC7519#section-4.1.7}
+   */
+  jti?: string;
+
   [key: string]: unknown;
 };
 
+/**
+ * JWT utilities.
+ */
 export type JwtOptions = {
   jwks: Jwks;
 };
 
+/**
+ * JWT utilities.
+ */
 export class Jwt {
   static readonly DEFAULT_EXP = '15m';
   readonly jwks: Jwks;
@@ -102,6 +110,26 @@ export class Jwt {
     return await jwt.sign(privateKey);
   }
 
+  /**
+   * decode a JWT token without verification
+   *
+   * @param token - The JWT token to decode
+   */
+  static decode(token: string) {
+    try {
+      return decodeJwt(token);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Validate a JWT token
+   *
+   * @param token - The JWT token to validate
+   * @param schema - The Zod schema to validate the payload against
+   * @param opts - Options for validation
+   */
   static async validateToken<T extends z.ZodType<JwtPayload>>(
     token: string,
     schema: T,
@@ -118,10 +146,15 @@ export class Jwt {
       .with(P.instanceOf(URL), (jwks) => createRemoteJWKSet(jwks))
       .otherwise((jwks) => createLocalJWKSet(jwks));
 
-    const { payload } = await jwtVerify(token, JWKS, opts.verifyOptions);
+    try {
+      const { payload } = await jwtVerify(token, JWKS, opts.verifyOptions);
 
-    assertSchema(payload, schema);
+      assertSchema(payload, schema);
 
-    return payload;
+      return payload;
+    } catch (e) {
+      mapJoseErrorToException(e);
+      throw e;
+    }
   }
 }

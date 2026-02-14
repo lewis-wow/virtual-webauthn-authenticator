@@ -7,7 +7,11 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Jwks, Jwt } from '@repo/crypto';
+import {
+  Jwks,
+  Jwt,
+  JwsSignatureVerificationFailedException,
+} from '@repo/crypto';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
@@ -3232,7 +3236,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       });
 
       const loops = validToken.split('.');
-      loops[2] = 'invalid-signature';
+      loops[2] = Buffer.from('invalid-signature').toString('base64url');
       const invalidToken = loops.join('.');
 
       await expect(async () =>
@@ -3244,7 +3248,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           prevStateToken: invalidToken,
           nextState: { up: true },
         }),
-      ).rejects.toThrow();
+      ).rejects.toThrow(JwsSignatureVerificationFailedException);
     });
 
     test('Should throw TypeAssertionError when options hash in state does not match current options', async () => {

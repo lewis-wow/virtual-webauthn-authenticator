@@ -3,7 +3,11 @@ import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Jwks, Jwt } from '@repo/crypto';
+import {
+  Jwks,
+  Jwt,
+  JwsSignatureVerificationFailedException,
+} from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
 import { type WebAuthnCredential } from '@simplewebauthn/server';
@@ -1533,8 +1537,9 @@ describe('VirtualAuthenticator.getCredential()', () => {
       ).rejects.toThrow(CredentialSelectAgentException);
     });
   });
-  describe('Wrong State Handling', () => {
-    const META = {
+
+  describe('Invalid State Handling', () => {
+    const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
@@ -1545,28 +1550,30 @@ describe('VirtualAuthenticator.getCredential()', () => {
     test('Should throw error when state token signature is invalid', async () => {
       const optionsHash = hashGetAssertionOptionsAsHex({
         pkOptions: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        meta: META,
+        meta,
       });
+
       const validToken = await stateManager.createToken({
         action: StateAction.CREDENTIAL_SELECTION,
         prevOptionsHash: optionsHash,
         prevState: {},
       });
 
-      const loops = validToken.split('.');
-      loops[2] = 'invalid-signature';
-      const invalidToken = loops.join('.');
+      const [header, payload] = validToken.split('.');
+      const invalidSignature =
+        Buffer.from('invalid-signature').toString('base64url');
+      const invalidToken = `${header}.${payload}.${invalidSignature}`;
 
       await expect(async () =>
         agent.getAssertion({
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: invalidToken,
           nextState: { credentialId: 'some-id' },
         }),
-      ).rejects.toThrow();
+      ).rejects.toThrow(JwsSignatureVerificationFailedException);
     });
 
     test('Should throw TypeAssertionError when options hash in state does not match current options', async () => {
@@ -1581,17 +1588,17 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: validToken,
           nextState: { credentialId: 'some-id' },
         }),
-      ).rejects.toThrowError(TypeAssertionError);
+      ).rejects.toThrow(TypeAssertionError);
     });
 
     test('Should throw TypeAssertionError when nextState does not match expected shape for CREDENTIAL_SELECTION action', async () => {
       const optionsHash = hashGetAssertionOptionsAsHex({
         pkOptions: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
-        meta: META,
+        meta,
       });
       const validToken = await stateManager.createToken({
         action: StateAction.CREDENTIAL_SELECTION,
@@ -1604,11 +1611,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
           origin: RP_ORIGIN,
           options: { publicKey: PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS },
           sameOriginWithAncestors: true,
-          meta: META,
+          meta,
           prevStateToken: validToken,
           nextState: {},
         }),
-      ).rejects.toThrowError(TypeAssertionError);
+      ).rejects.toThrow(TypeAssertionError);
     });
   });
 });
