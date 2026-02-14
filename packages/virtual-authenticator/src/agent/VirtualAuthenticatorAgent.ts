@@ -42,9 +42,9 @@ import {
 import type { RegistrationState } from '../state/RegistrationStateSchema';
 import { StateAction } from '../state/StateAction';
 import { StateManager } from '../state/StateManager';
+import { BaseStateSchema } from '../state/states/BaseStateSchema';
 import { CredentialSelectionStateSchema } from '../state/states/CredentialSelectionStateSchema';
 import { UserPresenceStateSchema } from '../state/states/UserPresenceStateSchema';
-import { UserVerificationStateSchema } from '../state/states/UserVerificationStateSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -69,6 +69,8 @@ import { CredentialSelectAgentException } from './exceptions/CredentialSelectAge
 import { UserPresenceRequiredAgentException } from './exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from './exceptions/UserVerificationRequiredAgentException';
 import type { ExtensionProcessor } from './extensions/ExtensionProcessor';
+
+// ... (existing imports)
 
 export type VirtualAuthenticatorAgentOptions = {
   authenticator: IAuthenticator;
@@ -106,7 +108,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     const { error, prevState } = opts;
     if (error instanceof CredentialSelectException) {
       const stateToken = await this.stateManager.createToken({
-        ...prevState,
+        prevState,
         action: StateAction.CREDENTIAL_SELECTION,
       });
 
@@ -118,7 +120,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     if (error instanceof UserPresenceRequired) {
       const stateToken = await this.stateManager.createToken({
-        ...prevState,
+        prevState,
         action: StateAction.USER_PRESENCE,
       });
 
@@ -129,7 +131,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     if (error instanceof UserVerificationRequired) {
       const stateToken = await this.stateManager.createToken({
-        ...prevState,
+        prevState,
         action: StateAction.USER_VERIFICATION,
       });
 
@@ -505,33 +507,34 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     let registrationPrevState: RegistrationPrevState | undefined = undefined;
     if (prevStateToken !== undefined) {
-      const prevState = await this.stateManager.validateToken(prevStateToken);
+      const prevStatetokenPayload =
+        await this.stateManager.validateToken(prevStateToken);
+
+      const { action, prevState } = prevStatetokenPayload;
 
       assertSchema(prevState, RegistrationPrevStateSchema);
       // State options hash validation
       assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
 
-      const prevStateAction = prevState.action;
-      const prevStateWithoutAction = omit(prevState, 'action');
-
-      switch (prevStateAction) {
+      switch (action) {
         case StateAction.USER_PRESENCE:
-          assertSchema(
-            prevStateWithoutAction,
-            z.strictObject(UserPresenceStateSchema.shape),
-          );
+          // When resuming from UserPresenceRequired, the PREVIOUS state was just the base state
+          // (optionsHash) because we haven't collected UP yet.
+          assertSchema(prevState, z.strictObject(BaseStateSchema.shape));
           break;
         case StateAction.USER_VERIFICATION:
+          // When resuming from UserVerificationRequired, the PREVIOUS state should have
+          // User Presence collected (optionsHash + up).
           assertSchema(
-            prevStateWithoutAction,
-            z.strictObject(UserVerificationStateSchema.shape),
+            prevState,
+            z.strictObject(UserPresenceStateSchema.shape),
           );
           break;
         default:
           throw new CreateCredentialActionNotDefined();
       }
 
-      registrationPrevState = prevStateWithoutAction;
+      registrationPrevState = prevState;
     }
 
     const nextState: RegistrationPrevState = registrationPrevState
@@ -1064,25 +1067,48 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       assertSchema(prevState.optionsHash, z.literal(optionsHash).optional());
 
       const prevStateAction = prevState.action;
-      const prevStateWithoutAction = omit(prevState, 'action');
+      const prevStateWithoutAction = omit(
+        prevState as unknown as Record<string, unknown>,
+        'action',
+        'iat',
+        'exp',
+        'nbf',
+        'iss',
+        'aud',
+        'sub',
+        'jti',
+      );
 
       switch (prevStateAction) {
         case StateAction.CREDENTIAL_SELECTION:
+          // Pre-selection state is Base
           assertSchema(
             prevStateWithoutAction,
-            z.strictObject(CredentialSelectionStateSchema.shape),
+            z.strictObject(BaseStateSchema.shape),
           );
           break;
         case StateAction.USER_PRESENCE:
+          // Pre-UP state can be Base (if no credential selection) or CredentialSelectionState
           assertSchema(
             prevStateWithoutAction,
-            z.strictObject(UserPresenceStateSchema.shape),
+            z
+              .strictObject(BaseStateSchema.shape)
+              .or(z.strictObject(CredentialSelectionStateSchema.shape)),
           );
           break;
         case StateAction.USER_VERIFICATION:
+          // Pre-UV state is UserPresenceState (which has UP).
+          // However, if Credential Selection happened, it also has credentialId.
           assertSchema(
             prevStateWithoutAction,
-            z.strictObject(UserVerificationStateSchema.shape),
+            z
+              .strictObject(UserPresenceStateSchema.shape)
+              .or(
+                z.strictObject(
+                  UserPresenceStateSchema.merge(CredentialSelectionStateSchema)
+                    .shape,
+                ),
+              ),
           );
           break;
         default:

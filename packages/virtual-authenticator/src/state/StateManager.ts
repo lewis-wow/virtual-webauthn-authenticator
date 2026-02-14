@@ -1,13 +1,9 @@
 import { Jwt } from '@repo/crypto';
 
 import {
-  AuthenticationPrevStateWithActionSchema,
-  type AuthenticationPrevStateWithAction,
-} from './AuthenticationPrevStateSchema';
-import {
-  RegistrationPrevStateWithActionSchema,
-  type RegistrationPrevStateWithAction,
-} from './RegistrationPrevStateSchema';
+  StateTokenPayloadSchema,
+  type StateTokenPayload,
+} from './StateTokenPayloadSchema';
 
 export type StateManagerOptions = {
   jwt: Jwt;
@@ -20,28 +16,23 @@ export class StateManager {
     this.jwt = opts.jwt;
   }
 
-  async createToken(
-    payload:
-      | RegistrationPrevStateWithAction
-      | AuthenticationPrevStateWithAction,
-  ): Promise<string> {
-    return await this.jwt.sign(payload);
+  async createToken(opts: StateTokenPayload): Promise<string> {
+    const { action, prevState } = opts;
+
+    return await this.jwt.sign({ action, prevState });
   }
 
-  async validateToken(
-    token: string,
-  ): Promise<
-    RegistrationPrevStateWithAction | AuthenticationPrevStateWithAction
-  > {
+  async validateToken(token: string): Promise<StateTokenPayload> {
     const jwks = await this.jwt.jwks.getJSONWebKeySet();
-    return await Jwt.validateToken(
+
+    const tokenPayload = await Jwt.validateToken(
       token,
-      RegistrationPrevStateWithActionSchema.or(
-        AuthenticationPrevStateWithActionSchema,
-      ),
+      StateTokenPayloadSchema,
       {
         jwks,
       },
     );
+
+    return tokenPayload;
   }
 }

@@ -9,14 +9,8 @@ import {
 import { expect } from 'vitest';
 
 import { VirtualAuthenticatorAgent } from '../../../src/agent/VirtualAuthenticatorAgent';
-import {
-  UserPresenceRequiredAgentException,
-  type UserPresenceRequiredAgentExceptionData,
-} from '../../../src/agent/exceptions/UserPresenceRequiredAgentException';
-import {
-  UserVerificationRequiredAgentException,
-  type UserVerificationRequiredAgentExceptionData,
-} from '../../../src/agent/exceptions/UserVerificationRequiredAgentException';
+import { UserPresenceRequiredAgentException } from '../../../src/agent/exceptions/UserPresenceRequiredAgentException';
+import { UserVerificationRequiredAgentException } from '../../../src/agent/exceptions/UserVerificationRequiredAgentException';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
@@ -64,11 +58,8 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   let publicKeyCredential: PublicKeyCredential | undefined;
   let prevStateToken: string | undefined;
   let nextPartialState: RegistrationState | undefined;
-  let attempts = 0;
-  const MAX_ATTEMPTS = 5;
 
-  while (!publicKeyCredential && attempts < MAX_ATTEMPTS) {
-    attempts++;
+  while (!publicKeyCredential) {
     try {
       publicKeyCredential = await agent.createCredential({
         origin: meta.origin,
@@ -84,23 +75,16 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
       });
     } catch (error) {
       if (error instanceof UserPresenceRequiredAgentException) {
-        const data =
-          error.data as unknown as UserPresenceRequiredAgentExceptionData;
-        prevStateToken = data.stateToken;
+        prevStateToken = error.data.stateToken;
 
         nextPartialState = {
-          ...nextPartialState,
           up: true,
         };
       } else if (error instanceof UserVerificationRequiredAgentException) {
-        const data =
-          error.data as unknown as UserVerificationRequiredAgentExceptionData;
-        prevStateToken = data.stateToken;
+        prevStateToken = error.data.stateToken;
 
         nextPartialState = {
-          ...nextPartialState,
           uv: true,
-          up: true, // UV implies UP usually
         };
       } else {
         throw error;
