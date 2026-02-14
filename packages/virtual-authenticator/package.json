@@ -15,7 +15,7 @@
     "./cbor": "./src/cbor/index.ts",
     "./dto": "./src/dto/index.ts",
     "./http": "./src/http/index.ts",
-    "./interruption": "./src/interruption/index.ts",
+    "./state": "./src/state/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {

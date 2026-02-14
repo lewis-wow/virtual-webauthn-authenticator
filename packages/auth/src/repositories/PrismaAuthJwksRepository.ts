@@ -1,17 +1,15 @@
 import type { IJwksRepository, Jwk } from '@repo/crypto';
 import type { PrismaClient } from '@repo/prisma';
 
-export type PrismaVirtualAuthenticatorJwksRepositoryOptions = {
+export type PrismaAuthJwksRepositoryOptions = {
   prisma: PrismaClient;
 };
 
-export class PrismaVirtualAuthenticatorJwksRepository
-  implements IJwksRepository
-{
-  static readonly DATABASE_LABEL = 'virtual-authenticator';
+export class PrismaAuthJwksRepository implements IJwksRepository {
+  static readonly DATABASE_LABEL = 'auth';
   private readonly prisma: PrismaClient;
 
-  constructor(opts: PrismaVirtualAuthenticatorJwksRepositoryOptions) {
+  constructor(opts: PrismaAuthJwksRepositoryOptions) {
     this.prisma = opts.prisma;
   }
 
@@ -22,7 +20,7 @@ export class PrismaVirtualAuthenticatorJwksRepository
       data: {
         publicKey,
         privateKey,
-        label: PrismaVirtualAuthenticatorJwksRepository.DATABASE_LABEL,
+        label: PrismaAuthJwksRepository.DATABASE_LABEL,
       },
     });
 
@@ -32,7 +30,7 @@ export class PrismaVirtualAuthenticatorJwksRepository
   async findLatest(): Promise<Jwk | null> {
     const key = await this.prisma.jwks.findMany({
       where: {
-        label: PrismaVirtualAuthenticatorJwksRepository.DATABASE_LABEL,
+        label: PrismaAuthJwksRepository.DATABASE_LABEL,
       },
       orderBy: {
         createdAt: 'desc',
@@ -46,7 +44,7 @@ export class PrismaVirtualAuthenticatorJwksRepository
   async findAll(): Promise<Jwk[]> {
     const keys = await this.prisma.jwks.findMany({
       where: {
-        label: PrismaVirtualAuthenticatorJwksRepository.DATABASE_LABEL,
+        label: PrismaAuthJwksRepository.DATABASE_LABEL,
       },
       orderBy: {
         createdAt: 'desc',
