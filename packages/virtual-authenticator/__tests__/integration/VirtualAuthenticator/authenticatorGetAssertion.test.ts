@@ -4,7 +4,6 @@ import {
   USER_ID,
 } from '../../../../auth/__tests__/helpers';
 
-import { Hash } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import {
   afterAll,
@@ -20,7 +19,6 @@ import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenti
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
-import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
@@ -125,7 +123,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           meta,
           authenticatorMakeCredentialResponse,
         }),
-      ).rejects.toThrowError(new UserPresenceNotAvailable());
+      ).rejects.toThrowError(UserPresenceNotAvailable);
     });
 
     test('args.requireUserPresence: false, meta.userPresenceEnabled: true', async () => {
@@ -205,7 +203,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           meta,
           authenticatorMakeCredentialResponse,
         }),
-      ).rejects.toThrowError(new UserVerificationNotAvailable());
+      ).rejects.toThrowError(UserVerificationNotAvailable);
     });
 
     test('args.requireUserVerification: false, meta.userVerificationEnabled: true', async () => {
@@ -291,14 +289,6 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
-      const expectedHash = Hash.sha256JSONHex({
-        authenticatorGetAssertionArgs:
-          AuthenticatorGetAssertionArgsDtoSchema.encode(
-            authenticatorGetAssertionArgs,
-          ),
-        meta,
-      });
-
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
           authenticator,
@@ -307,7 +297,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
         }),
-      ).rejects.toThrow(CredentialSelectException);
+      ).rejects.toThrowError(CredentialSelectException);
 
       // Select index 1 because credentials are ordered by createdAt desc (newest first).
       // Index 0 is the credential created in this test, index 1 is the credential
@@ -319,7 +309,6 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
         state: {
-          optionsHash: expectedHash,
           credentialId: expectedCredentialOptions[1]!.id,
           up: true,
           uv: true,
@@ -356,14 +345,6 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           },
         );
 
-      const expectedHash = Hash.sha256JSONHex({
-        authenticatorGetAssertionArgs:
-          AuthenticatorGetAssertionArgsDtoSchema.encode(
-            authenticatorGetAssertionArgs,
-          ),
-        meta,
-      });
-
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
           authenticator,
@@ -372,7 +353,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
         }),
-      ).rejects.toThrow(CredentialSelectException);
+      ).rejects.toThrowError(CredentialSelectException);
 
       await expect(() =>
         performAuthenticatorGetAssertionAndVerify({
@@ -385,13 +366,12 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
           state: {
-            optionsHash: expectedHash,
             credentialId: expectedCredentialOptions[0]!.id,
             up: true,
             uv: true,
           },
         }),
-      ).rejects.toThrowError(new CredentialOptionsEmpty());
+      ).rejects.toThrowError(CredentialOptionsEmpty);
     });
 
     test('Authentication with existing public key credential', async () => {

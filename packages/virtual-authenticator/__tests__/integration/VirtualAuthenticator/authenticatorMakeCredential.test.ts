@@ -112,7 +112,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           authenticatorMakeCredentialArgs,
           meta,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('args.requireUserPresence: false, meta.userPresenceEnabled: true', async () => {
@@ -133,7 +133,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           authenticatorMakeCredentialArgs,
           meta,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
 
     test('args.requireUserPresence: false, meta.userPresenceEnabled: false', async () => {
@@ -155,7 +155,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           authenticatorMakeCredentialArgs,
           meta,
         }),
-      ).rejects.toThrowError(new TypeAssertionError());
+      ).rejects.toThrowError(TypeAssertionError);
     });
   });
 
@@ -195,7 +195,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           authenticatorMakeCredentialArgs,
           meta,
         }),
-      ).rejects.toThrowError(new UserVerificationNotAvailable());
+      ).rejects.toThrowError(UserVerificationNotAvailable);
     });
 
     test('args.requireUserVerification: false, meta.userVerificationEnabled: true', async () => {
@@ -552,7 +552,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           prisma,
           authenticatorMakeCredentialArgs,
         }),
-      ).rejects.toThrowError(new CredentialExcluded());
+      ).rejects.toThrowError(CredentialExcluded);
     });
 
     test('No credential excluded with non-uuid credential ids', async () => {
@@ -581,7 +581,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           prisma,
           authenticatorMakeCredentialArgs,
         }),
-      ).rejects.toThrowError(new CredentialExcluded());
+      ).rejects.toThrowError(CredentialExcluded);
     });
 
     test('No credential excluded because of different RP ID', async () => {
