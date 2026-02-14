@@ -1,13 +1,13 @@
 import z from 'zod';
 
-import { AuthenticationPrevStateSchema } from './AuthenticationPrevStateSchema';
-import { RegistrationPrevStateSchema } from './RegistrationPrevStateSchema';
+import { AuthenticationStateSchema } from './AuthenticationStateSchema';
+import { RegistrationStateSchema } from './RegistrationStateSchema';
 import { StateActionSchema } from './StateActionSchema';
 
 export const StateTokenPayloadSchema = z.object({
   action: StateActionSchema,
   prevOptionsHash: z.string(),
-  prevState: RegistrationPrevStateSchema.or(AuthenticationPrevStateSchema),
+  prevState: RegistrationStateSchema.or(AuthenticationStateSchema),
 });
 
 export type StateTokenPayload = z.infer<typeof StateTokenPayloadSchema>;

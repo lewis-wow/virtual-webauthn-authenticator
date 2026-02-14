@@ -28,14 +28,9 @@ import { UserPresenceRequired, UserVerificationRequired } from '../exceptions';
 import { CredentialNotFound } from '../exceptions/CredentialNotFound';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import {
-  AuthenticationPrevStateSchema,
-  type AuthenticationPrevState,
-} from '../state/AuthenticationPrevStateSchema';
-import type { AuthenticationState } from '../state/AuthenticationStateSchema';
-import {
-  RegistrationPrevStateSchema,
-  type RegistrationPrevState,
-} from '../state/RegistrationPrevStateSchema';
+  AuthenticationStateSchema,
+  type AuthenticationState,
+} from '../state/AuthenticationStateSchema';
 import {
   RegistrationStateSchema,
   type RegistrationState,
@@ -99,7 +94,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
   private async _mapAuthenticatorErrorToAgentError(opts: {
     error: unknown;
-    state: RegistrationPrevState | AuthenticationPrevState;
+    state: RegistrationState | AuthenticationState;
     optionsHash: string;
   }): Promise<unknown> {
     const { error, state, optionsHash } = opts;
@@ -165,7 +160,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     // Custom options
     meta: AuthenticatorAgentMetaArgs;
-    state: AuthenticationPrevState;
+    state: AuthenticationState;
     optionsHash: string;
   }): Promise<AuthenticatorGetAssertionResponse> {
     const {
@@ -521,7 +516,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         await this.stateManager.validateToken(prevStateToken);
 
       const { action, prevState, prevOptionsHash } = prevStatetokenPayload;
-      assertSchema(prevState, RegistrationPrevStateSchema);
+      assertSchema(prevState, RegistrationStateSchema);
 
       // State options hash validation
       assertShape(optionsHash, prevOptionsHash);
@@ -569,7 +564,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    */
   private async _createCredential(
     opts: VirtualAuthenticatorAgentCreateCredentialArgs & {
-      state: RegistrationPrevState;
+      state: RegistrationState;
       optionsHash: string;
     },
   ): Promise<PublicKeyCredential> {
@@ -1060,7 +1055,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         await this.stateManager.validateToken(prevStateToken);
 
       const { action, prevState, prevOptionsHash } = prevStatetokenPayload;
-      assertSchema(prevState, AuthenticationPrevStateSchema);
+      assertSchema(prevState, AuthenticationStateSchema);
 
       // State options hash validation
       assertShape(optionsHash, prevOptionsHash);
@@ -1071,7 +1066,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         case StateAction.CREDENTIAL_SELECTION:
           assertSchema(
             nextState,
-            AuthenticationPrevStateSchema.extend({
+            AuthenticationStateSchema.extend({
               credentialId: z.string(),
             }),
           );
@@ -1079,7 +1074,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         case StateAction.USER_PRESENCE:
           assertSchema(
             nextState,
-            AuthenticationPrevStateSchema.extend({
+            AuthenticationStateSchema.extend({
               up: z.boolean(),
             }),
           );
@@ -1087,7 +1082,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         case StateAction.USER_VERIFICATION:
           assertSchema(
             nextState,
-            AuthenticationPrevStateSchema.extend({
+            AuthenticationStateSchema.extend({
               uv: z.boolean(),
             }),
           );
@@ -1116,7 +1111,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
    */
   private async _getAssertion(
     opts: VirtualAuthenticatorAgentGetAssertionArgs & {
-      state: AuthenticationPrevState;
+      state: AuthenticationState;
       optionsHash: string;
     },
   ): Promise<PublicKeyCredential> {
