@@ -4,8 +4,7 @@ import {
   USER_ID,
 } from '../../../../auth/__tests__/helpers';
 
-import { TypeAssertionError } from '@repo/assert';
-import { Hash, HashOnion } from '@repo/crypto';
+import { Hash } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import {
   afterAll,
@@ -25,7 +24,6 @@ import { AuthenticatorGetAssertionArgsDtoSchema } from '../../../src/dto/authent
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
-import { StateType } from '../../../src/state/StateType';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
@@ -321,8 +319,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
         state: {
-          type: StateType.AUTHENTICATION,
-          optionsHash: HashOnion.fromArray([expectedHash]),
+          optionsHash: expectedHash,
           credentialId: expectedCredentialOptions[1]!.id,
           up: true,
           uv: true,
@@ -388,8 +385,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           authenticatorGetAssertionArgs,
           authenticatorMakeCredentialResponse,
           state: {
-            type: StateType.AUTHENTICATION,
-            optionsHash: HashOnion.fromArray([expectedHash]),
+            optionsHash: expectedHash,
             credentialId: expectedCredentialOptions[0]!.id,
             up: true,
             uv: true,

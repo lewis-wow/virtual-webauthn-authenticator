@@ -8,14 +8,14 @@ import { verifySignature } from '@simplewebauthn/server/helpers';
 import { expect } from 'vitest';
 
 import { type IAuthenticator } from '../../../src';
-import type { AuthenticationState } from '../../../src/agent/state/AuthenticationStateAgentSchema';
 import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
 import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
-import { StateType } from '../../../src/state/StateType';
+import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
@@ -91,15 +91,12 @@ export const performAuthenticatorGetAssertionAndVerify = async (
       if (error instanceof UserPresenceRequired) {
         currentState = {
           ...currentState,
-          type: StateType.AUTHENTICATION,
           up: true,
         };
       } else if (error instanceof UserVerificationRequired) {
         currentState = {
           ...currentState,
-          type: StateType.AUTHENTICATION,
           uv: true,
-          up: true,
         };
       } else {
         throw error;
