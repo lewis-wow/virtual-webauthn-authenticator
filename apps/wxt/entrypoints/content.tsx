@@ -5,6 +5,8 @@ import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToConten
 import { interaction } from '@/utils/interaction';
 import { ExtensionDialogProvider } from '@repo/ui/context/ExtensionDialogContext';
 import { ShadowRootProvider } from '@repo/ui/context/ShadowRootContext';
+import type { RegistrationState } from '@repo/virtual-authenticator/state';
+import type { AuthenticationState } from '@repo/virtual-authenticator/state';
 import ReactDOM from 'react-dom/client';
 
 const LOG_PREFIX = 'CONTENT';
@@ -53,34 +55,39 @@ export default defineContentScript({
       async (request) => {
         console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
 
-        let response =
-          await contentScriptToBackgroundScriptMessaging.sendMessage(
-            'credentials.create',
-            request.data,
+        let prevStateToken: string | undefined;
+        let nextState: RegistrationState = {};
+
+        while (true) {
+          const response =
+            await contentScriptToBackgroundScriptMessaging.sendMessage(
+              'credentials.create',
+              { ...request.data, prevStateToken, nextState },
+            );
+
+          console.log(
+            `[${LOG_PREFIX}]`,
+            'credentials.create response.',
+            response,
           );
 
-        console.log(
-          `[${LOG_PREFIX}]`,
-          'credentials.create response.',
-          response,
-        );
-
-        if (!response.ok) {
-          const context = await interaction.emitInteraction('error', {
-            response,
-          });
-
-          if (context === null) {
+          if (response.ok) {
             return response;
           }
 
-          response = await contentScriptToBackgroundScriptMessaging.sendMessage(
-            'credentials.create',
-            { ...request.data },
-          );
-        }
+          const interactionResult = await interaction.emitInteraction('error', {
+            response,
+          });
 
-        return response;
+          if (interactionResult === null || interactionResult === undefined) {
+            return response;
+          }
+
+          const { stateToken, ...userState } = interactionResult;
+
+          prevStateToken = stateToken;
+          nextState = { ...nextState, ...userState };
+        }
       },
     );
 
@@ -89,30 +96,35 @@ export default defineContentScript({
       async (request) => {
         console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
 
-        let response =
-          await contentScriptToBackgroundScriptMessaging.sendMessage(
-            'credentials.get',
-            request.data,
-          );
+        let prevStateToken: string | undefined;
+        let nextState: AuthenticationState = {};
 
-        console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
+        while (true) {
+          const response =
+            await contentScriptToBackgroundScriptMessaging.sendMessage(
+              'credentials.get',
+              { ...request.data, prevStateToken, nextState },
+            );
 
-        if (!response.ok) {
-          const context = await interaction.emitInteraction('error', {
-            response,
-          });
+          console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
 
-          if (context === null) {
+          if (response.ok) {
             return response;
           }
 
-          response = await contentScriptToBackgroundScriptMessaging.sendMessage(
-            'credentials.get',
-            { ...request.data, context },
-          );
-        }
+          const interactionResult = await interaction.emitInteraction('error', {
+            response,
+          });
 
-        return response;
+          if (interactionResult === null || interactionResult === undefined) {
+            return response;
+          }
+
+          const { stateToken, ...userState } = interactionResult;
+
+          prevStateToken = stateToken;
+          nextState = { ...nextState, ...userState };
+        }
       },
     );
   },

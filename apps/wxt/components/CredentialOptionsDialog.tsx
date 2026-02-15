@@ -10,7 +10,7 @@ import {
 } from '@repo/ui/components/ui/dialog';
 import { ScrollArea } from '@repo/ui/components/ui/scroll-area';
 import { cn } from '@repo/ui/lib/utils';
-import { Check, User } from 'lucide-react';
+import { Check, KeyRound, User } from 'lucide-react';
 import * as React from 'react';
 
 export type CredentialOptionsDialogProps = {
@@ -42,7 +42,10 @@ export const CredentialOptionsDialog = ({
     <Dialog open={true}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Select Credentials</DialogTitle>
+          <div className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5 text-primary" />
+            <DialogTitle>Select Credentials</DialogTitle>
+          </div>
           <DialogDescription>
             Choose a credential to use for authentication
           </DialogDescription>
