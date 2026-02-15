@@ -55,11 +55,13 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
   // This creates a new public key credential (passkey) using the
   // specified options, public key, and key vault metadata.
   // Simulate the full WebAuthn registration ceremony.
+  let retries = -1;
   let publicKeyCredential: PublicKeyCredential | undefined;
   let prevStateToken: string | undefined;
   let nextState: RegistrationState = {};
 
   while (!publicKeyCredential) {
+    retries++;
     try {
       publicKeyCredential = await agent.createCredential({
         origin: meta.origin,
@@ -144,5 +146,6 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     registrationVerification,
     parsedAuthenticatorData,
     attestationObjectMap,
+    retries,
   };
 };

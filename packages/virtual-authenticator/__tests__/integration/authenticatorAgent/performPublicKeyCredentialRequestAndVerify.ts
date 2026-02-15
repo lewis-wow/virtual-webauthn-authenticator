@@ -54,11 +54,13 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     publicKeyCredentialRequestOptions.rpId ?? new URL(meta.origin).hostname;
 
   // Simulate the full WebAuthn authentication ceremony.
+  let retries = -1;
   let publicKeyCredential: PublicKeyCredential | undefined;
   let prevStateToken: string | undefined;
   let nextState: AuthenticationState = {};
 
   while (!publicKeyCredential) {
+    retries++;
     try {
       publicKeyCredential = await agent.getAssertion({
         origin: meta.origin,
@@ -128,5 +130,6 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     parsedAuthenticatorData,
     authenticationVerificationResponse,
     publicKeyCredential,
+    retries,
   };
 };
