@@ -44,64 +44,61 @@ export const CredentialOptionsDialog = ({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <KeyRound className="h-5 w-5 text-primary" />
-            <DialogTitle>Select Credentials</DialogTitle>
+            <DialogTitle>Select Credential</DialogTitle>
           </div>
           <DialogDescription>
             Choose a credential to use for authentication
           </DialogDescription>
         </DialogHeader>
 
-        <div className="py-4">
-          <ScrollArea className="h-72 pr-4">
-            <div className="space-y-2">
-              {credentialOptions.map((credential) => (
-                <button
-                  key={credential.id}
-                  onClick={() => setSelectedCredential(credential.id)}
-                  className={cn(
-                    'w-full flex items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent',
-                    selectedCredential === credential.id &&
-                      'border-primary bg-accent',
-                  )}
-                >
-                  {/* Checkbox */}
-                  <div
+        <div className="py-2">
+          <ScrollArea className="max-h-64">
+            <div className="space-y-1.5 pr-4">
+              {credentialOptions.map((credential) => {
+                const isSelected = selectedCredential === credential.id;
+
+                return (
+                  <button
+                    key={credential.id}
+                    onClick={() => setSelectedCredential(credential.id)}
                     className={cn(
-                      'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border mt-0.5',
-                      selectedCredential === credential.id
-                        ? 'border-primary bg-primary'
-                        : 'border-muted-foreground',
+                      'group w-full flex items-center gap-3 rounded-md px-3 py-2.5 text-left transition-all cursor-pointer outline-none focus:outline-none focus-visible:outline-none',
+                      isSelected ? 'bg-primary/10' : 'hover:bg-accent',
                     )}
                   >
-                    {selectedCredential === credential.id && (
-                      <Check className="h-3 w-3 text-primary-foreground" />
-                    )}
-                  </div>
-
-                  {/* Text Container */}
-                  <div className="flex flex-col w-full min-w-0 gap-1">
-                    {/* Credential Name */}
-                    {credential.name && (
-                      <span className="font-medium text-sm leading-none">
-                        {credential.name}
-                      </span>
-                    )}
-
-                    {/* User Display Name */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <User className="h-3 w-3 shrink-0" />
-                      <span className="truncate font-medium">
-                        {credential.userDisplayName}
-                      </span>
+                    <div
+                      className={cn(
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors',
+                        isSelected
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground',
+                      )}
+                    >
+                      {isSelected ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <User className="h-4 w-4" />
+                      )}
                     </div>
 
-                    {/* Credential ID */}
-                    <span className="text-[10px] text-muted-foreground/60 break-all font-mono mt-1">
-                      ID: {credential.id}
-                    </span>
-                  </div>
-                </button>
-              ))}
+                    <div className="flex flex-col min-w-0 gap-0.5">
+                      <span
+                        className={cn(
+                          'text-sm font-medium leading-none truncate',
+                          isSelected && 'text-primary',
+                        )}
+                      >
+                        {credential.name ?? credential.userDisplayName}
+                      </span>
+                      {credential.name && (
+                        <span className="text-xs text-muted-foreground truncate">
+                          {credential.userDisplayName}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </ScrollArea>
         </div>
