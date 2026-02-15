@@ -13,6 +13,7 @@ export class UserPresenceRequired extends Exception<UserPresenceRequiredData> {
 }
 
 export const UserPresenceRequiredDataSchema = z.object({
+  requireUserVerification: z.boolean(),
   requireUserPresence: z.boolean(),
 });
 

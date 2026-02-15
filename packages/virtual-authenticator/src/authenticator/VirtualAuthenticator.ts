@@ -447,6 +447,17 @@ export class VirtualAuthenticator implements IAuthenticator {
       });
     }
 
+    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
+      throw new UserPresenceNotAvailable();
+    }
+
+    if (requireUserPresence === true && !state?.up) {
+      throw new UserPresenceRequired({
+        requireUserVerification,
+        requireUserPresence,
+      });
+    }
+
     if (
       requireUserVerification === true &&
       meta.userVerificationEnabled === false
@@ -458,16 +469,6 @@ export class VirtualAuthenticator implements IAuthenticator {
       throw new UserVerificationRequired({
         requireUserPresence,
         requireUserVerification,
-      });
-    }
-
-    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
-      throw new UserPresenceNotAvailable();
-    }
-
-    if (requireUserPresence === true && !state?.up) {
-      throw new UserPresenceRequired({
-        requireUserPresence,
       });
     }
   }
