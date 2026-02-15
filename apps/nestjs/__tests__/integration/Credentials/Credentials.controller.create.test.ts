@@ -34,8 +34,8 @@ import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
 import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
-import { performPublicKeyCredentialRegistrationAndVerify } from '../../helpers/performPublicKeyCredentialRegistrationAndVerify';
 import { prisma } from '../../helpers/prisma';
+import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 
 /**
  * Reusable request body for POST /api/credentials
