@@ -3,12 +3,15 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
-import { CredentialSelectExceptionDataSchema } from '../../exceptions';
+import {
+  CredentialSelectExceptionDataSchema,
+  CredentialSelectException,
+} from '../../authenticator/exceptions/CredentialSelectException';
 
 export class CredentialSelectAgentException extends Exception<CredentialSelectAgentExceptionData> {
-  static readonly code = 'CredentialSelectAgentException';
-  static message = 'Credential select required.';
-  static status = HttpStatusCode.PRECONDITION_REQUIRED_428;
+  static readonly code = CredentialSelectException.code;
+  static readonly message = 'Credential select required.';
+  static readonly status = HttpStatusCode.PRECONDITION_REQUIRED_428;
 
   constructor(data: CredentialSelectAgentExceptionData) {
     assertSchema(data, CredentialSelectAgentExceptionDataSchema);

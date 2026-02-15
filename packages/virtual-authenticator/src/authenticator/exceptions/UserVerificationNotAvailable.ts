@@ -2,7 +2,7 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 
 export class UserVerificationNotAvailable extends Exception {
-  static status = HttpStatusCode.BAD_REQUEST_400;
+  static readonly status = HttpStatusCode.BAD_REQUEST_400;
   static readonly code = 'UserVerificationNotAvailable';
-  static message = 'User verification not available.';
+  static readonly message = 'User verification not available.';
 }

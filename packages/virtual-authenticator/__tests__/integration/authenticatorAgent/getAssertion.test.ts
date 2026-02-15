@@ -27,11 +27,9 @@ import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/Virtu
 import { CredentialSelectAgentException } from '../../../src/authenticatorAgent/exceptions/CredentialSelectAgentException';
 import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserVerificationRequiredAgentException';
-import {
-  CredPropsExtension,
-  ExtensionProcessor,
-  ExtensionRegistry,
-} from '../../../src/authenticatorAgent/extensions';
+import { CredPropsExtension } from '../../../src/authenticatorAgent/extensions/CredPropsExtension';
+import { ExtensionProcessor } from '../../../src/authenticatorAgent/extensions/ExtensionProcessor';
+import { ExtensionRegistry } from '../../../src/authenticatorAgent/extensions/ExtensionRegistry';
 import { hashGetAssertionOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashGetAssertionOptionsAsHex';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';

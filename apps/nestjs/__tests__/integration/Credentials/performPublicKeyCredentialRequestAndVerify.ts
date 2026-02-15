@@ -6,10 +6,17 @@ import {
 
 import { GetCredentialBodySchema } from '@repo/contract/dto';
 import { UUIDMapper } from '@repo/core/mappers';
+import { isExceptionShape } from '@repo/exception';
+import {
+  CredentialSelectAgentException,
+  UserPresenceRequiredAgentException,
+  UserVerificationRequiredAgentException,
+} from '@repo/virtual-authenticator/authenticatorAgent';
 import {
   PublicKeyCredentialType,
   UserVerification,
 } from '@repo/virtual-authenticator/enums';
+import type { AuthenticationState } from '@repo/virtual-authenticator/state';
 import {
   AuthenticationResponseJSON,
   VerifiedAuthenticationResponse,
@@ -18,6 +25,7 @@ import {
 } from '@simplewebauthn/server';
 import request, { type Response } from 'supertest';
 import { App } from 'supertest/types';
+import { match } from 'ts-pattern';
 import { expect } from 'vitest';
 import z from 'zod';
 
@@ -27,6 +35,12 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   payload: z.input<typeof GetCredentialBodySchema>;
   registrationVerification: VerifiedRegistrationResponse;
   expectStatus: number;
+  /**
+   * When true, skips the state token retry loop.
+   * Useful for testing state-related error responses directly.
+   * @default false
+   */
+  skipStateFlow?: boolean;
 
   expectedNewCounter?: number;
 };
@@ -35,6 +49,22 @@ export type PerformPublicKeyCredentialRequestAndVerifyResult = {
   response: Response;
   verification?: VerifiedAuthenticationResponse;
   webAuthnPublicKeyCredentialId?: string;
+  retries?: number;
+};
+
+const sendGetCredentialRequest = async (opts: {
+  app: App;
+  token: string | undefined;
+  payload: z.input<typeof GetCredentialBodySchema>;
+}) => {
+  const { app, token, payload } = opts;
+
+  const requestInit = request(app).post('/api/credentials/get');
+  if (token !== undefined) {
+    requestInit.set('Authorization', `Bearer ${token}`);
+  }
+
+  return await requestInit.send(payload).expect('Content-Type', /json/);
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -47,6 +77,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     token,
     expectedNewCounter,
     expectStatus,
+    skipStateFlow = false,
   } = opts;
 
   const {
@@ -55,19 +86,80 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     counter,
   } = registrationVerification.registrationInfo!.credential;
 
-  const requestInit = request(app).post('/api/credentials/get');
-  if (token !== undefined) {
-    requestInit.set('Authorization', `Bearer ${token}`);
+  if (skipStateFlow) {
+    const response = await sendGetCredentialRequest({
+      app,
+      token,
+      payload,
+    });
+
+    expect(response.status).toBe(expectStatus);
+
+    return { response };
   }
 
-  const response = await requestInit
-    .send(payload)
-    .expect('Content-Type', /json/);
+  // Handle state token retry loop
+  let retries = -1;
+  let prevStateToken: string | undefined;
+  let nextState: AuthenticationState = {};
+  let response: Response;
 
-  expect(response.status).toBe(expectStatus);
+  while (true) {
+    retries++;
 
-  if (expectStatus !== 200) {
-    return { response };
+    const currentPayload = {
+      ...payload,
+      prevStateToken,
+      nextState,
+    };
+
+    response = await sendGetCredentialRequest({
+      app,
+      token,
+      payload: currentPayload,
+    });
+
+    if (response.status === 200) {
+      break;
+    }
+
+    if (response.status === expectStatus && expectStatus !== 200) {
+      return { response, retries };
+    }
+
+    const stateUpdate = match(response.body)
+      .when(isExceptionShape(CredentialSelectAgentException), (error) => ({
+        stateToken: error.data.stateToken,
+        nextState: {
+          ...nextState,
+          credentialId: error.data.credentialOptions[0]!.id,
+        } satisfies AuthenticationState,
+      }))
+      .when(isExceptionShape(UserPresenceRequiredAgentException), (error) => ({
+        stateToken: error.data.stateToken,
+        nextState: {
+          ...nextState,
+          up: true,
+        } satisfies AuthenticationState,
+      }))
+      .when(
+        isExceptionShape(UserVerificationRequiredAgentException),
+        (error) => ({
+          stateToken: error.data.stateToken,
+          nextState: {
+            ...nextState,
+            uv: true,
+          } satisfies AuthenticationState,
+        }),
+      )
+      .otherwise(() => {
+        throw new Error(
+          `Unexpected response status ${response.status}: ${JSON.stringify(response.body)}`,
+        );
+      });
+
+    prevStateToken = stateUpdate.stateToken;
+    nextState = stateUpdate.nextState;
   }
 
   const verification = await verifyAuthenticationResponse({
@@ -109,5 +201,10 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });
 
-  return { response, verification, webAuthnPublicKeyCredentialId };
+  return {
+    response,
+    verification,
+    webAuthnPublicKeyCredentialId,
+    retries,
+  };
 };

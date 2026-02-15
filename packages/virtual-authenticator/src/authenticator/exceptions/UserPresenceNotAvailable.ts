@@ -2,7 +2,7 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 
 export class UserPresenceNotAvailable extends Exception {
-  static status = HttpStatusCode.BAD_REQUEST_400;
+  static readonly status = HttpStatusCode.BAD_REQUEST_400;
   static readonly code = 'UserPresenceNotAvailable';
-  static message = 'User presence not available.';
+  static readonly message = 'User presence not available.';
 }

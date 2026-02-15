@@ -18,6 +18,10 @@ import { RequestValidationFailed } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
+  UserPresenceRequiredAgentException,
+  UserVerificationRequiredAgentException,
+} from '@repo/virtual-authenticator/authenticatorAgent';
+import {
   Attestation,
   PublicKeyCredentialType,
   UserVerification,
@@ -29,6 +33,7 @@ import { afterEach } from 'node:test';
 import { describe, test, afterAll, beforeAll, expect } from 'vitest';
 import z from 'zod';
 
+import { TypeAssertionError } from '../../../../../packages/assert/src/TypeAssertionError';
 import { CredentialTypesNotSupported } from '../../../../../packages/virtual-authenticator/src/exceptions/CredentialTypesNotSupported';
 import { AppModule } from '../../../src/app.module';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
@@ -155,7 +160,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             userId: WRONG_UUID,
           }),
           payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-          expectStatus: HttpStatusCode.NOT_FOUND_404,
+          expectStatus: UserNotExists.status,
         });
 
       expect(response.body).toStrictEqual(new UserNotExists().toJSON());
@@ -214,7 +219,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           app: app.getHttpServer(),
           token,
           payload,
-          expectStatus: HttpStatusCode.BAD_REQUEST_400,
+          expectStatus: RequestValidationFailed.status,
         });
 
       expect(response.body).toStrictEqual(
@@ -311,7 +316,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             app: app.getHttpServer(),
             token,
             payload,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: CredentialTypesNotSupported.status,
           });
 
         expect(response.body).toStrictEqual(
@@ -391,18 +396,18 @@ describe('CredentialsController - POST /api/credentials/create', () => {
 
   describe('RegistrationState', () => {
     describe('Invalid UserPresence state', () => {
-      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserPresenceRequired when no state token is provided', async () => {
+      test('Should return UserPresenceRequired when no state token is provided', async () => {
         const { response } =
           await performPublicKeyCredentialRegistrationAndVerify({
             app: app.getHttpServer(),
             token,
             payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
         expect(response.body).toMatchObject({
-          code: 'UserPresenceRequired',
+          code: UserPresenceRequiredAgentException.code,
           data: {
             stateToken: expect.any(String),
             requireUserPresence: true,
@@ -410,13 +415,13 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         });
       });
 
-      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserPresenceRequired when nextState.up is false', async () => {
+      test('Should return UserPresenceRequired when nextState.up is false', async () => {
         const { response: firstResponse } =
           await performPublicKeyCredentialRegistrationAndVerify({
             app: app.getHttpServer(),
             token,
             payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
@@ -431,12 +436,12 @@ describe('CredentialsController - POST /api/credentials/create', () => {
               prevStateToken: stateToken,
               nextState: { up: false },
             },
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
         expect(response.body).toMatchObject({
-          code: 'UserPresenceRequired',
+          code: UserPresenceRequiredAgentException.code,
           data: {
             stateToken: expect.any(String),
             requireUserPresence: true,
@@ -444,13 +449,13 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         });
       });
 
-      test('Should return HttpStatusCode.BAD_REQUEST_400 when nextState is empty object', async () => {
+      test('Should return TypeAssertionError when nextState is empty object', async () => {
         const { response: firstResponse } =
           await performPublicKeyCredentialRegistrationAndVerify({
             app: app.getHttpServer(),
             token,
             payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
@@ -465,28 +470,30 @@ describe('CredentialsController - POST /api/credentials/create', () => {
               prevStateToken: stateToken,
               nextState: {},
             },
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: TypeAssertionError.status,
             skipStateFlow: true,
           });
 
         expect(response.body).toMatchObject({
-          code: 'TypeAssertionError',
+          code: TypeAssertionError.code,
         });
       });
     });
 
     describe('Invalid UserVerification state', () => {
-      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserVerificationRequired after UP is resolved when UV is required', async () => {
+      test('Should return UserVerificationRequired after UP is resolved when UV is required', async () => {
         const { response: firstResponse } =
           await performPublicKeyCredentialRegistrationAndVerify({
             app: app.getHttpServer(),
             token,
             payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
-        expect(firstResponse.body.code).toBe('UserPresenceRequired');
+        expect(firstResponse.body.code).toBe(
+          UserPresenceRequiredAgentException.code,
+        );
         const stateToken = firstResponse.body.data.stateToken;
 
         const { response } =
@@ -498,12 +505,12 @@ describe('CredentialsController - POST /api/credentials/create', () => {
               prevStateToken: stateToken,
               nextState: { up: true },
             },
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserVerificationRequiredAgentException.status,
             skipStateFlow: true,
           });
 
         expect(response.body).toMatchObject({
-          code: 'UserVerificationRequired',
+          code: UserVerificationRequiredAgentException.code,
           data: {
             stateToken: expect.any(String),
             requireUserVerification: true,
@@ -511,13 +518,13 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         });
       });
 
-      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserVerificationRequired with stateToken containing previous state', async () => {
+      test('Should return UserVerificationRequired with stateToken containing previous state', async () => {
         const { response: firstResponse } =
           await performPublicKeyCredentialRegistrationAndVerify({
             app: app.getHttpServer(),
             token,
             payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
@@ -532,12 +539,12 @@ describe('CredentialsController - POST /api/credentials/create', () => {
               prevStateToken: stateToken,
               nextState: { up: true },
             },
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserVerificationRequiredAgentException.status,
             skipStateFlow: true,
           });
 
         expect(response.body).toMatchObject({
-          code: 'UserVerificationRequired',
+          code: UserVerificationRequiredAgentException.code,
           data: {
             stateToken: expect.any(String),
           },
@@ -552,11 +559,13 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             app: app.getHttpServer(),
             token,
             payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            expectStatus: UserPresenceRequiredAgentException.status,
             skipStateFlow: true,
           });
 
-        expect(firstResponse.body.code).toBe('UserPresenceRequired');
+        expect(firstResponse.body.code).toBe(
+          UserPresenceRequiredAgentException.code,
+        );
         const stateToken = firstResponse.body.data.stateToken;
 
         // Provide both up and uv in one step — should succeed
