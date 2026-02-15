@@ -1,4 +1,3 @@
-
 import { JoseException } from '../JoseException';
 
 export class JwtClaimValidationFailedException extends JoseException {
