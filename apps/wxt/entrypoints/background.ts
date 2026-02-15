@@ -1,68 +1,57 @@
 import { env } from '@/env';
 import { contentScriptToBackgroundScriptMessaging } from '@/messaging/contentScriptToBackgroundScriptMessaging';
+import type { MessagingProtocol } from '@/types';
+import { nestjsContract } from '@repo/contract/nestjs';
+import { Logger } from '@repo/logger';
+import { initClient } from '@ts-rest/core';
 
-const LOG_PREFIX = 'BACKGROUND';
-const API_CREDENTIALS_CREATE_PATH = '/api/credentials/create';
-const API_CREDENTIALS_GET_PATH = '/api/credentials/get';
-const CONTENT_TYPE = 'application/json';
+const logger = new Logger({ prefix: 'BACKGROUND' });
 
-console.log(`[${LOG_PREFIX}]`, 'Init');
+logger.info('Init');
 
 /**
- * Creates common HTTP headers for API requests.
- * @param apiKey - The API key for authentication
- * @returns Headers object with Authorization, Auth-Type, and Content-Type
+ * Creates a typesafe ts-rest API client authenticated with the given API key.
  */
-const createApiHeaders = (apiKey: string): Headers => {
-  return new Headers({
-    Authorization: `Bearer ${apiKey}`,
-    'Content-Type': CONTENT_TYPE,
+const createApiClient = (apiKey: string) =>
+  initClient(nestjsContract, {
+    baseUrl: env.WXT_API_BASE_URL,
+    baseHeaders: {
+      Authorization: `Bearer ${apiKey}`,
+    },
   });
-};
 
 export default defineBackground(() => {
-  console.log(`[${LOG_PREFIX}]`, 'Init', {
-    id: browser.runtime.id,
-  });
+  logger.info('Init', { id: browser.runtime.id });
 
   contentScriptToBackgroundScriptMessaging.onMessage(
     'credentials.create',
     async (req) => {
       const apiKey = await apiKeyItem.getValue();
+      const client = createApiClient(apiKey);
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
-        request: req.data,
+      logger.info('credentials.create', { request: req.data });
+
+      const response = await client.api.credentials.create({
+        body: req.data,
       });
 
-      const response = await fetch(
-        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_CREATE_PATH}`,
-        {
-          method: 'POST',
-          headers: createApiHeaders(apiKey),
-          body: JSON.stringify(req.data),
-        },
-      );
+      logger.info('credentials.create', { response });
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.create', {
-        request: req.data,
-        response,
-      });
-
-      const json = await response.json();
-
-      if (response.ok) {
+      if (response.status === 200) {
+        // Response body is raw JSON (validateResponse defaults to false) so it is
+        // serializable and compatible with the messaging protocol.
         return {
-          ok: true,
-          data: json,
-        };
+          ok: true as const,
+          data: response.body,
+        } as unknown as ReturnType<MessagingProtocol['credentials.create']>;
       }
 
-      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+      logger.error('Error', response.body);
 
       return {
-        ok: false,
-        error: json,
-      };
+        ok: false as const,
+        error: response.body,
+      } as unknown as ReturnType<MessagingProtocol['credentials.create']>;
     },
   );
 
@@ -70,40 +59,29 @@ export default defineBackground(() => {
     'credentials.get',
     async (req) => {
       const apiKey = await apiKeyItem.getValue();
+      const client = createApiClient(apiKey);
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
-        request: req.data,
+      logger.info('credentials.get', { request: req.data });
+
+      const response = await client.api.credentials.get({
+        body: req.data,
       });
 
-      const response = await fetch(
-        `${env.WXT_API_BASE_URL}${API_CREDENTIALS_GET_PATH}`,
-        {
-          method: 'POST',
-          headers: createApiHeaders(apiKey),
-          body: JSON.stringify(req.data),
-        },
-      );
+      logger.info('credentials.get', { response });
 
-      console.log(`[${LOG_PREFIX}]`, 'credentials.get', {
-        request: req.data,
-        response,
-      });
-
-      const json = await response.json();
-
-      if (response.ok) {
+      if (response.status === 200) {
         return {
-          ok: true,
-          data: json,
-        };
+          ok: true as const,
+          data: response.body,
+        } as unknown as ReturnType<MessagingProtocol['credentials.get']>;
       }
 
-      console.log(`[${LOG_PREFIX}]`, 'Error', json);
+      logger.error('Error', response.body);
 
       return {
-        ok: false,
-        error: json,
-      };
+        ok: false as const,
+        error: response.body,
+      } as unknown as ReturnType<MessagingProtocol['credentials.get']>;
     },
   );
 });

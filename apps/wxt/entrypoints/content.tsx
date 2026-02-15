@@ -3,14 +3,15 @@ import { App } from '@/components/App';
 import { contentScriptToBackgroundScriptMessaging } from '@/messaging/contentScriptToBackgroundScriptMessaging';
 import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToContentScriptMessaging';
 import { interaction } from '@/utils/interaction';
+import { Logger } from '@repo/logger';
 import { ExtensionDialogProvider } from '@repo/ui/context/ExtensionDialogContext';
 import { ShadowRootProvider } from '@repo/ui/context/ShadowRootContext';
 import type { RegistrationState } from '@repo/virtual-authenticator/state';
 import type { AuthenticationState } from '@repo/virtual-authenticator/state';
 import ReactDOM from 'react-dom/client';
 
-const LOG_PREFIX = 'CONTENT';
-console.log(`[${LOG_PREFIX}]`, 'Init');
+const logger = new Logger({ prefix: 'CONTENT' });
+logger.info('Init');
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -42,18 +43,18 @@ export default defineContentScript({
 
     ui.mount();
 
-    console.log(`[${LOG_PREFIX}]`, 'Injecting script...');
+    logger.info('Injecting script...');
 
     await injectScript('/main-world.js', {
       keepInDom: true,
     });
 
-    console.log(`[${LOG_PREFIX}]`, 'Injected.');
+    logger.info('Injected.');
 
     mainWorldToContentScriptMessaging.onMessage(
       'credentials.create',
       async (request) => {
-        console.log(`[${LOG_PREFIX}]`, 'credentials.create request.');
+        logger.info('credentials.create request.');
 
         let prevStateToken: string | undefined;
         let nextState: RegistrationState = {};
@@ -65,11 +66,7 @@ export default defineContentScript({
               { ...request.data, prevStateToken, nextState },
             );
 
-          console.log(
-            `[${LOG_PREFIX}]`,
-            'credentials.create response.',
-            response,
-          );
+          logger.info('credentials.create response.', response);
 
           if (response.ok) {
             return response;
@@ -94,7 +91,7 @@ export default defineContentScript({
     mainWorldToContentScriptMessaging.onMessage(
       'credentials.get',
       async (request) => {
-        console.log(`[${LOG_PREFIX}]`, 'credentials.get request.');
+        logger.info('credentials.get request.');
 
         let prevStateToken: string | undefined;
         let nextState: AuthenticationState = {};
@@ -106,7 +103,7 @@ export default defineContentScript({
               { ...request.data, prevStateToken, nextState },
             );
 
-          console.log(`[${LOG_PREFIX}]`, 'credentials.get response.', response);
+          logger.info('credentials.get response.', response);
 
           if (response.ok) {
             return response;

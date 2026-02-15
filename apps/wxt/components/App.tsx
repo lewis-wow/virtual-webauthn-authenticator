@@ -1,6 +1,7 @@
 import type { ListenerFn } from '@/utils/InteractionService';
 import { interaction, InteractionEventMap } from '@/utils/interaction';
 import { isExceptionShape } from '@repo/exception';
+import { Logger } from '@repo/logger';
 import { useExtensionDialog } from '@repo/ui/context/ExtensionDialogContext';
 import {
   CredentialSelectAgentException,
@@ -14,7 +15,7 @@ import { ErrorDialog } from './ErrorDialog';
 import { UserPresenceDialog } from './UserPresenceDialog';
 import { UserVerificationDialog } from './UserVerificationDialog';
 
-const LOG_PREFIX = 'ERROR_MESSAGE_HANDLER';
+const logger = new Logger({ prefix: 'ERROR_MESSAGE_HANDLER' });
 
 export const App = () => {
   const { openDialog, closeDialog } = useExtensionDialog();
@@ -36,7 +37,7 @@ export const App = () => {
                 closeDialog();
               }}
               onConfirm={(selectedCredentialOptionId) => {
-                console.log(`[${LOG_PREFIX}] User selected credential:`, {
+                logger.info('User selected credential:', {
                   selectedCredentialOptionId,
                 });
 
@@ -56,8 +57,8 @@ export const App = () => {
                         closeDialog();
                       }}
                       onConfirm={() => {
-                        console.log(
-                          `[${LOG_PREFIX}] User confirmed verification after credential select.`,
+                        logger.info(
+                          'User confirmed verification after credential select.',
                         );
                         resolve({ ...baseState, uv: true });
                         closeDialog();
@@ -82,8 +83,8 @@ export const App = () => {
                   closeDialog();
                 }}
                 onConfirm={() => {
-                  console.log(
-                    `[${LOG_PREFIX}] User confirmed verification (implies presence).`,
+                  logger.info(
+                    'User confirmed verification (implies presence).',
                   );
                   resolve({
                     up: true,
@@ -103,7 +104,7 @@ export const App = () => {
                 closeDialog();
               }}
               onConfirm={() => {
-                console.log(`[${LOG_PREFIX}] User confirmed presence.`);
+                logger.info('User confirmed presence.');
                 resolve({
                   up: true,
                   stateToken: error.data.stateToken,
@@ -124,8 +125,8 @@ export const App = () => {
                   closeDialog();
                 }}
                 onConfirm={() => {
-                  console.log(
-                    `[${LOG_PREFIX}] User confirmed verification (implies presence).`,
+                  logger.info(
+                    'User confirmed verification (implies presence).',
                   );
                   resolve({
                     up: true,
@@ -139,9 +140,10 @@ export const App = () => {
           },
         )
         .otherwise((error) => {
+          logger.exceptionOrError(error, 'Error occured.');
           resolve(null);
 
-          return <ErrorDialog error={error} onClose={closeDialog} />;
+          return null;
         });
 
       openDialog(component);
