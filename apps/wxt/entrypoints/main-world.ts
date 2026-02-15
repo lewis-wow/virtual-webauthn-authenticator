@@ -39,6 +39,8 @@ export default defineUnlistedScript(() => {
       {
         publicKeyCredentialCreationOptions: encodedPkOptions,
         meta: { origin: window.location.origin },
+        prevStateToken: undefined,
+        nextState: {},
       },
     );
 
@@ -62,12 +64,6 @@ export default defineUnlistedScript(() => {
     });
 
     console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
-
-    const throttling = randomInt(3_500, 9_000);
-
-    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
-
-    await delayPromise(throttling);
 
     return publicKeyCredential;
   };
@@ -88,6 +84,8 @@ export default defineUnlistedScript(() => {
       {
         publicKeyCredentialRequestOptions: encodedPkOptions,
         meta: { origin: window.location.origin },
+        prevStateToken: undefined,
+        nextState: {},
       },
     );
 
@@ -111,12 +109,6 @@ export default defineUnlistedScript(() => {
     });
 
     console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
-
-    const throttling = randomInt(3_500, 9_000);
-
-    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
-
-    await delayPromise(throttling);
 
     return publicKeyCredential;
   };

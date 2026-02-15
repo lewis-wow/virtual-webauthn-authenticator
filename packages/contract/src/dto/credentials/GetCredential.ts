@@ -20,7 +20,7 @@ export const GetCredentialBodySchema = z.object({
   meta: AuthenticatorAgentMetaArgsSchema.pick({
     origin: true,
   }),
-  nextState: AuthenticationStateSchema,
+  nextState: AuthenticationStateSchema.optional(),
   prevStateToken: z.string().optional(),
 });
 
