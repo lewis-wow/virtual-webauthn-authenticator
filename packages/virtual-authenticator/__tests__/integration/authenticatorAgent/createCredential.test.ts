@@ -24,11 +24,9 @@ import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/Virtu
 import { CreateCredentialActionNotDefined } from '../../../src/authenticatorAgent/exceptions/CreateCredentialActionNotDefined';
 import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserVerificationRequiredAgentException';
-import {
-  CredPropsExtension,
-  ExtensionProcessor,
-  ExtensionRegistry,
-} from '../../../src/authenticatorAgent/extensions';
+import { CredPropsExtension } from '../../../src/authenticatorAgent/extensions/CredPropsExtension';
+import { ExtensionProcessor } from '../../../src/authenticatorAgent/extensions/ExtensionProcessor';
+import { ExtensionRegistry } from '../../../src/authenticatorAgent/extensions/ExtensionRegistry';
 import { hashCreateCredentialOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashCreateCredentialOptionsAsHex';
 import { Attestation } from '../../../src/enums/Attestation';
 import { AuthenticatorAttachment } from '../../../src/enums/AuthenticatorAttachment';
