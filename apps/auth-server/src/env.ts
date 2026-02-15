@@ -1,4 +1,5 @@
 import { defineEnv } from '@repo/env-config';
+import { mapLogLevelTag } from '@repo/logger';
 import { z } from 'zod';
 
 export const env = defineEnv({
@@ -6,6 +7,10 @@ export const env = defineEnv({
     // App
     PORT: z.coerce.number(),
     BASE_URL: z.url(),
+    LOG_LEVEL: z
+      .string()
+      .optional()
+      .transform((arg) => mapLogLevelTag(arg)),
 
     HONO_BASE_URL: z.url(),
     NEXTJS_BASE_URL: z.url(),
