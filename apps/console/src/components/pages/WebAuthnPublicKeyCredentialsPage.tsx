@@ -73,8 +73,7 @@ export const WebAuthnPublicKeyCredentialsPage = () => {
             <CardTitle>Passkeys & Hardware Tokens</CardTitle>
           </div>
           <CardDescription>
-            Manage your hardware-backed credentials (YubiKeys, TouchID, Windows
-            Hello) stored in Azure Key Vault.
+            Manage your credentials stored in Azure Key Vault.
           </CardDescription>
         </CardHeader>
         <CardContent>
