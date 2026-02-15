@@ -5,7 +5,7 @@ import z from 'zod';
 import { UserVerificationRequiredDataSchema } from '../../exceptions';
 
 export class UserVerificationRequiredAgentException extends Exception<UserVerificationRequiredAgentExceptionData> {
-  static readonly code = 'USER_VERIFICATION_REQUIRED';
+  static readonly code = 'UserVerificationRequired';
   static readonly status = 400;
   static readonly message = 'User Verification (UV) is required to proceed.';
 

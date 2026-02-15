@@ -12,6 +12,8 @@
     "./mappers": "./src/mappers/index.ts",
     "./types": "./src/types/index.ts",
     "./repositories": "./src/repositories/index.ts",
+    "./authenticator": "./src/authenticator/index.ts",
+    "./authenticatorAgent": "./src/authenticatorAgent/index.ts",
     "./cbor": "./src/cbor/index.ts",
     "./dto": "./src/dto/index.ts",
     "./http": "./src/http/index.ts",
@@ -20,6 +22,8 @@
   },
   "scripts": {
     "build": "run-p barrel:*",
+    "barrel:authenticator": "../../scripts/barrel.ts ./src/authenticator",
+    "barrel:authenticatorAgent": "../../scripts/barrel.ts ./src/authenticatorAgent",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation",
     "barrel:dto": "../../scripts/barrel.ts ./src/dto",
     "test:unit": "vitest run --config __tests__/vitest.unit.config.ts",

@@ -1,12 +1,14 @@
 import { Provider } from '@nestjs/common';
 import { Jwks, Jwt } from '@repo/crypto';
 import {
-  CredPropsExtension,
-  ExtensionProcessor,
-  ExtensionRegistry,
   VirtualAuthenticator,
   VirtualAuthenticatorAgent,
 } from '@repo/virtual-authenticator';
+import {
+  CredPropsExtension,
+  ExtensionProcessor,
+  ExtensionRegistry,
+} from '@repo/virtual-authenticator/authenticatorAgent';
 import { PrismaVirtualAuthenticatorJwksRepository } from '@repo/virtual-authenticator/repositories';
 import { StateManager } from '@repo/virtual-authenticator/state';
 

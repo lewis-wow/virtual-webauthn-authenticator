@@ -5,7 +5,7 @@ import z from 'zod';
 import { UserPresenceRequiredDataSchema } from '../../exceptions';
 
 export class UserPresenceRequiredAgentException extends Exception<UserPresenceRequiredAgentExceptionData> {
-  static readonly code = 'USER_PRESENCE_REQUIRED';
+  static readonly code = 'UserPresenceRequired';
   static readonly status = 400;
   static readonly message = 'User Presence (UP) is required to proceed.';
 

@@ -15,6 +15,7 @@ import { Test } from '@nestjs/testing';
 import { JwtAudience } from '@repo/auth';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
+import { HttpStatusCode } from '@repo/http';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   Attestation,
@@ -120,7 +121,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         app: app.getHttpServer(),
         token: undefined,
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        expectStatus: 401,
+        expectStatus: HttpStatusCode.UNAUTHORIZED_401,
       });
     });
 
@@ -129,7 +130,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         app: app.getHttpServer(),
         token: 'INVALID_TOKEN',
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        expectStatus: 401,
+        expectStatus: HttpStatusCode.UNAUTHORIZED_401,
       });
     });
 
@@ -141,7 +142,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           permissions: [],
         }),
         payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        expectStatus: 403,
+        expectStatus: HttpStatusCode.FORBIDDEN_403,
       });
     });
 
@@ -154,7 +155,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             userId: WRONG_UUID,
           }),
           payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-          expectStatus: 404,
+          expectStatus: HttpStatusCode.NOT_FOUND_404,
         });
 
       expect(response.body).toStrictEqual(new UserNotExists().toJSON());
@@ -197,7 +198,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         app: app.getHttpServer(),
         token,
         payload,
-        expectStatus: 200,
+        expectStatus: HttpStatusCode.OK_200,
       });
     });
 
@@ -213,7 +214,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           app: app.getHttpServer(),
           token,
           payload,
-          expectStatus: 400,
+          expectStatus: HttpStatusCode.BAD_REQUEST_400,
         });
 
       expect(response.body).toStrictEqual(
@@ -253,7 +254,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         app: app.getHttpServer(),
         token,
         payload,
-        expectStatus: 200,
+        expectStatus: HttpStatusCode.OK_200,
       });
     });
 
@@ -268,7 +269,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         app: app.getHttpServer(),
         token,
         payload,
-        expectStatus: 200,
+        expectStatus: HttpStatusCode.OK_200,
       });
     });
 
@@ -310,7 +311,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
             app: app.getHttpServer(),
             token,
             payload,
-            expectStatus: 400,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
           });
 
         expect(response.body).toStrictEqual(
@@ -331,7 +332,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
       app: app.getHttpServer(),
       token,
       payload,
-      expectStatus: 200,
+      expectStatus: HttpStatusCode.OK_200,
     });
   });
 
@@ -348,7 +349,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
       app: app.getHttpServer(),
       token,
       payload,
-      expectStatus: 400,
+      expectStatus: HttpStatusCode.BAD_REQUEST_400,
     });
   });
 
@@ -366,7 +367,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
       app: app.getHttpServer(),
       token,
       payload,
-      expectStatus: 400,
+      expectStatus: HttpStatusCode.BAD_REQUEST_400,
     });
   });
 
@@ -384,7 +385,227 @@ describe('CredentialsController - POST /api/credentials/create', () => {
       app: app.getHttpServer(),
       token,
       payload,
-      expectStatus: 400,
+      expectStatus: HttpStatusCode.BAD_REQUEST_400,
+    });
+  });
+
+  describe('RegistrationState', () => {
+    describe('Invalid UserPresence state', () => {
+      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserPresenceRequired when no state token is provided', async () => {
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(response.body).toMatchObject({
+          code: 'UserPresenceRequired',
+          data: {
+            stateToken: expect.any(String),
+            requireUserPresence: true,
+          },
+        });
+      });
+
+      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserPresenceRequired when nextState.up is false', async () => {
+        const { response: firstResponse } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        const stateToken = firstResponse.body.data.stateToken;
+
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+              prevStateToken: stateToken,
+              nextState: { up: false },
+            },
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(response.body).toMatchObject({
+          code: 'UserPresenceRequired',
+          data: {
+            stateToken: expect.any(String),
+            requireUserPresence: true,
+          },
+        });
+      });
+
+      test('Should return HttpStatusCode.BAD_REQUEST_400 when nextState is empty object', async () => {
+        const { response: firstResponse } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        const stateToken = firstResponse.body.data.stateToken;
+
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+              prevStateToken: stateToken,
+              nextState: {},
+            },
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(response.body).toMatchObject({
+          code: 'TypeAssertionError',
+        });
+      });
+    });
+
+    describe('Invalid UserVerification state', () => {
+      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserVerificationRequired after UP is resolved when UV is required', async () => {
+        const { response: firstResponse } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(firstResponse.body.code).toBe('UserPresenceRequired');
+        const stateToken = firstResponse.body.data.stateToken;
+
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+              prevStateToken: stateToken,
+              nextState: { up: true },
+            },
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(response.body).toMatchObject({
+          code: 'UserVerificationRequired',
+          data: {
+            stateToken: expect.any(String),
+            requireUserVerification: true,
+          },
+        });
+      });
+
+      test('Should return HttpStatusCode.BAD_REQUEST_400 with UserVerificationRequired with stateToken containing previous state', async () => {
+        const { response: firstResponse } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        const stateToken = firstResponse.body.data.stateToken;
+
+        const { response } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: {
+              ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+              prevStateToken: stateToken,
+              nextState: { up: true },
+            },
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(response.body).toMatchObject({
+          code: 'UserVerificationRequired',
+          data: {
+            stateToken: expect.any(String),
+          },
+        });
+      });
+    });
+
+    describe('Batch state (up and uv in one step)', () => {
+      test('Should succeed when both up and uv are provided in a single retry', async () => {
+        const { response: firstResponse } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.BAD_REQUEST_400,
+            skipStateFlow: true,
+          });
+
+        expect(firstResponse.body.code).toBe('UserPresenceRequired');
+        const stateToken = firstResponse.body.data.stateToken;
+
+        // Provide both up and uv in one step — should succeed
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            prevStateToken: stateToken,
+            nextState: { up: true, uv: true },
+          },
+          expectStatus: HttpStatusCode.OK_200,
+          skipStateFlow: true,
+        });
+      });
+
+      test('Should succeed via state token retry loop with retries', async () => {
+        const { retries } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            expectStatus: HttpStatusCode.OK_200,
+          });
+
+        // At least 1 retry for UP
+        expect(retries).toBeGreaterThanOrEqual(1);
+      });
+
+      test('Should succeed via state token retry loop with UV required', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD, {
+          publicKeyCredentialCreationOptions: {
+            authenticatorSelection: {
+              userVerification: UserVerification.REQUIRED,
+            },
+          },
+        });
+
+        const { retries } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload,
+            expectStatus: HttpStatusCode.OK_200,
+          });
+
+        // At least 2 retries: one for UP, one for UV
+        expect(retries).toBeGreaterThanOrEqual(2);
+      });
     });
   });
 });
