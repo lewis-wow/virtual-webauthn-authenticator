@@ -8,6 +8,7 @@ export type PrismaVirtualAuthenticatorJwksRepositoryOptions = {
 export class PrismaVirtualAuthenticatorJwksRepository
   implements IJwksRepository
 {
+  static readonly DATABASE_LABEL = 'virtual-authenticator';
   private readonly prisma: PrismaClient;
 
   constructor(opts: PrismaVirtualAuthenticatorJwksRepositoryOptions) {
@@ -21,6 +22,7 @@ export class PrismaVirtualAuthenticatorJwksRepository
       data: {
         publicKey,
         privateKey,
+        label: PrismaVirtualAuthenticatorJwksRepository.DATABASE_LABEL,
       },
     });
 
@@ -29,6 +31,9 @@ export class PrismaVirtualAuthenticatorJwksRepository
 
   async findLatest(): Promise<Jwk | null> {
     const key = await this.prisma.jwks.findMany({
+      where: {
+        label: PrismaVirtualAuthenticatorJwksRepository.DATABASE_LABEL,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -40,6 +45,9 @@ export class PrismaVirtualAuthenticatorJwksRepository
 
   async findAll(): Promise<Jwk[]> {
     const keys = await this.prisma.jwks.findMany({
+      where: {
+        label: PrismaVirtualAuthenticatorJwksRepository.DATABASE_LABEL,
+      },
       orderBy: {
         createdAt: 'desc',
       },

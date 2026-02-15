@@ -33,7 +33,7 @@ export class JwtMiddleware implements NestMiddleware {
 
       req.user = jwtPayload;
     } catch (error) {
-      this.logger.catch(error, 'JWT Payload error.');
+      this.logger.exceptionOrError(error, 'JWT Payload error.');
 
       req.user = null;
     }

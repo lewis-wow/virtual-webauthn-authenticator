@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@repo/exception": "workspace:*",
-    "@repo/http": "workspace:*"
+    "@repo/http": "workspace:*",
+    "@repo/logger": "workspace:*"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

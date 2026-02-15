@@ -1,5 +1,6 @@
 import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToContentScriptMessaging';
 import { Exception } from '@repo/exception';
+import { Logger } from '@repo/logger';
 import { delayPromise, randomInt } from '@repo/utils';
 import {
   convertBrowserCreationOptions,
@@ -14,17 +15,14 @@ import {
   PublicKeyCredentialRequestOptionsDtoSchema,
 } from '@repo/virtual-authenticator/dto';
 
-const LOG_PREFIX = 'MAIN';
-console.log(`[${LOG_PREFIX}]`, 'Init');
+const logger = new Logger({ prefix: 'MAIN' });
+logger.info('Init');
 
 export default defineUnlistedScript(() => {
-  console.log(`[${LOG_PREFIX}]`, 'Init');
+  logger.info('Init');
 
   navigator.credentials.create = async (opts?: CredentialCreationOptions) => {
-    console.log(
-      `[${LOG_PREFIX}] Intercepted navigator.credentials.create`,
-      opts,
-    );
+    logger.info('Intercepted navigator.credentials.create', opts);
 
     const publicKeyCredentialCreationOptions = convertBrowserCreationOptions(
       opts?.publicKey,
@@ -39,6 +37,8 @@ export default defineUnlistedScript(() => {
       {
         publicKeyCredentialCreationOptions: encodedPkOptions,
         meta: { origin: window.location.origin },
+        prevStateToken: undefined,
+        nextState: {},
       },
     );
 
@@ -61,19 +61,13 @@ export default defineUnlistedScript(() => {
       clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
 
-    console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
-
-    const throttling = randomInt(3_500, 9_000);
-
-    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
-
-    await delayPromise(throttling);
+    logger.info('Public key credential:', publicKeyCredential);
 
     return publicKeyCredential;
   };
 
   navigator.credentials.get = async (opts?: CredentialRequestOptions) => {
-    console.log(`[${LOG_PREFIX}] Intercepted navigator.credentials.get`, opts);
+    logger.info('Intercepted navigator.credentials.get', opts);
 
     const publicKeyCredentialRequestOptions = convertBrowserRequestOptions(
       opts?.publicKey,
@@ -88,6 +82,8 @@ export default defineUnlistedScript(() => {
       {
         publicKeyCredentialRequestOptions: encodedPkOptions,
         meta: { origin: window.location.origin },
+        prevStateToken: undefined,
+        nextState: {},
       },
     );
 
@@ -110,13 +106,7 @@ export default defineUnlistedScript(() => {
       clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
 
-    console.log(`[${LOG_PREFIX}] Public key credential:`, publicKeyCredential);
-
-    const throttling = randomInt(3_500, 9_000);
-
-    console.log(`[${LOG_PREFIX}] Throttling:`, `+${throttling}ms`);
-
-    await delayPromise(throttling);
+    logger.info('Public key credential:', publicKeyCredential);
 
     return publicKeyCredential;
   };

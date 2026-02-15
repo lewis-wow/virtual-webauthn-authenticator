@@ -20,9 +20,7 @@ import type {
   PublicKeyCredentialUserEntity,
 } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
-import z from 'zod';
 
-import { CredentialSelectException } from '../../../../packages/virtual-authenticator/src/exceptions/CredentialSelectException';
 import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
@@ -70,7 +68,12 @@ export class CredentialsController {
       nestjsContract.api.credentials.create,
       async ({ body }) => {
         const { userId, apiKeyId, permissions, name } = jwtPayload;
-        const { publicKeyCredentialCreationOptions, meta } = body;
+        const {
+          publicKeyCredentialCreationOptions,
+          meta,
+          prevStateToken,
+          nextState,
+        } = body;
 
         if (!permissions.includes(Permission['CREDENTIAL.CREATE'])) {
           throw new Forbidden();
@@ -111,7 +114,8 @@ export class CredentialsController {
               userPresenceEnabled: true,
               userVerificationEnabled: true,
             },
-            context: undefined,
+            prevStateToken,
+            nextState,
           });
 
         await this._auditCredentialAction({
@@ -136,7 +140,12 @@ export class CredentialsController {
     return tsRestHandler(
       nestjsContract.api.credentials.get,
       async ({ body }) => {
-        const { publicKeyCredentialRequestOptions, meta, context } = body;
+        const {
+          publicKeyCredentialRequestOptions,
+          meta,
+          prevStateToken,
+          nextState,
+        } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
         if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
@@ -147,67 +156,40 @@ export class CredentialsController {
           userId: userId,
         });
 
-        let contextHash: string | undefined = undefined;
-
-        if (context?.hash !== undefined) {
-          const { hash } = await Jwt.validateToken(
-            context?.hash,
-            z.object({ hash: z.string() }),
-            {
-              jwks: await this.jwks.getJSONWebKeySet(),
+        const publicKeyCredential =
+          await this.virtualAuthenticatorAgent.getAssertion({
+            origin: meta.origin,
+            options: {
+              publicKey: publicKeyCredentialRequestOptions,
+              signal: undefined,
             },
-          );
+            sameOriginWithAncestors: true,
 
-          contextHash = hash;
-        }
-
-        try {
-          const publicKeyCredential =
-            await this.virtualAuthenticatorAgent.getAssertion({
+            // Internal options
+            meta: {
               origin: meta.origin,
-              options: {
-                publicKey: publicKeyCredentialRequestOptions,
-                signal: undefined,
-              },
-              sameOriginWithAncestors: true,
+              userId: userId,
+              apiKeyId,
 
-              // Internal options
-              meta: {
-                origin: meta.origin,
-                userId: userId,
-                apiKeyId,
-
-                userPresenceEnabled: true,
-                userVerificationEnabled: true,
-              },
-              context: {
-                hash: contextHash,
-                selectedCredentialOptionId: context?.selectedCredentialOptionId,
-              },
-            });
-
-          await this._auditCredentialAction({
-            action: LogAction.GET,
-            publicKeyCredentialRawId: publicKeyCredential.rawId,
-            jwtPayload,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+            },
+            prevStateToken,
+            nextState,
           });
 
-          return {
-            status: HttpStatusCode.OK_200,
-            body: GetCredentialResponseSchema[HttpStatusCode.OK_200].encode(
-              publicKeyCredential,
-            ),
-          };
-        } catch (error) {
-          if (error instanceof CredentialSelectException) {
-            throw new CredentialSelectException({
-              credentialOptions: error.data.credentialOptions,
-              hash: await this.jwt.sign({ hash: error.data.hash }),
-            });
-          }
+        await this._auditCredentialAction({
+          action: LogAction.GET,
+          publicKeyCredentialRawId: publicKeyCredential.rawId,
+          jwtPayload,
+        });
 
-          throw error;
-        }
+        return {
+          status: HttpStatusCode.OK_200,
+          body: GetCredentialResponseSchema[HttpStatusCode.OK_200].encode(
+            publicKeyCredential,
+          ),
+        };
       },
     );
   }

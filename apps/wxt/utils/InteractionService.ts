@@ -20,7 +20,6 @@ export type InteractionServiceOptions = {
   eventEmitter: EventEmitter;
 };
 
-// The contract: Key -> Function Signature (Arguments => Return Type)
 export type EventMapBase = Record<string, (...args: any[]) => any>;
 
 export class InteractionService<TEventMap extends EventMapBase = any> {

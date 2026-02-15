@@ -1,14 +1,21 @@
 import type { ListenerFn } from '@/utils/InteractionService';
 import { interaction, InteractionEventMap } from '@/utils/interaction';
 import { isExceptionShape } from '@repo/exception';
+import { Logger } from '@repo/logger';
 import { useExtensionDialog } from '@repo/ui/context/ExtensionDialogContext';
-import { CredentialSelectException } from '@repo/virtual-authenticator/exceptions';
+import {
+  CredentialSelectAgentException,
+  UserPresenceRequiredAgentException,
+  UserVerificationRequiredAgentException,
+} from '@repo/virtual-authenticator/authenticatorAgent';
 import { match } from 'ts-pattern';
 
 import { CredentialOptionsDialog } from './CredentialOptionsDialog';
 import { ErrorDialog } from './ErrorDialog';
+import { UserPresenceDialog } from './UserPresenceDialog';
+import { UserVerificationDialog } from './UserVerificationDialog';
 
-const LOG_PREFIX = 'ERROR_MESSAGE_HANDLER';
+const logger = new Logger({ prefix: 'ERROR_MESSAGE_HANDLER' });
 
 export const App = () => {
   const { openDialog, closeDialog } = useExtensionDialog();
@@ -21,7 +28,7 @@ export const App = () => {
       const { error } = args.response;
 
       const component = match(error)
-        .when(isExceptionShape(CredentialSelectException), (error) => {
+        .when(isExceptionShape(CredentialSelectAgentException), (error) => {
           return (
             <CredentialOptionsDialog
               credentialOptions={error.data.credentialOptions}
@@ -29,25 +36,114 @@ export const App = () => {
                 resolve(null);
                 closeDialog();
               }}
-              onConfirm={async (selectedCredentialOptionId) => {
-                console.log(`[${LOG_PREFIX}] User selected:`, {
+              onConfirm={(selectedCredentialOptionId) => {
+                logger.info('User selected credential:', {
                   selectedCredentialOptionId,
                 });
 
+                // Selection implicitly satisfies UP
+                const baseState = {
+                  credentialId: selectedCredentialOptionId,
+                  up: true,
+                  stateToken: error.data.stateToken,
+                };
+
+                if (error.data.requireUserVerification) {
+                  // Chain into UV dialog before resolving
+                  openDialog(
+                    <UserVerificationDialog
+                      onCancel={() => {
+                        resolve(null);
+                        closeDialog();
+                      }}
+                      onConfirm={() => {
+                        logger.info(
+                          'User confirmed verification after credential select.',
+                        );
+                        resolve({ ...baseState, uv: true });
+                        closeDialog();
+                      }}
+                    />,
+                  );
+                } else {
+                  resolve(baseState);
+                  closeDialog();
+                }
+              }}
+            />
+          );
+        })
+        .when(isExceptionShape(UserPresenceRequiredAgentException), (error) => {
+          // If UV is also required, show UV dialog directly (UV implies UP)
+          if (error.data.requireUserVerification) {
+            return (
+              <UserVerificationDialog
+                onCancel={() => {
+                  resolve(null);
+                  closeDialog();
+                }}
+                onConfirm={() => {
+                  logger.info(
+                    'User confirmed verification (implies presence).',
+                  );
+                  resolve({
+                    up: true,
+                    uv: true,
+                    stateToken: error.data.stateToken,
+                  });
+                  closeDialog();
+                }}
+              />
+            );
+          }
+
+          return (
+            <UserPresenceDialog
+              onCancel={() => {
+                resolve(null);
+                closeDialog();
+              }}
+              onConfirm={() => {
+                logger.info('User confirmed presence.');
                 resolve({
-                  hash: error.data.hash,
-                  selectedCredentialOptionId,
+                  up: true,
+                  stateToken: error.data.stateToken,
                 });
-
                 closeDialog();
               }}
             />
           );
         })
+        .when(
+          isExceptionShape(UserVerificationRequiredAgentException),
+          (error) => {
+            // UV implies UP
+            return (
+              <UserVerificationDialog
+                onCancel={() => {
+                  resolve(null);
+                  closeDialog();
+                }}
+                onConfirm={() => {
+                  logger.info(
+                    'User confirmed verification (implies presence).',
+                  );
+                  resolve({
+                    up: true,
+                    uv: true,
+                    stateToken: error.data.stateToken,
+                  });
+                  closeDialog();
+                }}
+              />
+            );
+          },
+        )
         .otherwise((error) => {
+          logger.exceptionOrError(error, 'Error occured.');
           resolve(null);
 
-          return <ErrorDialog error={error} onClose={closeDialog} />;
+          return null;
         });
 
       openDialog(component);

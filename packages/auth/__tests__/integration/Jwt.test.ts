@@ -3,7 +3,7 @@ import { PrismaClient } from '@repo/prisma';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { JwtIssuer } from '../../src/JwtIssuer';
-import { PrismaAuthJwksRepository } from '../../src/PrismaAuthJwksRepository';
+import { PrismaAuthJwksRepository } from '../../src/repositories/PrismaAuthJwksRepository';
 import { MockJwtAudience } from '../helpers/MockJwtAudience';
 import {
   API_KEY_ID,

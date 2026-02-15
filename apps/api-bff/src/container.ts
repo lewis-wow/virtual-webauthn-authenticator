@@ -11,6 +11,7 @@ export const container = new DependencyContainer()
   .register('logger', () => {
     return new Logger({
       prefix: LOG_PREFIX,
+      level: env.LOG_LEVEL,
     });
   })
   .register('cache', () => {

@@ -1,6 +1,12 @@
+import { Logger } from '@repo/logger';
 import z from 'zod';
 
 import { TypeAssertionError } from './TypeAssertionError';
+
+const LOG_PREFIX = 'ASSERT_SCHEMA';
+const log = new Logger({
+  prefix: LOG_PREFIX,
+});
 
 /**
  * Asserts that the given data matches the provided Zod schema.
@@ -14,6 +20,11 @@ export function assertSchema<T extends z.ZodTypeAny>(
   const result = schema.safeParse(data);
 
   if (!result.success) {
+    log.debug('Assert error', {
+      error: result.error,
+      data,
+    });
+
     throw new TypeAssertionError(result.error);
   }
 }

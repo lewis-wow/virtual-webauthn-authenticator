@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash, HashOnion } from '@repo/crypto';
+import { Hash } from '@repo/crypto';
 import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
@@ -9,37 +9,23 @@ import z from 'zod';
 
 import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
 import type { AttestationStatementMap } from '../cbor/AttestationStatementMap';
-import { AuthenticatorGetAssertionArgsDtoSchema } from '../dto/authenticator/AuthenticatorGetAssertionArgsDtoSchema';
-import { AuthenticatorMakeCredentialArgsDtoSchema } from '../dto/authenticator/AuthenticatorMakeCredentialArgsDtoSchema';
 import { Fmt } from '../enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from '../exceptions/CredentialExcluded';
 import { CredentialOptionsEmpty } from '../exceptions/CredentialOptionsEmpty';
-import { CredentialSelectException } from '../exceptions/CredentialSelectException';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
-import { UserPresenceNotAvailable } from '../exceptions/UserPresenceNotAvailable';
-import { UserVerificationNotAvailable } from '../exceptions/UserVerificationNotAvailable';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import type { AuthenticationState, RegistrationState } from '../state';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import {
-  AuthenticatorContextArgsSchema,
-  type AuthenticatorContextArgs,
-} from '../validation/authenticator/AuthenticatorContextArgsSchema';
-import {
-  AuthenticatorGetAssertionArgsSchema,
-  type AuthenticatorGetAssertionArgs,
-} from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
+import { AuthenticatorGetAssertionArgsSchema } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import {
   AuthenticatorGetAssertionResponseSchema,
   type AuthenticatorGetAssertionResponse,
 } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
-import {
-  AuthenticatorMakeCredentialArgsSchema,
-  type AuthenticatorMakeCredentialArgs,
-} from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
+import { AuthenticatorMakeCredentialArgsSchema } from '../validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import {
   AuthenticatorMakeCredentialResponseSchema,
   type AuthenticatorMakeCredentialResponse,
@@ -48,12 +34,22 @@ import {
   AuthenticatorMetaArgsSchema,
   type AuthenticatorMetaArgs,
 } from '../validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from '../validation/spec/CredParamSchema';
-import type { IAuthenticator } from './IAuthenticator';
+import type {
+  IAuthenticator,
+  VirtualAuthenticatorGetAssertionArgs,
+  VirtualAuthenticatorMakeCredentialArgs,
+} from './IAuthenticator';
+import { CredentialSelectException } from './exceptions/CredentialSelectException';
+import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
+import { UserPresenceRequired } from './exceptions/UserPresenceRequired';
+import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
+import { UserVerificationRequired } from './exceptions/UserVerificationRequired';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
@@ -425,19 +421,56 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
-  private _hashAuthenticatorMakeCredentialOptionsAsHex(opts: {
-    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
+  private _checkAuthorizationGestureOrThrow(opts: {
+    applicablePublicKeyCredentials?: ApplicablePublicKeyCredential[];
+    requireUserVerification: boolean;
+    requireUserPresence: boolean;
     meta: AuthenticatorMetaArgs;
-  }): string {
-    const { authenticatorMakeCredentialArgs, meta } = opts;
-
-    return Hash.sha256JSONHex({
-      authenticatorMakeCredentialArgs:
-        AuthenticatorMakeCredentialArgsDtoSchema.encode(
-          authenticatorMakeCredentialArgs,
-        ),
+    state?: RegistrationState | AuthenticationState;
+  }) {
+    const {
+      applicablePublicKeyCredentials,
+      requireUserPresence,
+      requireUserVerification,
       meta,
-    });
+      state,
+    } = opts;
+
+    if (
+      applicablePublicKeyCredentials !== undefined &&
+      applicablePublicKeyCredentials.length > 1
+    ) {
+      throw new CredentialSelectException({
+        credentialOptions: applicablePublicKeyCredentials,
+        requireUserPresence,
+        requireUserVerification,
+      });
+    }
+
+    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
+      throw new UserPresenceNotAvailable();
+    }
+
+    if (requireUserPresence === true && !state?.up) {
+      throw new UserPresenceRequired({
+        requireUserVerification,
+        requireUserPresence,
+      });
+    }
+
+    if (
+      requireUserVerification === true &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
+    if (requireUserVerification === true && !state?.uv) {
+      throw new UserVerificationRequired({
+        requireUserPresence,
+        requireUserVerification,
+      });
+    }
   }
 
   /**
@@ -446,12 +479,10 @@ export class VirtualAuthenticator implements IAuthenticator {
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
    * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorMakeCredential
    */
-  public async authenticatorMakeCredential(opts: {
-    authenticatorMakeCredentialArgs: AuthenticatorMakeCredentialArgs;
-    meta: AuthenticatorMetaArgs;
-    context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorMakeCredentialResponse> {
-    const { authenticatorMakeCredentialArgs, meta, context } = opts;
+  public async authenticatorMakeCredential(
+    opts: VirtualAuthenticatorMakeCredentialArgs,
+  ): Promise<AuthenticatorMakeCredentialResponse> {
+    const { authenticatorMakeCredentialArgs, meta, state } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
     // If not, return an error code equivalent to "UnknownError" and terminate the operation.
@@ -467,8 +498,6 @@ export class VirtualAuthenticator implements IAuthenticator {
         userPresenceEnabled: z.literal(true),
       }),
     );
-    // Context validation
-    assertSchema(context, AuthenticatorContextArgsSchema);
 
     const {
       hash,
@@ -480,7 +509,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       // requireResidentKey,
 
       // NOTE: Should be always true. Just for compatibility with spec.
-      // requireUserPresence,
+      requireUserPresence,
 
       requireUserVerification,
       credTypesAndPubKeyAlgs,
@@ -561,7 +590,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    // NOTE: Not implemented.
+    this._checkAuthorizationGestureOrThrow({
+      meta,
+      requireUserPresence,
+      requireUserVerification,
+      state,
+      applicablePublicKeyCredentials: undefined,
+    });
 
     // Step 7: Once the authorization gesture has been completed, generate
     // a new credential object
@@ -712,33 +747,16 @@ export class VirtualAuthenticator implements IAuthenticator {
     return authenticatorMakeCredentialResponse;
   }
 
-  private _hashAuthenticatorGetAssertionOptionsAsHex(opts: {
-    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    meta: AuthenticatorMetaArgs;
-  }): string {
-    const { authenticatorGetAssertionArgs, meta } = opts;
-
-    return Hash.sha256JSONHex({
-      authenticatorGetAssertionArgs:
-        AuthenticatorGetAssertionArgsDtoSchema.encode(
-          authenticatorGetAssertionArgs,
-        ),
-      meta,
-    });
-  }
-
   /**
    * The authenticatorGetAssertion operation.
    * This is the authenticator-side operation for generating an assertion.
    * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
    * @see https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html#authenticatorGetAssertion
    */
-  public async authenticatorGetAssertion(opts: {
-    authenticatorGetAssertionArgs: AuthenticatorGetAssertionArgs;
-    meta: AuthenticatorMetaArgs;
-    context: AuthenticatorContextArgs;
-  }): Promise<AuthenticatorGetAssertionResponse> {
-    const { authenticatorGetAssertionArgs, meta, context } = opts;
+  public async authenticatorGetAssertion(
+    opts: VirtualAuthenticatorGetAssertionArgs,
+  ): Promise<AuthenticatorGetAssertionResponse> {
+    const { authenticatorGetAssertionArgs, meta, state } = opts;
 
     // Step 1: Check if all the supplied parameters are syntactically well-formed and of the correct length.
     // If not, return an error code equivalent to "UnknownError" and terminate the operation.
@@ -749,16 +767,6 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Meta validation
     assertSchema(meta, AuthenticatorMetaArgsSchema);
-    // Context validation
-    assertSchema(context, AuthenticatorContextArgsSchema);
-
-    const optionsHash = this._hashAuthenticatorGetAssertionOptionsAsHex({
-      authenticatorGetAssertionArgs,
-      meta,
-    });
-
-    // Context hash validation
-    assertSchema(opts.context?.hash, z.literal(optionsHash).optional());
 
     const {
       hash,
@@ -810,9 +818,9 @@ export class VirtualAuthenticator implements IAuthenticator {
         },
       );
 
-    if (context?.selectedCredentialOptionId !== undefined) {
+    if (state?.credentialId !== undefined) {
       credentialOptions = credentialOptions.filter((credentialOption) => {
-        return credentialOption.id === context?.selectedCredentialOptionId;
+        return credentialOption.id === state?.credentialId;
       });
     }
 
@@ -824,28 +832,18 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Step 7: Prompt user to select credential and collect authorization gesture
     // Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-
-    // Prompt user to select credential.
-    if (credentialOptions.length > 1) {
-      throw new CredentialSelectException({
-        credentialOptions,
-        hash: HashOnion.push(optionsHash),
-      });
-    }
+    this._checkAuthorizationGestureOrThrow({
+      meta,
+      requireUserPresence,
+      requireUserVerification,
+      state,
+      applicablePublicKeyCredentials: credentialOptions,
+    });
 
     // Collect an authorization gesture confirming user consent for using selectedCredential.
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
-    if (
-      requireUserVerification === true &&
-      meta.userVerificationEnabled === false
-    ) {
-      throw new UserVerificationNotAvailable();
-    }
 
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
-    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
-      throw new UserPresenceNotAvailable();
-    }
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
 
     // IMPORTANT: The credential is selected ONLY if there is only one credential.

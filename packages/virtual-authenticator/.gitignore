@@ -2,3 +2,6 @@ src/zod-validation/index.ts
 src/validation/index.ts
 src/dto/index.ts
 src/types/dom.ts
+
+src/authenticator/index.ts
+src/authenticatorAgent/index.ts

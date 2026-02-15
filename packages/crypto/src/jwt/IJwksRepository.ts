@@ -4,10 +4,24 @@ export type Jwk = {
   privateKey: string;
 };
 
+export type JwksRepositoryCreateOptions = {
+  publicKey: string;
+  privateKey: string;
+  label?: string;
+};
+
+export type JwksRepositoryFindLatestOptions = {
+  label?: string;
+};
+
+export type JwksRepositoryFindAllOptions = {
+  label?: string;
+};
+
 export interface IJwksRepository {
-  create: (opts: { publicKey: string; privateKey: string }) => Promise<Jwk>;
+  create: (opts: JwksRepositoryCreateOptions) => Promise<Jwk>;
 
-  findLatest: () => Promise<Jwk | null>;
+  findLatest: (opts?: JwksRepositoryFindLatestOptions) => Promise<Jwk | null>;
 
-  findAll: () => Promise<Jwk[]>;
+  findAll: (opts?: JwksRepositoryFindAllOptions) => Promise<Jwk[]>;
 }
