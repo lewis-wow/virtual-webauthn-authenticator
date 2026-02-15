@@ -5,6 +5,7 @@ import {
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { GetCredentialBodySchema } from '@repo/contract/dto';
+import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
 import { isExceptionShape } from '@repo/exception';
 import {
@@ -59,7 +60,9 @@ const sendGetCredentialRequest = async (opts: {
 }) => {
   const { app, token, payload } = opts;
 
-  const requestInit = request(app).post('/api/credentials/get');
+  const requestInit = request(app).post(
+    nestjsContract.api.credentials.get.path,
+  );
   if (token !== undefined) {
     requestInit.set('Authorization', `Bearer ${token}`);
   }
