@@ -40,7 +40,7 @@
     "@ts-rest/core": "^3.53.0-rc.1",
     "@ts-rest/nest": "^3.53.0-rc.1",
     "effect": "^3.19.4",
-    "qs": "^6.14.0",
+    "qs": "^6.14.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "ts-pattern": "^5.8.0",
