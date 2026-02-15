@@ -18,6 +18,8 @@ import {
 } from 'vitest';
 
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import {
@@ -26,6 +28,7 @@ import {
 } from '../../../src/exceptions';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
@@ -677,6 +680,178 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         prisma,
         authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
         meta,
+      });
+    });
+  });
+
+  describe('RegistrationState', () => {
+    describe('Invalid UserPresence state', () => {
+      test('Throws UserPresenceRequired when state is undefined and requireUserPresence is true', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        await expect(() =>
+          authenticator.authenticatorMakeCredential({
+            authenticatorMakeCredentialArgs,
+            meta: {
+              userId: 'test-user',
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state: undefined,
+          }),
+        ).rejects.toThrowError(UserPresenceRequired);
+      });
+
+      test('Throws UserPresenceRequired when state.up is false', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          up: false,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorMakeCredential({
+            authenticatorMakeCredentialArgs,
+            meta: {
+              userId: 'test-user',
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserPresenceRequired);
+      });
+
+      test('Throws UserPresenceRequired with only uv in state but no up', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          uv: true,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorMakeCredential({
+            authenticatorMakeCredentialArgs,
+            meta: {
+              userId: 'test-user',
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserPresenceRequired);
+      });
+    });
+
+    describe('Invalid UserVerification state', () => {
+      test('Throws UserVerificationRequired when state.uv is false and requireUserVerification is true', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          up: true,
+          uv: false,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorMakeCredential({
+            authenticatorMakeCredentialArgs,
+            meta: {
+              userId: 'test-user',
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserVerificationRequired);
+      });
+
+      test('Throws UserVerificationRequired when state.uv is undefined and requireUserVerification is true', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          up: true,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorMakeCredential({
+            authenticatorMakeCredentialArgs,
+            meta: {
+              userId: 'test-user',
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserVerificationRequired);
+      });
+    });
+
+    describe('Batch state (up and uv in one step)', () => {
+      test('Succeeds when both up and uv are provided together and both are required', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          up: true,
+          uv: true,
+        };
+
+        const { retries } = await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          prisma,
+          authenticatorMakeCredentialArgs,
+          state,
+        });
+
+        expect(retries).toBe(0);
+      });
+
+      test('Succeeds when both up and uv are provided but only up is required', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: false,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          up: true,
+          uv: true,
+        };
+
+        const { retries } = await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          prisma,
+          authenticatorMakeCredentialArgs,
+          state,
+        });
+
+        expect(retries).toBe(0);
       });
     });
   });

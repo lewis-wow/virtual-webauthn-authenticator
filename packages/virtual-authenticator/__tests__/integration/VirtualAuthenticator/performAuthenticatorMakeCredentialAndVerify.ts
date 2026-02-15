@@ -85,6 +85,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
     state,
   } = opts;
 
+  let retries = -1;
   let currentState: RegistrationState | undefined = state;
   let authenticatorMakeCredentialResponse:
     | AuthenticatorMakeCredentialResponse
@@ -93,6 +94,8 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
   // Simple loop to retry if user presence or verification is required
   // The VirtualAuthenticator is stateless but expects state arguments to be passed for multi-step operations
   while (!authenticatorMakeCredentialResponse) {
+    retries++;
+
     try {
       authenticatorMakeCredentialResponse =
         await authenticator.authenticatorMakeCredential({
@@ -164,5 +167,6 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
     response: authenticatorMakeCredentialResponse,
     attestationObjectMap,
     parsedAuthenticatorData,
+    retries,
   };
 };
