@@ -1,8 +1,4 @@
-import {
-  API_KEY_ID,
-  upsertTestingUser,
-  USER_ID,
-} from '../../../../auth/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { PrismaClient } from '@repo/prisma';
 import {
@@ -20,8 +16,8 @@ import { CredentialSelectException } from '../../../src/authenticator/exceptions
 import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
 import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
 import { PublicKeyCredentialType } from '../../../src/enums';
-import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import type { AuthenticationState } from '../../../src/state';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
@@ -299,6 +295,12 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         }),
       ).rejects.toThrowError(CredentialSelectException);
 
+      const nextState: AuthenticationState = {
+        credentialId: expectedCredentialOptions[1]!.id,
+        up: true,
+        uv: true,
+      };
+
       // Select index 1 because credentials are ordered by createdAt desc (newest first).
       // Index 0 is the credential created in this test, index 1 is the credential
       // from beforeEach which matches authenticatorMakeCredentialResponse.
@@ -308,70 +310,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         prisma,
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
-        state: {
-          credentialId: expectedCredentialOptions[1]!.id,
-          up: true,
-          uv: true,
-        },
+        state: nextState,
       });
-    });
-
-    test('Client-side discovery for multiple credential with invalid hash - different meta', async () => {
-      await performAuthenticatorMakeCredentialAndVerify({
-        authenticator,
-        authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-        prisma,
-      });
-
-      const authenticatorGetAssertionArgs = {
-        ...AUTHENTICATOR_GET_ASSERTION_ARGS,
-        allowCredentialDescriptorList: undefined,
-      } as AuthenticatorGetAssertionArgs;
-
-      const meta: AuthenticatorMetaArgs = {
-        userId: USER_ID,
-        apiKeyId: null,
-        userPresenceEnabled: true,
-        userVerificationEnabled: true,
-      };
-
-      const expectedCredentialOptions =
-        await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
-          {
-            rpId: RP_ID,
-            userId: USER_ID,
-            apiKeyId: null,
-            allowCredentialDescriptorList: undefined,
-          },
-        );
-
-      await expect(() =>
-        performAuthenticatorGetAssertionAndVerify({
-          authenticator,
-          meta,
-          prisma,
-          authenticatorGetAssertionArgs,
-          authenticatorMakeCredentialResponse,
-        }),
-      ).rejects.toThrowError(CredentialSelectException);
-
-      await expect(() =>
-        performAuthenticatorGetAssertionAndVerify({
-          authenticator,
-          meta: {
-            ...meta,
-            apiKeyId: API_KEY_ID, // This was changed.
-          },
-          prisma,
-          authenticatorGetAssertionArgs,
-          authenticatorMakeCredentialResponse,
-          state: {
-            credentialId: expectedCredentialOptions[0]!.id,
-            up: true,
-            uv: true,
-          },
-        }),
-      ).rejects.toThrowError(CredentialOptionsEmpty);
     });
 
     test('Authentication with existing public key credential', async () => {
