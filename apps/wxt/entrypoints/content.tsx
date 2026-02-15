@@ -63,7 +63,12 @@ export default defineContentScript({
           const response =
             await contentScriptToBackgroundScriptMessaging.sendMessage(
               'credentials.create',
-              { ...request.data, prevStateToken, nextState },
+              {
+                ...request.data,
+                meta: { origin: window.location.origin },
+                prevStateToken,
+                nextState,
+              },
             );
 
           logger.info('credentials.create response.', response);
@@ -100,7 +105,12 @@ export default defineContentScript({
           const response =
             await contentScriptToBackgroundScriptMessaging.sendMessage(
               'credentials.get',
-              { ...request.data, prevStateToken, nextState },
+              {
+                ...request.data,
+                meta: { origin: window.location.origin },
+                prevStateToken,
+                nextState,
+              },
             );
 
           logger.info('credentials.get response.', response);

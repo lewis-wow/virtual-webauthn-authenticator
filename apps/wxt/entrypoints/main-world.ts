@@ -36,9 +36,6 @@ export default defineUnlistedScript(() => {
       'credentials.create',
       {
         publicKeyCredentialCreationOptions: encodedPkOptions,
-        meta: { origin: window.location.origin },
-        prevStateToken: undefined,
-        nextState: {},
       },
     );
 
@@ -81,9 +78,6 @@ export default defineUnlistedScript(() => {
       'credentials.get',
       {
         publicKeyCredentialRequestOptions: encodedPkOptions,
-        meta: { origin: window.location.origin },
-        prevStateToken: undefined,
-        nextState: {},
       },
     );
 
