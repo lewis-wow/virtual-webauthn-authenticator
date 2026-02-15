@@ -56,6 +56,7 @@ import {
   USER_DISPLAY_NAME,
   USER_ID_BYTSES,
 } from '../../helpers/consts';
+import { unreachable } from '../../helpers/unreachable';
 import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 
 const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
@@ -3332,10 +3333,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
       userVerificationEnabled: true,
       userPresenceEnabled: true,
     };
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-    const unreachable = (exceptionCtor: Function) =>
-      `${exceptionCtor.name} should have been thrown.`;
 
     describe('Invalid UserPresence state', () => {
       test('Should throw UserPresenceRequiredAgentException when no state token is provided', async () => {
