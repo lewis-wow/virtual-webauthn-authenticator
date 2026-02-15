@@ -2,6 +2,8 @@ import { assertSchema } from '@repo/assert';
 import { Exception } from '@repo/exception';
 import z from 'zod';
 
+import { UserVerificationRequiredDataSchema } from '../../exceptions';
+
 export class UserVerificationRequiredAgentException extends Exception<UserVerificationRequiredAgentExceptionData> {
   static readonly code = 'USER_VERIFICATION_REQUIRED';
   static readonly status = 400;
@@ -14,9 +16,10 @@ export class UserVerificationRequiredAgentException extends Exception<UserVerifi
   }
 }
 
-export const UserVerificationRequiredAgentExceptionDataSchema = z.object({
-  stateToken: z.string(),
-});
+export const UserVerificationRequiredAgentExceptionDataSchema =
+  UserVerificationRequiredDataSchema.extend({
+    stateToken: z.string(),
+  });
 
 export type UserVerificationRequiredAgentExceptionData = z.infer<
   typeof UserVerificationRequiredAgentExceptionDataSchema

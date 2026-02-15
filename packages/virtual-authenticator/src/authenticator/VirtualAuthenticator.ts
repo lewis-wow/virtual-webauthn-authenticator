@@ -17,6 +17,7 @@ import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSup
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import type { AuthenticationState, RegistrationState } from '../state';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import { AuthenticatorGetAssertionArgsSchema } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
@@ -29,7 +30,11 @@ import {
   AuthenticatorMakeCredentialResponseSchema,
   type AuthenticatorMakeCredentialResponse,
 } from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
-import { AuthenticatorMetaArgsSchema } from '../validation/authenticator/AuthenticatorMetaArgsSchema';
+import {
+  AuthenticatorMetaArgsSchema,
+  type AuthenticatorMetaArgs,
+} from '../validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
@@ -416,6 +421,57 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
+  private _checkAuthorizationGestureOrThrow(opts: {
+    applicablePublicKeyCredentials?: ApplicablePublicKeyCredential[];
+    requireUserVerification: boolean;
+    requireUserPresence: boolean;
+    meta: AuthenticatorMetaArgs;
+    state?: RegistrationState | AuthenticationState;
+  }) {
+    const {
+      applicablePublicKeyCredentials,
+      requireUserPresence,
+      requireUserVerification,
+      meta,
+      state,
+    } = opts;
+
+    if (
+      applicablePublicKeyCredentials !== undefined &&
+      applicablePublicKeyCredentials.length > 1
+    ) {
+      throw new CredentialSelectException({
+        credentialOptions: applicablePublicKeyCredentials,
+        requireUserPresence,
+        requireUserVerification,
+      });
+    }
+
+    if (
+      requireUserVerification === true &&
+      meta.userVerificationEnabled === false
+    ) {
+      throw new UserVerificationNotAvailable();
+    }
+
+    if (requireUserVerification === true && !state?.uv) {
+      throw new UserVerificationRequired({
+        requireUserPresence,
+        requireUserVerification,
+      });
+    }
+
+    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
+      throw new UserPresenceNotAvailable();
+    }
+
+    if (requireUserPresence === true && !state?.up) {
+      throw new UserPresenceRequired({
+        requireUserPresence,
+      });
+    }
+  }
+
   /**
    * The authenticatorMakeCredential operation.
    * This is the authenticator-side operation for creating a new credential.
@@ -533,13 +589,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    if (requireUserPresence && !state?.up) {
-      throw new UserPresenceRequired();
-    }
-
-    if (requireUserVerification && !state?.uv) {
-      throw new UserVerificationRequired();
-    }
+    this._checkAuthorizationGestureOrThrow({
+      meta,
+      requireUserPresence,
+      requireUserVerification,
+      state,
+      applicablePublicKeyCredentials: undefined,
+    });
 
     // Step 7: Once the authorization gesture has been completed, generate
     // a new credential object
@@ -775,35 +831,18 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Step 7: Prompt user to select credential and collect authorization gesture
     // Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-
-    // Prompt user to select credential.
-    if (credentialOptions.length > 1) {
-      throw new CredentialSelectException({
-        credentialOptions,
-      });
-    }
+    this._checkAuthorizationGestureOrThrow({
+      meta,
+      requireUserPresence,
+      requireUserVerification,
+      state,
+      applicablePublicKeyCredentials: credentialOptions,
+    });
 
     // Collect an authorization gesture confirming user consent for using selectedCredential.
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
-    if (
-      requireUserVerification === true &&
-      meta.userVerificationEnabled === false
-    ) {
-      throw new UserVerificationNotAvailable();
-    }
-
-    if (requireUserVerification === true && !state?.uv) {
-      throw new UserVerificationRequired();
-    }
 
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
-    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
-      throw new UserPresenceNotAvailable();
-    }
-
-    if (requireUserPresence === true && !state?.up) {
-      throw new UserPresenceRequired();
-    }
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
 
     // IMPORTANT: The credential is selected ONLY if there is only one credential.

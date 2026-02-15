@@ -120,6 +120,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       });
 
       return new UserPresenceRequiredAgentException({
+        ...error.data,
         stateToken,
       });
     }
@@ -132,6 +133,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       });
 
       return new UserVerificationRequiredAgentException({
+        ...error.data,
         stateToken,
       });
     }

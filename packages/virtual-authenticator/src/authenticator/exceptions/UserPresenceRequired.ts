@@ -1,10 +1,21 @@
 import { Exception } from '@repo/exception';
+import { HttpStatusCode } from '@repo/http';
+import z from 'zod';
 
-export class UserPresenceRequired extends Exception {
-  static readonly code = 'USER_PRESENCE_REQUIRED';
-  static readonly status = 400;
+export class UserPresenceRequired extends Exception<UserPresenceRequiredData> {
+  static readonly code = 'UserPresenceRequired';
+  static readonly status = HttpStatusCode.PRECONDITION_REQUIRED_428;
+  static readonly message = 'User Presence (UP) is required to proceed.';
 
-  constructor(message = 'User Presence (UP) is required to proceed.') {
-    super({ message });
+  constructor(data: UserPresenceRequiredData) {
+    super({ data });
   }
 }
+
+export const UserPresenceRequiredDataSchema = z.object({
+  requireUserPresence: z.boolean(),
+});
+
+export type UserPresenceRequiredData = z.infer<
+  typeof UserPresenceRequiredDataSchema
+>;

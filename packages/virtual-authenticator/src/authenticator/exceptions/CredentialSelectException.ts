@@ -19,6 +19,8 @@ export class CredentialSelectException extends Exception<CredentialSelectExcepti
 
 export const CredentialSelectExceptionDataSchema = z.object({
   credentialOptions: z.array(ApplicablePublicKeyCredentialSchema),
+  requireUserPresence: z.boolean(),
+  requireUserVerification: z.boolean(),
 });
 
 export type CredentialSelectExceptionData = z.infer<

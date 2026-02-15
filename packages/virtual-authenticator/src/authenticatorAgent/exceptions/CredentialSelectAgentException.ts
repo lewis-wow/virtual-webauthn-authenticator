@@ -3,7 +3,7 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
-import { ApplicablePublicKeyCredentialSchema } from '../../validation/spec/ApplicablePublicKeyCredentialSchema';
+import { CredentialSelectExceptionDataSchema } from '../../exceptions';
 
 export class CredentialSelectAgentException extends Exception<CredentialSelectAgentExceptionData> {
   static readonly code = 'CredentialSelectAgentException';
@@ -17,10 +17,10 @@ export class CredentialSelectAgentException extends Exception<CredentialSelectAg
   }
 }
 
-export const CredentialSelectAgentExceptionDataSchema = z.object({
-  stateToken: z.string(),
-  credentialOptions: z.array(ApplicablePublicKeyCredentialSchema),
-});
+export const CredentialSelectAgentExceptionDataSchema =
+  CredentialSelectExceptionDataSchema.extend({
+    stateToken: z.string(),
+  });
 
 export type CredentialSelectAgentExceptionData = z.infer<
   typeof CredentialSelectAgentExceptionDataSchema
