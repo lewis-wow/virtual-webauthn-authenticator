@@ -14,7 +14,9 @@ import {
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
+import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
 import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
+import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import type { AuthenticationState } from '../../../src/state';
@@ -330,6 +332,291 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         prisma,
         authenticatorGetAssertionArgs,
         authenticatorMakeCredentialResponse,
+      });
+    });
+  });
+
+  describe('AuthenticationState', () => {
+    describe('Invalid CredentialSelection state', () => {
+      test('Throws CredentialSelectException when multiple credentials exist and no credentialId in state', async () => {
+        // Create a second credential for the same RP
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          prisma,
+        });
+
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          allowCredentialDescriptorList: undefined,
+        } as AuthenticatorGetAssertionArgs;
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state: undefined,
+          }),
+        ).rejects.toThrowError(CredentialSelectException);
+      });
+
+      test('Throws CredentialSelectException when multiple credentials exist and state has up/uv but no credentialId', async () => {
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          prisma,
+        });
+
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          allowCredentialDescriptorList: undefined,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          up: true,
+          uv: true,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(CredentialSelectException);
+      });
+    });
+
+    describe('Invalid UserPresence state', () => {
+      test('Throws UserPresenceRequired when state is undefined and requireUserPresence is true', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+        } as AuthenticatorGetAssertionArgs;
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state: undefined,
+          }),
+        ).rejects.toThrowError(UserPresenceRequired);
+      });
+
+      test('Throws UserPresenceRequired when state.up is false', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          up: false,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserPresenceRequired);
+      });
+
+      test('Throws UserPresenceRequired with only uv in state but no up', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          uv: true,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserPresenceRequired);
+      });
+    });
+
+    describe('Invalid UserVerification state', () => {
+      test('Throws UserVerificationRequired when state.uv is false and requireUserVerification is true', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          up: true,
+          uv: false,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserVerificationRequired);
+      });
+
+      test('Throws UserVerificationRequired when state.uv is undefined and requireUserVerification is true', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          up: true,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorGetAssertion({
+            authenticatorGetAssertionArgs,
+            meta: {
+              userId: USER_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserVerificationRequired);
+      });
+    });
+
+    describe('Batch state (credentialId, up, and uv in one step)', () => {
+      test('Succeeds when up and uv are provided together and both are required', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          up: true,
+          uv: true,
+        };
+
+        const { retries } = await performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          prisma,
+          authenticatorGetAssertionArgs,
+          authenticatorMakeCredentialResponse,
+          state,
+        });
+
+        expect(retries).toBe(0);
+      });
+
+      test('Succeeds when credentialId, up, and uv are all provided together for multiple credentials', async () => {
+        // Create a second credential
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          prisma,
+        });
+
+        const meta: AuthenticatorMetaArgs = {
+          userId: USER_ID,
+          apiKeyId: null,
+          userPresenceEnabled: true,
+          userVerificationEnabled: true,
+        };
+
+        const expectedCredentialOptions =
+          await webAuthnPublicKeyCredentialRepository.findAllApplicableCredentialsByRpIdAndUserWithAllowCredentialDescriptorList(
+            {
+              rpId: RP_ID,
+              userId: USER_ID,
+              apiKeyId: null,
+              allowCredentialDescriptorList: undefined,
+            },
+          );
+
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+          allowCredentialDescriptorList: undefined,
+        } as AuthenticatorGetAssertionArgs;
+
+        // Provide credentialId, up, and uv all at once - no retries needed
+        const state: AuthenticationState = {
+          credentialId: expectedCredentialOptions[1]!.id,
+          up: true,
+          uv: true,
+        };
+
+        const { retries } = await performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          meta,
+          prisma,
+          authenticatorGetAssertionArgs,
+          authenticatorMakeCredentialResponse,
+          state,
+        });
+
+        expect(retries).toBe(0);
+      });
+
+      test('Succeeds when up and uv are provided but only up is required', async () => {
+        const authenticatorGetAssertionArgs = {
+          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: false,
+        } as AuthenticatorGetAssertionArgs;
+
+        const state: AuthenticationState = {
+          up: true,
+          uv: true,
+        };
+
+        const { retries } = await performAuthenticatorGetAssertionAndVerify({
+          authenticator,
+          prisma,
+          authenticatorGetAssertionArgs,
+          authenticatorMakeCredentialResponse,
+          state,
+        });
+
+        expect(retries).toBe(0);
       });
     });
   });

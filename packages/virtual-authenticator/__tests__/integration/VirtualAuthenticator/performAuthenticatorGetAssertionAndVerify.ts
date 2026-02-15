@@ -68,12 +68,14 @@ export const performAuthenticatorGetAssertionAndVerify = async (
     expectedCounter,
   } = opts;
 
+  let retries = -1;
   let currentState: AuthenticationState | undefined = state;
   let authenticatorGetAssertionResponse:
     | AuthenticatorGetAssertionResponse
     | undefined;
 
   while (!authenticatorGetAssertionResponse) {
+    retries++;
     try {
       authenticatorGetAssertionResponse =
         await authenticator.authenticatorGetAssertion({
@@ -170,5 +172,6 @@ export const performAuthenticatorGetAssertionAndVerify = async (
     response: authenticatorGetAssertionResponse,
     parsedGetAssertionAuthenticatorData,
     parsedMakeCredentialAuthenticatorData,
+    retries,
   };
 };
