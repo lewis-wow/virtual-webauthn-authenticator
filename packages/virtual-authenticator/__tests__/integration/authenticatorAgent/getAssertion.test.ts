@@ -25,6 +25,8 @@ import {
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
 import { CredentialSelectAgentException } from '../../../src/authenticatorAgent/exceptions/CredentialSelectAgentException';
+import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
+import { UserVerificationRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserVerificationRequiredAgentException';
 import {
   CredPropsExtension,
   ExtensionProcessor,
@@ -51,6 +53,7 @@ import {
   RP_ORIGIN,
 } from '../../helpers/consts';
 import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
+import { unreachable } from '../../helpers/unreachable';
 import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 import { performPublicKeyCredentialRequestAndVerify } from './performPublicKeyCredentialRequestAndVerify';
 
@@ -1615,6 +1618,321 @@ describe('VirtualAuthenticator.getCredential()', () => {
           nextState: {},
         }),
       ).rejects.toThrowError(TypeAssertionError);
+    });
+  });
+
+  describe('AuthenticationState', () => {
+    const meta: AuthenticatorAgentMetaArgs = {
+      userId: USER_ID,
+      origin: RP_ORIGIN,
+      apiKeyId: null,
+      userVerificationEnabled: true,
+      userPresenceEnabled: true,
+    };
+
+    describe('Invalid CredentialSelection state', () => {
+      test('Should throw CredentialSelectAgentException with stateToken and credentialOptions in data', async () => {
+        // Create a second credential
+        await performPublicKeyCredentialRegistrationAndVerify({
+          stateManager,
+          agent,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          meta,
+        });
+
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: undefined,
+          },
+        );
+
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+          });
+
+          expect.unreachable(unreachable(CredentialSelectAgentException));
+        } catch (error) {
+          expect(error).toBeInstanceOf(CredentialSelectAgentException);
+          const exception = error as CredentialSelectAgentException;
+
+          expect(exception.data).toMatchObject({
+            stateToken: expect.any(String),
+            credentialOptions: expect.any(Array),
+          });
+          expect(
+            exception.data.credentialOptions.length,
+          ).toBeGreaterThanOrEqual(2);
+        }
+      });
+    });
+
+    describe('Invalid UserPresence state', () => {
+      test('Should throw UserPresenceRequiredAgentException with stateToken in data', async () => {
+        const publicKeyCredentialRequestOptions =
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS;
+
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+          });
+
+          expect.unreachable(unreachable(UserPresenceRequiredAgentException));
+        } catch (error) {
+          expect(error).toBeInstanceOf(UserPresenceRequiredAgentException);
+          const exception = error as UserPresenceRequiredAgentException;
+
+          expect(exception.data).toMatchObject({
+            stateToken: expect.any(String),
+            requireUserPresence: true,
+          });
+        }
+      });
+
+      test('Should throw UserPresenceRequiredAgentException when nextState.up is false', async () => {
+        const publicKeyCredentialRequestOptions =
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS;
+
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+          });
+
+          expect.unreachable(unreachable(UserPresenceRequiredAgentException));
+        } catch (error) {
+          expect(error).toBeInstanceOf(UserPresenceRequiredAgentException);
+
+          const stateToken = (error as UserPresenceRequiredAgentException).data
+            .stateToken;
+
+          // Retry with up: false — should still fail
+          await expect(async () =>
+            agent.getAssertion({
+              origin: RP_ORIGIN,
+              options: { publicKey: publicKeyCredentialRequestOptions },
+              sameOriginWithAncestors: true,
+              meta,
+              prevStateToken: stateToken,
+              nextState: { up: false },
+            }),
+          ).rejects.toThrowError(UserPresenceRequiredAgentException);
+        }
+      });
+    });
+
+    describe('Invalid UserVerification state', () => {
+      test('Should throw UserVerificationRequiredAgentException after UP is resolved when UV is required', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            userVerification: UserVerification.REQUIRED,
+          },
+        );
+
+        // First call — should throw UserPresenceRequiredAgentException
+        let stateToken: string;
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+          });
+
+          expect.unreachable(unreachable(UserPresenceRequiredAgentException));
+        } catch (error) {
+          expect(error).toBeInstanceOf(UserPresenceRequiredAgentException);
+          stateToken = (error as UserPresenceRequiredAgentException).data
+            .stateToken;
+        }
+
+        // Second call with up: true — should throw UserVerificationRequiredAgentException
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+            prevStateToken: stateToken,
+            nextState: { up: true },
+          });
+
+          unreachable(UserVerificationRequiredAgentException);
+        } catch (error) {
+          expect(error).toBeInstanceOf(UserVerificationRequiredAgentException);
+          const exception = error as UserVerificationRequiredAgentException;
+
+          expect(exception.data).toMatchObject({
+            stateToken: expect.any(String),
+          });
+        }
+      });
+    });
+
+    describe('Batch state (credentialId, up, and uv in one step)', () => {
+      test('Should succeed when both up and uv are provided in a single retry when UV is required', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            userVerification: UserVerification.REQUIRED,
+          },
+        );
+
+        // First call — throws UserPresenceRequiredAgentException
+        let stateToken: string;
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+          });
+
+          expect.unreachable(unreachable(UserPresenceRequiredAgentException));
+        } catch (error) {
+          expect(error).toBeInstanceOf(UserPresenceRequiredAgentException);
+          stateToken = (error as UserPresenceRequiredAgentException).data
+            .stateToken;
+        }
+
+        // Second call with both up and uv — should succeed in one step
+        const assertionCredential = await agent.getAssertion({
+          origin: RP_ORIGIN,
+          options: { publicKey: publicKeyCredentialRequestOptions },
+          sameOriginWithAncestors: true,
+          meta,
+          prevStateToken: stateToken,
+          nextState: { up: true, uv: true },
+        });
+
+        expect(assertionCredential).toBeDefined();
+      });
+
+      test('Should succeed via performPublicKeyCredentialRequestAndVerify with retries', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+          },
+        );
+
+        const { retries, publicKeyCredential: assertionCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        expect(assertionCredential).toBeDefined();
+        // At least 1 retry for UP
+        expect(retries).toBeGreaterThanOrEqual(1);
+      });
+
+      test('Should succeed with UV required via performPublicKeyCredentialRequestAndVerify', async () => {
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: [
+              {
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+                id: publicKeyCredential.rawId,
+              },
+            ],
+            userVerification: UserVerification.REQUIRED,
+          },
+        );
+
+        const { retries, publicKeyCredential: assertionCredential } =
+          await performPublicKeyCredentialRequestAndVerify({
+            stateManager,
+            agent,
+            publicKeyCredentialRequestOptions,
+            webAuthnCredential,
+          });
+
+        expect(assertionCredential).toBeDefined();
+        // At least 2 retries: one for UP, one for UV
+        expect(retries).toBeGreaterThanOrEqual(2);
+      });
+
+      test('Should succeed with credentialId, up, and uv all provided for multiple credentials', async () => {
+        // Create a second credential
+        await performPublicKeyCredentialRegistrationAndVerify({
+          stateManager,
+          agent,
+          publicKeyCredentialCreationOptions:
+            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          meta,
+        });
+
+        const publicKeyCredentialRequestOptions = set(
+          PUBLIC_KEY_CREDENTIAL_REQUEST_OPTIONS,
+          {
+            allowCredentials: undefined,
+            userVerification: UserVerification.REQUIRED,
+          },
+        );
+
+        // First call — throws CredentialSelectAgentException
+        let stateToken: string;
+        let credentialId: string;
+        try {
+          await agent.getAssertion({
+            origin: RP_ORIGIN,
+            options: { publicKey: publicKeyCredentialRequestOptions },
+            sameOriginWithAncestors: true,
+            meta,
+          });
+
+          expect.unreachable(unreachable(CredentialSelectAgentException));
+        } catch (error) {
+          expect(error).toBeInstanceOf(CredentialSelectAgentException);
+          const exception = error as CredentialSelectAgentException;
+          stateToken = exception.data.stateToken;
+          credentialId = exception.data.credentialOptions[1]!.id;
+        }
+
+        // Second call with credentialId, up, and uv all at once — should succeed
+        const assertionCredential = await agent.getAssertion({
+          origin: RP_ORIGIN,
+          options: { publicKey: publicKeyCredentialRequestOptions },
+          sameOriginWithAncestors: true,
+          meta,
+          prevStateToken: stateToken,
+          nextState: { credentialId, up: true, uv: true },
+        });
+
+        expect(assertionCredential).toBeDefined();
+      });
     });
   });
 });
