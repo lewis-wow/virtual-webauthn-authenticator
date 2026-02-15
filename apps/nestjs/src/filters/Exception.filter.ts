@@ -16,7 +16,7 @@ export class ExceptionFilter implements NestjsExceptionFilter {
   constructor(private readonly logger: Logger) {}
 
   async catch(error: unknown, host: ArgumentsHost) {
-    this.logger.catch(error, 'Exception filter:');
+    this.logger.exceptionOrError(error, 'Exception filter:');
 
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<ExpressResponse>();

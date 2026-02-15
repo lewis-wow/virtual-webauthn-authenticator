@@ -1,87 +1,34 @@
 import { isError } from '@repo/utils';
-import util from 'util';
-import * as winston from 'winston';
+import { type ConsolaInstance, createConsola } from 'consola';
+
+import { LogLevel } from './LogLevel';
 
 export type LoggerOptions = {
   prefix: string;
+  level?: LogLevel;
 };
 
-/**
- * Define the log format for the parent logger.
- * This format will be inherited by all child loggers.
- */
-const logFormat = winston.format.combine(
-  winston.format.errors({ stack: true }),
-  winston.format.colorize(),
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.splat(),
-  winston.format.printf((info) => {
-    // We destructure 'prefix' from the info object.
-    // winston.child() will add this to the info for us.
-    const { timestamp, level, message, stack, prefix, ...meta } = info;
+const parentLogger = createConsola();
 
-    // Conditionally add the prefix if it exists
-    const prefixStr = prefix ? ` [${prefix}]` : '';
-
-    let log = `${timestamp} ${level}${prefixStr}: ${message}`;
-
-    const splatSymbol = Symbol.for('splat');
-    const splat = meta[splatSymbol as keyof typeof meta]; // Type assertion
-    const extras = Array.isArray(splat)
-      ? splat
-          .map((val) => util.inspect(val, { depth: null, colors: true }))
-          .join(' ')
-      : '';
-
-    if (extras.length > 0) {
-      log += ` ${extras}`;
-    }
-
-    if (stack) {
-      log += `\n${stack}`;
-    }
-
-    return log;
-  }),
-);
-
-/**
- * The ONE and ONLY parent logger instance.
- * Its log level is set globally (e.g., via environment variables).
- * All child loggers will inherit this level.
- */
-const parentLogger = winston.createLogger({
-  // eslint-disable-next-line turbo/no-undeclared-env-vars
-  level: process.env.LOG_LEVEL ?? 'debug', // Global log level
-  format: logFormat,
-  transports: [new winston.transports.Console()],
-  exitOnError: false,
-});
-
-/**
- * A custom logger class that creates a CHILD of the main winston logger.
- * It provides standard logging methods (info, warn, error, debug)
- * and automatically adds its prefix to every log message.
- */
 export class Logger {
-  private logger: winston.Logger;
+  static readonly DEFAULT_LOG_LEVEL = LogLevel.info;
+
+  private logger: ConsolaInstance;
 
   /**
-   * Creates a new Logger instance as a child of the main logger.
+   * Creates a new Logger instance as a tagged child of the main logger.
    * @param opts - Options containing the prefix for this child logger.
    */
   constructor(opts: LoggerOptions) {
-    const { prefix } = opts;
+    const { prefix, level } = opts;
 
-    // Create a CHILD logger, passing the prefix as metadata.
-    // The printf format will automatically pick up this 'prefix'
-    // and include it in the output.
-    this.logger = parentLogger.child({ prefix });
+    this.logger = parentLogger.withTag(prefix);
+    this.logger.level = level ?? Logger.DEFAULT_LOG_LEVEL;
   }
 
   /**
    * Logs an informational message.
-   * @param message - The message string (can include format specifiers).
+   * @param message - The message string.
    * @param meta - Additional data to log.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,7 +38,7 @@ export class Logger {
 
   /**
    * Logs a warning message.
-   * @param message - The message string (can include format specifiers).
+   * @param message - The message string.
    * @param meta - Additional data to log.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,8 +48,8 @@ export class Logger {
 
   /**
    * Logs an error message.
-   * @param message - The message string (can include format specifiers).
-   * @param meta - Additional data to log (can include an Error object).
+   * @param message - The message string.
+   * @param meta - Additional data to log.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public error(message: string, ...meta: any[]): void {
@@ -110,22 +57,18 @@ export class Logger {
   }
 
   /**
-   * Logs an exception object at the 'error' level with pretty-printing.
-   * This method uses the `util.inspect` logic from your `printf`
-   * format to print the full error object.
+   * Logs an exception object at the 'error' level.
    *
    * @param error - The Error object to log.
+   * @param message - Optional message override (defaults to error.message).
    */
   public exception(error: Error, message?: string): void {
-    // We pass the error.message as the main message,
-    // and the error itself as an object in the 'meta' array.
-    // Your 'splat' logic will find it and 'util.inspect' it.
     this.logger.error(message ?? error.message, { exception: error });
   }
 
   /**
    * Logs a debug message.
-   * @param message - The message string (can include format specifiers).
+   * @param message - The message string.
    * @param meta - Additional data to log.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,7 +76,7 @@ export class Logger {
     this.logger.debug(message, ...meta);
   }
 
-  public catch(exception: unknown, message: string) {
+  public exceptionOrError(exception: unknown, message: string) {
     if (isError(exception)) {
       this.exception(exception, message);
       return;
