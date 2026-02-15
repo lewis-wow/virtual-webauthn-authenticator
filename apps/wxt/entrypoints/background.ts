@@ -1,6 +1,6 @@
 import { env } from '@/env';
 import { contentScriptToBackgroundScriptMessaging } from '@/messaging/contentScriptToBackgroundScriptMessaging';
-import type { MessagingProtocol } from '@/types';
+import type { ContentScriptToBackgroundScriptMessagingProtocol } from '@/messaging/contentScriptToBackgroundScriptMessaging';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { Logger } from '@repo/logger';
 import { initClient } from '@ts-rest/core';
@@ -43,7 +43,9 @@ export default defineBackground(() => {
         return {
           ok: true as const,
           data: response.body,
-        } as unknown as ReturnType<MessagingProtocol['credentials.create']>;
+        } as unknown as ReturnType<
+          ContentScriptToBackgroundScriptMessagingProtocol['credentials.create']
+        >;
       }
 
       logger.error('Error', response.body);
@@ -51,7 +53,9 @@ export default defineBackground(() => {
       return {
         ok: false as const,
         error: response.body,
-      } as unknown as ReturnType<MessagingProtocol['credentials.create']>;
+      } as unknown as ReturnType<
+        ContentScriptToBackgroundScriptMessagingProtocol['credentials.create']
+      >;
     },
   );
 
@@ -73,7 +77,9 @@ export default defineBackground(() => {
         return {
           ok: true as const,
           data: response.body,
-        } as unknown as ReturnType<MessagingProtocol['credentials.get']>;
+        } as unknown as ReturnType<
+          ContentScriptToBackgroundScriptMessagingProtocol['credentials.get']
+        >;
       }
 
       logger.error('Error', response.body);
@@ -81,7 +87,9 @@ export default defineBackground(() => {
       return {
         ok: false as const,
         error: response.body,
-      } as unknown as ReturnType<MessagingProtocol['credentials.get']>;
+      } as unknown as ReturnType<
+        ContentScriptToBackgroundScriptMessagingProtocol['credentials.get']
+      >;
     },
   );
 });
