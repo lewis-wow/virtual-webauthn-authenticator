@@ -23,6 +23,7 @@ import { KeyClientProvider } from './services/KeyClient.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
 import { PrismaVirtualAuthenticatorJwksRepositoryProvider } from './services/PrismaVirtualAuthenticatorJwksRepository.provider';
+import { PrismaVirtualAuthenticatorRepositoryProvider } from './services/PrismaVirtualAuthenticatorRepository.provider';
 import { PrismaWebAuthnRepositoryProvider } from './services/PrismaWebAuthnRepository.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticatorAgent.provider';
@@ -56,6 +57,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
+    PrismaVirtualAuthenticatorRepositoryProvider,
     JwksProvider,
     JwtProvider,
     PrismaVirtualAuthenticatorJwksRepositoryProvider,
@@ -74,6 +76,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
+    PrismaVirtualAuthenticatorRepositoryProvider,
     JwksProvider,
     JwtProvider,
     PrismaVirtualAuthenticatorJwksRepositoryProvider,

@@ -15,6 +15,7 @@ import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
+import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import type {
   PublicKeyCredentialCreationOptions,
   PublicKeyCredentialUserEntity,
@@ -80,6 +81,14 @@ export class CredentialsController {
 
         if (!permissions.includes(Permission['CREDENTIAL.CREATE'])) {
           throw new Forbidden();
+        }
+
+        const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+        });
+
+        if (!user) {
+          throw new UserNotExists();
         }
 
         const activeVirtualAuthenticator =
@@ -163,6 +172,14 @@ export class CredentialsController {
 
         if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
           throw new Forbidden();
+        }
+
+        const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+        });
+
+        if (!user) {
+          throw new UserNotExists();
         }
 
         const activeVirtualAuthenticator =

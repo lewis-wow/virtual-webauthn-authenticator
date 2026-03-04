@@ -30,7 +30,7 @@ import {
   UserVerification,
   VirtualAuthenticatorUserVerificationType,
 } from '@repo/virtual-authenticator/enums';
-import { CredentialOptionsEmpty } from '@repo/virtual-authenticator/exceptions';
+import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
 import { randomUUID } from 'node:crypto';
 import {
@@ -137,25 +137,6 @@ describe('CredentialsController - POST /api/credentials/get', () => {
     await app.init();
   });
 
-  beforeEach(async () => {
-    const { response, verification } =
-      await performPublicKeyCredentialRegistrationAndVerify({
-        app: app.getHttpServer(),
-        token,
-        payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
-        expectStatus: HttpStatusCode.OK_200,
-      });
-
-    // Save the results for use in other tests
-    registrationVerification = verification!;
-    base64urlCredentialId = response.body.id;
-  });
-
-  afterEach(async () => {
-    await prisma.webAuthnPublicKeyCredential.deleteMany();
-    await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany();
-  });
-
   afterAll(async () => {
     await prisma.virtualAuthenticator.deleteMany();
     await prisma.user.deleteMany();
@@ -164,569 +145,349 @@ describe('CredentialsController - POST /api/credentials/get', () => {
     await app.close();
   });
 
-  describe('Authorization', () => {
-    test('Should not work when unauthorized', async () => {
-      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-      await performPublicKeyCredentialRequestAndVerify({
-        app: app.getHttpServer(),
-        registrationVerification,
-        token: undefined,
-        payload,
-        expectStatus: HttpStatusCode.UNAUTHORIZED_401,
-      });
-    });
-
-    test('Should not work when token is invalid', async () => {
-      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-      await performPublicKeyCredentialRequestAndVerify({
-        app: app.getHttpServer(),
-        registrationVerification,
-        token: 'INVALID_TOKEN',
-        payload,
-        expectStatus: HttpStatusCode.UNAUTHORIZED_401,
-      });
-    });
-
-    test('Should not work when token do not have any permission', async () => {
-      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-      await performPublicKeyCredentialRequestAndVerify({
-        app: app.getHttpServer(),
-        registrationVerification,
-        token: await jwtIssuer.sign({
-          ...USER_JWT_PAYLOAD,
-          permissions: [],
-        }),
-        payload,
-        expectStatus: HttpStatusCode.FORBIDDEN_403,
-      });
-    });
-
-    test('Should not work when token is for user that does not exists', async () => {
-      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-      const { response } = await performPublicKeyCredentialRequestAndVerify({
-        app: app.getHttpServer(),
-        registrationVerification,
-        token: await jwtIssuer.sign({
-          ...USER_JWT_PAYLOAD,
-          userId: randomUUID(),
-        }),
-        payload,
-        expectStatus: HttpStatusCode.BAD_REQUEST_400,
-      });
-
-      expect(response.body).toStrictEqual(
-        new CredentialOptionsEmpty().toJSON(),
-      );
-    });
-
-    test('Should not work when no active virtual authenticator exists', async () => {
-      await prisma.virtualAuthenticator.deleteMany();
-
-      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-      const { response } = await performPublicKeyCredentialRequestAndVerify({
-        app: app.getHttpServer(),
-        registrationVerification,
-        token,
-        payload,
-        expectStatus: NoActiveVirtualAuthenticator.status,
-      });
-
-      expect(response.body).toStrictEqual(
-        new NoActiveVirtualAuthenticator().toJSON(),
-      );
-
-      // Restore active authenticator for subsequent tests
-      await prisma.virtualAuthenticator.create({
-        data: {
-          userId: USER_ID,
-          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
-          isActive: true,
-        },
-      });
-    });
-
-    test('As authenticated user', async () => {
-      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-      await performPublicKeyCredentialRequestAndVerify({
-        app: app.getHttpServer(),
-        token,
-        payload,
-        registrationVerification,
-        expectedNewCounter: 1,
-        expectStatus: HttpStatusCode.OK_200,
-      });
-    });
-  });
-
-  // test('With empty `allowCredentials` as authenticated user', async () => {
-  //   await performPublicKeyCredentialRequestAndVerify({
-  //     app: app.getHttpServer(),
-  //     token,
-  //     payload: {
-  //       ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //       publicKeyCredentialRequestOptions: {
-  //         ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD.publicKeyCredentialRequestOptions,
-  //         allowCredentials: [],
-  //       },
-  //     },
-  //     registrationVerification,
-  //     expectedNewCounter: 2,
-  //   });
-  // });
-
-  // test('With undefined `allowCredentials` as authenticated user', async () => {
-  //   await performPublicKeyCredentialRequestAndVerify({
-  //     app: app.getHttpServer(),
-  //     token,
-  //     payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //     registrationVerification,
-  //     expectedNewCounter: 3,
-  //   });
-  // });
-
-  // test('As guest', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/get')
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //         'publicKeyCredentialRequestOptions.allowCredentials',
-  //         () => [
-  //           {
-  //             id: base64CredentialID,
-  //             type: 'public-key',
-  //           },
-  //         ],
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(401);
-  // });
-
-  // test('With wrong token', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/get')
-  //     .set('Authorization', `Bearer WRONG_TOKEN`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //         'publicKeyCredentialRequestOptions.allowCredentials',
-  //         () => [
-  //           {
-  //             id: base64CredentialID,
-  //             type: 'public-key',
-  //           },
-  //         ],
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(401);
-  // });
-
-  // test('`allowCredentials` that does not exists', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/get')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //         'publicKeyCredentialRequestOptions.allowCredentials',
-  //         () => [
-  //           {
-  //             id: WRONG_UUID,
-  //             type: 'public-key',
-  //           },
-  //         ],
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(404);
-  // });
-
-  // test('`rpId` that does not exists', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/get')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //         'publicKeyCredentialRequestOptions',
-  //         (val) => ({
-  //           ...val,
-  //           rpId: 'WRONG_RP_ID',
-  //           allowCredentials: [
-  //             {
-  //               id: base64CredentialID,
-  //               type: 'public-key',
-  //             },
-  //           ],
-  //         }),
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(404);
-  // });
-
-  // test('Short `challenge`', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/get')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //         'publicKeyCredentialRequestOptions',
-  //         (val) => ({
-  //           ...val,
-  //           challenge: randomBytes(10).toString('base64url'),
-  //           allowCredentials: [
-  //             {
-  //               id: base64CredentialID,
-  //               type: 'public-key',
-  //             },
-  //           ],
-  //         }),
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(400);
-  // });
-
-  // test('With undefined `rpId`', async () => {
-  //   await request(app.getHttpServer())
-  //     .post('/api/credentials/get')
-  //     .set('Authorization', `Bearer ${token}`)
-  //     .send(
-  //       setDeep(
-  //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-  //         'publicKeyCredentialRequestOptions',
-  //         (val) => ({
-  //           ...val,
-  //           rpId: undefined,
-  //           allowCredentials: [
-  //             {
-  //               id: base64CredentialID,
-  //               type: 'public-key',
-  //             },
-  //           ],
-  //         }),
-  //       ),
-  //     )
-  //     .expect('Content-Type', /json/)
-  //     .expect(400);
-  // });
-
-  describe('AuthenticationState', () => {
-    const getPayloadWithCredential = () =>
-      set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
-        publicKeyCredentialRequestOptions: {
-          allowCredentials: [
-            {
-              id: base64urlCredentialId,
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-            },
-          ],
-        },
-      });
-
-    describe('Invalid CredentialSelection state', () => {
-      // Credential selection only triggers when there are 2+ applicable credentials
-      beforeEach(async () => {
+  describe('NONE Authenticator', () => {
+    beforeEach(async () => {
+      const { response, verification } =
         await performPublicKeyCredentialRegistrationAndVerify({
           app: app.getHttpServer(),
           token,
           payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
           expectStatus: HttpStatusCode.OK_200,
         });
-      });
 
-      test('Should return CredentialSelectAgentException when no allowCredentials and no state token', async () => {
-        const { response } = await performPublicKeyCredentialRequestAndVerify({
-          app: app.getHttpServer(),
-          token,
-          payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-          registrationVerification,
-          expectStatus: CredentialSelectAgentException.status,
-          skipStateFlow: true,
-        });
-
-        expect(response.body).toMatchObject({
-          code: CredentialSelectAgentException.code,
-          data: {
-            stateToken: expect.any(String),
-            credentialOptions: expect.any(Array),
-          },
-        });
-      });
-
-      test('Should resolve credential selection and proceed to UP when credentialId is provided', async () => {
-        // First request — should return credential selection required
-        const { response: firstResponse } =
-          await performPublicKeyCredentialRequestAndVerify({
-            app: app.getHttpServer(),
-            token,
-            payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-            registrationVerification,
-            expectStatus: CredentialSelectAgentException.status,
-            skipStateFlow: true,
-          });
-
-        const stateToken = firstResponse.body.data.stateToken;
-        const credentialId = firstResponse.body.data.credentialOptions[0].id;
-
-        // Second request with credentialId — should proceed to UP
-        const { response } = await performPublicKeyCredentialRequestAndVerify({
-          app: app.getHttpServer(),
-          token,
-          payload: {
-            ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-            prevStateToken: stateToken,
-            nextState: { credentialId },
-          },
-          registrationVerification,
-          expectStatus: UserPresenceRequiredAgentException.status,
-          skipStateFlow: true,
-        });
-
-        expect(response.body).toMatchObject({
-          code: UserPresenceRequiredAgentException.code,
-          data: {
-            stateToken: expect.any(String),
-          },
-        });
-      });
+      // Save the results for use in other tests
+      registrationVerification = verification!;
+      base64urlCredentialId = response.body.id;
     });
 
-    describe('Invalid UserPresence state', () => {
-      test('Should return UserPresenceRequired when allowCredentials provided but no UP', async () => {
-        const payload = getPayloadWithCredential();
+    afterEach(async () => {
+      await prisma.webAuthnPublicKeyCredential.deleteMany();
+      await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany();
+    });
+
+    describe('Authorization', () => {
+      test('Should not work when unauthorized', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
+        });
+
+        await performPublicKeyCredentialRequestAndVerify({
+          app: app.getHttpServer(),
+          registrationVerification,
+          token: undefined,
+          payload,
+          expectStatus: HttpStatusCode.UNAUTHORIZED_401,
+        });
+      });
+
+      test('Should not work when token is invalid', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
+        });
+
+        await performPublicKeyCredentialRequestAndVerify({
+          app: app.getHttpServer(),
+          registrationVerification,
+          token: 'INVALID_TOKEN',
+          payload,
+          expectStatus: HttpStatusCode.UNAUTHORIZED_401,
+        });
+      });
+
+      test('Should not work when token do not have any permission', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
+        });
+
+        await performPublicKeyCredentialRequestAndVerify({
+          app: app.getHttpServer(),
+          registrationVerification,
+          token: await jwtIssuer.sign({
+            ...USER_JWT_PAYLOAD,
+            permissions: [],
+          }),
+          payload,
+          expectStatus: HttpStatusCode.FORBIDDEN_403,
+        });
+      });
+
+      test('Should not work when token is for user that does not exists', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
+        });
 
         const { response } = await performPublicKeyCredentialRequestAndVerify({
           app: app.getHttpServer(),
+          registrationVerification,
+          token: await jwtIssuer.sign({
+            ...USER_JWT_PAYLOAD,
+            userId: randomUUID(),
+          }),
+          payload,
+          expectStatus: UserNotExists.status,
+        });
+
+        expect(response.body).toStrictEqual(new UserNotExists().toJSON());
+      });
+
+      test('Should not work when no active virtual authenticator exists', async () => {
+        await prisma.virtualAuthenticator.deleteMany();
+
+        const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
+        });
+
+        const { response } = await performPublicKeyCredentialRequestAndVerify({
+          app: app.getHttpServer(),
+          registrationVerification,
           token,
           payload,
-          registrationVerification,
-          expectStatus: UserPresenceRequiredAgentException.status,
-          skipStateFlow: true,
+          expectStatus: NoActiveVirtualAuthenticator.status,
         });
 
-        expect(response.body).toMatchObject({
-          code: UserPresenceRequiredAgentException.code,
-          data: {
-            stateToken: expect.any(String),
-            requireUserPresence: true,
-          },
-        });
-      });
-
-      test('Should return 400 with UserPresenceRequired when nextState.up is false', async () => {
-        const payload = getPayloadWithCredential();
-
-        const { response: firstResponse } =
-          await performPublicKeyCredentialRequestAndVerify({
-            app: app.getHttpServer(),
-            token,
-            payload,
-            registrationVerification,
-            expectStatus: UserPresenceRequiredAgentException.status,
-            skipStateFlow: true,
-          });
-
-        const stateToken = firstResponse.body.data.stateToken;
-
-        const { response } = await performPublicKeyCredentialRequestAndVerify({
-          app: app.getHttpServer(),
-          token,
-          payload: {
-            ...payload,
-            prevStateToken: stateToken,
-            nextState: { up: false },
-          },
-          registrationVerification,
-          expectStatus: UserPresenceRequiredAgentException.status,
-          skipStateFlow: true,
-        });
-
-        expect(response.body).toMatchObject({
-          code: UserPresenceRequiredAgentException.code,
-          data: {
-            stateToken: expect.any(String),
-            requireUserPresence: true,
-          },
-        });
-      });
-    });
-
-    describe('Invalid UserVerification state', () => {
-      test('Should return UserVerificationRequired after UP is resolved when UV is required', async () => {
-        const payload = getPayloadWithCredential();
-
-        // First request — UP required
-        const { response: firstResponse } =
-          await performPublicKeyCredentialRequestAndVerify({
-            app: app.getHttpServer(),
-            token,
-            payload,
-            registrationVerification,
-            expectStatus: UserPresenceRequiredAgentException.status,
-            skipStateFlow: true,
-          });
-
-        expect(firstResponse.body.code).toBe(
-          UserPresenceRequiredAgentException.code,
+        expect(response.body).toStrictEqual(
+          new NoActiveVirtualAuthenticator().toJSON(),
         );
-        const stateToken = firstResponse.body.data.stateToken;
 
-        // Second request with up: true — UV required
-        const { response } = await performPublicKeyCredentialRequestAndVerify({
-          app: app.getHttpServer(),
-          token,
-          payload: {
-            ...payload,
-            prevStateToken: stateToken,
-            nextState: { up: true },
-          },
-          registrationVerification,
-          expectStatus: UserVerificationRequiredAgentException.status,
-          skipStateFlow: true,
-        });
-
-        expect(response.body).toMatchObject({
-          code: UserVerificationRequiredAgentException.code,
+        // Restore active authenticator for subsequent tests
+        await prisma.virtualAuthenticator.create({
           data: {
-            stateToken: expect.any(String),
-            requireUserVerification: true,
+            userId: USER_ID,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+            isActive: true,
           },
         });
       });
-    });
 
-    describe('Batch state', () => {
-      test('Should succeed when up and uv are provided in a single retry with allowCredentials', async () => {
-        const payload = getPayloadWithCredential();
+      test('As authenticated user', async () => {
+        const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
+        });
 
-        // First request — UP required
-        const { response: firstResponse } =
-          await performPublicKeyCredentialRequestAndVerify({
-            app: app.getHttpServer(),
-            token,
-            payload,
-            registrationVerification,
-            expectStatus: UserPresenceRequiredAgentException.status,
-            skipStateFlow: true,
-          });
-
-        expect(firstResponse.body.code).toBe(
-          UserPresenceRequiredAgentException.code,
-        );
-        const stateToken = firstResponse.body.data.stateToken;
-
-        // Provide both up and uv in one step — should succeed
         await performPublicKeyCredentialRequestAndVerify({
           app: app.getHttpServer(),
           token,
-          payload: {
-            ...payload,
-            prevStateToken: stateToken,
-            nextState: { up: true, uv: {} },
-          },
-          registrationVerification,
-          expectedNewCounter: 1,
-          expectStatus: HttpStatusCode.OK_200,
-          skipStateFlow: true,
-        });
-      });
-
-      test('Should succeed via state token retry loop with retries', async () => {
-        const payload = getPayloadWithCredential();
-
-        const { retries } = await performPublicKeyCredentialRequestAndVerify({
-          app: app.getHttpServer(),
-          token,
           payload,
           registrationVerification,
           expectedNewCounter: 1,
           expectStatus: HttpStatusCode.OK_200,
         });
-
-        // At least 1 retry for UP
-        expect(retries).toBeGreaterThanOrEqual(1);
       });
+    });
 
-      test('Should succeed via state token retry loop without allowCredentials', async () => {
-        const { retries } = await performPublicKeyCredentialRequestAndVerify({
-          app: app.getHttpServer(),
-          token,
-          payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
-          registrationVerification,
-          expectedNewCounter: 1,
-          expectStatus: HttpStatusCode.OK_200,
+    // test('With empty `allowCredentials` as authenticated user', async () => {
+    //   await performPublicKeyCredentialRequestAndVerify({
+    //     app: app.getHttpServer(),
+    //     token,
+    //     payload: {
+    //       ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //       publicKeyCredentialRequestOptions: {
+    //         ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD.publicKeyCredentialRequestOptions,
+    //         allowCredentials: [],
+    //       },
+    //     },
+    //     registrationVerification,
+    //     expectedNewCounter: 2,
+    //   });
+    // });
+
+    // test('With undefined `allowCredentials` as authenticated user', async () => {
+    //   await performPublicKeyCredentialRequestAndVerify({
+    //     app: app.getHttpServer(),
+    //     token,
+    //     payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //     registrationVerification,
+    //     expectedNewCounter: 3,
+    //   });
+    // });
+
+    // test('As guest', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/api/credentials/get')
+    //     .send(
+    //       setDeep(
+    //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //         'publicKeyCredentialRequestOptions.allowCredentials',
+    //         () => [
+    //           {
+    //             id: base64CredentialID,
+    //             type: 'public-key',
+    //           },
+    //         ],
+    //       ),
+    //     )
+    //     .expect('Content-Type', /json/)
+    //     .expect(401);
+    // });
+
+    // test('With wrong token', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/api/credentials/get')
+    //     .set('Authorization', `Bearer WRONG_TOKEN`)
+    //     .send(
+    //       setDeep(
+    //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //         'publicKeyCredentialRequestOptions.allowCredentials',
+    //         () => [
+    //           {
+    //             id: base64CredentialID,
+    //             type: 'public-key',
+    //           },
+    //         ],
+    //       ),
+    //     )
+    //     .expect('Content-Type', /json/)
+    //     .expect(401);
+    // });
+
+    // test('`allowCredentials` that does not exists', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/api/credentials/get')
+    //     .set('Authorization', `Bearer ${token}`)
+    //     .send(
+    //       setDeep(
+    //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //         'publicKeyCredentialRequestOptions.allowCredentials',
+    //         () => [
+    //           {
+    //             id: WRONG_UUID,
+    //             type: 'public-key',
+    //           },
+    //         ],
+    //       ),
+    //     )
+    //     .expect('Content-Type', /json/)
+    //     .expect(404);
+    // });
+
+    // test('`rpId` that does not exists', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/api/credentials/get')
+    //     .set('Authorization', `Bearer ${token}`)
+    //     .send(
+    //       setDeep(
+    //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //         'publicKeyCredentialRequestOptions',
+    //         (val) => ({
+    //           ...val,
+    //           rpId: 'WRONG_RP_ID',
+    //           allowCredentials: [
+    //             {
+    //               id: base64CredentialID,
+    //               type: 'public-key',
+    //             },
+    //           ],
+    //         }),
+    //       ),
+    //     )
+    //     .expect('Content-Type', /json/)
+    //     .expect(404);
+    // });
+
+    // test('Short `challenge`', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/api/credentials/get')
+    //     .set('Authorization', `Bearer ${token}`)
+    //     .send(
+    //       setDeep(
+    //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //         'publicKeyCredentialRequestOptions',
+    //         (val) => ({
+    //           ...val,
+    //           challenge: randomBytes(10).toString('base64url'),
+    //           allowCredentials: [
+    //             {
+    //               id: base64CredentialID,
+    //               type: 'public-key',
+    //             },
+    //           ],
+    //         }),
+    //       ),
+    //     )
+    //     .expect('Content-Type', /json/)
+    //     .expect(400);
+    // });
+
+    // test('With undefined `rpId`', async () => {
+    //   await request(app.getHttpServer())
+    //     .post('/api/credentials/get')
+    //     .set('Authorization', `Bearer ${token}`)
+    //     .send(
+    //       setDeep(
+    //         PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+    //         'publicKeyCredentialRequestOptions',
+    //         (val) => ({
+    //           ...val,
+    //           rpId: undefined,
+    //           allowCredentials: [
+    //             {
+    //               id: base64CredentialID,
+    //               type: 'public-key',
+    //             },
+    //           ],
+    //         }),
+    //       ),
+    //     )
+    //     .expect('Content-Type', /json/)
+    //     .expect(400);
+    // });
+
+    describe('AuthenticationState', () => {
+      const getPayloadWithCredential = () =>
+        set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+          publicKeyCredentialRequestOptions: {
+            allowCredentials: [
+              {
+                id: base64urlCredentialId,
+                type: PublicKeyCredentialType.PUBLIC_KEY,
+              },
+            ],
+          },
         });
 
-        // At least 1 retry for UP (no credential selection with single credential)
-        expect(retries).toBeGreaterThanOrEqual(1);
-      });
-
-      describe('With multiple credentials', () => {
+      describe('Invalid CredentialSelection state', () => {
         // Credential selection only triggers when there are 2+ applicable credentials
         beforeEach(async () => {
           await performPublicKeyCredentialRegistrationAndVerify({
@@ -737,8 +498,29 @@ describe('CredentialsController - POST /api/credentials/get', () => {
           });
         });
 
-        test('Should succeed with credentialId + up + uv in a single batch retry', async () => {
-          // First request without allowCredentials — credential selection required
+        test('Should return CredentialSelectAgentException when no allowCredentials and no state token', async () => {
+          const { response } = await performPublicKeyCredentialRequestAndVerify(
+            {
+              app: app.getHttpServer(),
+              token,
+              payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+              registrationVerification,
+              expectStatus: CredentialSelectAgentException.status,
+              skipStateFlow: true,
+            },
+          );
+
+          expect(response.body).toMatchObject({
+            code: CredentialSelectAgentException.code,
+            data: {
+              stateToken: expect.any(String),
+              credentialOptions: expect.any(Array),
+            },
+          });
+        });
+
+        test('Should resolve credential selection and proceed to UP when credentialId is provided', async () => {
+          // First request — should return credential selection required
           const { response: firstResponse } =
             await performPublicKeyCredentialRequestAndVerify({
               app: app.getHttpServer(),
@@ -749,20 +531,172 @@ describe('CredentialsController - POST /api/credentials/get', () => {
               skipStateFlow: true,
             });
 
-          expect(firstResponse.body.code).toBe(
-            CredentialSelectAgentException.code,
-          );
           const stateToken = firstResponse.body.data.stateToken;
           const credentialId = firstResponse.body.data.credentialOptions[0].id;
 
-          // Provide credentialId + up + uv in one step — should succeed
+          // Second request with credentialId — should proceed to UP
+          const { response } = await performPublicKeyCredentialRequestAndVerify(
+            {
+              app: app.getHttpServer(),
+              token,
+              payload: {
+                ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+                prevStateToken: stateToken,
+                nextState: { credentialId },
+              },
+              registrationVerification,
+              expectStatus: UserPresenceRequiredAgentException.status,
+              skipStateFlow: true,
+            },
+          );
+
+          expect(response.body).toMatchObject({
+            code: UserPresenceRequiredAgentException.code,
+            data: {
+              stateToken: expect.any(String),
+            },
+          });
+        });
+      });
+
+      describe('Invalid UserPresence state', () => {
+        test('Should return UserPresenceRequired when allowCredentials provided but no UP', async () => {
+          const payload = getPayloadWithCredential();
+
+          const { response } = await performPublicKeyCredentialRequestAndVerify(
+            {
+              app: app.getHttpServer(),
+              token,
+              payload,
+              registrationVerification,
+              expectStatus: UserPresenceRequiredAgentException.status,
+              skipStateFlow: true,
+            },
+          );
+
+          expect(response.body).toMatchObject({
+            code: UserPresenceRequiredAgentException.code,
+            data: {
+              stateToken: expect.any(String),
+              requireUserPresence: true,
+            },
+          });
+        });
+
+        test('Should return 400 with UserPresenceRequired when nextState.up is false', async () => {
+          const payload = getPayloadWithCredential();
+
+          const { response: firstResponse } =
+            await performPublicKeyCredentialRequestAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload,
+              registrationVerification,
+              expectStatus: UserPresenceRequiredAgentException.status,
+              skipStateFlow: true,
+            });
+
+          const stateToken = firstResponse.body.data.stateToken;
+
+          const { response } = await performPublicKeyCredentialRequestAndVerify(
+            {
+              app: app.getHttpServer(),
+              token,
+              payload: {
+                ...payload,
+                prevStateToken: stateToken,
+                nextState: { up: false },
+              },
+              registrationVerification,
+              expectStatus: UserPresenceRequiredAgentException.status,
+              skipStateFlow: true,
+            },
+          );
+
+          expect(response.body).toMatchObject({
+            code: UserPresenceRequiredAgentException.code,
+            data: {
+              stateToken: expect.any(String),
+              requireUserPresence: true,
+            },
+          });
+        });
+      });
+
+      describe('Invalid UserVerification state', () => {
+        test('Should return UserVerificationRequired after UP is resolved when UV is required', async () => {
+          const payload = getPayloadWithCredential();
+
+          // First request — UP required
+          const { response: firstResponse } =
+            await performPublicKeyCredentialRequestAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload,
+              registrationVerification,
+              expectStatus: UserPresenceRequiredAgentException.status,
+              skipStateFlow: true,
+            });
+
+          expect(firstResponse.body.code).toBe(
+            UserPresenceRequiredAgentException.code,
+          );
+          const stateToken = firstResponse.body.data.stateToken;
+
+          // Second request with up: true — UV required
+          const { response } = await performPublicKeyCredentialRequestAndVerify(
+            {
+              app: app.getHttpServer(),
+              token,
+              payload: {
+                ...payload,
+                prevStateToken: stateToken,
+                nextState: { up: true },
+              },
+              registrationVerification,
+              expectStatus: UserVerificationRequiredAgentException.status,
+              skipStateFlow: true,
+            },
+          );
+
+          expect(response.body).toMatchObject({
+            code: UserVerificationRequiredAgentException.code,
+            data: {
+              stateToken: expect.any(String),
+              requireUserVerification: true,
+            },
+          });
+        });
+      });
+
+      describe('Batch state', () => {
+        test('Should succeed when up and uv are provided in a single retry with allowCredentials', async () => {
+          const payload = getPayloadWithCredential();
+
+          // First request — UP required
+          const { response: firstResponse } =
+            await performPublicKeyCredentialRequestAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload,
+              registrationVerification,
+              expectStatus: UserPresenceRequiredAgentException.status,
+              skipStateFlow: true,
+            });
+
+          expect(firstResponse.body.code).toBe(
+            UserPresenceRequiredAgentException.code,
+          );
+          const stateToken = firstResponse.body.data.stateToken;
+
+          // Provide both up and uv in one step — should succeed
           await performPublicKeyCredentialRequestAndVerify({
             app: app.getHttpServer(),
             token,
             payload: {
-              ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+              ...payload,
               prevStateToken: stateToken,
-              nextState: { credentialId, up: true, uv: {} },
+              nextState: { up: true, uv: {} },
             },
             registrationVerification,
             expectedNewCounter: 1,
@@ -770,9 +704,86 @@ describe('CredentialsController - POST /api/credentials/get', () => {
             skipStateFlow: true,
           });
         });
+
+        test('Should succeed via state token retry loop with retries', async () => {
+          const payload = getPayloadWithCredential();
+
+          const { retries } = await performPublicKeyCredentialRequestAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload,
+            registrationVerification,
+            expectedNewCounter: 1,
+            expectStatus: HttpStatusCode.OK_200,
+          });
+
+          // At least 1 retry for UP
+          expect(retries).toBeGreaterThanOrEqual(1);
+        });
+
+        test('Should succeed via state token retry loop without allowCredentials', async () => {
+          const { retries } = await performPublicKeyCredentialRequestAndVerify({
+            app: app.getHttpServer(),
+            token,
+            payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+            registrationVerification,
+            expectedNewCounter: 1,
+            expectStatus: HttpStatusCode.OK_200,
+          });
+
+          // At least 1 retry for UP (no credential selection with single credential)
+          expect(retries).toBeGreaterThanOrEqual(1);
+        });
+
+        describe('With multiple credentials', () => {
+          // Credential selection only triggers when there are 2+ applicable credentials
+          beforeEach(async () => {
+            await performPublicKeyCredentialRegistrationAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+              expectStatus: HttpStatusCode.OK_200,
+            });
+          });
+
+          test('Should succeed with credentialId + up + uv in a single batch retry', async () => {
+            // First request without allowCredentials — credential selection required
+            const { response: firstResponse } =
+              await performPublicKeyCredentialRequestAndVerify({
+                app: app.getHttpServer(),
+                token,
+                payload: PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+                registrationVerification,
+                expectStatus: CredentialSelectAgentException.status,
+                skipStateFlow: true,
+              });
+
+            expect(firstResponse.body.code).toBe(
+              CredentialSelectAgentException.code,
+            );
+            const stateToken = firstResponse.body.data.stateToken;
+            const credentialId =
+              firstResponse.body.data.credentialOptions[0].id;
+
+            // Provide credentialId + up + uv in one step — should succeed
+            await performPublicKeyCredentialRequestAndVerify({
+              app: app.getHttpServer(),
+              token,
+              payload: {
+                ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
+                prevStateToken: stateToken,
+                nextState: { credentialId, up: true, uv: {} },
+              },
+              registrationVerification,
+              expectedNewCounter: 1,
+              expectStatus: HttpStatusCode.OK_200,
+              skipStateFlow: true,
+            });
+          });
+        });
       });
     });
-  });
+  }); // end NONE Authenticator
 
   describe('PIN Authenticator', () => {
     const TEST_PIN = '123456';
@@ -791,6 +802,9 @@ describe('CredentialsController - POST /api/credentials/get', () => {
     });
 
     afterAll(async () => {
+      await prisma.webAuthnPublicKeyCredential.deleteMany();
+      await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany();
+
       await prisma.virtualAuthenticator.deleteMany();
 
       await prisma.virtualAuthenticator.create({
@@ -800,6 +814,11 @@ describe('CredentialsController - POST /api/credentials/get', () => {
           isActive: true,
         },
       });
+    });
+
+    afterEach(async () => {
+      await prisma.webAuthnPublicKeyCredential.deleteMany();
+      await prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany();
     });
 
     test('Should succeed when correct PIN is provided', async () => {

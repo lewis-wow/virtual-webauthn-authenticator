@@ -82,6 +82,21 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
     expect(response.status).toBe(expectStatus);
 
+    if (response.status === 200) {
+      const verification = await verifyRegistrationResponse({
+        response: response.body as RegistrationResponseJSON,
+        expectedChallenge: payload.publicKeyCredentialCreationOptions.challenge,
+        expectedOrigin: RP_ORIGIN,
+        expectedRPID: RP_ID,
+        requireUserVerification:
+          payload.publicKeyCredentialCreationOptions.authenticatorSelection
+            ?.userVerification === UserVerification.REQUIRED,
+        requireUserPresence: true,
+      });
+
+      return { response, verification };
+    }
+
     return { response };
   }
 
@@ -122,7 +137,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
         isExceptionShape(UserVerificationRequiredAgentException),
         (error) => ({
           stateToken: error.data.stateToken,
-          nextState: { ...nextState, uv: true } satisfies RegistrationState,
+          nextState: { ...nextState, uv: {} } satisfies RegistrationState,
         }),
       )
       .otherwise(() => {

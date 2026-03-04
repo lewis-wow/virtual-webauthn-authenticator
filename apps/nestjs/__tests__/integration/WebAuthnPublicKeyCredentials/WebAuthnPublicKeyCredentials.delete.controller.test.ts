@@ -7,6 +7,7 @@ import {
 } from '@repo/auth/__tests__/helpers';
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
 import {
+  upsertTestingVirtualAuthenticator,
   upsertTestingWebAuthnPublicKeyCredential,
   WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
 } from '@repo/virtual-authenticator/__tests__/helpers';
@@ -67,6 +68,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
     };
 
     await upsertTestingUser({ prisma });
+    await upsertTestingVirtualAuthenticator({ prisma });
     await upsertTestingWebAuthnPublicKeyCredential({ prisma });
 
     await app.init();
@@ -76,6 +78,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
     await prisma.user.deleteMany();
     await prisma.jwks.deleteMany();
     await cleanupWebAuthnPublicKeyCredentials();
+    await prisma.virtualAuthenticator.deleteMany();
 
     await app.close();
   });
