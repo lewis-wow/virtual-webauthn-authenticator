@@ -8,6 +8,7 @@ export * from './PublicKeyCredentialType';
 export * from './ResidentKey';
 export * from './UserVerification';
 export * from './TokenBindingStatus';
+export * from './VirtualAuthenticatorUserVerificationType';
 export * from './WebAuthnPublicKeyCredentialKeyMetaType';
 export * from './CredentialMediationRequirement';
 

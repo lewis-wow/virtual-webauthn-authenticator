@@ -6,6 +6,7 @@ import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { LogsController } from './controllers/Logs.controller';
 import { ProfileController } from './controllers/Profile.controller';
+import { VirtualAuthenticatorsController } from './controllers/VirtualAuthenticators.controller';
 import { WebAuthnPublicKeyCredentialsController } from './controllers/WebAuthnPublicKeyCredentials.controller';
 import { ExceptionFilter } from './filters/Exception.filter';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
@@ -36,6 +37,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     HealthcheckController,
     ProfileController,
     CredentialsController,
+    VirtualAuthenticatorsController,
     WebAuthnPublicKeyCredentialsController,
     LogsController,
   ],
