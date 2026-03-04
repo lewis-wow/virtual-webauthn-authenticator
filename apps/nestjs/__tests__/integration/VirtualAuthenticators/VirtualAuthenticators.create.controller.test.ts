@@ -123,6 +123,7 @@ describe('VirtualAuthenticatorsController Create - POST /api/virtual-authenticat
       expect(response.body).toMatchObject({
         id: expect.any(String),
         userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+        isActive: false,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });
@@ -139,6 +140,7 @@ describe('VirtualAuthenticatorsController Create - POST /api/virtual-authenticat
         VirtualAuthenticatorUserVerificationType.NONE,
       );
       expect(virtualAuthenticator!.pin).toBeNull();
+      expect(virtualAuthenticator!.isActive).toBe(false);
     });
 
     test('Should create a virtual authenticator with NONE verification type and ignore pin', async () => {
@@ -177,6 +179,7 @@ describe('VirtualAuthenticatorsController Create - POST /api/virtual-authenticat
       expect(response.body).toMatchObject({
         id: expect.any(String),
         userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
+        isActive: false,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       });

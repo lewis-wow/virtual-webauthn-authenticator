@@ -16,6 +16,7 @@ export const Permission = {
   // VirtualAuthenticator
   [`${PermissionEntity.VIRTUAL_AUTHENTICATOR}.CREATE` as const]: `${PermissionEntity.VIRTUAL_AUTHENTICATOR}.CREATE`,
   [`${PermissionEntity.VIRTUAL_AUTHENTICATOR}.READ` as const]: `${PermissionEntity.VIRTUAL_AUTHENTICATOR}.READ`,
+  [`${PermissionEntity.VIRTUAL_AUTHENTICATOR}.WRITE` as const]: `${PermissionEntity.VIRTUAL_AUTHENTICATOR}.WRITE`,
   [`${PermissionEntity.VIRTUAL_AUTHENTICATOR}.DELETE` as const]: `${PermissionEntity.VIRTUAL_AUTHENTICATOR}.DELETE`,
 
   // ApiKey

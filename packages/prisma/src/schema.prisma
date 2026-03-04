@@ -129,6 +129,7 @@ model VirtualAuthenticator {
 
   userVerificationType VirtualAuthenticatorUserVerificationType
   pin                  String?
+  isActive             Boolean @default(false)
 
   webAuthnPublicKeyCredentials WebAuthnPublicKeyCredential[]
 

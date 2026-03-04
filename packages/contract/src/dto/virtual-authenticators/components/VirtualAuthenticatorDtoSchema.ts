@@ -6,6 +6,7 @@ export const VirtualAuthenticatorDtoSchema = z
   .object({
     id: z.uuid(),
     userVerificationType: VirtualAuthenticatorUserVerificationTypeSchema,
+    isActive: z.boolean(),
     createdAt: DateSchemaCodec,
     updatedAt: DateSchemaCodec,
   })

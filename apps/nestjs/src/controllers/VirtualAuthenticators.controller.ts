@@ -7,6 +7,7 @@ import {
   CreateVirtualAuthenticatorResponseSchema,
   DeleteVirtualAuthenticatorResponseSchema,
   ListVirtualAuthenticatorsResponseSchema,
+  UpdateVirtualAuthenticatorResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { Forbidden } from '@repo/exception/http';
@@ -110,6 +111,77 @@ export class VirtualAuthenticatorsController {
           body: ListVirtualAuthenticatorsResponseSchema[
             HttpStatusCode.OK_200
           ].encode(result),
+        };
+      },
+    );
+  }
+
+  @TsRestHandler(nestjsContract.api.virtualAuthenticators.update)
+  @UseGuards(AuthenticatedGuard)
+  async updateVirtualAuthenticator(@Jwt() jwtPayload: JwtPayload) {
+    return tsRestHandler(
+      nestjsContract.api.virtualAuthenticators.update,
+      async ({ params, body }) => {
+        const { userId, permissions } = jwtPayload;
+
+        if (!permissions.includes(Permission['VIRTUAL_AUTHENTICATOR.WRITE'])) {
+          throw new Forbidden();
+        }
+
+        let virtualAuthenticator;
+        try {
+          virtualAuthenticator = await this.prisma.$transaction(async (tx) => {
+            if (body.isActive === true) {
+              // Deactivate all authenticators for this user
+              await tx.virtualAuthenticator.updateMany({
+                where: { userId },
+                data: { isActive: false },
+              });
+            }
+
+            return tx.virtualAuthenticator.update({
+              where: {
+                id: params.id,
+                userId,
+              },
+              data: {
+                ...(body.isActive !== undefined && {
+                  isActive: body.isActive,
+                }),
+              },
+            });
+          });
+        } catch (error) {
+          if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === PrismaErrorCode.RECORDS_NOT_FOUND) {
+              throw new VirtualAuthenticatorNotFound();
+            }
+          }
+
+          throw error;
+        }
+
+        this.logger.debug('Updated VirtualAuthenticator.', {
+          virtualAuthenticator,
+          userId,
+        });
+
+        await this.activityLog.audit({
+          action: LogAction.UPDATE,
+          entity: LogEntity.VIRTUAL_AUTHENTICATOR,
+
+          apiKeyId:
+            jwtPayload.tokenType === TokenType.API_KEY
+              ? jwtPayload.apiKeyId
+              : undefined,
+          userId: jwtPayload.userId,
+        });
+
+        return {
+          status: HttpStatusCode.OK_200,
+          body: UpdateVirtualAuthenticatorResponseSchema[
+            HttpStatusCode.OK_200
+          ].encode(virtualAuthenticator),
         };
       },
     );
