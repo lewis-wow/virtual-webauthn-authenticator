@@ -179,10 +179,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
     });
 
     test('Should not work when no active virtual authenticator exists', async () => {
-      await prisma.virtualAuthenticator.updateMany({
-        where: { userId: USER_ID },
-        data: { isActive: false },
-      });
+      await prisma.virtualAuthenticator.deleteMany();
 
       const { response } =
         await performPublicKeyCredentialRegistrationAndVerify({
@@ -196,10 +193,13 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         new NoActiveVirtualAuthenticator().toJSON(),
       );
 
-      // Restore active state for subsequent tests
-      await prisma.virtualAuthenticator.updateMany({
-        where: { userId: USER_ID },
-        data: { isActive: true },
+      // Restore active authenticator for subsequent tests
+      await prisma.virtualAuthenticator.create({
+        data: {
+          userId: USER_ID,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+          isActive: true,
+        },
       });
     });
   });
@@ -651,6 +651,107 @@ describe('CredentialsController - POST /api/credentials/create', () => {
 
         // At least 2 retries: one for UP, one for UV
         expect(retries).toBeGreaterThanOrEqual(2);
+      });
+    });
+  });
+
+  describe('PIN Authenticator', () => {
+    const TEST_PIN = '123456';
+
+    beforeAll(async () => {
+      await prisma.virtualAuthenticator.deleteMany();
+
+      await prisma.virtualAuthenticator.create({
+        data: {
+          userId: USER_ID,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
+          pin: TEST_PIN,
+          isActive: true,
+        },
+      });
+    });
+
+    afterAll(async () => {
+      await prisma.virtualAuthenticator.deleteMany();
+
+      await prisma.virtualAuthenticator.create({
+        data: {
+          userId: USER_ID,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+          isActive: true,
+        },
+      });
+    });
+
+    test('Should succeed when correct PIN is provided', async () => {
+      // Step 1: Initial request — should require UP
+      const { response: upResponse } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: UserPresenceRequiredAgentException.status,
+          skipStateFlow: true,
+        });
+
+      expect(upResponse.body.code).toBe(
+        UserPresenceRequiredAgentException.code,
+      );
+
+      // Step 2: Provide UP — should require UV with PIN
+      const { response: uvResponse } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            prevStateToken: upResponse.body.data.stateToken,
+            nextState: { up: true },
+          },
+          expectStatus: UserVerificationRequiredAgentException.status,
+          skipStateFlow: true,
+        });
+
+      expect(uvResponse.body.code).toBe(
+        UserVerificationRequiredAgentException.code,
+      );
+
+      // Step 3: Provide UV with correct PIN — should succeed
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload: {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          prevStateToken: uvResponse.body.data.stateToken,
+          nextState: { up: true, uv: { pin: TEST_PIN } },
+        },
+        expectStatus: HttpStatusCode.OK_200,
+        skipStateFlow: true,
+      });
+    });
+
+    test('Should succeed when UP and UV with PIN are provided in a single batch', async () => {
+      // Step 1: Initial request — should require UP
+      const { response: upResponse } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: UserPresenceRequiredAgentException.status,
+          skipStateFlow: true,
+        });
+
+      // Step 2: Provide both UP and UV with PIN in one step
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload: {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          prevStateToken: upResponse.body.data.stateToken,
+          nextState: { up: true, uv: { pin: TEST_PIN } },
+        },
+        expectStatus: HttpStatusCode.OK_200,
+        skipStateFlow: true,
       });
     });
   });
