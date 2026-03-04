@@ -26,6 +26,7 @@ import {
   RP_ORIGIN,
   USER_DISPLAY_NAME,
   USER_ID_BYTSES,
+  VIRTUAL_AUTHENTICATOR_ID,
 } from '../../helpers/consts';
 
 const COLLECTED_CLIENT_DATA: CollectedClientData = {
@@ -102,6 +103,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
           authenticatorMakeCredentialArgs,
           meta: {
             userId: USER_ID,
+            virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
             apiKeyId: null,
@@ -118,7 +120,9 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
       } else if (error instanceof UserVerificationRequired) {
         currentState = {
           ...currentState,
-          uv: true,
+          uv: {
+            pin: undefined,
+          },
         };
       } else {
         throw error;

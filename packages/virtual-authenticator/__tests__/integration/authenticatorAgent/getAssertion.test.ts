@@ -35,6 +35,7 @@ import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialT
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
+import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorRepository';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
 import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
@@ -49,6 +50,7 @@ import {
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   RP_ORIGIN,
+  VIRTUAL_AUTHENTICATOR_ID,
 } from '../../helpers/consts';
 import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
 import { unreachable } from '../../helpers/unreachable';
@@ -76,8 +78,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+  const virtualAuthenticatorRepository =
+    new PrismaVirtualAuthenticatorRepository({ prisma });
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    virtualAuthenticatorRepository,
     keyProvider,
   });
   const extensionRegistry = new ExtensionRegistry().registerAll([
@@ -109,6 +114,15 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
+    await prisma.virtualAuthenticator.upsert({
+      where: { id: VIRTUAL_AUTHENTICATOR_ID },
+      update: {},
+      create: {
+        id: VIRTUAL_AUTHENTICATOR_ID,
+        userId: USER_ID,
+        userVerificationType: 'NONE',
+      },
+    });
   });
 
   afterAll(async () => {
@@ -1511,6 +1525,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       const meta: AuthenticatorAgentMetaArgs = {
         userId: USER_ID,
+        virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
         apiKeyId: null,
         userPresenceEnabled: true,
         userVerificationEnabled: true,
@@ -1541,6 +1556,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('Invalid State Handling', () => {
     const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
       userVerificationEnabled: true,
@@ -1622,6 +1638,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('AuthenticationState', () => {
     const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
       userVerificationEnabled: true,
@@ -1823,7 +1840,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           sameOriginWithAncestors: true,
           meta,
           prevStateToken: stateToken,
-          nextState: { up: true, uv: true },
+          nextState: { up: true, uv: {} },
         });
 
         expect(assertionCredential).toBeDefined();
@@ -1926,7 +1943,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           sameOriginWithAncestors: true,
           meta,
           prevStateToken: stateToken,
-          nextState: { credentialId, up: true, uv: true },
+          nextState: { credentialId, up: true, uv: {} },
         });
 
         expect(assertionCredential).toBeDefined();

@@ -19,7 +19,12 @@ import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
-import { CHALLENGE_BYTES, RP_ORIGIN, RP_ID } from '../../helpers';
+import {
+  CHALLENGE_BYTES,
+  RP_ORIGIN,
+  RP_ID,
+  VIRTUAL_AUTHENTICATOR_ID,
+} from '../../helpers';
 
 export const COLLECTED_CLIENT_DATA: CollectedClientData = {
   type: CollectedClientDataType.WEBAUTHN_GET,
@@ -82,6 +87,7 @@ export const performAuthenticatorGetAssertionAndVerify = async (
           authenticatorGetAssertionArgs,
           meta: {
             userId: USER_ID,
+            virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
             apiKeyId: null,
@@ -98,7 +104,9 @@ export const performAuthenticatorGetAssertionAndVerify = async (
       } else if (error instanceof UserVerificationRequired) {
         currentState = {
           ...currentState,
-          uv: true,
+          uv: {
+            pin: undefined,
+          },
         };
       } else {
         throw error;

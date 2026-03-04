@@ -37,6 +37,7 @@ import {
 } from '../state/RegistrationStateSchema';
 import { StateAction } from '../state/StateAction';
 import { StateManager } from '../state/StateManager';
+import { UserVerificationStateSchema } from '../state/states/UserVerificationStateSchema';
 import type { AuthenticatorGetAssertionResponse } from '../validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import { AuthenticatorAgentMetaArgsSchema } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAgentMetaArgs } from '../validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -539,7 +540,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           assertSchema(
             nextState,
             RegistrationStateSchema.extend({
-              uv: z.boolean(),
+              uv: UserVerificationStateSchema.shape.uv,
             }),
           );
           break;
@@ -1087,7 +1088,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           assertSchema(
             nextState,
             AuthenticationStateSchema.extend({
-              uv: z.boolean(),
+              uv: UserVerificationStateSchema.shape.uv,
             }),
           );
           break;

@@ -3,6 +3,8 @@ import type { PrismaClient } from '@repo/prisma';
 import z from 'zod';
 
 import { InvalidUserVerificationPin } from '../authenticator/exceptions/InvalidUserVerificationPin';
+import { UnknownUserVerificationType } from '../authenticator/exceptions/UnknownUserVerificationType';
+import { VirtualAuthenticatorUserVerificationType } from '../enums/VirtualAuthenticatorUserVerificationType';
 import type {
   IVirtualAuthenticatorRepository,
   ValidatePinArgs,
@@ -24,20 +26,34 @@ export class PrismaVirtualAuthenticatorRepository
   async validatePin(opts: ValidatePinArgs): Promise<boolean> {
     const { virtualAuthenticatorId, userId, pin } = opts;
 
-    assertSchema(pin, z.string().min(1));
-
-    const count = await this.prisma.virtualAuthenticator.count({
+    const authenticator = await this.prisma.virtualAuthenticator.findFirst({
       where: {
         id: virtualAuthenticatorId,
         userId,
-        pin,
       },
+      select: { userVerificationType: true, pin: true },
     });
 
-    if (count === 0) {
+    if (!authenticator) {
       throw new InvalidUserVerificationPin();
     }
 
-    return true;
+    switch (authenticator.userVerificationType) {
+      case VirtualAuthenticatorUserVerificationType.NONE: {
+        return true;
+      }
+      case VirtualAuthenticatorUserVerificationType.PIN: {
+        assertSchema(pin, z.string().min(1));
+
+        if (authenticator.pin !== pin) {
+          throw new InvalidUserVerificationPin();
+        }
+
+        return true;
+      }
+      default: {
+        throw new UnknownUserVerificationType();
+      }
+    }
   }
 }

@@ -20,7 +20,7 @@ import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
-import { RP_ORIGIN } from '../../helpers/consts';
+import { RP_ORIGIN, VIRTUAL_AUTHENTICATOR_ID } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   stateManager: StateManager;
@@ -40,6 +40,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
   const meta: AuthenticatorAgentMetaArgs = {
     userId: USER_ID,
+    virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
     apiKeyId: null,
     origin: RP_ORIGIN,
 
@@ -88,7 +89,9 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
         nextState = {
           ...nextState,
-          uv: true,
+          uv: {
+            pin: undefined,
+          },
         };
       } else {
         throw error;
