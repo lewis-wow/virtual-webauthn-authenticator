@@ -28,6 +28,7 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnCredential: WebAuthnCredential;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
+  uvState?: { pin?: string };
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -38,6 +39,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     publicKeyCredentialRequestOptions,
     webAuthnCredential,
     meta: metaOptions,
+    uvState = { pin: undefined },
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
@@ -88,9 +90,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
         nextState = {
           ...nextState,
-          uv: {
-            pin: undefined,
-          },
+          uv: uvState,
         };
       } else {
         throw error;

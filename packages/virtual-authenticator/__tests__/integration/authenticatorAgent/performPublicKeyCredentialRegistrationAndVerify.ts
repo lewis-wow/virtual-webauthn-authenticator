@@ -27,6 +27,7 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   agent: VirtualAuthenticatorAgent;
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
+  uvState?: { pin?: string };
 };
 
 export const performPublicKeyCredentialRegistrationAndVerify = async (
@@ -36,6 +37,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     agent,
     publicKeyCredentialCreationOptions,
     meta: metaOptions = {},
+    uvState = { pin: undefined },
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
@@ -89,9 +91,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
         nextState = {
           ...nextState,
-          uv: {
-            pin: undefined,
-          },
+          uv: uvState,
         };
       } else {
         throw error;
