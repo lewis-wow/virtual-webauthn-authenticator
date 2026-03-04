@@ -1,6 +1,7 @@
 import {
   MockJwtAudience,
   upsertTestingUser,
+  USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { set } from '@repo/core/__tests__/helpers';
@@ -27,6 +28,7 @@ import {
 import {
   PublicKeyCredentialType,
   UserVerification,
+  VirtualAuthenticatorUserVerificationType,
 } from '@repo/virtual-authenticator/enums';
 import { CredentialOptionsEmpty } from '@repo/virtual-authenticator/exceptions';
 import { VerifiedRegistrationResponse } from '@simplewebauthn/server';
@@ -43,6 +45,7 @@ import {
 import z from 'zod';
 
 import { AppModule } from '../../../src/app.module';
+import { NoActiveVirtualAuthenticator } from '../../../src/exceptions/NoActiveVirtualAuthenticator';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
@@ -123,6 +126,14 @@ describe('CredentialsController - POST /api/credentials/get', () => {
 
     await upsertTestingUser({ prisma });
 
+    await prisma.virtualAuthenticator.create({
+      data: {
+        userId: USER_ID,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+        isActive: true,
+      },
+    });
+
     await app.init();
   });
 
@@ -146,6 +157,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
   });
 
   afterAll(async () => {
+    await prisma.virtualAuthenticator.deleteMany();
     await prisma.user.deleteMany();
     await prisma.jwks.deleteMany();
 
@@ -245,6 +257,42 @@ describe('CredentialsController - POST /api/credentials/get', () => {
       expect(response.body).toStrictEqual(
         new CredentialOptionsEmpty().toJSON(),
       );
+    });
+
+    test('Should not work when no active virtual authenticator exists', async () => {
+      await prisma.virtualAuthenticator.updateMany({
+        where: { userId: USER_ID },
+        data: { isActive: false },
+      });
+
+      const payload = set(PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD, {
+        publicKeyCredentialRequestOptions: {
+          allowCredentials: [
+            {
+              id: base64urlCredentialId,
+              type: PublicKeyCredentialType.PUBLIC_KEY,
+            },
+          ],
+        },
+      });
+
+      const { response } = await performPublicKeyCredentialRequestAndVerify({
+        app: app.getHttpServer(),
+        registrationVerification,
+        token,
+        payload,
+        expectStatus: NoActiveVirtualAuthenticator.status,
+      });
+
+      expect(response.body).toStrictEqual(
+        new NoActiveVirtualAuthenticator().toJSON(),
+      );
+
+      // Restore active state for subsequent tests
+      await prisma.virtualAuthenticator.updateMany({
+        where: { userId: USER_ID },
+        data: { isActive: true },
+      });
     });
 
     test('As authenticated user', async () => {
@@ -639,7 +687,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
           payload: {
             ...payload,
             prevStateToken: stateToken,
-            nextState: { up: true, uv: true },
+            nextState: { up: true, uv: {} },
           },
           registrationVerification,
           expectedNewCounter: 1,
@@ -714,7 +762,7 @@ describe('CredentialsController - POST /api/credentials/get', () => {
             payload: {
               ...PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD,
               prevStateToken: stateToken,
-              nextState: { credentialId, up: true, uv: true },
+              nextState: { credentialId, up: true, uv: {} },
             },
             registrationVerification,
             expectedNewCounter: 1,

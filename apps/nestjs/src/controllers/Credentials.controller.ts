@@ -22,8 +22,10 @@ import type {
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
+import { NoActiveVirtualAuthenticator } from '../exceptions/NoActiveVirtualAuthenticator';
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
+import { PrismaService } from '../services/Prisma.service';
 
 @Controller()
 @UseFilters(ExceptionFilter)
@@ -34,6 +36,7 @@ export class CredentialsController {
     private readonly activityLog: ActivityLog,
     private readonly jwt: Jwt,
     private readonly jwks: Jwks,
+    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -79,6 +82,15 @@ export class CredentialsController {
           throw new Forbidden();
         }
 
+        const activeVirtualAuthenticator =
+          await this.prisma.virtualAuthenticator.findFirst({
+            where: { userId, isActive: true },
+          });
+
+        if (!activeVirtualAuthenticator) {
+          throw new NoActiveVirtualAuthenticator();
+        }
+
         const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
           id: UUIDMapper.UUIDtoBytes(userId),
           name: name,
@@ -110,6 +122,7 @@ export class CredentialsController {
               origin: meta.origin,
               userId: userId,
               apiKeyId,
+              virtualAuthenticatorId: activeVirtualAuthenticator.id,
 
               userPresenceEnabled: true,
               userVerificationEnabled: true,
@@ -152,6 +165,15 @@ export class CredentialsController {
           throw new Forbidden();
         }
 
+        const activeVirtualAuthenticator =
+          await this.prisma.virtualAuthenticator.findFirst({
+            where: { userId, isActive: true },
+          });
+
+        if (!activeVirtualAuthenticator) {
+          throw new NoActiveVirtualAuthenticator();
+        }
+
         this.logger.debug('Getting credential', {
           userId: userId,
         });
@@ -170,6 +192,7 @@ export class CredentialsController {
               origin: meta.origin,
               userId: userId,
               apiKeyId,
+              virtualAuthenticatorId: activeVirtualAuthenticator.id,
 
               userPresenceEnabled: true,
               userVerificationEnabled: true,
