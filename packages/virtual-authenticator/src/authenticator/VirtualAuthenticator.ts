@@ -16,6 +16,7 @@ import { CredentialOptionsEmpty } from '../exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
+import type { IVirtualAuthenticatorRepository } from '../repositories/IVirtualAuthenticatorRepository';
 import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
 import type { AuthenticationState, RegistrationState } from '../state';
 import type { IKeyProvider } from '../types/IKeyProvider';
@@ -53,6 +54,7 @@ import { UserVerificationRequired } from './exceptions/UserVerificationRequired'
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
+  virtualAuthenticatorRepository: IVirtualAuthenticatorRepository;
   keyProvider: IKeyProvider;
 };
 
@@ -70,10 +72,12 @@ export type VirtualAuthenticatorOptions = {
  */
 export class VirtualAuthenticator implements IAuthenticator {
   public readonly webAuthnRepository: IWebAuthnRepository;
+  public readonly virtualAuthenticatorRepository: IVirtualAuthenticatorRepository;
   private readonly keyProvider: IKeyProvider;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.webAuthnRepository = opts.webAuthnRepository;
+    this.virtualAuthenticatorRepository = opts.virtualAuthenticatorRepository;
     this.keyProvider = opts.keyProvider;
   }
 
@@ -421,7 +425,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     return attestationObjectMap;
   }
 
-  private _checkAuthorizationGestureOrThrow(opts: {
+  private async _checkAuthorizationGestureOrThrow(opts: {
     applicablePublicKeyCredentials?: ApplicablePublicKeyCredential[];
     requireUserVerification: boolean;
     requireUserPresence: boolean;
@@ -465,10 +469,18 @@ export class VirtualAuthenticator implements IAuthenticator {
       throw new UserVerificationNotAvailable();
     }
 
-    if (requireUserVerification === true && !state?.uv) {
-      throw new UserVerificationRequired({
-        requireUserPresence,
-        requireUserVerification,
+    if (requireUserVerification === true) {
+      if (state?.uv === undefined) {
+        throw new UserVerificationRequired({
+          requireUserPresence,
+          requireUserVerification,
+        });
+      }
+
+      await this.virtualAuthenticatorRepository.validatePin({
+        virtualAuthenticatorId: meta.virtualAuthenticatorId,
+        userId: meta.userId,
+        pin: state.uv.pin ?? '',
       });
     }
   }
@@ -590,7 +602,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    this._checkAuthorizationGestureOrThrow({
+    await this._checkAuthorizationGestureOrThrow({
       meta,
       requireUserPresence,
       requireUserVerification,
@@ -665,6 +677,7 @@ export class VirtualAuthenticator implements IAuthenticator {
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
                 userId: userHandle,
+                virtualAuthenticatorId: meta.virtualAuthenticatorId,
                 apiKeyId: meta.apiKeyId,
                 isClientSideDiscoverable: true,
               },
@@ -832,7 +845,7 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Step 7: Prompt user to select credential and collect authorization gesture
     // Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-    this._checkAuthorizationGestureOrThrow({
+    await this._checkAuthorizationGestureOrThrow({
       meta,
       requireUserPresence,
       requireUserVerification,

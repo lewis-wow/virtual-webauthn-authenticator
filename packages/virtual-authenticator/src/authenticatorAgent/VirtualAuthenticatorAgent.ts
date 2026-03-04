@@ -280,6 +280,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
           },
           meta: {
             userId: meta.userId,
+            virtualAuthenticatorId: meta.virtualAuthenticatorId,
             apiKeyId: meta.apiKeyId,
             userPresenceEnabled: meta.userPresenceEnabled,
             userVerificationEnabled: meta.userVerificationEnabled,
@@ -891,6 +892,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         },
         meta: {
           userId: meta.userId,
+          virtualAuthenticatorId: meta.virtualAuthenticatorId,
           apiKeyId: meta.apiKeyId,
           userPresenceEnabled: meta.userPresenceEnabled,
           userVerificationEnabled: meta.userVerificationEnabled,

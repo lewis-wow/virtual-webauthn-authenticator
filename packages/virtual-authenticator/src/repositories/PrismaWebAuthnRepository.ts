@@ -145,6 +145,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
             isClientSideDiscoverable: data.isClientSideDiscoverable,
 
             userId: data.userId,
+            virtualAuthenticatorId: data.virtualAuthenticatorId,
             apiKeyId: data.apiKeyId,
 
             webAuthnPublicKeyCredentialKeyMetaType:

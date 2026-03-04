@@ -2,6 +2,7 @@ import z from 'zod';
 
 export const AuthenticatorMetaArgsSchema = z.object({
   userId: z.string(),
+  virtualAuthenticatorId: z.string(),
   apiKeyId: z.string().nullable(),
 
   userVerificationEnabled: z.boolean(),
