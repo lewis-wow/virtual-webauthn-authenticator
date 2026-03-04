@@ -20,8 +20,8 @@ import { ExtensionRegistry } from '../../../src/authenticatorAgent/extensions/Ex
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
-import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorRepository';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/virtualAuthenticatorRepository/PrismaVirtualAuthenticatorRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import { StateManager } from '../../../src/state/StateManager';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
@@ -414,6 +414,7 @@ describe('User Verification PIN', () => {
             origin: RP_ORIGIN,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
           },
         });
 
@@ -436,6 +437,7 @@ describe('User Verification PIN', () => {
           origin: RP_ORIGIN,
           userPresenceEnabled: true,
           userVerificationEnabled: true,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
         },
         prevStateToken: stateToken!,
         nextState: { up: true, uv: { pin: TEST_PIN } },
@@ -458,6 +460,7 @@ describe('User Verification PIN', () => {
             origin: RP_ORIGIN,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
           },
         });
 
@@ -480,6 +483,7 @@ describe('User Verification PIN', () => {
             origin: RP_ORIGIN,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
           },
           prevStateToken: stateToken!,
           nextState: { up: true, uv: { pin: WRONG_PIN } },

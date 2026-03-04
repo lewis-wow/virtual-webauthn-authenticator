@@ -135,6 +135,8 @@ export class CredentialsController {
 
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                activeVirtualAuthenticator.userVerificationType,
             },
             prevStateToken,
             nextState,
@@ -213,6 +215,8 @@ export class CredentialsController {
 
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                activeVirtualAuthenticator.userVerificationType,
             },
             prevStateToken,
             nextState,

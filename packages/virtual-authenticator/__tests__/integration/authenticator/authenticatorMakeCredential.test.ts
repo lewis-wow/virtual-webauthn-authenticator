@@ -28,7 +28,7 @@ import {
   UserVerificationNotAvailable,
 } from '../../../src/exceptions';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
@@ -716,6 +716,8 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state: undefined,
@@ -741,6 +743,8 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -767,6 +771,8 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -795,6 +801,8 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -821,6 +829,8 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,

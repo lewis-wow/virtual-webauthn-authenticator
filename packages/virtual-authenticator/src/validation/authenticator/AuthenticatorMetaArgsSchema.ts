@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { VirtualAuthenticatorUserVerificationTypeSchema } from '../enums/VirtualAuthenticatorUserVerificationTypeSchema';
+
 export const AuthenticatorMetaArgsSchema = z.object({
   userId: z.string(),
   virtualAuthenticatorId: z.string(),
@@ -7,6 +9,7 @@ export const AuthenticatorMetaArgsSchema = z.object({
 
   userVerificationEnabled: z.boolean(),
   userPresenceEnabled: z.boolean(),
+  userVerificationType: VirtualAuthenticatorUserVerificationTypeSchema,
 });
 
 export type AuthenticatorMetaArgs = z.infer<typeof AuthenticatorMetaArgsSchema>;

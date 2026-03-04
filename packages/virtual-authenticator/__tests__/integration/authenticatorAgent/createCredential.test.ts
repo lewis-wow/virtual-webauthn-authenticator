@@ -38,8 +38,8 @@ import { UserVerification } from '../../../src/enums/UserVerification';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
-import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorRepository';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/virtualAuthenticatorRepository/PrismaVirtualAuthenticatorRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation';
@@ -3240,6 +3240,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     test('Should throw error when state token signature is invalid', async () => {
@@ -3347,6 +3348,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     describe('Invalid UserPresence state', () => {

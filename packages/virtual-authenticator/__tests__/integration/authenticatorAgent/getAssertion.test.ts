@@ -33,10 +33,11 @@ import { ExtensionRegistry } from '../../../src/authenticatorAgent/extensions/Ex
 import { hashGetAssertionOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashGetAssertionOptionsAsHex';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
-import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/PrismaVirtualAuthenticatorRepository';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/virtualAuthenticatorRepository/PrismaVirtualAuthenticatorRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -1529,6 +1530,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         apiKeyId: null,
         userPresenceEnabled: true,
         userVerificationEnabled: true,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
         origin: RP_ORIGIN,
       };
 
@@ -1561,6 +1563,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     test('Should throw error when state token signature is invalid', async () => {
@@ -1643,6 +1646,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     describe('Invalid CredentialSelection state', () => {

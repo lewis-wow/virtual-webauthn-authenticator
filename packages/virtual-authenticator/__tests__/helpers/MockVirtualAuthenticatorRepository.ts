@@ -1,7 +1,7 @@
 import type {
   IVirtualAuthenticatorRepository,
   ValidatePinArgs,
-} from '../../src/repositories/IVirtualAuthenticatorRepository';
+} from '../../src/repositories/virtualAuthenticatorRepository/IVirtualAuthenticatorRepository';
 
 /**
  * A mock implementation of IVirtualAuthenticatorRepository for testing.

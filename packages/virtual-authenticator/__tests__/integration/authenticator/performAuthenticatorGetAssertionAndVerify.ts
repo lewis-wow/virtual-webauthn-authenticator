@@ -13,6 +13,7 @@ import { UserVerificationRequired } from '../../../src/authenticator/exceptions/
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/authenticator/AuthenticatorGetAssertionResponseSchema';
@@ -90,6 +91,7 @@ export const performAuthenticatorGetAssertionAndVerify = async (
             virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
             apiKeyId: null,
             ...meta,
           },

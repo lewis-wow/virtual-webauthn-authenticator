@@ -15,6 +15,7 @@ import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObje
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -48,6 +49,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
     userPresenceEnabled: true,
     userVerificationEnabled: true,
+    userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     ...metaOptions,
   };
 

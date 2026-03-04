@@ -19,7 +19,7 @@ import { UserVerificationNotAvailable } from '../../../src/authenticator/excepti
 import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { AuthenticationState } from '../../../src/state';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
@@ -292,6 +292,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         apiKeyId: null,
         userPresenceEnabled: true,
         userVerificationEnabled: true,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
       };
 
       const expectedCredentialOptions =
@@ -376,6 +377,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state: undefined,
@@ -408,6 +411,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -431,6 +436,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state: undefined,
@@ -456,6 +463,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -482,6 +491,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -511,6 +522,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -537,6 +550,8 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
               virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -583,6 +598,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
           apiKeyId: null,
           userPresenceEnabled: true,
           userVerificationEnabled: true,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
         };
 
         const expectedCredentialOptions =

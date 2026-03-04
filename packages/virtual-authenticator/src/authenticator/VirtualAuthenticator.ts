@@ -1,14 +1,12 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
 import { UUIDMapper } from '@repo/core/mappers';
-import { Hash } from '@repo/crypto';
 import type { Uint8Array_ } from '@repo/types';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
 
 import type { AttestationObjectMap } from '../cbor/AttestationObjectMap';
-import type { AttestationStatementMap } from '../cbor/AttestationStatementMap';
 import { Fmt } from '../enums/Fmt';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
 import { CredentialExcluded } from '../exceptions/CredentialExcluded';
@@ -16,9 +14,8 @@ import { CredentialOptionsEmpty } from '../exceptions/CredentialOptionsEmpty';
 import { CredentialTypesNotSupported } from '../exceptions/CredentialTypesNotSupported';
 import { GenerateKeyPairFailed } from '../exceptions/GenerateKeyPairFailed';
 import { SignatureFailed } from '../exceptions/SignatureFailed';
-import type { IVirtualAuthenticatorRepository } from '../repositories/IVirtualAuthenticatorRepository';
-import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
-import type { AuthenticationState, RegistrationState } from '../state';
+import type { IVirtualAuthenticatorRepository } from '../repositories/virtualAuthenticatorRepository/IVirtualAuthenticatorRepository';
+import type { IWebAuthnRepository } from '../repositories/webAuthnPublicKeyRepository/IWebAuthnRepository';
 import type { IKeyProvider } from '../types/IKeyProvider';
 import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
 import { AuthenticatorGetAssertionArgsSchema } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';
@@ -31,31 +28,30 @@ import {
   AuthenticatorMakeCredentialResponseSchema,
   type AuthenticatorMakeCredentialResponse,
 } from '../validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
-import {
-  AuthenticatorMetaArgsSchema,
-  type AuthenticatorMetaArgs,
-} from '../validation/authenticator/AuthenticatorMetaArgsSchema';
-import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
+import { AuthenticatorMetaArgsSchema } from '../validation/authenticator/AuthenticatorMetaArgsSchema';
 import {
   SupportedPubKeyCredParamSchema,
   type PubKeyCredParam,
   type SupportedPubKeyCredParam,
 } from '../validation/spec/CredParamSchema';
+import type { AuthorizationGesture } from './AuthorizationGesture';
 import type {
   IAuthenticator,
   VirtualAuthenticatorGetAssertionArgs,
   VirtualAuthenticatorMakeCredentialArgs,
 } from './IAuthenticator';
-import { CredentialSelectException } from './exceptions/CredentialSelectException';
-import { UserPresenceNotAvailable } from './exceptions/UserPresenceNotAvailable';
-import { UserPresenceRequired } from './exceptions/UserPresenceRequired';
+import type { AttestationProcessor } from './attestationHandlers/AttestationProcessor';
 import { UserVerificationNotAvailable } from './exceptions/UserVerificationNotAvailable';
-import { UserVerificationRequired } from './exceptions/UserVerificationRequired';
+import { createAttestedCredentialData } from './helpers/createAttestedCredentialData';
+import { createAuthenticatorData } from './helpers/createAuthenticatorData';
+import { createDataToSign } from './helpers/createDataToSign';
 
 export type VirtualAuthenticatorOptions = {
   webAuthnRepository: IWebAuthnRepository;
   virtualAuthenticatorRepository: IVirtualAuthenticatorRepository;
   keyProvider: IKeyProvider;
+  authorizationGesture: AuthorizationGesture;
+  attestationProcessor: AttestationProcessor;
 };
 
 /**
@@ -74,11 +70,15 @@ export class VirtualAuthenticator implements IAuthenticator {
   public readonly webAuthnRepository: IWebAuthnRepository;
   public readonly virtualAuthenticatorRepository: IVirtualAuthenticatorRepository;
   private readonly keyProvider: IKeyProvider;
+  private readonly authorizationGesture: AuthorizationGesture;
+  private readonly attestationProcessor: AttestationProcessor;
 
   constructor(opts: VirtualAuthenticatorOptions) {
     this.webAuthnRepository = opts.webAuthnRepository;
     this.virtualAuthenticatorRepository = opts.virtualAuthenticatorRepository;
     this.keyProvider = opts.keyProvider;
+    this.authorizationGesture = opts.authorizationGesture;
+    this.attestationProcessor = opts.attestationProcessor;
   }
 
   /**
@@ -117,238 +117,6 @@ export class VirtualAuthenticator implements IAuthenticator {
     }
 
     return null;
-  }
-
-  /**
-   * Creates attested credential data structure.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
-   */
-  private async _createAttestedCredentialData(opts: {
-    credentialId: Uint8Array_;
-    COSEPublicKey: Uint8Array_;
-  }): Promise<Uint8Array_> {
-    const { credentialId, COSEPublicKey } = opts;
-
-    // Byte length L of Credential ID, 16-bit unsigned big-endian integer.
-    // Length (in bytes): 2
-    const credentialIdLength = Buffer.alloc(2);
-    credentialIdLength.writeUInt16BE(opts.credentialId.length, 0);
-
-    // Attested credential data: variable-length byte array for attestation object.
-    // @see https://www.w3.org/TR/webauthn-3/#sctn-attested-credential-data
-    const attestedCredentialData = Buffer.concat([
-      VirtualAuthenticator.AAGUID,
-      credentialIdLength,
-      credentialId,
-      // The credential public key encoded in COSEKey format, as defined using the CTAP2 canonical CBOR encoding form.
-      // The COSEKey-encoded credential public key MUST contain the "alg" parameter
-      // and MUST NOT contain any other OPTIONAL parameters.
-      // The "alg" parameter MUST contain a COSEAlgorithm value.
-      // The encoded credential public key MUST also contain any
-      // additional REQUIRED parameters
-      // stipulated by the relevant key type specification, i.e., REQUIRED for the key type "kty" and algorithm "alg" (see Section 8 of https://datatracker.ietf.org/doc/html/rfc8152).
-      // Length (in bytes): L
-      COSEPublicKey,
-    ]);
-
-    return new Uint8Array(attestedCredentialData);
-  }
-
-  /**
-   * Creates authenticator data structure with flags and counters.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
-   */
-  private async _createAuthenticatorData(opts: {
-    rpId: string;
-    counter: number;
-    attestedCredentialData: Uint8Array_ | undefined;
-    requireUserVerification: boolean;
-    userVerificationEnabled: boolean;
-    userPresenceEnabled: boolean;
-  }): Promise<Uint8Array_> {
-    const {
-      rpId,
-      counter,
-      attestedCredentialData,
-      requireUserVerification,
-      userVerificationEnabled,
-      userPresenceEnabled,
-    } = opts;
-
-    // SHA-256 hash of the RP ID the credential is scoped to.
-    // Length (in bytes): 32
-    const rpIdHash = Hash.sha256(Buffer.from(rpId));
-
-    // Bit 0 (UP - User Present): Result of the user presence test
-    // (1 = present, 0 = not present).
-    // @see https://www.w3.org/TR/webauthn-3/#concept-user-present
-    // Bit 1 (RFU1): Reserved for future use.
-    // Bit 2 (UV - User Verified): Result of the user verification test
-    // (1 = verified, 0 = not verified).
-    // @see https://www.w3.org/TR/webauthn-3/#concept-user-verified
-    // Bit 3 (BE - Backup Eligibility): Indicates if the credential is
-    // eligible for backup/sync (1 = eligible, 0 = not eligible).
-    // @see https://www.w3.org/TR/webauthn-3/#backup-eligibility
-    // Bit 4 (BS - Backup State): Indicates if the credential is
-    // currently backed up (1 = backed up, 0 = not backed up).
-    // @see https://www.w3.org/TR/webauthn-3/#backup-state
-    // Bit 5 (RFU2): Reserved for future use.
-    // Bit 6 (AT - Attested Credential Data Included): Indicates if
-    // attested credential data is included.
-    // @see https://www.w3.org/TR/webauthn-3/#attested-credential-data
-    // Bit 7 (ED - Extension data included): Indicates if extension data
-    // is included in the authenticator data.
-    // Length (in bytes): 1
-
-    let flagsInt = 0b00000000;
-
-    // Bit 0: User Present (UP)
-    // Always 1 for standard WebAuthn flows
-    if (userPresenceEnabled) {
-      flagsInt |= 0b00000001;
-    }
-
-    // Bit 2: User Verified (UV)
-    // Set if user verification is required and the authenticator is capable
-    const shouldSetUserVerifiedFlag =
-      userVerificationEnabled && requireUserVerification;
-    if (shouldSetUserVerifiedFlag) {
-      flagsInt |= 0b00000100;
-    }
-
-    // BE and BS bits
-    // The value of the BE flag is set during authenticatorMakeCredential operation and MUST NOT change.
-    // @see https://www.w3.org/TR/webauthn-3/#sctn-credential-backup
-    // BE=0, BS=0: Single-device credential.
-    //   (e.g., A hardware key or TPM where the key never leaves the chip).
-    //
-    // BE=0, BS=1: INVALID / NOT ALLOWED.
-    //   (A credential cannot be "backed up" if it is not marked "eligible").
-    //
-    // BE=1, BS=0: Multi-device credential (Passkey), but NOT currently backed up.
-    //   (Sync is possible/supported, but currently disabled or inactive).
-    //
-    // BE=1, BS=1: Multi-device credential (Passkey) and currently backed up.
-    //   (The key is synced to the cloud/database and safe from device loss).
-
-    // Bit 3: (BE - Backup Eligibility)
-    // Backup eligibility is a credential property and is permanent for a given public key credential source.
-    // A backup eligible public key credential source is referred to as a multi-device credential
-    // whereas one that is not backup eligible is referred to as a single-device credential.
-    // NOTE: We set the 'Backup Eligibility' (BE) flag to 1.
-    // Since credentials are stored in a central database rather than
-    // on a specific device, they are effectively synced and recoverable.
-    flagsInt |= 0b00001000;
-
-    // Bit 4: (BS - Backup State)
-    // Public Key Credential Sources may be backed up in some fashion such that they may become
-    // present on an authenticator other than their generating authenticator.
-    // Backup can occur via mechanisms including but not limited to peer-to-peer sync, cloud sync, local network sync, and manual import/export.
-    // NOTE: We set this to 1 because the credential is immediately stored in a central
-    // database (cloud), meaning it is already "backed up" and safe from device loss.
-    flagsInt |= 0b00010000;
-
-    // Bit 6: Attested Credential Data (AT)
-    // Only set if we are creating a new credential (registration),
-    // indicated by the presence of credentialId
-    if (attestedCredentialData) {
-      flagsInt |= 0b01000000;
-    }
-
-    // Bit 7: Extension data included
-    // NOTE: Extension data is never included.
-
-    const flags = Buffer.from([flagsInt]);
-
-    // Signature counter, 32-bit unsigned big-endian integer.
-    // Length (in bytes): 4
-    const signCountBuffer = Buffer.alloc(4);
-    signCountBuffer.writeUInt32BE(counter, 0);
-
-    // Concatenate authenticator data components per spec.
-    // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
-    const authenticatorData = Buffer.concat(
-      [
-        rpIdHash,
-        flags,
-        signCountBuffer,
-        attestedCredentialData,
-        // --- OPTIONAL CREDENTIALS --- (
-        //    Extension-defined authenticator data.
-        //    This is a CBOR map with extension identifiers as keys,
-        //    and authenticator extension outputs as values.
-        // )
-      ].filter((value) => {
-        // Non defined values should be ommited.
-        return value !== undefined;
-      }),
-    );
-
-    return new Uint8Array(authenticatorData);
-  }
-
-  /**
-   * Creates data to be signed: concatenation of authData and clientDataHash.
-   * signature = Sign(privateKey, authenticatorData || clientDataHash)
-   *
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion (Step 11)
-   */
-  private _createDataToSign(opts: {
-    clientDataHash: Uint8Array_;
-    authData: Uint8Array_;
-  }): Uint8Array_ {
-    const { clientDataHash, authData } = opts;
-
-    const dataToSign = Buffer.concat([authData, clientDataHash]);
-
-    return new Uint8Array(dataToSign);
-  }
-
-  /**
-   * Handles 'none' attestation (no attestation statement).
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-none-attestation
-   */
-  private _handleAttestationNone(): AttestationStatementMap {
-    // For "none" attestation, the attestation statement is an empty CBOR map
-    const attStmt = new Map<never, never>();
-
-    return attStmt;
-  }
-
-  /**
-   * Handles 'packed' attestation using self-attestation.
-   * @see https://www.w3.org/TR/webauthn-3/#sctn-packed-attestation
-   */
-  private async _handleAttestationPacked(opts: {
-    webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta;
-    data: {
-      clientDataHash: Uint8Array_;
-      authData: Uint8Array_;
-    };
-  }): Promise<AttestationStatementMap> {
-    const { webAuthnPublicKeyCredential, data } = opts;
-
-    const dataToSign = this._createDataToSign(data);
-
-    // Sign the data to create the attestation signature
-    const { signature, alg } = await this.keyProvider
-      .sign({
-        data: dataToSign,
-        webAuthnPublicKeyCredential,
-      })
-      .catch((error) => {
-        throw new SignatureFailed({
-          cause: error,
-        });
-      });
-
-    // For packed self-attestation, attStmt contains alg and sig
-    const attStmt = new Map<string, Uint8Array | number>([
-      ['alg', alg],
-      ['sig', new Uint8Array(signature)],
-    ]) as AttestationStatementMap;
-
-    return attStmt;
   }
 
   /**
@@ -398,23 +166,13 @@ export class VirtualAuthenticator implements IAuthenticator {
     const { webAuthnPublicKeyCredential, attestationFormat, authData, hash } =
       opts;
 
-    let attStmt: AttestationStatementMap;
-
-    switch (attestationFormat) {
-      case Fmt.NONE:
-        // For "none" attestation, create empty attestation statement
-        attStmt = this._handleAttestationNone();
-        break;
-      case Fmt.PACKED:
-        // For "packed" attestation, create self-attestation with signature
-        attStmt = await this._handleAttestationPacked({
-          webAuthnPublicKeyCredential,
-          data: { clientDataHash: hash, authData },
-        });
-        break;
-      default:
-        throw new Error('Unsupported attestation format is used.');
-    }
+    const attStmt = await this.attestationProcessor.process({
+      attestationFormat,
+      data: {
+        webAuthnPublicKeyCredential,
+        data: { clientDataHash: hash, authData },
+      },
+    });
 
     const attestationObjectMap = new Map<string, unknown>([
       ['fmt', attestationFormat],
@@ -423,66 +181,6 @@ export class VirtualAuthenticator implements IAuthenticator {
     ]) as AttestationObjectMap;
 
     return attestationObjectMap;
-  }
-
-  private async _checkAuthorizationGestureOrThrow(opts: {
-    applicablePublicKeyCredentials?: ApplicablePublicKeyCredential[];
-    requireUserVerification: boolean;
-    requireUserPresence: boolean;
-    meta: AuthenticatorMetaArgs;
-    state?: RegistrationState | AuthenticationState;
-  }) {
-    const {
-      applicablePublicKeyCredentials,
-      requireUserPresence,
-      requireUserVerification,
-      meta,
-      state,
-    } = opts;
-
-    if (
-      applicablePublicKeyCredentials !== undefined &&
-      applicablePublicKeyCredentials.length > 1
-    ) {
-      throw new CredentialSelectException({
-        credentialOptions: applicablePublicKeyCredentials,
-        requireUserPresence,
-        requireUserVerification,
-      });
-    }
-
-    if (requireUserPresence === true && meta.userPresenceEnabled === false) {
-      throw new UserPresenceNotAvailable();
-    }
-
-    if (requireUserPresence === true && !state?.up) {
-      throw new UserPresenceRequired({
-        requireUserVerification,
-        requireUserPresence,
-      });
-    }
-
-    if (
-      requireUserVerification === true &&
-      meta.userVerificationEnabled === false
-    ) {
-      throw new UserVerificationNotAvailable();
-    }
-
-    if (requireUserVerification === true) {
-      if (state?.uv === undefined) {
-        throw new UserVerificationRequired({
-          requireUserPresence,
-          requireUserVerification,
-        });
-      }
-
-      await this.virtualAuthenticatorRepository.validatePin({
-        virtualAuthenticatorId: meta.virtualAuthenticatorId,
-        userId: meta.userId,
-        pin: state.uv.pin ?? '',
-      });
-    }
   }
 
   /**
@@ -602,7 +300,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // If requireUserVerification is true, the authorization gesture MUST include user verification.
     // If requireUserPresence is true, the authorization gesture MUST include a test of user presence.
     // If the user does not consent, return an error code equivalent to "NotAllowedError" and terminate the operation.
-    await this._checkAuthorizationGestureOrThrow({
+    await this.authorizationGesture.checkAuthorizationGestureOrThrow({
       meta,
       requireUserPresence,
       requireUserVerification,
@@ -706,9 +404,10 @@ export class VirtualAuthenticator implements IAuthenticator {
     // The length of credentialId (2 bytes, big-endian).
     // credentialId.
     // The credential public key encoded in COSE_Key format.
-    const attestedCredentialData = await this._createAttestedCredentialData({
+    const attestedCredentialData = await createAttestedCredentialData({
       credentialId: rawCredentialId,
       COSEPublicKey: webAuthnPublicKeyCredentialWithMeta.COSEPublicKey,
+      aaguid: VirtualAuthenticator.AAGUID,
     });
 
     // Step 12: Let attestationFormat be the first supported attestation
@@ -724,7 +423,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 13: Let authenticatorData be the byte array specified in §6.1
     // Authenticator Data including attestedCredentialData and
     // processedExtensions (if any) as the extensions.
-    const authenticatorData = await this._createAuthenticatorData({
+    const authenticatorData = await createAuthenticatorData({
       rpId: rpEntity.id,
       counter: webAuthnPublicKeyCredentialWithMeta.counter,
       attestedCredentialData,
@@ -845,7 +544,7 @@ export class VirtualAuthenticator implements IAuthenticator {
 
     // Step 7: Prompt user to select credential and collect authorization gesture
     // Prompt the user to select a public key credential source selectedCredential from credentialOptions.
-    await this._checkAuthorizationGestureOrThrow({
+    await this.authorizationGesture.checkAuthorizationGestureOrThrow({
       meta,
       requireUserPresence,
       requireUserVerification,
@@ -880,7 +579,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // including processedExtensions, if any, as the extensions
     // and excluding attestedCredentialData.
     // @see https://www.w3.org/TR/webauthn-3/#sctn-authenticator-data
-    const authenticatorData = await this._createAuthenticatorData({
+    const authenticatorData = await createAuthenticatorData({
       // IMPORTANT: exlude attestedCredentialData
       attestedCredentialData: undefined,
       rpId,
@@ -895,7 +594,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 11: Let signature be the assertion signature of the concatenation authenticatorData || hash using the privateKey of selectedCredential.
     // A simple, undelimited concatenation is safe to use here because the authenticator data describes its own length.
     // The hash of the serialized client data (which potentially has a variable length) is always the last element.
-    const dataToSign = this._createDataToSign({
+    const dataToSign = createDataToSign({
       clientDataHash: hash,
       authData: authenticatorData,
     });

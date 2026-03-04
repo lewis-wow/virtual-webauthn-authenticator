@@ -14,6 +14,7 @@ import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObje
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
@@ -106,6 +107,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
             virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
             apiKeyId: null,
             ...meta,
           },
