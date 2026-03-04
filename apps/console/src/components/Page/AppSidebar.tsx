@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@repo/ui/components/ui/sidebar';
-import { Settings2, Key, Fingerprint, Blocks, Logs } from 'lucide-react';
+import { Settings2, Key, Fingerprint, Blocks, Logs, Shield } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import * as React from 'react';
@@ -43,6 +43,11 @@ const data = {
       title: 'Browser extension',
       url: '/browser-extension',
       icon: Blocks,
+    },
+    {
+      title: 'Authenticators',
+      url: '/virtual-authenticators',
+      icon: Shield,
     },
   ],
   navSecondary: [
