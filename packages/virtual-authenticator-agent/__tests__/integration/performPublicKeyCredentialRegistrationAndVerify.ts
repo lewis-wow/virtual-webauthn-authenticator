@@ -1,7 +1,20 @@
 import { USER_ID } from '@repo/auth/__tests__/helpers';
+import {
+  RP_ORIGIN,
+  VIRTUAL_AUTHENTICATOR_ID,
+} from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { UUIDMapper } from '@repo/core/mappers';
 import { toB64 } from '@repo/utils';
+import { decodeAttestationObject } from '@repo/virtual-authenticator/cbor';
+import { parseAuthenticatorData } from '@repo/virtual-authenticator/cbor';
+import { PublicKeyCredentialDtoSchema } from '@repo/virtual-authenticator/dto';
+import { UserVerification } from '@repo/virtual-authenticator/enums';
+import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';
+import type { RegistrationState } from '@repo/virtual-authenticator/state';
+import { StateManager } from '@repo/virtual-authenticator/state';
+import type { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
+import type { PublicKeyCredential } from '@repo/virtual-authenticator/validation';
 import {
   type RegistrationResponseJSON,
   verifyRegistrationResponse,
@@ -11,17 +24,7 @@ import { expect } from 'vitest';
 import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
 import { UserPresenceRequiredAgentException } from '../../src/exceptions/UserPresenceRequiredAgentException';
 import { UserVerificationRequiredAgentException } from '../../src/exceptions/UserVerificationRequiredAgentException';
-import { decodeAttestationObject } from '@repo/virtual-authenticator/cbor';
-import { parseAuthenticatorData } from '@repo/virtual-authenticator/cbor';
-import { PublicKeyCredentialDtoSchema } from '@repo/virtual-authenticator/dto';
-import { UserVerification } from '@repo/virtual-authenticator/enums';
-import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';
-import type { RegistrationState } from '@repo/virtual-authenticator/state';
-import { StateManager } from '@repo/virtual-authenticator/state';
 import type { AuthenticatorAgentMetaArgs } from '../../src/validation/AuthenticatorAgentMetaArgsSchema';
-import type { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
-import type { PublicKeyCredential } from '@repo/virtual-authenticator/validation';
-import { RP_ORIGIN, VIRTUAL_AUTHENTICATOR_ID } from '@repo/virtual-authenticator/__tests__/helpers';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   stateManager: StateManager;
