@@ -6,7 +6,10 @@ import {
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { WRONG_UUID } from '@repo/core/__tests__/helpers';
-import { upsertTestingWebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/__tests__/helpers';
+import {
+  upsertTestingVirtualAuthenticator,
+  upsertTestingWebAuthnPublicKeyCredential,
+} from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
@@ -64,6 +67,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
     };
 
     await upsertTestingUser({ prisma });
+    await upsertTestingVirtualAuthenticator({ prisma });
     await upsertTestingWebAuthnPublicKeyCredential({ prisma });
 
     await app.init();
@@ -73,6 +77,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
     await prisma.user.deleteMany();
     await prisma.jwks.deleteMany();
     await cleanupWebAuthnPublicKeyCredentials();
+    await prisma.virtualAuthenticator.deleteMany();
 
     await app.close();
   });

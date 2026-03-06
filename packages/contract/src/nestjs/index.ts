@@ -4,6 +4,7 @@ import { credentialsRouter } from './credentials';
 import { healthcheckRouter } from './healthcheck';
 import { logsRouter } from './logs';
 import { profileRouter } from './profile';
+import { virtualAuthenticatorsRouter } from './virtualAuthenticatorsRouter';
 import { webAuthnPublicKeyCredentialsRouter } from './webAuthnPublicKeyCredentialsRouter';
 
 const c = initContract();
@@ -13,6 +14,7 @@ export const nestjsContract = c.router(
     api: c.router({
       healthcheck: healthcheckRouter,
       credentials: credentialsRouter,
+      virtualAuthenticators: virtualAuthenticatorsRouter,
       webAuthnPublicKeyCredentials: webAuthnPublicKeyCredentialsRouter,
       profile: profileRouter,
       logs: logsRouter,

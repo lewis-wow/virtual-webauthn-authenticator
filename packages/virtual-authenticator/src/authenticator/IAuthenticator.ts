@@ -1,4 +1,4 @@
-import type { IWebAuthnRepository } from '../repositories/IWebAuthnRepository';
+import type { IWebAuthnRepository } from '../repositories/webAuthnPublicKeyRepository/IWebAuthnRepository';
 import type { AuthenticationState } from '../state/AuthenticationStateSchema';
 import type { RegistrationState } from '../state/RegistrationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../validation/authenticator/AuthenticatorGetAssertionArgsSchema';

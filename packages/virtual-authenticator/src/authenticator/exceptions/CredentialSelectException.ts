@@ -3,6 +3,7 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
+import { VirtualAuthenticatorUserVerificationTypeSchema } from '../../validation/enums/VirtualAuthenticatorUserVerificationTypeSchema';
 import { ApplicablePublicKeyCredentialSchema } from '../../validation/spec/ApplicablePublicKeyCredentialSchema';
 
 export class CredentialSelectException extends Exception<CredentialSelectExceptionData> {
@@ -21,6 +22,7 @@ export const CredentialSelectExceptionDataSchema = z.object({
   credentialOptions: z.array(ApplicablePublicKeyCredentialSchema),
   requireUserPresence: z.boolean(),
   requireUserVerification: z.boolean(),
+  userVerificationType: VirtualAuthenticatorUserVerificationTypeSchema,
 });
 
 export type CredentialSelectExceptionData = z.infer<

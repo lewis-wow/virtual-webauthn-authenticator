@@ -2,6 +2,8 @@ import { Exception } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 
+import { VirtualAuthenticatorUserVerificationTypeSchema } from '../../validation/enums/VirtualAuthenticatorUserVerificationTypeSchema';
+
 export class UserVerificationRequired extends Exception<UserVerificationRequiredData> {
   static readonly code = 'UserVerificationRequired';
   static readonly status = HttpStatusCode.PRECONDITION_REQUIRED_428;
@@ -15,6 +17,7 @@ export class UserVerificationRequired extends Exception<UserVerificationRequired
 export const UserVerificationRequiredDataSchema = z.object({
   requireUserPresence: z.boolean(),
   requireUserVerification: z.boolean(),
+  userVerificationType: VirtualAuthenticatorUserVerificationTypeSchema,
 });
 
 export type UserVerificationRequiredData = z.infer<

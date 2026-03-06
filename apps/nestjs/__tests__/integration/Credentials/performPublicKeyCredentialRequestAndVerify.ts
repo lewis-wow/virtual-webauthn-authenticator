@@ -151,7 +151,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
           stateToken: error.data.stateToken,
           nextState: {
             ...nextState,
-            uv: true,
+            uv: {},
           } satisfies AuthenticationState,
         }),
       )

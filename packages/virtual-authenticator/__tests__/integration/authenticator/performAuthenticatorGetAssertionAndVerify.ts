@@ -13,13 +13,19 @@ import { UserVerificationRequired } from '../../../src/authenticator/exceptions/
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/authenticator/AuthenticatorGetAssertionResponseSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
-import { CHALLENGE_BYTES, RP_ORIGIN, RP_ID } from '../../helpers';
+import {
+  CHALLENGE_BYTES,
+  RP_ORIGIN,
+  RP_ID,
+  VIRTUAL_AUTHENTICATOR_ID,
+} from '../../helpers';
 
 export const COLLECTED_CLIENT_DATA: CollectedClientData = {
   type: CollectedClientDataType.WEBAUTHN_GET,
@@ -82,8 +88,10 @@ export const performAuthenticatorGetAssertionAndVerify = async (
           authenticatorGetAssertionArgs,
           meta: {
             userId: USER_ID,
+            virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
             apiKeyId: null,
             ...meta,
           },
@@ -98,7 +106,9 @@ export const performAuthenticatorGetAssertionAndVerify = async (
       } else if (error instanceof UserVerificationRequired) {
         currentState = {
           ...currentState,
-          uv: true,
+          uv: {
+            pin: undefined,
+          },
         };
       } else {
         throw error;

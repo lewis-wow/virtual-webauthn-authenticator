@@ -17,6 +17,9 @@ export const RP_ID = 'example.com';
 export const RP_NAME = 'example.com';
 export const RP_ORIGIN = 'https://example.com';
 
+export const VIRTUAL_AUTHENTICATOR_ID = '00000000-0000-0000-0000-000000000001';
+export const TEST_PIN = '1234';
+
 export const WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID =
   '0cc9f49f-2967-404e-b45c-3dc7110681c5';
 export const WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID =

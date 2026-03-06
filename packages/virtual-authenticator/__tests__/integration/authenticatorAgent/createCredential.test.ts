@@ -19,7 +19,12 @@ import type { Uint8Array_ } from '@repo/types';
 import { randomBytes } from 'node:crypto';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
 import { CreateCredentialActionNotDefined } from '../../../src/authenticatorAgent/exceptions/CreateCredentialActionNotDefined';
 import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
@@ -35,9 +40,11 @@ import { Fmt } from '../../../src/enums/Fmt';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { ResidentKey } from '../../../src/enums/ResidentKey';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { CredentialTypesNotSupported } from '../../../src/exceptions/CredentialTypesNotSupported';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/virtualAuthenticatorRepository/PrismaVirtualAuthenticatorRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation';
@@ -53,6 +60,7 @@ import {
   RP_ORIGIN,
   USER_DISPLAY_NAME,
   USER_ID_BYTSES,
+  VIRTUAL_AUTHENTICATOR_ID,
 } from '../../helpers/consts';
 import { unreachable } from '../../helpers/unreachable';
 import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
@@ -89,9 +97,25 @@ describe('VirtualAuthenticator.createCredential()', () => {
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+  const virtualAuthenticatorRepository =
+    new PrismaVirtualAuthenticatorRepository({ prisma });
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
   const extensionRegistry = new ExtensionRegistry().registerAll([
     new CredPropsExtension(),
@@ -121,6 +145,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
 
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
+    await prisma.virtualAuthenticator.upsert({
+      where: { id: VIRTUAL_AUTHENTICATOR_ID },
+      update: {},
+      create: {
+        id: VIRTUAL_AUTHENTICATOR_ID,
+        userId: USER_ID,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+        isActive: true,
+      },
+    });
   });
 
   afterEach(async () => {
@@ -3220,10 +3254,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
   describe('Invalid State Handling', () => {
     const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     test('Should throw error when state token signature is invalid', async () => {
@@ -3326,10 +3362,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
   describe('RegistrationState', () => {
     const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     describe('Invalid UserPresence state', () => {
@@ -3532,7 +3570,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
           sameOriginWithAncestors: true,
           meta: metaWithUV,
           prevStateToken: stateToken,
-          nextState: { up: true, uv: true },
+          nextState: { up: true, uv: {} },
         });
 
         expect(publicKeyCredential).toBeDefined();

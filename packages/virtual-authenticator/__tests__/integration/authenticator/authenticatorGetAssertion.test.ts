@@ -11,14 +11,20 @@ import {
   test,
 } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
 import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
 import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
 import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { PublicKeyCredentialType } from '../../../src/enums';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { AuthenticationState } from '../../../src/state';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
@@ -26,6 +32,8 @@ import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticato
 import { RP_ID } from '../../helpers';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import { MockVirtualAuthenticatorRepository } from '../../helpers/MockVirtualAuthenticatorRepository';
+import { VIRTUAL_AUTHENTICATOR_ID } from '../../helpers/consts';
 import {
   AUTHENTICATOR_GET_ASSERTION_ARGS,
   performAuthenticatorGetAssertionAndVerify,
@@ -47,9 +55,25 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+  const virtualAuthenticatorRepository =
+    new MockVirtualAuthenticatorRepository();
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {
@@ -63,6 +87,16 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
+
+    await prisma.virtualAuthenticator.upsert({
+      where: { id: VIRTUAL_AUTHENTICATOR_ID },
+      update: {},
+      create: {
+        id: VIRTUAL_AUTHENTICATOR_ID,
+        userId: USER_ID,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+      },
+    });
   });
 
   beforeEach(async () => {
@@ -272,9 +306,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
       const meta: AuthenticatorMetaArgs = {
         userId: USER_ID,
+        virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
         apiKeyId: null,
         userPresenceEnabled: true,
         userVerificationEnabled: true,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
       };
 
       const expectedCredentialOptions =
@@ -300,7 +336,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       const nextState: AuthenticationState = {
         credentialId: expectedCredentialOptions[1]!.id,
         up: true,
-        uv: true,
+        uv: {},
       };
 
       // Select index 1 because credentials are ordered by createdAt desc (newest first).
@@ -356,8 +392,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state: undefined,
@@ -379,7 +418,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
         const state: AuthenticationState = {
           up: true,
-          uv: true,
+          uv: {},
         };
 
         await expect(() =>
@@ -387,8 +426,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -409,8 +451,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state: undefined,
@@ -433,8 +478,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -450,7 +498,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         } as AuthenticatorGetAssertionArgs;
 
         const state: AuthenticationState = {
-          uv: true,
+          uv: {},
         };
 
         await expect(() =>
@@ -458,8 +506,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -469,7 +520,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     });
 
     describe('Invalid UserVerification state', () => {
-      test('Throws UserVerificationRequired when state.uv is false and requireUserVerification is true', async () => {
+      test('Throws UserVerificationRequired when state.uv is undefined and requireUserVerification is true', async () => {
         const authenticatorGetAssertionArgs = {
           ...AUTHENTICATOR_GET_ASSERTION_ARGS,
           requireUserPresence: true,
@@ -478,7 +529,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
         const state: AuthenticationState = {
           up: true,
-          uv: false,
+          uv: undefined,
         };
 
         await expect(() =>
@@ -486,8 +537,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -511,8 +565,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             authenticatorGetAssertionArgs,
             meta: {
               userId: USER_ID,
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -531,7 +588,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
         const state: AuthenticationState = {
           up: true,
-          uv: true,
+          uv: {},
         };
 
         const { retries } = await performAuthenticatorGetAssertionAndVerify({
@@ -555,9 +612,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
         const meta: AuthenticatorMetaArgs = {
           userId: USER_ID,
+          virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
           apiKeyId: null,
           userPresenceEnabled: true,
           userVerificationEnabled: true,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
         };
 
         const expectedCredentialOptions =
@@ -581,7 +640,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
         const state: AuthenticationState = {
           credentialId: expectedCredentialOptions[1]!.id,
           up: true,
-          uv: true,
+          uv: {},
         };
 
         const { retries } = await performAuthenticatorGetAssertionAndVerify({
@@ -605,7 +664,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
 
         const state: AuthenticationState = {
           up: true,
-          uv: true,
+          uv: {},
         };
 
         const { retries } = await performAuthenticatorGetAssertionAndVerify({

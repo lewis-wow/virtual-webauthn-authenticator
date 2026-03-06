@@ -13,6 +13,7 @@ import {
 
 import {
   RP_ID,
+  VIRTUAL_AUTHENTICATOR_ID,
   WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
   WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,
 } from './consts';
@@ -30,6 +31,7 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
     create: {
       id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       rpId: RP_ID,
       COSEPublicKey: cbor.encode(COSEPublicKey),
       webAuthnPublicKeyCredentialKeyMetaType:

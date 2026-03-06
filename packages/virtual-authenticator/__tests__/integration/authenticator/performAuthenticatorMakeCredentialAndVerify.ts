@@ -14,6 +14,7 @@ import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObje
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
@@ -26,6 +27,7 @@ import {
   RP_ORIGIN,
   USER_DISPLAY_NAME,
   USER_ID_BYTSES,
+  VIRTUAL_AUTHENTICATOR_ID,
 } from '../../helpers/consts';
 
 const COLLECTED_CLIENT_DATA: CollectedClientData = {
@@ -102,8 +104,10 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
           authenticatorMakeCredentialArgs,
           meta: {
             userId: USER_ID,
+            virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
             userPresenceEnabled: true,
             userVerificationEnabled: true,
+            userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
             apiKeyId: null,
             ...meta,
           },
@@ -118,7 +122,9 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
       } else if (error instanceof UserVerificationRequired) {
         currentState = {
           ...currentState,
-          uv: true,
+          uv: {
+            pin: undefined,
+          },
         };
       } else {
         throw error;

@@ -1,6 +1,7 @@
 import {
   MockJwtAudience,
   upsertTestingUser,
+  USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
 import { set, WRONG_UUID } from '@repo/core/__tests__/helpers';
@@ -26,6 +27,7 @@ import {
   PublicKeyCredentialType,
   UserVerification,
 } from '@repo/virtual-authenticator/enums';
+import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';
 import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
 import { randomBytes } from 'node:crypto';
@@ -36,6 +38,7 @@ import z from 'zod';
 import { TypeAssertionError } from '../../../../../packages/assert/src/TypeAssertionError';
 import { CredentialTypesNotSupported } from '../../../../../packages/virtual-authenticator/src/exceptions/CredentialTypesNotSupported';
 import { AppModule } from '../../../src/app.module';
+import { NoActiveVirtualAuthenticator } from '../../../src/exceptions/NoActiveVirtualAuthenticator';
 import { JwtMiddleware } from '../../../src/middlewares/jwt.middleware';
 import { PrismaService } from '../../../src/services/Prisma.service';
 import { JWT_CONFIG } from '../../helpers/consts';
@@ -104,6 +107,14 @@ describe('CredentialsController - POST /api/credentials/create', () => {
 
     await upsertTestingUser({ prisma });
 
+    await prisma.virtualAuthenticator.create({
+      data: {
+        userId: USER_ID,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+        isActive: true,
+      },
+    });
+
     await app.init();
   });
 
@@ -113,6 +124,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
 
   afterAll(async () => {
     await prisma.$transaction([
+      prisma.virtualAuthenticator.deleteMany(),
       prisma.user.deleteMany(),
       prisma.jwks.deleteMany(),
     ]);
@@ -164,6 +176,31 @@ describe('CredentialsController - POST /api/credentials/create', () => {
         });
 
       expect(response.body).toStrictEqual(new UserNotExists().toJSON());
+    });
+
+    test('Should not work when no active virtual authenticator exists', async () => {
+      await prisma.virtualAuthenticator.deleteMany();
+
+      const { response } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: NoActiveVirtualAuthenticator.status,
+        });
+
+      expect(response.body).toStrictEqual(
+        new NoActiveVirtualAuthenticator().toJSON(),
+      );
+
+      // Restore active authenticator for subsequent tests
+      await prisma.virtualAuthenticator.create({
+        data: {
+          userId: USER_ID,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+          isActive: true,
+        },
+      });
     });
   });
 
@@ -575,7 +612,7 @@ describe('CredentialsController - POST /api/credentials/create', () => {
           payload: {
             ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
             prevStateToken: stateToken,
-            nextState: { up: true, uv: true },
+            nextState: { up: true, uv: {} },
           },
           expectStatus: HttpStatusCode.OK_200,
           skipStateFlow: true,
@@ -614,6 +651,107 @@ describe('CredentialsController - POST /api/credentials/create', () => {
 
         // At least 2 retries: one for UP, one for UV
         expect(retries).toBeGreaterThanOrEqual(2);
+      });
+    });
+  });
+
+  describe('PIN Authenticator', () => {
+    const TEST_PIN = '123456';
+
+    beforeAll(async () => {
+      await prisma.virtualAuthenticator.deleteMany();
+
+      await prisma.virtualAuthenticator.create({
+        data: {
+          userId: USER_ID,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
+          pin: TEST_PIN,
+          isActive: true,
+        },
+      });
+    });
+
+    afterAll(async () => {
+      await prisma.virtualAuthenticator.deleteMany();
+
+      await prisma.virtualAuthenticator.create({
+        data: {
+          userId: USER_ID,
+          userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+          isActive: true,
+        },
+      });
+    });
+
+    test('Should succeed when correct PIN is provided', async () => {
+      // Step 1: Initial request — should require UP
+      const { response: upResponse } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: UserPresenceRequiredAgentException.status,
+          skipStateFlow: true,
+        });
+
+      expect(upResponse.body.code).toBe(
+        UserPresenceRequiredAgentException.code,
+      );
+
+      // Step 2: Provide UP — should require UV with PIN
+      const { response: uvResponse } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: {
+            ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+            prevStateToken: upResponse.body.data.stateToken,
+            nextState: { up: true },
+          },
+          expectStatus: UserVerificationRequiredAgentException.status,
+          skipStateFlow: true,
+        });
+
+      expect(uvResponse.body.code).toBe(
+        UserVerificationRequiredAgentException.code,
+      );
+
+      // Step 3: Provide UV with correct PIN — should succeed
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload: {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          prevStateToken: uvResponse.body.data.stateToken,
+          nextState: { up: true, uv: { pin: TEST_PIN } },
+        },
+        expectStatus: HttpStatusCode.OK_200,
+        skipStateFlow: true,
+      });
+    });
+
+    test('Should succeed when UP and UV with PIN are provided in a single batch', async () => {
+      // Step 1: Initial request — should require UP
+      const { response: upResponse } =
+        await performPublicKeyCredentialRegistrationAndVerify({
+          app: app.getHttpServer(),
+          token,
+          payload: PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          expectStatus: UserPresenceRequiredAgentException.status,
+          skipStateFlow: true,
+        });
+
+      // Step 2: Provide both UP and UV with PIN in one step
+      await performPublicKeyCredentialRegistrationAndVerify({
+        app: app.getHttpServer(),
+        token,
+        payload: {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD,
+          prevStateToken: upResponse.body.data.stateToken,
+          nextState: { up: true, uv: { pin: TEST_PIN } },
+        },
+        expectStatus: HttpStatusCode.OK_200,
+        skipStateFlow: true,
       });
     });
   });

@@ -22,7 +22,12 @@ import {
   test,
 } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
 import { CredentialSelectAgentException } from '../../../src/authenticatorAgent/exceptions/CredentialSelectAgentException';
 import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
@@ -33,9 +38,11 @@ import { ExtensionRegistry } from '../../../src/authenticatorAgent/extensions/Ex
 import { hashGetAssertionOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashGetAssertionOptionsAsHex';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
 import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/virtualAuthenticatorRepository/PrismaVirtualAuthenticatorRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import { StateAction } from '../../../src/state/StateAction';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
@@ -49,6 +56,7 @@ import {
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   RP_ORIGIN,
+  VIRTUAL_AUTHENTICATOR_ID,
 } from '../../helpers/consts';
 import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
 import { unreachable } from '../../helpers/unreachable';
@@ -76,9 +84,25 @@ describe('VirtualAuthenticator.getCredential()', () => {
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+  const virtualAuthenticatorRepository =
+    new PrismaVirtualAuthenticatorRepository({ prisma });
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
   const extensionRegistry = new ExtensionRegistry().registerAll([
     new CredPropsExtension(),
@@ -109,6 +133,16 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
+    await prisma.virtualAuthenticator.upsert({
+      where: { id: VIRTUAL_AUTHENTICATOR_ID },
+      update: {},
+      create: {
+        id: VIRTUAL_AUTHENTICATOR_ID,
+        userId: USER_ID,
+        userVerificationType: 'NONE',
+        isActive: true,
+      },
+    });
   });
 
   afterAll(async () => {
@@ -1511,9 +1545,11 @@ describe('VirtualAuthenticator.getCredential()', () => {
 
       const meta: AuthenticatorAgentMetaArgs = {
         userId: USER_ID,
+        virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
         apiKeyId: null,
         userPresenceEnabled: true,
         userVerificationEnabled: true,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
         origin: RP_ORIGIN,
       };
 
@@ -1541,10 +1577,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('Invalid State Handling', () => {
     const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     test('Should throw error when state token signature is invalid', async () => {
@@ -1622,10 +1660,12 @@ describe('VirtualAuthenticator.getCredential()', () => {
   describe('AuthenticationState', () => {
     const meta: AuthenticatorAgentMetaArgs = {
       userId: USER_ID,
+      virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
       origin: RP_ORIGIN,
       apiKeyId: null,
       userVerificationEnabled: true,
       userPresenceEnabled: true,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     };
 
     describe('Invalid CredentialSelection state', () => {
@@ -1823,7 +1863,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           sameOriginWithAncestors: true,
           meta,
           prevStateToken: stateToken,
-          nextState: { up: true, uv: true },
+          nextState: { up: true, uv: {} },
         });
 
         expect(assertionCredential).toBeDefined();
@@ -1926,7 +1966,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           sameOriginWithAncestors: true,
           meta,
           prevStateToken: stateToken,
-          nextState: { credentialId, up: true, uv: true },
+          nextState: { credentialId, up: true, uv: {} },
         });
 
         expect(assertionCredential).toBeDefined();

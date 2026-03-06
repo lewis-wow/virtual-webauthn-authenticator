@@ -6,6 +6,7 @@ import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { LogsController } from './controllers/Logs.controller';
 import { ProfileController } from './controllers/Profile.controller';
+import { VirtualAuthenticatorsController } from './controllers/VirtualAuthenticators.controller';
 import { WebAuthnPublicKeyCredentialsController } from './controllers/WebAuthnPublicKeyCredentials.controller';
 import { ExceptionFilter } from './filters/Exception.filter';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
@@ -22,6 +23,7 @@ import { KeyClientProvider } from './services/KeyClient.provider';
 import { LoggerProvider } from './services/Logger.provider';
 import { PrismaService } from './services/Prisma.service';
 import { PrismaVirtualAuthenticatorJwksRepositoryProvider } from './services/PrismaVirtualAuthenticatorJwksRepository.provider';
+import { PrismaVirtualAuthenticatorRepositoryProvider } from './services/PrismaVirtualAuthenticatorRepository.provider';
 import { PrismaWebAuthnRepositoryProvider } from './services/PrismaWebAuthnRepository.provider';
 import { VirtualAuthenticatorProvider } from './services/VirtualAuthenticator.provider';
 import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticatorAgent.provider';
@@ -36,6 +38,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     HealthcheckController,
     ProfileController,
     CredentialsController,
+    VirtualAuthenticatorsController,
     WebAuthnPublicKeyCredentialsController,
     LogsController,
   ],
@@ -54,6 +57,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
+    PrismaVirtualAuthenticatorRepositoryProvider,
     JwksProvider,
     JwtProvider,
     PrismaVirtualAuthenticatorJwksRepositoryProvider,
@@ -72,6 +76,7 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
     JwtMiddleware,
     ActivityLogProvider,
     PrismaWebAuthnRepositoryProvider,
+    PrismaVirtualAuthenticatorRepositoryProvider,
     JwksProvider,
     JwtProvider,
     PrismaVirtualAuthenticatorJwksRepositoryProvider,

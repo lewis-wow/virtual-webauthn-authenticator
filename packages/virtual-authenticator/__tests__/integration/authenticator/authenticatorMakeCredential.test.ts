@@ -1,4 +1,4 @@
-import { upsertTestingUser } from '../../../../auth/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';
@@ -17,22 +17,30 @@ import {
   test,
 } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
 import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
 import { Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import {
   CredentialTypesNotSupported,
   UserVerificationNotAvailable,
 } from '../../../src/exceptions';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/PrismaWebAuthnRepository';
+import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
 import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import { MockVirtualAuthenticatorRepository } from '../../helpers/MockVirtualAuthenticatorRepository';
+import { VIRTUAL_AUTHENTICATOR_ID } from '../../helpers/consts';
 import {
   AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
   CLIENT_DATA_HASH,
@@ -54,9 +62,25 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+  const virtualAuthenticatorRepository =
+    new MockVirtualAuthenticatorRepository();
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
+    virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {
@@ -68,6 +92,16 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
+
+    await prisma.virtualAuthenticator.upsert({
+      where: { id: VIRTUAL_AUTHENTICATOR_ID },
+      update: {},
+      create: {
+        id: VIRTUAL_AUTHENTICATOR_ID,
+        userId: USER_ID,
+        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+      },
+    });
   });
 
   afterEach(async () => {
@@ -697,8 +731,11 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
             authenticatorMakeCredentialArgs,
             meta: {
               userId: 'test-user',
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state: undefined,
@@ -721,8 +758,11 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
             authenticatorMakeCredentialArgs,
             meta: {
               userId: 'test-user',
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -738,7 +778,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         } as AuthenticatorMakeCredentialArgs;
 
         const state: RegistrationState = {
-          uv: true,
+          uv: {},
         };
 
         await expect(() =>
@@ -746,8 +786,11 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
             authenticatorMakeCredentialArgs,
             meta: {
               userId: 'test-user',
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -757,32 +800,6 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     });
 
     describe('Invalid UserVerification state', () => {
-      test('Throws UserVerificationRequired when state.uv is false and requireUserVerification is true', async () => {
-        const authenticatorMakeCredentialArgs = {
-          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-          requireUserPresence: true,
-          requireUserVerification: true,
-        } as AuthenticatorMakeCredentialArgs;
-
-        const state: RegistrationState = {
-          up: true,
-          uv: false,
-        };
-
-        await expect(() =>
-          authenticator.authenticatorMakeCredential({
-            authenticatorMakeCredentialArgs,
-            meta: {
-              userId: 'test-user',
-              userPresenceEnabled: true,
-              userVerificationEnabled: true,
-              apiKeyId: null,
-            },
-            state,
-          }),
-        ).rejects.toThrowError(UserVerificationRequired);
-      });
-
       test('Throws UserVerificationRequired when state.uv is undefined and requireUserVerification is true', async () => {
         const authenticatorMakeCredentialArgs = {
           ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
@@ -799,8 +816,39 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
             authenticatorMakeCredentialArgs,
             meta: {
               userId: 'test-user',
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
               userPresenceEnabled: true,
               userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
+              apiKeyId: null,
+            },
+            state,
+          }),
+        ).rejects.toThrowError(UserVerificationRequired);
+      });
+
+      test('Throws UserVerificationRequired when state.uv is undefined (second test) and requireUserVerification is true', async () => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          requireUserPresence: true,
+          requireUserVerification: true,
+        } as AuthenticatorMakeCredentialArgs;
+
+        const state: RegistrationState = {
+          up: true,
+        };
+
+        await expect(() =>
+          authenticator.authenticatorMakeCredential({
+            authenticatorMakeCredentialArgs,
+            meta: {
+              userId: 'test-user',
+              virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
+              userPresenceEnabled: true,
+              userVerificationEnabled: true,
+              userVerificationType:
+                VirtualAuthenticatorUserVerificationType.NONE,
               apiKeyId: null,
             },
             state,
@@ -819,7 +867,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
         const state: RegistrationState = {
           up: true,
-          uv: true,
+          uv: {},
         };
 
         const { retries } = await performAuthenticatorMakeCredentialAndVerify({
@@ -841,7 +889,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
 
         const state: RegistrationState = {
           up: true,
-          uv: true,
+          uv: {},
         };
 
         const { retries } = await performAuthenticatorMakeCredentialAndVerify({

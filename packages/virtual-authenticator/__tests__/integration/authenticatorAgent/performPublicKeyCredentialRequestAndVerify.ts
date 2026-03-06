@@ -14,13 +14,14 @@ import { UserVerificationRequiredAgentException } from '../../../src/authenticat
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { AuthenticatorAssertionResponse } from '../../../src/validation/spec/AuthenticatorAssertionResponseSchema';
 import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
-import { RP_ORIGIN } from '../../helpers/consts';
+import { RP_ORIGIN, VIRTUAL_AUTHENTICATOR_ID } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   stateManager: StateManager;
@@ -28,6 +29,7 @@ export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions;
   webAuthnCredential: WebAuthnCredential;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
+  uvState?: { pin?: string };
 };
 
 export const performPublicKeyCredentialRequestAndVerify = async (
@@ -38,15 +40,18 @@ export const performPublicKeyCredentialRequestAndVerify = async (
     publicKeyCredentialRequestOptions,
     webAuthnCredential,
     meta: metaOptions,
+    uvState = { pin: undefined },
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
     userId: USER_ID,
+    virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
     apiKeyId: null,
     origin: RP_ORIGIN,
 
     userPresenceEnabled: true,
     userVerificationEnabled: true,
+    userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     ...metaOptions,
   };
 
@@ -87,7 +92,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
 
         nextState = {
           ...nextState,
-          uv: true,
+          uv: uvState,
         };
       } else {
         throw error;

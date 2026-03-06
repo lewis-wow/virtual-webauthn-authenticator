@@ -2,12 +2,12 @@ import { assertSchema } from '@repo/assert';
 import { Prisma, PrismaClient } from '@repo/prisma';
 import z from 'zod';
 
-import { WebAuthnPublicKeyCredentialKeyMetaType } from '../enums/WebAuthnPublicKeyCredentialKeyMetaType';
-import { CredentialNotFound } from '../exceptions/CredentialNotFound';
-import { ApiKeyNotExists } from '../exceptions/repository/ApiKeyNotExists';
-import { UserNotExists } from '../exceptions/repository/UserNotExists';
-import type { WebAuthnPublicKeyCredentialWithMeta } from '../types/WebAuthnPublicKeyCredentialWithMeta';
-import type { ApplicablePublicKeyCredential } from '../validation/spec/ApplicablePublicKeyCredentialSchema';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '../../enums/WebAuthnPublicKeyCredentialKeyMetaType';
+import { CredentialNotFound } from '../../exceptions/CredentialNotFound';
+import { ApiKeyNotExists } from '../../exceptions/repository/ApiKeyNotExists';
+import { UserNotExists } from '../../exceptions/repository/UserNotExists';
+import type { WebAuthnPublicKeyCredentialWithMeta } from '../../types/WebAuthnPublicKeyCredentialWithMeta';
+import type { ApplicablePublicKeyCredential } from '../../validation/spec/ApplicablePublicKeyCredentialSchema';
 import type {
   CreateKeyVaultDataArgs,
   IWebAuthnRepository,
@@ -145,6 +145,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
             isClientSideDiscoverable: data.isClientSideDiscoverable,
 
             userId: data.userId,
+            virtualAuthenticatorId: data.virtualAuthenticatorId,
             apiKeyId: data.apiKeyId,
 
             webAuthnPublicKeyCredentialKeyMetaType:

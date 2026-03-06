@@ -15,18 +15,20 @@ import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObje
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { PublicKeyCredentialDtoSchema } from '../../../src/dto/spec/PublicKeyCredentialDtoSchema';
 import { UserVerification } from '../../../src/enums/UserVerification';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import { StateManager } from '../../../src/state/StateManager';
 import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
 import type { PublicKeyCredentialCreationOptions } from '../../../src/validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
-import { RP_ORIGIN } from '../../helpers/consts';
+import { RP_ORIGIN, VIRTUAL_AUTHENTICATOR_ID } from '../../helpers/consts';
 
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   stateManager: StateManager;
   agent: VirtualAuthenticatorAgent;
   publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions;
   meta?: Partial<AuthenticatorAgentMetaArgs>;
+  uvState?: { pin?: string };
 };
 
 export const performPublicKeyCredentialRegistrationAndVerify = async (
@@ -36,15 +38,18 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     agent,
     publicKeyCredentialCreationOptions,
     meta: metaOptions = {},
+    uvState = { pin: undefined },
   } = opts;
 
   const meta: AuthenticatorAgentMetaArgs = {
     userId: USER_ID,
+    virtualAuthenticatorId: VIRTUAL_AUTHENTICATOR_ID,
     apiKeyId: null,
     origin: RP_ORIGIN,
 
     userPresenceEnabled: true,
     userVerificationEnabled: true,
+    userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
     ...metaOptions,
   };
 
@@ -88,7 +93,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
         nextState = {
           ...nextState,
-          uv: true,
+          uv: uvState,
         };
       } else {
         throw error;

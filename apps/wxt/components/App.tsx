@@ -52,15 +52,19 @@ export const App = () => {
                   // Chain into UV dialog before resolving
                   openDialog(
                     <UserVerificationDialog
+                      userVerificationType={error.data.userVerificationType}
                       onCancel={() => {
                         resolve(null);
                         closeDialog();
                       }}
-                      onConfirm={() => {
+                      onConfirm={({ pin }) => {
                         logger.info(
                           'User confirmed verification after credential select.',
                         );
-                        resolve({ ...baseState, uv: true });
+                        resolve({
+                          ...baseState,
+                          uv: { pin },
+                        });
                         closeDialog();
                       }}
                     />,
@@ -78,17 +82,18 @@ export const App = () => {
           if (error.data.requireUserVerification) {
             return (
               <UserVerificationDialog
+                userVerificationType={error.data.userVerificationType}
                 onCancel={() => {
                   resolve(null);
                   closeDialog();
                 }}
-                onConfirm={() => {
+                onConfirm={({ pin }) => {
                   logger.info(
                     'User confirmed verification (implies presence).',
                   );
                   resolve({
                     up: true,
-                    uv: true,
+                    uv: { pin },
                     stateToken: error.data.stateToken,
                   });
                   closeDialog();
@@ -120,17 +125,18 @@ export const App = () => {
             // UV implies UP
             return (
               <UserVerificationDialog
+                userVerificationType={error.data.userVerificationType}
                 onCancel={() => {
                   resolve(null);
                   closeDialog();
                 }}
-                onConfirm={() => {
+                onConfirm={({ pin }) => {
                   logger.info(
                     'User confirmed verification (implies presence).',
                   );
                   resolve({
                     up: true,
-                    uv: true,
+                    uv: { pin },
                     stateToken: error.data.stateToken,
                   });
                   closeDialog();
