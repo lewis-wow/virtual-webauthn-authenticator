@@ -10,7 +10,7 @@ import { isExceptionShape } from '@repo/exception';
 import {
   UserPresenceRequiredAgentException,
   UserVerificationRequiredAgentException,
-} from '@repo/virtual-authenticator/authenticatorAgent';
+} from '@repo/virtual-authenticator-agent';
 import {
   PublicKeyCredentialType,
   UserVerification,

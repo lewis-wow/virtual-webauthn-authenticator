@@ -21,7 +21,7 @@ import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import {
   UserPresenceRequiredAgentException,
   UserVerificationRequiredAgentException,
-} from '@repo/virtual-authenticator/authenticatorAgent';
+} from '@repo/virtual-authenticator-agent';
 import {
   Attestation,
   PublicKeyCredentialType,

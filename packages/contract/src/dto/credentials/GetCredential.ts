@@ -1,10 +1,8 @@
 import { HttpStatusCode } from '@repo/http';
-import {
-  PublicKeyCredentialRequestOptionsDtoSchema,
-  AuthenticatorAgentGetAssertionResponseDtoSchema,
-} from '@repo/virtual-authenticator/dto';
+import { AuthenticatorAgentGetAssertionResponseDtoSchema } from '@repo/virtual-authenticator-agent/dto';
+import { AuthenticatorAgentMetaArgsSchema } from '@repo/virtual-authenticator-agent/validation';
+import { PublicKeyCredentialRequestOptionsDtoSchema } from '@repo/virtual-authenticator/dto';
 import { AuthenticationStateSchema } from '@repo/virtual-authenticator/state';
-import { AuthenticatorAgentMetaArgsSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 
 // =============================================================================

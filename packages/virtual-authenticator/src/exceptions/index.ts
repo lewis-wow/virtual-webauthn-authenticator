@@ -1,4 +1,5 @@
 export * from './browser/AlgorithmIdentifierNotFoundInCoseKey';
+export * from './CredentialExcluded';
 export * from './CredentialNotFound';
 export * from './CredentialOptionsEmpty';
 export * from './CredentialTypesNotSupported';

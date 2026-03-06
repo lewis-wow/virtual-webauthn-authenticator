@@ -4,4 +4,3 @@ src/dto/index.ts
 src/types/dom.ts
 
 src/authenticator/index.ts
-src/authenticatorAgent/index.ts

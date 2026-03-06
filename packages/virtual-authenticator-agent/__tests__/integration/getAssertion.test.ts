@@ -1,4 +1,4 @@
-import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '@repo/auth/__tests__/helpers';
 import { set } from '@repo/core/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
@@ -22,44 +22,44 @@ import {
   test,
 } from 'vitest';
 
-import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
-import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
-import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
-import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
-import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
-import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
-import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
-import { CredentialSelectAgentException } from '../../../src/authenticatorAgent/exceptions/CredentialSelectAgentException';
-import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
-import { UserVerificationRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserVerificationRequiredAgentException';
-import { CredPropsExtension } from '../../../src/authenticatorAgent/extensions/CredPropsExtension';
-import { ExtensionProcessor } from '../../../src/authenticatorAgent/extensions/ExtensionProcessor';
-import { ExtensionRegistry } from '../../../src/authenticatorAgent/extensions/ExtensionRegistry';
-import { hashGetAssertionOptionsAsHex } from '../../../src/authenticatorAgent/helpers/hashGetAssertionOptionsAsHex';
-import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
-import { UserVerification } from '../../../src/enums/UserVerification';
-import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
-import { CredentialNotFound } from '../../../src/exceptions/CredentialNotFound';
-import { CredentialOptionsEmpty } from '../../../src/exceptions/CredentialOptionsEmpty';
-import { PrismaVirtualAuthenticatorRepository } from '../../../src/repositories/virtualAuthenticatorRepository/PrismaVirtualAuthenticatorRepository';
-import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
-import { StateAction } from '../../../src/state/StateAction';
-import { StateManager } from '../../../src/state/StateManager';
-import type { AuthenticatorAgentMetaArgs } from '../../../src/validation/authenticatorAgent/AuthenticatorAgentMetaArgsSchema';
-import type { PublicKeyCredentialRequestOptions } from '../../../src/validation/spec/PublicKeyCredentialRequestOptionsSchema';
-import type { PublicKeyCredential } from '../../../src/validation/spec/PublicKeyCredentialSchema';
-import { InMemoryJwksRepository } from '../../helpers/InMemoryJwksRepository';
-import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
-import { MockKeyProvider } from '../../helpers/MockKeyProvider';
+import { AuthorizationGesture } from '@repo/virtual-authenticator/authenticator';
+import { VirtualAuthenticator } from '@repo/virtual-authenticator/authenticator';
+import { AttestationHandlerRegistry } from '@repo/virtual-authenticator/authenticator';
+import { AttestationProcessor } from '@repo/virtual-authenticator/authenticator';
+import { NoneAttestationHandler } from '@repo/virtual-authenticator/authenticator';
+import { PackedAttestationHandler } from '@repo/virtual-authenticator/authenticator';
+import { VirtualAuthenticatorAgent } from '../../src/VirtualAuthenticatorAgent';
+import { CredentialSelectAgentException } from '../../src/exceptions/CredentialSelectAgentException';
+import { UserPresenceRequiredAgentException } from '../../src/exceptions/UserPresenceRequiredAgentException';
+import { UserVerificationRequiredAgentException } from '../../src/exceptions/UserVerificationRequiredAgentException';
+import { CredPropsExtension } from '../../src/extensions/CredPropsExtension';
+import { ExtensionProcessor } from '../../src/extensions/ExtensionProcessor';
+import { ExtensionRegistry } from '../../src/extensions/ExtensionRegistry';
+import { hashGetAssertionOptionsAsHex } from '../../src/helpers/hashGetAssertionOptionsAsHex';
+import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
+import { UserVerification } from '@repo/virtual-authenticator/enums';
+import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';
+import { CredentialNotFound } from '@repo/virtual-authenticator/exceptions';
+import { CredentialOptionsEmpty } from '@repo/virtual-authenticator/exceptions';
+import { PrismaVirtualAuthenticatorRepository } from '@repo/virtual-authenticator/repositories';
+import { PrismaWebAuthnRepository } from '@repo/virtual-authenticator/repositories';
+import { StateAction } from '@repo/virtual-authenticator/state';
+import { StateManager } from '@repo/virtual-authenticator/state';
+import type { AuthenticatorAgentMetaArgs } from '../../src/validation/AuthenticatorAgentMetaArgsSchema';
+import type { PublicKeyCredentialRequestOptions } from '@repo/virtual-authenticator/validation';
+import type { PublicKeyCredential } from '@repo/virtual-authenticator/validation';
+import { InMemoryJwksRepository } from '@repo/virtual-authenticator/__tests__/helpers';
+import { KeyVaultKeyIdGenerator } from '@repo/virtual-authenticator/__tests__/helpers';
+import { MockKeyProvider } from '@repo/virtual-authenticator/__tests__/helpers';
 import {
   CHALLENGE_BYTES,
   PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
   RP_ID,
   RP_ORIGIN,
   VIRTUAL_AUTHENTICATOR_ID,
-} from '../../helpers/consts';
-import { generateRandomUUIDBytes } from '../../helpers/generateRandomUUIDBytes';
-import { unreachable } from '../../helpers/unreachable';
+} from '@repo/virtual-authenticator/__tests__/helpers';
+import { generateRandomUUIDBytes } from '@repo/virtual-authenticator/__tests__/helpers';
+import { unreachable } from '@repo/virtual-authenticator/__tests__/helpers';
 import { performPublicKeyCredentialRegistrationAndVerify } from './performPublicKeyCredentialRegistrationAndVerify';
 import { performPublicKeyCredentialRequestAndVerify } from './performPublicKeyCredentialRequestAndVerify';
 

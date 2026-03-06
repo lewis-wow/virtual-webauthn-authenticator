@@ -1,27 +1,16 @@
 {
-  "name": "@repo/virtual-authenticator",
+  "name": "@repo/virtual-authenticator-agent",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./browser": "./src/browser/index.ts",
-    "./enums": "./src/enums/index.ts",
-    "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
-    "./mappers": "./src/mappers/index.ts",
-    "./types": "./src/types/index.ts",
-    "./repositories": "./src/repositories/index.ts",
-    "./authenticator": "./src/authenticator/index.ts",
-    "./cbor": "./src/cbor/index.ts",
-    "./dto": "./src/dto/index.ts",
-    "./http": "./src/http/index.ts",
-    "./state": "./src/state/index.ts",
-    "./__tests__/helpers": "./__tests__/helpers/index.ts"
+    "./dto": "./src/dto/index.ts"
   },
   "scripts": {
     "build": "run-p barrel:*",
-    "barrel:authenticator": "../../scripts/barrel.ts ./src/authenticator",
+    "barrel:authenticatorAgent": "../../scripts/barrel.ts ./src",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation",
     "barrel:dto": "../../scripts/barrel.ts ./src/dto",
     "test:unit": "vitest run --config __tests__/vitest.unit.config.ts",
@@ -32,7 +21,10 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
     "@simplewebauthn/server": "^13.2.1",
@@ -52,15 +44,12 @@
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
     "@repo/keys": "workspace:*",
-    "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/virtual-authenticator": "workspace:*",
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
-    "class-transformer": "^0.5.1",
     "effect": "^3.19.4",
-    "reflect-metadata": "^0.2.2",
-    "ts-pattern": "^5.8.0",
     "zod": "^4.1.12"
   }
 }
