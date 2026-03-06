@@ -11,7 +11,12 @@ import {
   test,
 } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
 import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
 import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
@@ -52,10 +57,23 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
   });
   const virtualAuthenticatorRepository =
     new MockVirtualAuthenticatorRepository();
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
 
   const cleanupWebAuthnPublicKeyCredentials = async () => {

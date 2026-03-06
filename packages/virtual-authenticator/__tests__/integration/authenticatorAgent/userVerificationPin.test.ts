@@ -4,13 +4,17 @@ import {
   USER_NAME,
 } from '../../../../auth/__tests__/helpers';
 
-import { TypeAssertionError } from '@repo/assert';
 import { Jwks, Jwt } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
 import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { InvalidUserVerificationPin } from '../../../src/authenticator/exceptions/InvalidUserVerificationPin';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
 import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
@@ -89,10 +93,23 @@ describe('User Verification PIN', () => {
   const webAuthnRepository = new PrismaWebAuthnRepository({ prisma });
   const virtualAuthenticatorRepository =
     new PrismaVirtualAuthenticatorRepository({ prisma });
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository,
     virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
   const extensionRegistry = new ExtensionRegistry().registerAll([
     new CredPropsExtension(),
@@ -139,6 +156,7 @@ describe('User Verification PIN', () => {
         userId: USER_ID,
         userVerificationType: VirtualAuthenticatorUserVerificationType.PIN,
         pin: TEST_PIN,
+        isActive: true,
       },
     });
 
@@ -150,6 +168,7 @@ describe('User Verification PIN', () => {
         id: NONE_AUTHENTICATOR_ID,
         userId: USER_ID,
         userVerificationType: 'NONE',
+        isActive: true,
       },
     });
   });
@@ -200,7 +219,7 @@ describe('User Verification PIN', () => {
         ).rejects.toThrow(InvalidUserVerificationPin);
       });
 
-      test('Should throw TypeAssertionError when PIN is empty string', async () => {
+      test('Should throw InvalidUserVerificationPin when PIN is empty string', async () => {
         await expect(
           performPublicKeyCredentialRegistrationAndVerify({
             stateManager,
@@ -210,10 +229,10 @@ describe('User Verification PIN', () => {
             meta: pinMeta,
             uvState: { pin: '' },
           }),
-        ).rejects.toThrow(TypeAssertionError);
+        ).rejects.toThrow(InvalidUserVerificationPin);
       });
 
-      test('Should throw TypeAssertionError when PIN is not provided', async () => {
+      test('Should throw InvalidUserVerificationPin when PIN is not provided', async () => {
         await expect(
           performPublicKeyCredentialRegistrationAndVerify({
             stateManager,
@@ -223,7 +242,7 @@ describe('User Verification PIN', () => {
             meta: pinMeta,
             uvState: {},
           }),
-        ).rejects.toThrow(TypeAssertionError);
+        ).rejects.toThrow(InvalidUserVerificationPin);
       });
     });
 
@@ -319,7 +338,7 @@ describe('User Verification PIN', () => {
         ).rejects.toThrow(InvalidUserVerificationPin);
       });
 
-      test('Should throw TypeAssertionError when PIN is empty string', async () => {
+      test('Should throw InvalidUserVerificationPin when PIN is empty string', async () => {
         const { webAuthnCredential } =
           await performPublicKeyCredentialRegistrationAndVerify({
             stateManager,
@@ -340,10 +359,10 @@ describe('User Verification PIN', () => {
             meta: pinMeta,
             uvState: { pin: '' },
           }),
-        ).rejects.toThrow(TypeAssertionError);
+        ).rejects.toThrow(InvalidUserVerificationPin);
       });
 
-      test('Should throw TypeAssertionError when PIN is not provided', async () => {
+      test('Should throw InvalidUserVerificationPin when PIN is not provided', async () => {
         const { webAuthnCredential } =
           await performPublicKeyCredentialRegistrationAndVerify({
             stateManager,
@@ -364,7 +383,7 @@ describe('User Verification PIN', () => {
             meta: pinMeta,
             uvState: {},
           }),
-        ).rejects.toThrow(TypeAssertionError);
+        ).rejects.toThrow(InvalidUserVerificationPin);
       });
     });
 
@@ -492,65 +511,39 @@ describe('User Verification PIN', () => {
     });
   });
 
-  describe('PrismaVirtualAuthenticatorRepository.validatePin()', () => {
-    test('Should return true for correct PIN', async () => {
-      const result = await virtualAuthenticatorRepository.validatePin({
+  describe('PrismaVirtualAuthenticatorRepository.findUnique()', () => {
+    test('Should find existing PIN-type authenticator', async () => {
+      const result = await virtualAuthenticatorRepository.findUnique({
         virtualAuthenticatorId: PIN_AUTHENTICATOR_ID,
-        userId: USER_ID,
-        pin: TEST_PIN,
       });
 
-      expect(result).toBe(true);
+      expect(result).toBeDefined();
+      expect(result.id).toBe(PIN_AUTHENTICATOR_ID);
+      expect(result.userVerificationType).toBe(
+        VirtualAuthenticatorUserVerificationType.PIN,
+      );
+      expect(result.pin).toBe(TEST_PIN);
     });
 
-    test('Should throw InvalidUserVerificationPin for incorrect PIN', async () => {
-      await expect(
-        virtualAuthenticatorRepository.validatePin({
-          virtualAuthenticatorId: PIN_AUTHENTICATOR_ID,
-          userId: USER_ID,
-          pin: WRONG_PIN,
-        }),
-      ).rejects.toThrow(InvalidUserVerificationPin);
-    });
-
-    test('Should throw TypeAssertionError for empty PIN on PIN-type authenticator', async () => {
-      await expect(
-        virtualAuthenticatorRepository.validatePin({
-          virtualAuthenticatorId: PIN_AUTHENTICATOR_ID,
-          userId: USER_ID,
-          pin: '',
-        }),
-      ).rejects.toThrow(TypeAssertionError);
-    });
-
-    test('Should return true for NONE-type authenticator without PIN', async () => {
-      const result = await virtualAuthenticatorRepository.validatePin({
+    test('Should find existing NONE-type authenticator', async () => {
+      const result = await virtualAuthenticatorRepository.findUnique({
         virtualAuthenticatorId: NONE_AUTHENTICATOR_ID,
-        userId: USER_ID,
-        pin: '',
       });
 
-      expect(result).toBe(true);
+      expect(result).toBeDefined();
+      expect(result.id).toBe(NONE_AUTHENTICATOR_ID);
+      expect(result.userVerificationType).toBe(
+        VirtualAuthenticatorUserVerificationType.NONE,
+      );
+      expect(result.pin).toBeNull();
     });
 
-    test('Should throw InvalidUserVerificationPin for non-existent authenticator', async () => {
+    test('Should throw for non-existent authenticator', async () => {
       await expect(
-        virtualAuthenticatorRepository.validatePin({
+        virtualAuthenticatorRepository.findUnique({
           virtualAuthenticatorId: '00000000-0000-0000-0000-999999999999',
-          userId: USER_ID,
-          pin: TEST_PIN,
         }),
-      ).rejects.toThrow(InvalidUserVerificationPin);
-    });
-
-    test('Should throw InvalidUserVerificationPin for wrong userId', async () => {
-      await expect(
-        virtualAuthenticatorRepository.validatePin({
-          virtualAuthenticatorId: PIN_AUTHENTICATOR_ID,
-          userId: '00000000-0000-0000-0000-999999999999',
-          pin: TEST_PIN,
-        }),
-      ).rejects.toThrow(InvalidUserVerificationPin);
+      ).rejects.toThrow();
     });
   });
 });

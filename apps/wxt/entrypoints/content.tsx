@@ -22,6 +22,7 @@ export default defineContentScript({
       position: 'inline',
       anchor: 'body',
       append: 'first',
+      mode: 'closed',
       onMount: (container) => {
         // Create a root for React
         const root = ReactDOM.createRoot(container);

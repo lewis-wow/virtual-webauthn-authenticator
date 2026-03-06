@@ -22,7 +22,12 @@ import {
   test,
 } from 'vitest';
 
+import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
 import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
 import { VirtualAuthenticatorAgent } from '../../../src/authenticatorAgent/VirtualAuthenticatorAgent';
 import { CredentialSelectAgentException } from '../../../src/authenticatorAgent/exceptions/CredentialSelectAgentException';
 import { UserPresenceRequiredAgentException } from '../../../src/authenticatorAgent/exceptions/UserPresenceRequiredAgentException';
@@ -81,10 +86,23 @@ describe('VirtualAuthenticator.getCredential()', () => {
   });
   const virtualAuthenticatorRepository =
     new PrismaVirtualAuthenticatorRepository({ prisma });
+  const authorizationGesture = new AuthorizationGesture({
+    virtualAuthenticatorRepository,
+  });
+  const attestationHandlerRegistry =
+    new AttestationHandlerRegistry().registerAll([
+      new NoneAttestationHandler(),
+      new PackedAttestationHandler({ keyProvider }),
+    ]);
+  const attestationProcessor = new AttestationProcessor(
+    attestationHandlerRegistry,
+  );
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     virtualAuthenticatorRepository,
     keyProvider,
+    authorizationGesture,
+    attestationProcessor,
   });
   const extensionRegistry = new ExtensionRegistry().registerAll([
     new CredPropsExtension(),
@@ -122,6 +140,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
         id: VIRTUAL_AUTHENTICATOR_ID,
         userId: USER_ID,
         userVerificationType: 'NONE',
+        isActive: true,
       },
     });
   });
