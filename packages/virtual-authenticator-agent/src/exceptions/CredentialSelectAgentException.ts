@@ -4,7 +4,7 @@ import { HttpStatusCode } from '@repo/http';
 import {
   CredentialSelectExceptionDataSchema,
   CredentialSelectException,
-} from '@repo/virtual-authenticator/authenticator';
+} from '@repo/virtual-authenticator/exceptions';
 import z from 'zod';
 
 export class CredentialSelectAgentException extends Exception<CredentialSelectAgentExceptionData> {

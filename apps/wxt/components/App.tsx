@@ -7,7 +7,7 @@ import {
   CredentialSelectAgentException,
   UserPresenceRequiredAgentException,
   UserVerificationRequiredAgentException,
-} from '@repo/virtual-authenticator-agent';
+} from '@repo/virtual-authenticator-agent/exceptions';
 import { match } from 'ts-pattern';
 
 import { CredentialOptionsDialog } from './CredentialOptionsDialog';

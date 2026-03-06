@@ -3,7 +3,7 @@ import { Exception } from '@repo/exception';
 import {
   UserPresenceRequiredDataSchema,
   UserPresenceRequired,
-} from '@repo/virtual-authenticator/authenticator';
+} from '@repo/virtual-authenticator/exceptions';
 import z from 'zod';
 
 export class UserPresenceRequiredAgentException extends Exception<UserPresenceRequiredAgentExceptionData> {
