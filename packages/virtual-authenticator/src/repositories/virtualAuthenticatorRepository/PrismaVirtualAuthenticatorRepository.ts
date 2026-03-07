@@ -2,7 +2,7 @@ import { assertSchema } from '@repo/assert';
 import type { PrismaClient } from '@repo/prisma';
 import z from 'zod';
 
-import { VirtualAuthenticatorNotFound } from '../../authenticator/exceptions/VirtualAuthenticatorNotFound';
+import { VirtualAuthenticatorNotFound } from '../../exceptions/VirtualAuthenticatorNotFound';
 import type {
   FindUniqueArgs,
   IVirtualAuthenticatorRepository,

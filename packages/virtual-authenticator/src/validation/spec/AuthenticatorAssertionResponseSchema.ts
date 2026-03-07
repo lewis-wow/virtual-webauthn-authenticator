@@ -1,8 +1,8 @@
 import z from 'zod';
 
 import { see } from '../../meta/see';
+import { AuthenticatorResponseSchema } from '../AuthenticatorResponseSchema';
 import { BytesSchema } from '../BytesSchema';
-import { AuthenticatorResponseSchema } from '../authenticator/AuthenticatorResponseSchema';
 import { UserHandleSchema } from './UserHandleSchema';
 
 /**

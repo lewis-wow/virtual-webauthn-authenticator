@@ -4,11 +4,7 @@ import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import {
-  type IAuthenticator,
-  CredentialSelectException,
-  UserVerificationNotAvailable,
-} from '@repo/virtual-authenticator/authenticator';
+import { type IAuthenticator } from '@repo/virtual-authenticator';
 import {
   decodeAttestationObject,
   parseAuthenticatorData,
@@ -28,6 +24,10 @@ import {
   ResidentKey,
   UserVerification,
 } from '@repo/virtual-authenticator/enums';
+import {
+  CredentialSelectException,
+  UserVerificationNotAvailable,
+} from '@repo/virtual-authenticator/exceptions';
 import {
   UserPresenceRequired,
   UserVerificationRequired,

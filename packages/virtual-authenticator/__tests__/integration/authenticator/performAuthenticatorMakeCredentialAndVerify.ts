@@ -6,19 +6,19 @@ import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { PrismaClient } from '@repo/prisma';
 import { expect } from 'vitest';
 
-import type { IAuthenticator } from '../../../src/authenticator/IAuthenticator';
-import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
-import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
-import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
+import type { IAuthenticator } from '../../../src/IAuthenticator';
+import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
 import { decodeAttestationObject } from '../../../src/cbor/decodeAttestationObject';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums/CollectedClientDataType';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
-import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
-import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
-import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/AuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorMetaArgs } from '../../../src/validation/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
 import {
   CHALLENGE_BYTES,

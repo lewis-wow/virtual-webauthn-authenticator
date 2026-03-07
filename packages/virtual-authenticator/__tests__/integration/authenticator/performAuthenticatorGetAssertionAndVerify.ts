@@ -8,17 +8,17 @@ import { verifySignature } from '@simplewebauthn/server/helpers';
 import { expect } from 'vitest';
 
 import { type IAuthenticator } from '../../../src';
-import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
-import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
+import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
-import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/authenticator/AuthenticatorGetAssertionResponseSchema';
-import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
-import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/AuthenticatorGetAssertionResponseSchema';
+import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/AuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorMetaArgs } from '../../../src/validation/AuthenticatorMetaArgsSchema';
 import type { CollectedClientData } from '../../../src/validation/spec/CollectedClientDataSchema';
 import {
   CHALLENGE_BYTES,

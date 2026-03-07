@@ -2,7 +2,7 @@ import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
 import { describe, expect, test, vi } from 'vitest';
 
-import { PackedAttestationHandler } from '../../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
+import { PackedAttestationHandler } from '../../../../src/attestationHandlers/PackedAttestationHandler';
 import { Fmt } from '../../../../src/enums/Fmt';
 import { SignatureFailed } from '../../../../src/exceptions/SignatureFailed';
 import type { IKeyProvider } from '../../../../src/types/IKeyProvider';

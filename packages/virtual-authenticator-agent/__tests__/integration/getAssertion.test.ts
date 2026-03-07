@@ -22,12 +22,12 @@ import {
 } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
-import { AuthorizationGesture } from '@repo/virtual-authenticator/authenticator';
-import { VirtualAuthenticator } from '@repo/virtual-authenticator/authenticator';
-import { AttestationHandlerRegistry } from '@repo/virtual-authenticator/authenticator';
-import { AttestationProcessor } from '@repo/virtual-authenticator/authenticator';
-import { NoneAttestationHandler } from '@repo/virtual-authenticator/authenticator';
-import { PackedAttestationHandler } from '@repo/virtual-authenticator/authenticator';
+import { AuthorizationGesture } from '@repo/virtual-authenticator';
+import { VirtualAuthenticator } from '@repo/virtual-authenticator';
+import { AttestationHandlerRegistry } from '@repo/virtual-authenticator';
+import { AttestationProcessor } from '@repo/virtual-authenticator';
+import { NoneAttestationHandler } from '@repo/virtual-authenticator';
+import { PackedAttestationHandler } from '@repo/virtual-authenticator';
 import { PublicKeyCredentialType } from '@repo/virtual-authenticator/enums';
 import { UserVerification } from '@repo/virtual-authenticator/enums';
 import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';

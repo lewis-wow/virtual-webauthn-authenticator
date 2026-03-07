@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { NoneAttestationHandler } from '../../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
+import { NoneAttestationHandler } from '../../../../src/attestationHandlers/NoneAttestationHandler';
 import { Fmt } from '../../../../src/enums/Fmt';
 
 describe('NoneAttestationHandler', () => {

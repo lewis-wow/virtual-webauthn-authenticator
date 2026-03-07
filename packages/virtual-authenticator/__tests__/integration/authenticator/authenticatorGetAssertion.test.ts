@@ -11,24 +11,24 @@ import {
   test,
 } from 'vitest';
 
-import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
-import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
-import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
-import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
-import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
-import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
-import { CredentialSelectException } from '../../../src/authenticator/exceptions/CredentialSelectException';
-import { UserPresenceNotAvailable } from '../../../src/authenticator/exceptions/UserPresenceNotAvailable';
-import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
-import { UserVerificationNotAvailable } from '../../../src/authenticator/exceptions/UserVerificationNotAvailable';
-import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
+import { AuthorizationGesture } from '../../../src/AuthorizationGesture';
+import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/attestationHandlers/PackedAttestationHandler';
+import { CredentialSelectException } from '../../../src/exceptions/CredentialSelectException';
+import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
+import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
+import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
+import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
 import { PublicKeyCredentialType } from '../../../src/enums';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { AuthenticationState } from '../../../src/state';
-import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/authenticator/AuthenticatorGetAssertionArgsSchema';
-import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialResponseSchema';
-import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/AuthenticatorGetAssertionArgsSchema';
+import type { AuthenticatorMakeCredentialResponse } from '../../../src/validation/AuthenticatorMakeCredentialResponseSchema';
+import type { AuthenticatorMetaArgs } from '../../../src/validation/AuthenticatorMetaArgsSchema';
 import { RP_ID } from '../../helpers';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';

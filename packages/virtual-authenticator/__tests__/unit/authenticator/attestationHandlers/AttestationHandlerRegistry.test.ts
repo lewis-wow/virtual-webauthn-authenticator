@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import type { AttestationHandler } from '../../../../src/authenticator/attestationHandlers/AttestationHandler';
-import { AttestationHandlerRegistry } from '../../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
+import type { AttestationHandler } from '../../../../src/attestationHandlers/AttestationHandler';
+import { AttestationHandlerRegistry } from '../../../../src/attestationHandlers/AttestationHandlerRegistry';
 
 const createMockHandler = (format: string): AttestationHandler => ({
   attestationFormat: format,

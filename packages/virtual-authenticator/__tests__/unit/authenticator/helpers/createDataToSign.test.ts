@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createDataToSign } from '../../../../src/authenticator/helpers/createDataToSign.js';
+import { createDataToSign } from '../../../../src/helpers/createDataToSign.js';
 
 describe('createDataToSign', () => {
   test('concatenates authData and clientDataHash in the correct order', () => {
