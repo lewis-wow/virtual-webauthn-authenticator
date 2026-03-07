@@ -10,9 +10,14 @@
     "./exceptions": "./src/exceptions/index.ts"
   },
   "scripts": {
-    "build": "run-p barrel:*",
+    "build": "run-s barrel:root barrel:sub",
+    "barrel:root": "../../scripts/barrel.ts",
+    "barrel:sub": "run-p barrel:validation barrel:dto barrel:exceptions barrel:extensions barrel:helpers",
     "barrel:validation": "../../scripts/barrel.ts ./src/validation",
     "barrel:dto": "../../scripts/barrel.ts ./src/dto",
+    "barrel:exceptions": "../../scripts/barrel.ts ./src/exceptions",
+    "barrel:extensions": "../../scripts/barrel.ts ./src/extensions",
+    "barrel:helpers": "../../scripts/barrel.ts ./src/helpers",
     "test:unit": "vitest run --config __tests__/vitest.unit.config.ts",
     "test:unit:coverage": "vitest run --coverage --config __tests__/vitest.unit.config.ts",
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",

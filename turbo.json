@@ -32,7 +32,14 @@
     "@repo/virtual-authenticator-agent#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["src/validation/index.ts", "src/dto/index.ts"]
+      "outputs": [
+        "src/index.ts",
+        "src/dto/index.ts",
+        "src/exceptions/index.ts",
+        "src/extensions/index.ts",
+        "src/helpers/index.ts",
+        "src/validation/index.ts"
+      ]
     },
     "@repo/types#build": {
       "dependsOn": ["^build"],
