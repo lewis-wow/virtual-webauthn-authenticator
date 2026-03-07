@@ -19,7 +19,7 @@
     "@azure/keyvault-keys": "^4.10.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
-    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-express": "^11.1.16",
     "@nestjs/serve-static": "^5.0.4",
     "@repo/activity-log": "workspace:*",
     "@repo/http": "workspace:*",
