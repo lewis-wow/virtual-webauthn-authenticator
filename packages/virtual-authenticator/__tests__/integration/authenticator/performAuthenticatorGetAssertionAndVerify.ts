@@ -8,12 +8,12 @@ import { verifySignature } from '@simplewebauthn/server/helpers';
 import { expect } from 'vitest';
 
 import { type IAuthenticator } from '../../../src';
-import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
-import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
 import { decodeAttestationObject } from '../../../src/cbor';
 import { parseAuthenticatorData } from '../../../src/cbor/parseAuthenticatorData';
 import { CollectedClientDataType } from '../../../src/enums';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
+import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
 import type { AuthenticationState } from '../../../src/state/AuthenticationStateSchema';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/AuthenticatorGetAssertionArgsSchema';
 import type { AuthenticatorGetAssertionResponse } from '../../../src/validation/AuthenticatorGetAssertionResponseSchema';

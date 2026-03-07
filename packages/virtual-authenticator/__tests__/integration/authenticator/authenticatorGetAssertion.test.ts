@@ -17,13 +17,13 @@ import { AttestationHandlerRegistry } from '../../../src/attestationHandlers/Att
 import { AttestationProcessor } from '../../../src/attestationHandlers/AttestationProcessor';
 import { NoneAttestationHandler } from '../../../src/attestationHandlers/NoneAttestationHandler';
 import { PackedAttestationHandler } from '../../../src/attestationHandlers/PackedAttestationHandler';
+import { PublicKeyCredentialType } from '../../../src/enums';
+import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { CredentialSelectException } from '../../../src/exceptions/CredentialSelectException';
 import { UserPresenceNotAvailable } from '../../../src/exceptions/UserPresenceNotAvailable';
 import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
 import { UserVerificationNotAvailable } from '../../../src/exceptions/UserVerificationNotAvailable';
 import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
-import { PublicKeyCredentialType } from '../../../src/enums';
-import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { AuthenticationState } from '../../../src/state';
 import type { AuthenticatorGetAssertionArgs } from '../../../src/validation/AuthenticatorGetAssertionArgsSchema';
