@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createAttestedCredentialData } from '../../../../src/authenticator/helpers/createAttestedCredentialData.js';
+import { createAttestedCredentialData } from '../../../../src/helpers/createAttestedCredentialData.js';
 
 describe('createAttestedCredentialData', () => {
   const AAGUID_LENGTH = 16;

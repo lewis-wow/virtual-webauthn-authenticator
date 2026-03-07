@@ -36,6 +36,7 @@
     "@repo/prisma": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
+    "@repo/virtual-authenticator-agent": "workspace:*",
     "@t3-oss/env-core": "^0.13.8",
     "@ts-rest/core": "^3.53.0-rc.1",
     "@ts-rest/nest": "^3.53.0-rc.1",

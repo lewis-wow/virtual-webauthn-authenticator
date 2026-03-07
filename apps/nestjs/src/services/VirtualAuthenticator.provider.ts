@@ -1,13 +1,13 @@
 import { Provider } from '@nestjs/common';
 import { AzureKeyVaultKeyProvider } from '@repo/key-vault';
-import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import {
+  VirtualAuthenticator,
   AttestationHandlerRegistry,
   AttestationProcessor,
   AuthorizationGesture,
   NoneAttestationHandler,
   PackedAttestationHandler,
-} from '@repo/virtual-authenticator/authenticator';
+} from '@repo/virtual-authenticator';
 import {
   PrismaVirtualAuthenticatorRepository,
   PrismaWebAuthnRepository,

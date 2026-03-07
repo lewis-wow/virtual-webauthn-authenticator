@@ -17,14 +17,12 @@ import {
   test,
 } from 'vitest';
 
-import { AuthorizationGesture } from '../../../src/authenticator/AuthorizationGesture';
-import { VirtualAuthenticator } from '../../../src/authenticator/VirtualAuthenticator';
-import { AttestationHandlerRegistry } from '../../../src/authenticator/attestationHandlers/AttestationHandlerRegistry';
-import { AttestationProcessor } from '../../../src/authenticator/attestationHandlers/AttestationProcessor';
-import { NoneAttestationHandler } from '../../../src/authenticator/attestationHandlers/NoneAttestationHandler';
-import { PackedAttestationHandler } from '../../../src/authenticator/attestationHandlers/PackedAttestationHandler';
-import { UserPresenceRequired } from '../../../src/authenticator/exceptions/UserPresenceRequired';
-import { UserVerificationRequired } from '../../../src/authenticator/exceptions/UserVerificationRequired';
+import { AuthorizationGesture } from '../../../src/AuthorizationGesture';
+import { VirtualAuthenticator } from '../../../src/VirtualAuthenticator';
+import { AttestationHandlerRegistry } from '../../../src/attestationHandlers/AttestationHandlerRegistry';
+import { AttestationProcessor } from '../../../src/attestationHandlers/AttestationProcessor';
+import { NoneAttestationHandler } from '../../../src/attestationHandlers/NoneAttestationHandler';
+import { PackedAttestationHandler } from '../../../src/attestationHandlers/PackedAttestationHandler';
 import { Fmt } from '../../../src/enums';
 import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialType';
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
@@ -33,10 +31,12 @@ import {
   UserVerificationNotAvailable,
 } from '../../../src/exceptions';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
+import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
+import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
-import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/authenticator/AuthenticatorMakeCredentialArgsSchema';
-import type { AuthenticatorMetaArgs } from '../../../src/validation/authenticator/AuthenticatorMetaArgsSchema';
+import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/AuthenticatorMakeCredentialArgsSchema';
+import type { AuthenticatorMetaArgs } from '../../../src/validation/AuthenticatorMetaArgsSchema';
 import { KeyVaultKeyIdGenerator } from '../../helpers/KeyVaultKeyIdGenerator';
 import { MockKeyProvider } from '../../helpers/MockKeyProvider';
 import { MockVirtualAuthenticatorRepository } from '../../helpers/MockVirtualAuthenticatorRepository';

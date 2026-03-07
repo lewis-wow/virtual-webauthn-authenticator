@@ -25,6 +25,7 @@
     "@repo/types": "workspace:*",
     "@repo/ui": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
+    "@repo/virtual-authenticator-agent": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@vitejs/plugin-react": "^5.1.1",
     "@webext-core/messaging": "^2.3.0",

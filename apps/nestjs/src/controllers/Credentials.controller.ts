@@ -14,7 +14,7 @@ import { Forbidden } from '@repo/exception/http';
 import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
-import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator';
+import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator-agent';
 import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import type {
   PublicKeyCredentialCreationOptions,

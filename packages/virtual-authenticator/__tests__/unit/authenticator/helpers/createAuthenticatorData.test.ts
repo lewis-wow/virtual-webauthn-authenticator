@@ -1,7 +1,7 @@
 import { Hash } from '@repo/crypto';
 import { describe, expect, test } from 'vitest';
 
-import { createAuthenticatorData } from '../../../../src/authenticator/helpers/createAuthenticatorData.js';
+import { createAuthenticatorData } from '../../../../src/helpers/createAuthenticatorData.js';
 
 const RP_ID = 'example.com';
 
