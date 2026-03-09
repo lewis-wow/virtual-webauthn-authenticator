@@ -19,16 +19,19 @@
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.0",
+    "@mermaid-js/mermaid-cli": "^11.12.0",
+    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
     "prisma": "^6.16.3",
-    "typescript": "^5.5.4",
-    "@repo/core": "workspace:*"
+    "prisma-erd-generator": "^2.4.2",
+    "puppeteer": "^24.38.0",
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@repo/exception": "workspace:*",
     "@prisma/client": "^6.16.3",
-    "@prisma/extension-accelerate": "^2.0.2"
+    "@prisma/extension-accelerate": "^2.0.2",
+    "@repo/exception": "workspace:*"
   }
 }

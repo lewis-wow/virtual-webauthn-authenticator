@@ -12,6 +12,14 @@ generator client {
   binaryTargets          = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
+generator erd {
+  provider     = "prisma-erd-generator"
+  theme        = "neutral"
+  disableEmoji = true
+  output       = "../ERD.svg"
+  disabled     = true
+}
+
 model User {
   id                           String                        @id @default(uuid())
   name                         String
@@ -129,7 +137,7 @@ model VirtualAuthenticator {
 
   userVerificationType VirtualAuthenticatorUserVerificationType
   pin                  String?
-  isActive             Boolean @default(false)
+  isActive             Boolean                                  @default(false)
 
   webAuthnPublicKeyCredentials WebAuthnPublicKeyCredential[]
 
@@ -211,16 +219,6 @@ model Log {
   @@index([userId])
   @@index([apiKeyId])
   @@map("auditLog")
-}
-
-enum ApiKeyType {
-  INTERNAL_API_KEY
-  EXTERNAL_API_KEY
-}
-
-enum PermissionSubject {
-  API_KEY
-  USER
 }
 
 enum WebAuthnPublicKeyCredentialKeyMetaType {
