@@ -91,7 +91,7 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD = {
   nextState: {},
 } as z.input<typeof GetCredentialBodySchema>;
 
-describe('CredentialsController - POST /api/credentials/get', () => {
+describe('CredentialsController - POST /api/assertion', () => {
   let app: INestApplication;
   let token: string;
 

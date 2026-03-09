@@ -14,14 +14,14 @@ const c = initContract();
 export const credentialsRouter = c.router({
   create: {
     method: 'POST',
-    path: '/credentials/create',
+    path: '/registration',
     body: CreateCredentialBodySchema,
     responses: CreateCredentialResponseSchema,
     summary: 'Create a new credential',
   },
   get: {
     method: 'POST',
-    path: '/credentials/get',
+    path: '/assertion',
     body: GetCredentialBodySchema,
     responses: GetCredentialResponseSchema,
     summary: 'Get a credential',
