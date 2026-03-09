@@ -34,6 +34,7 @@ jobs:
         env:
           ENVIRONMENT: test
           DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/prisma?schema=public'
+          DISABLE_ERD: true
         # Use the --filter flag to run the command in the correct package.
         run: pnpm --filter @repo/prisma db:migrate
 
@@ -41,6 +42,8 @@ jobs:
         run: pnpm format:check
 
       - name: Build project
+        env:
+          DISABLE_ERD: true
         run: pnpm build
 
       - name: Run linter
