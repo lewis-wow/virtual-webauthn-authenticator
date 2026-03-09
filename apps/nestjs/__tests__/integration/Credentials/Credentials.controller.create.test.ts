@@ -75,7 +75,7 @@ const cleanupWebAuthnPublicKeyCredentials = async () => {
   ]);
 };
 
-describe('CredentialsController - POST /api/credentials/create', () => {
+describe('CredentialsController - POST /api/registration', () => {
   let app: INestApplication;
   let token: string;
 

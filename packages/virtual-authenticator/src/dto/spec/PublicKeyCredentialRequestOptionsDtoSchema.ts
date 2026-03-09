@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { PublicKeyCredentialRequestOptionsSchema } from '../../validation/spec/PublicKeyCredentialRequestOptionsSchema';
+import { AuthenticationExtensionsClientInputsDtoSchema } from './AuthenticationExtensionsClientInputsDtoSchema';
 import { ChallengeDtoSchema } from './ChallengeDtoSchema';
 import { PublicKeyCredentialDescriptorDtoSchema } from './PublicKeyCredentialDescriptorDtoSchema';
 
@@ -10,4 +11,5 @@ export const PublicKeyCredentialRequestOptionsDtoSchema =
     allowCredentials: z
       .array(PublicKeyCredentialDescriptorDtoSchema)
       .optional(),
+    extensions: AuthenticationExtensionsClientInputsDtoSchema.optional(),
   });
