@@ -1,6 +1,7 @@
 import z from 'zod';
 
 import { PublicKeyCredentialCreationOptionsSchema } from '../../validation/spec/PublicKeyCredentialCreationOptionsSchema';
+import { AuthenticationExtensionsClientInputsDtoSchema } from './AuthenticationExtensionsClientInputsDtoSchema';
 import { ChallengeDtoSchema } from './ChallengeDtoSchema';
 import { PublicKeyCredentialDescriptorDtoSchema } from './PublicKeyCredentialDescriptorDtoSchema';
 import { PublicKeyCredentialUserEntityDtoSchema } from './PublicKeyCredentialUserEntityDtoSchema';
@@ -12,4 +13,5 @@ export const PublicKeyCredentialCreationOptionsDtoSchema =
     excludeCredentials: z
       .array(PublicKeyCredentialDescriptorDtoSchema)
       .optional(),
+    extensions: AuthenticationExtensionsClientInputsDtoSchema.optional(),
   });
