@@ -16,7 +16,7 @@ generator erd {
   provider     = "prisma-erd-generator"
   theme        = "neutral"
   disableEmoji = true
-  output       = "../ERD.svg"
+  output       = "../ERD.pdf"
   disabled     = true
 }
 
