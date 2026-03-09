@@ -13,10 +13,11 @@ generator client {
 }
 
 generator erd {
-  provider = "prisma-erd-generator"
-  theme    = "neutral"
-  output   = "../ERD.svg"
-  disabled = env("DISABLE_ERD")
+  provider     = "prisma-erd-generator"
+  theme        = "neutral"
+  disableEmoji = true
+  output       = "../ERD.svg"
+  disabled     = true
 }
 
 model User {
