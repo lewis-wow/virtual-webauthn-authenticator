@@ -16,6 +16,7 @@ generator erd {
   provider = "prisma-erd-generator"
   theme    = "neutral"
   output   = "../ERD.svg"
+  disabled = env("DISABLE_ERD")
 }
 
 model User {
