@@ -34,6 +34,7 @@ export const apiKeysRouter = c.router({
     responses: {
       200: CreateApiKeyResponseSchema,
     },
+    summary: 'Create a new API key',
   },
   list: {
     method: 'GET',
@@ -42,6 +43,7 @@ export const apiKeysRouter = c.router({
     responses: {
       200: ListApiKeysResponseSchema,
     },
+    summary: 'List API keys',
   },
   getToken: {
     method: 'GET',
@@ -49,6 +51,7 @@ export const apiKeysRouter = c.router({
     responses: {
       200: GetTokenApiKeyResponseSchema,
     },
+    summary: 'Get API key from access token',
   },
   get: {
     method: 'GET',
@@ -57,6 +60,7 @@ export const apiKeysRouter = c.router({
     responses: {
       200: GetApiKeyResponseSchema,
     },
+    summary: 'Get a single API key',
   },
   update: {
     method: 'PUT',
@@ -66,6 +70,7 @@ export const apiKeysRouter = c.router({
     responses: {
       200: UpdateApiKeyResponseSchema,
     },
+    summary: 'Update an API key',
   },
   delete: {
     method: 'DELETE',
@@ -74,5 +79,6 @@ export const apiKeysRouter = c.router({
     responses: {
       200: DeleteApiKeyResponseSchema,
     },
+    summary: 'Delete an API key',
   },
 });
