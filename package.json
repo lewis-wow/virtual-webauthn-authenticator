@@ -17,7 +17,8 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
     "check-types": "turbo run check-types",
-    "coverage:latex": "./scripts/generate_latex_coverage.ts coverage/coverage-final.json"
+    "coverage:latex": "./scripts/generate_latex_coverage.ts coverage/coverage-final.json",
+    "openapi:latex": "./scripts/generate_latex_openapi.ts packages/contract/generated/openapi.json"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.0",
