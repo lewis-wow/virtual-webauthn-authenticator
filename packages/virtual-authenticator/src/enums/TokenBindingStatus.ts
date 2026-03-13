@@ -1,5 +1,4 @@
 import type { ValueOfEnum } from '@repo/types';
-import { Schema } from 'effect';
 
 /**
  * Token binding status indicating whether token binding was negotiated and used.
@@ -21,11 +20,3 @@ export const TokenBindingStatus = {
 } as const;
 
 export type TokenBindingStatus = ValueOfEnum<typeof TokenBindingStatus>;
-
-export const TokenBindingStatusSchema = Schema.Enums(TokenBindingStatus).pipe(
-  Schema.annotations({
-    identifier: 'TokenBindingStatus',
-    title: 'TokenBindingStatus',
-    examples: [TokenBindingStatus.PRESENT],
-  }),
-);

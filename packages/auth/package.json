@@ -7,7 +7,6 @@
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
-    "./validation": "./src/validation/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
     "./repositories": "./src/repositories/index.ts",
@@ -40,7 +39,6 @@
     "@repo/logger": "workspace:*",
     "@repo/prisma": "workspace:*",
     "bcryptjs": "^3.0.3",
-    "effect": "^3.19.4",
     "hono": "^4.9.10",
     "jose": "^6.1.0",
     "zod": "^4.1.12"

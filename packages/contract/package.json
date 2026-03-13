@@ -43,7 +43,6 @@
     "@repo/virtual-authenticator-agent": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/open-api": "3.53.0-rc.1",
-    "effect": "^3.19.4",
     "lodash-es": "^4.17.21",
     "zod": "^4.1.12"
   }
