@@ -9,8 +9,12 @@ const inputPath = resolve(process.argv[2] ?? DEFAULT_INPUT);
 
 type BranchHits = number[];
 
+interface CoverageLocation {
+  start: { line: number };
+}
+
 interface FileCoverage {
-  statementMap: Record<string, { start: { line: number } }>;
+  statementMap: Record<string, CoverageLocation>;
   s: Record<string, number>;
   branchMap: Record<string, unknown>;
   b: Record<string, BranchHits>;
@@ -29,13 +33,48 @@ interface GroupMetrics {
   lineCovered: number;
 }
 
+interface KeyPackageDefinition {
+  key: string;
+  label: string;
+}
+
+const KEY_PACKAGES: KeyPackageDefinition[] = [
+  { key: 'virtual-authenticator', label: 'virtual-authenticator' },
+  { key: 'key-vault', label: 'key-vault' },
+  { key: 'cbor', label: 'cbor' },
+  { key: 'crypto', label: 'crypto (JWT)' },
+  { key: 'auth', label: 'auth (API Key Manager)' },
+  { key: 'keys', label: 'keys' },
+];
+
+function createEmptyMetrics(): GroupMetrics {
+  return {
+    stmtTotal: 0,
+    stmtCovered: 0,
+    branchTotal: 0,
+    branchCovered: 0,
+    fnTotal: 0,
+    fnCovered: 0,
+    lineTotal: 0,
+    lineCovered: 0,
+  };
+}
+
 function pct(covered: number, total: number): string {
   if (total === 0) return '100.00';
   return ((covered / total) * 100).toFixed(2);
 }
 
+function formatPercent(covered: number, total: number): string {
+  return `${pct(covered, total).replace(/\.00$/, '')}\\%`;
+}
+
+function formatRatio(covered: number, total: number): string {
+  return `${covered.toLocaleString('en-US')} / ${total.toLocaleString('en-US')}`;
+}
+
 function escapeLatex(s: string): string {
-  return s.replace(/_/g, '\\_');
+  return s.replace(/_/g, '\\_').replace(/&/g, '\\&');
 }
 
 /** Extract the group key (e.g. "apps/api-bff" or "packages/auth") from an
@@ -60,56 +99,122 @@ function groupKey(filePath: string): string | null {
   return marker.slice(1, -1) + '/' + subfolder; // e.g. "apps/api-bff"
 }
 
+function packageKey(filePath: string): string | null {
+  const normalised = filePath.replace(/\\/g, '/');
+  const marker = '/packages/';
+
+  if (!normalised.includes(marker)) return null;
+
+  const afterMarker = normalised.slice(
+    normalised.indexOf(marker) + marker.length,
+  );
+  return afterMarker.split('/')[0] ?? null;
+}
+
+function accumulateMetrics(metrics: GroupMetrics, fc: FileCoverage): void {
+  metrics.stmtTotal += Object.keys(fc.statementMap).length;
+  metrics.stmtCovered += Object.values(fc.s).filter((n) => n > 0).length;
+
+  for (const arms of Object.values(fc.b)) {
+    metrics.branchTotal += arms.length;
+    metrics.branchCovered += arms.filter((n) => n > 0).length;
+  }
+
+  metrics.fnTotal += Object.keys(fc.fnMap).length;
+  metrics.fnCovered += Object.values(fc.f).filter((n) => n > 0).length;
+
+  const lineHit = new Map<number, boolean>();
+  for (const [id, loc] of Object.entries(fc.statementMap)) {
+    const line = loc.start.line;
+    const hit = (fc.s[id] ?? 0) > 0;
+    lineHit.set(line, (lineHit.get(line) ?? false) || hit);
+  }
+
+  metrics.lineTotal += lineHit.size;
+  metrics.lineCovered += [...lineHit.values()].filter(Boolean).length;
+}
+
+function printSection(title: string, content: string): void {
+  const divider = '='.repeat(24);
+  console.log(`\n${divider} ${title} ${divider}\n`);
+  console.log(content);
+}
+
 try {
   const fileContent = await readFile(inputPath, 'utf-8');
   const data = JSON.parse(fileContent) as Record<string, FileCoverage>;
 
-  // Aggregate per group
+  const overall = createEmptyMetrics();
   const groups = new Map<string, GroupMetrics>();
+  const packageGroups = new Map<string, GroupMetrics>();
 
   for (const [filePath, fc] of Object.entries(data)) {
+    accumulateMetrics(overall, fc);
+
     const key = groupKey(filePath);
-    if (!key) continue;
+    if (key) {
+      if (!groups.has(key)) {
+        groups.set(key, createEmptyMetrics());
+      }
 
-    if (!groups.has(key)) {
-      groups.set(key, {
-        stmtTotal: 0,
-        stmtCovered: 0,
-        branchTotal: 0,
-        branchCovered: 0,
-        fnTotal: 0,
-        fnCovered: 0,
-        lineTotal: 0,
-        lineCovered: 0,
-      });
+      accumulateMetrics(groups.get(key)!, fc);
     }
 
-    const g = groups.get(key)!;
+    const pkgKey = packageKey(filePath);
+    if (pkgKey) {
+      if (!packageGroups.has(pkgKey)) {
+        packageGroups.set(pkgKey, createEmptyMetrics());
+      }
 
-    // Statements
-    g.stmtTotal += Object.keys(fc.statementMap).length;
-    g.stmtCovered += Object.values(fc.s).filter((n) => n > 0).length;
-
-    // Branches (each branch entry is an array of arm hit counts)
-    for (const arms of Object.values(fc.b)) {
-      g.branchTotal += arms.length;
-      g.branchCovered += arms.filter((n) => n > 0).length;
+      accumulateMetrics(packageGroups.get(pkgKey)!, fc);
     }
-
-    // Functions
-    g.fnTotal += Object.keys(fc.fnMap).length;
-    g.fnCovered += Object.values(fc.f).filter((n) => n > 0).length;
-
-    // Lines: collect unique line numbers and whether they were hit
-    const lineHit = new Map<number, boolean>();
-    for (const [id, loc] of Object.entries(fc.statementMap)) {
-      const line = loc.start.line;
-      const hit = (fc.s[id] ?? 0) > 0;
-      lineHit.set(line, (lineHit.get(line) ?? false) || hit);
-    }
-    g.lineTotal += lineHit.size;
-    g.lineCovered += [...lineHit.values()].filter(Boolean).length;
   }
+
+  const overallTableLines = [
+    '\\begin{table}[H]',
+    '  \\centering',
+    '  \\caption{Overall Code Coverage Summary}',
+    '  \\label{tab:coverage_summary}',
+    '  \\begin{tabular}{lrr}',
+    '    \\toprule',
+    '    \\textbf{Metric} & \\textbf{Coverage} & \\textbf{Ratio} \\\\',
+    '    \\midrule',
+    `    Statements      & ${formatPercent(overall.stmtCovered, overall.stmtTotal)}           & ${formatRatio(overall.stmtCovered, overall.stmtTotal)}  \\\\`,
+    `    Branches        & ${formatPercent(overall.branchCovered, overall.branchTotal)}           & ${formatRatio(overall.branchCovered, overall.branchTotal)}      \\\\`,
+    `    Functions       & ${formatPercent(overall.fnCovered, overall.fnTotal)}           & ${formatRatio(overall.fnCovered, overall.fnTotal)}      \\\\`,
+    `    Lines           & ${formatPercent(overall.lineCovered, overall.lineTotal)}           & ${formatRatio(overall.lineCovered, overall.lineTotal)}  \\\\`,
+    '    \\bottomrule',
+    '  \\end{tabular}',
+    '\\end{table}',
+  ];
+
+  const keyPackageTableLines = [
+    '\\begin{table}[H]',
+    '  \\centering',
+    '  \\caption{Coverage by Key Package}',
+    '  \\label{tab:package_coverage}',
+    '  \\begin{tabular}{lrr}',
+    '    \\toprule',
+    '    \\textbf{Package} & \\textbf{Statements} & \\textbf{Branches} \\\\',
+    '    \\midrule',
+  ];
+
+  for (const definition of KEY_PACKAGES) {
+    const metrics = packageGroups.get(definition.key) ?? createEmptyMetrics();
+    keyPackageTableLines.push(
+      `    ${escapeLatex(definition.label)} & ${formatPercent(metrics.stmtCovered, metrics.stmtTotal)}             & ${formatPercent(metrics.branchCovered, metrics.branchTotal)}           \\\\`,
+    );
+  }
+
+  keyPackageTableLines.push(
+    '    \\bottomrule',
+    '  \\end{tabular}',
+    '  \\footnotesize',
+    '  \\vspace{0.5em}',
+    '  \\\\',
+    '  \\textit{Note: The CBOR package requires less testing as it wraps functions from an external library.}',
+    '\\end{table}',
+  );
 
   // Sort: apps first, then packages, then examples — alphabetically within each
   const sorted = [...groups.entries()].sort(([a], [b]) => {
@@ -147,8 +252,9 @@ try {
     '\\end{table}',
   );
 
-  console.log('\n✅ Generated LaTeX Code:\n');
-  console.log(latexLines.join('\n'));
+  printSection('Overall Coverage Summary', overallTableLines.join('\n'));
+  printSection('Coverage by Key Package', keyPackageTableLines.join('\n'));
+  printSection('Coverage Summary by Module', latexLines.join('\n'));
 } catch (error) {
   console.error('❌ An error occurred during conversion:', error);
   process.exit(1);
