@@ -5,7 +5,6 @@
   "type": "module",
   "exports": {
     "./mappers": "./src/mappers/index.ts",
-    "./validation": "./src/validation/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
@@ -26,7 +25,6 @@
   },
   "dependencies": {
     "buffer": "^6.0.3",
-    "effect": "^3.19.4",
     "zod": "^4.1.12",
     "@repo/utils": "workspace:*",
     "@repo/assert": "workspace:*"

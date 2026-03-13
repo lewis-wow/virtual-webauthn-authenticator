@@ -15,6 +15,7 @@ import {
   COSEKeyParam,
   JWKKeyAlgorithm,
 } from '@repo/keys/enums';
+import { isECAlgorithm } from '@repo/keys/helpers';
 import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
 import type { Uint8Array_ } from '@repo/types';
 import type { JsonWebKey } from '@repo/types/dom';
@@ -184,13 +185,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     const signResult = await cryptographyClient.signData(algorithm, data);
 
-    // EC signatures (ES256, ES384, ES512) need to be converted from JWS format to DER format
-    // RSA and EdDSA signatures are returned as-is
-    const isECAlgorithm =
-      algorithm === JWKKeyAlgorithm.ES256 ||
-      algorithm === JWKKeyAlgorithm.ES384 ||
-      algorithm === JWKKeyAlgorithm.ES512;
-
     /**
      * For COSEAlgorithmIdentifier -7 (ES256), and other ECDSA-based algorithms,
      * the sig value MUST be encoded as an ASN.1 DER Ecdsa-Sig-Value
@@ -200,7 +194,10 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
      * For COSEAlgorithmIdentifier -257 (RS256), sig MUST contain the signature generated using the RSASSA-PKCS1-v1_5 signature scheme defined in Section 8.2.1 of [RFC8017] with SHA-256 as the hash function. The signature is not ASN.1 wrapped.
      * For COSEAlgorithmIdentifier -37 (PS256), sig MUST contain the signature generated using the RSASSA-PSS signature scheme defined in Section 8.1.1 of [RFC8017] with SHA-256 as the hash function. The signature is not ASN.1 wrapped.
      */
-    const signature = isECAlgorithm
+
+    // EC signatures (ES256, ES384, ES512) need to be converted from JWS format to DER format.
+    // RSA and EdDSA signatures are returned as-is.
+    const signature = isECAlgorithm(algorithm)
       ? new Uint8Array(
           ecdsa.joseToDer(Buffer.from(signResult.result), algorithm),
         )

@@ -54,7 +54,6 @@
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
     "class-transformer": "^0.5.1",
-    "effect": "^3.19.4",
     "reflect-metadata": "^0.2.2",
     "ts-pattern": "^5.8.0",
     "zod": "^4.1.12"

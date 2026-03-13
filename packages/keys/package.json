@@ -9,6 +9,7 @@
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
     "./cbor": "./src/cbor/index.ts",
+    "./helpers": "./src/helpers/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
@@ -35,7 +36,6 @@
     "@repo/utils": "workspace:*",
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
-    "effect": "^3.19.4",
     "jose": "^6.1.0",
     "ts-pattern": "^5.8.0",
     "zod": "^4.1.12"

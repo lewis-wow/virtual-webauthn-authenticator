@@ -6,7 +6,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
-    "./validation": "./src/validation/index.ts",
     "./zod-validation": "./src/zod-validation/index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
@@ -37,7 +36,6 @@
   "dependencies": {
     "@repo/exception": "workspace:*",
     "@ngneat/falso": "^8.0.2",
-    "effect": "^3.19.4",
     "lodash-es": "^4.17.21",
     "zod": "^4.1.12"
   },
