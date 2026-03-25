@@ -3,7 +3,7 @@ import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission, TokenType } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/zod-validation';
+import type { JwtPayload } from '@repo/auth/validation';
 import {
   DeleteWebAuthnPublicKeyCredentialResponseSchema,
   GetWebAuthnPublicKeyCredentialResponseSchema,

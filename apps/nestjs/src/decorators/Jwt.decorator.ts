@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { JwtPayload } from '@repo/auth/zod-validation';
+import { JwtPayload } from '@repo/auth/validation';
 
 export const Jwt = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext) => {

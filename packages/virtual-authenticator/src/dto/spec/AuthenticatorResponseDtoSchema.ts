@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/zod-validation';
+import { BytesSchemaCodec } from '@repo/core/validation';
 import { AuthenticatorResponseSchema } from '@repo/virtual-authenticator/validation';
 
 /**

@@ -1,5 +1,5 @@
 import { OrderByDirection } from './enums/OrderByDirection';
-import type { PaginationResult } from './zod-validation/PaginationResultSchema';
+import type { PaginationResult } from './validation/PaginationResultSchema';
 
 // Fetch one extra item to determine if there's a next page
 const PAGINATION_LOOKAHEAD_OFFSET = 1;

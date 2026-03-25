@@ -11,7 +11,7 @@ import {
   CreateApiKeyBodySchema,
   CreateApiKeyFormSchema,
 } from '@repo/contract/dto';
-import type { Duration } from '@repo/core/zod-validation';
+import type { Duration } from '@repo/core/validation';
 import { useCursorPagination } from '@repo/pagination/hooks';
 // The new standalone table
 import { Button } from '@repo/ui/components/Button';

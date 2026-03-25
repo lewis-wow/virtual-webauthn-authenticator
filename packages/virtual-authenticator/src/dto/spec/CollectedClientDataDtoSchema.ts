@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/zod-validation';
+import { BytesSchemaCodec } from '@repo/core/validation';
 
 import { CollectedClientDataSchema } from '../../validation/spec/CollectedClientDataSchema';
 
