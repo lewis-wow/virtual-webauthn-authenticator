@@ -1,7 +1,6 @@
 import type { Uint8Array_ } from '@repo/types';
 import type { JsonWebKey } from '@repo/types/dom';
-import { swapKeysAndValues } from '@repo/utils';
-import { Buffer } from 'buffer';
+import { fromBase64Url, swapKeysAndValues, toBase64Url } from '@repo/utils';
 
 import type {
   COSEPublicKey,
@@ -19,20 +18,16 @@ import { UnsupportedKeyType } from './exceptions/UnsupportedKeyType';
 export class KeyMapper {
   static readonly CURVE_NAME_MAP = swapKeysAndValues(COSEKeyCurveName);
 
-  private static _toB64(bytes: Uint8Array_ | undefined): string | undefined {
-    if (bytes === undefined) {
-      return undefined;
-    }
-
-    return Buffer.from(bytes).toString('base64url');
+  private static _toBase64Url(
+    bytes: Uint8Array_ | undefined,
+  ): string | undefined {
+    return bytes === undefined ? undefined : toBase64Url(bytes);
   }
 
-  private static _fromB64(b64: string | undefined): Uint8Array_ | undefined {
-    if (b64 === undefined) {
-      return undefined;
-    }
-
-    return new Uint8Array(Buffer.from(b64, 'base64url'));
+  private static _fromBase64Url(
+    base64Url: string | undefined,
+  ): Uint8Array_ | undefined {
+    return base64Url === undefined ? undefined : fromBase64Url(base64Url);
   }
 
   static COSEPublicKeyToJWKPublicKey(COSEPublicKey: COSEPublicKey): JsonWebKey {
@@ -47,21 +42,27 @@ export class KeyMapper {
 
         jwk.crv =
           KeyMapper.CURVE_NAME_MAP[COSEPublicKeyEC.get(COSEKeyTypeParam.crv)!];
-        jwk.x = KeyMapper._toB64(COSEPublicKeyEC.get(COSEKeyTypeParam.x));
-        jwk.y = KeyMapper._toB64(COSEPublicKeyEC.get(COSEKeyTypeParam.y));
+        jwk.x = KeyMapper._toBase64Url(COSEPublicKeyEC.get(COSEKeyTypeParam.x));
+        jwk.y = KeyMapper._toBase64Url(COSEPublicKeyEC.get(COSEKeyTypeParam.y));
         break;
       }
       case COSEKeyType.RSA: {
         const COSEPublicKeyRSA = COSEPublicKey as COSEPublicKeyRSA;
-        jwk.n = KeyMapper._toB64(COSEPublicKeyRSA.get(COSEKeyTypeParam.n));
-        jwk.e = KeyMapper._toB64(COSEPublicKeyRSA.get(COSEKeyTypeParam.e));
+        jwk.n = KeyMapper._toBase64Url(
+          COSEPublicKeyRSA.get(COSEKeyTypeParam.n),
+        );
+        jwk.e = KeyMapper._toBase64Url(
+          COSEPublicKeyRSA.get(COSEKeyTypeParam.e),
+        );
         break;
       }
       case COSEKeyType.OKP: {
         const COSEPublicKeyOKP = COSEPublicKey as COSEPublicKeyOKP;
         jwk.crv =
           KeyMapper.CURVE_NAME_MAP[COSEPublicKeyOKP.get(COSEKeyTypeParam.crv)!];
-        jwk.x = KeyMapper._toB64(COSEPublicKeyOKP.get(COSEKeyTypeParam.x));
+        jwk.x = KeyMapper._toBase64Url(
+          COSEPublicKeyOKP.get(COSEKeyTypeParam.x),
+        );
         break;
       }
       default:
@@ -94,11 +95,11 @@ export class KeyMapper {
         );
         (coseKey as COSEPublicKeyEC).set(
           COSEKeyTypeParam.x,
-          KeyMapper._fromB64(JWKPublicKey.x),
+          KeyMapper._fromBase64Url(JWKPublicKey.x),
         );
         (coseKey as COSEPublicKeyEC).set(
           COSEKeyTypeParam.y,
-          KeyMapper._fromB64(JWKPublicKey.y),
+          KeyMapper._fromBase64Url(JWKPublicKey.y),
         );
         break;
       }
@@ -106,11 +107,11 @@ export class KeyMapper {
         coseKey.set(COSEKeyParam.kty, COSEKeyType.RSA);
         (coseKey as COSEPublicKeyRSA).set(
           COSEKeyTypeParam.n,
-          KeyMapper._fromB64(JWKPublicKey.n),
+          KeyMapper._fromBase64Url(JWKPublicKey.n),
         );
         (coseKey as COSEPublicKeyRSA).set(
           COSEKeyTypeParam.e,
-          KeyMapper._fromB64(JWKPublicKey.e),
+          KeyMapper._fromBase64Url(JWKPublicKey.e),
         );
         break;
       }
@@ -122,7 +123,7 @@ export class KeyMapper {
         );
         (coseKey as COSEPublicKeyOKP).set(
           COSEKeyTypeParam.x,
-          KeyMapper._fromB64(JWKPublicKey.x),
+          KeyMapper._fromBase64Url(JWKPublicKey.x),
         );
         break;
       }

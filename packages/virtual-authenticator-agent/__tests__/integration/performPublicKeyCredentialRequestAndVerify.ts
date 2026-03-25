@@ -4,7 +4,7 @@ import {
   VIRTUAL_AUTHENTICATOR_ID,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
-import { toB64 } from '@repo/utils';
+import { toBase64Url } from '@repo/utils';
 import { parseAuthenticatorData } from '@repo/virtual-authenticator/cbor';
 import { PublicKeyCredentialDtoSchema } from '@repo/virtual-authenticator/dto';
 import { UserVerification } from '@repo/virtual-authenticator/enums';
@@ -112,7 +112,9 @@ export const performPublicKeyCredentialRequestAndVerify = async (
       response: PublicKeyCredentialDtoSchema.encode(
         publicKeyCredential,
       ) as AuthenticationResponseJSON,
-      expectedChallenge: toB64(publicKeyCredentialRequestOptions.challenge),
+      expectedChallenge: toBase64Url(
+        publicKeyCredentialRequestOptions.challenge,
+      ),
       expectedOrigin: meta.origin,
       expectedRPID,
       credential: webAuthnCredential,

@@ -8,12 +8,12 @@ import {
   GetCredentialResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { UUIDMapper } from '@repo/core/mappers';
 import { Jwks, Jwt } from '@repo/crypto';
 import { Forbidden } from '@repo/exception/http';
 import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
+import { bytesToUuid, uuidToBytes } from '@repo/utils';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator-agent';
 import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import type {
@@ -56,7 +56,7 @@ export class CredentialsController {
     await this.activityLog.audit({
       action,
       entity: LogEntity.CREDENTIAL,
-      entityId: UUIDMapper.bytesToUUID(publicKeyCredentialRawId),
+      entityId: bytesToUuid(publicKeyCredentialRawId),
       apiKeyId:
         jwtPayload.tokenType === TokenType.API_KEY
           ? jwtPayload.apiKeyId
@@ -101,7 +101,7 @@ export class CredentialsController {
         }
 
         const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-          id: UUIDMapper.UUIDtoBytes(userId),
+          id: uuidToBytes(userId),
           name: name,
           displayName:
             publicKeyCredentialCreationOptions.user?.displayName ?? name,

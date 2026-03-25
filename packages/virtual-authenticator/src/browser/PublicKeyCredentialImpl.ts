@@ -1,4 +1,3 @@
-import { BytesMapper } from '@repo/core/mappers';
 import type { Uint8Array_ } from '@repo/types';
 import type {
   AuthenticationExtensionsClientOutputs,
@@ -9,7 +8,7 @@ import type {
 import { toBase64Url } from '@repo/utils';
 
 import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType';
-import { bytesToArrayBuffer } from './helpers';
+import { arrayBufferToBytes, bytesToArrayBuffer } from './helpers';
 
 export type PublicKeyCredentialImplOptions = {
   id: string;
@@ -45,7 +44,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
    * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-tojson
    */
   toJSON(): PublicKeyCredentialJSON {
-    const rawIdBytes = BytesMapper.arrayBufferToBytes(this.rawId);
+    const rawIdBytes = arrayBufferToBytes(this.rawId);
     const rawIdBase64url = toBase64Url(rawIdBytes);
 
     // Check if this is an attestation (registration) or assertion (authentication) response
@@ -54,10 +53,10 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
       const attestationResponse = this
         .response as AuthenticatorAttestationResponse;
 
-      const clientDataJSONBytes = BytesMapper.arrayBufferToBytes(
+      const clientDataJSONBytes = arrayBufferToBytes(
         attestationResponse.clientDataJSON,
       );
-      const attestationObjectBytes = BytesMapper.arrayBufferToBytes(
+      const attestationObjectBytes = arrayBufferToBytes(
         attestationResponse.attestationObject,
       );
 
@@ -77,17 +76,15 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
       // Authentication response
       const assertionResponse = this.response as AuthenticatorAssertionResponse;
 
-      const clientDataJSONBytes = BytesMapper.arrayBufferToBytes(
+      const clientDataJSONBytes = arrayBufferToBytes(
         assertionResponse.clientDataJSON,
       );
-      const authenticatorDataBytes = BytesMapper.arrayBufferToBytes(
+      const authenticatorDataBytes = arrayBufferToBytes(
         assertionResponse.authenticatorData,
       );
-      const signatureBytes = BytesMapper.arrayBufferToBytes(
-        assertionResponse.signature,
-      );
+      const signatureBytes = arrayBufferToBytes(assertionResponse.signature);
       const userHandleBytes = assertionResponse.userHandle
-        ? BytesMapper.arrayBufferToBytes(assertionResponse.userHandle)
+        ? arrayBufferToBytes(assertionResponse.userHandle)
         : null;
 
       return {
