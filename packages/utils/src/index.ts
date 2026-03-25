@@ -20,3 +20,5 @@ export * from './uuid/isUuid';
 export * from './uuid/tryBytesToUuid';
 export * from './uuid/tryUuidToBytes';
 export * from './uuid/uuidToBytes';
+export * from './isNullish';
+export * from './wrapIsNullish';

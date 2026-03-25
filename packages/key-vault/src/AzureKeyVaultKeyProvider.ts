@@ -7,8 +7,7 @@ import {
 } from '@azure/keyvault-keys';
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
-import { KeyMapper } from '@repo/keys';
-import { KeyAlgorithmMapper } from '@repo/keys';
+import { JWKPublicKeyToCOSEPublicKey, KeyAlgorithmMapper } from '@repo/keys';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import {
   COSEKeyAlgorithm,
@@ -250,7 +249,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       hsm,
     });
 
-    const COSEPublicKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(
+    const COSEPublicKey = JWKPublicKeyToCOSEPublicKey(
       jwk,
       pubKeyCredParams.alg,
     );

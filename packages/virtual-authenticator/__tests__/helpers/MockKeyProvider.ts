@@ -1,4 +1,4 @@
-import { KeyMapper } from '@repo/keys';
+import { JWKPublicKeyToCOSEPublicKey } from '@repo/keys';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
@@ -43,8 +43,7 @@ export class MockKeyProvider implements IKeyProvider {
       format: 'jwk',
     });
 
-    const COSEPublicKey =
-      KeyMapper.JWKPublicKeyToCOSEPublicKey(credentialPublicKey);
+    const COSEPublicKey = JWKPublicKeyToCOSEPublicKey(credentialPublicKey);
 
     // Set the algorithm parameter (required by WebAuthn spec)
     COSEPublicKey.set(COSEKeyParam.alg, pubKeyCredParams.alg);
