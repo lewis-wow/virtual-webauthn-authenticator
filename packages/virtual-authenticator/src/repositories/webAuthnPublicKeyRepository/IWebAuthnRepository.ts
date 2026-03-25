@@ -9,7 +9,6 @@ export type CreateKeyVaultDataArgs = {
   COSEPublicKey: Uint8Array_;
   rpId: string;
   userId: string;
-  userHandle: Uint8Array_;
   virtualAuthenticatorId: string;
   apiKeyId: string | null;
   isClientSideDiscoverable: boolean;

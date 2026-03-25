@@ -1,7 +1,6 @@
 import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
 
 import { PrismaClient } from '@repo/prisma';
-import { randomBytes } from 'node:crypto';
 import {
   afterAll,
   afterEach,
@@ -108,43 +107,6 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     });
 
     authenticatorMakeCredentialResponse = response;
-  });
-
-  test('Returns RP-provided user handle in assertion response', async () => {
-    const rpUserHandle = randomBytes(32);
-
-    const { response: makeCredentialResponse } =
-      await performAuthenticatorMakeCredentialAndVerify({
-        authenticator,
-        prisma,
-        authenticatorMakeCredentialArgs: {
-          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-          userEntity: {
-            ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS.userEntity,
-            id: rpUserHandle,
-          },
-        },
-      });
-
-    const { response: assertionResponse } =
-      await performAuthenticatorGetAssertionAndVerify({
-        authenticator,
-        prisma,
-        authenticatorGetAssertionArgs: {
-          ...AUTHENTICATOR_GET_ASSERTION_ARGS,
-          allowCredentialDescriptorList: [
-            {
-              type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: makeCredentialResponse.credentialId,
-            },
-          ],
-        },
-        authenticatorMakeCredentialResponse: makeCredentialResponse,
-      });
-
-    expect(Buffer.from(assertionResponse.userHandle!)).toStrictEqual(
-      Buffer.from(rpUserHandle),
-    );
   });
 
   afterEach(async () => {

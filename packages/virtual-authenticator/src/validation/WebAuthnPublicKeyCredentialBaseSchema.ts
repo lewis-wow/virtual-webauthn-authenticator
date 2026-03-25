@@ -6,7 +6,6 @@ export const WebAuthnPublicKeyCredentialBaseSchema = z.object({
   id: z.uuid(),
   name: z.string().nullable(),
   userId: z.string(),
-  userHandle: BytesSchema.nullable(),
   COSEPublicKey: BytesSchema,
   counter: z.number().int().nonnegative(),
   transports: z.array(z.string()),

@@ -5,7 +5,6 @@ import { WebAuthnPublicKeyCredentialBaseSchema } from '@repo/virtual-authenticat
 export const WebAuthnPublicKeyCredentialBaseDtoSchema =
   WebAuthnPublicKeyCredentialBaseSchema.extend({
     COSEPublicKey: BytesSchemaCodec,
-    userHandle: BytesSchemaCodec.nullable(),
 
     createdAt: DateSchemaCodec,
     updatedAt: DateSchemaCodec,

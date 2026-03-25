@@ -1,19 +1,4 @@
-import {
-  fromBase64,
-  fromBase64Url,
-  fromHex,
-  toBase64,
-  toBase64Url,
-  toHex,
-} from '@repo/utils';
-
-export const bytesToBase64url = (bytes: Uint8Array): string => {
-  return toBase64Url(bytes);
-};
-
-export const base64urlToBytes = (base64url: string): Uint8Array => {
-  return fromBase64Url(base64url);
-};
+import { fromBase64Url, toBase64Url } from '@repo/utils';
 
 /**
  * Encodes an ArrayBuffer to a base64url string.
@@ -37,20 +22,4 @@ export const base64urlToArrayBuffer = (base64url: string): ArrayBuffer => {
     bytes.byteOffset,
     bytes.byteOffset + bytes.byteLength,
   ) as ArrayBuffer;
-};
-
-export const bytesToBase64 = (bytes: Uint8Array): string => {
-  return toBase64(bytes);
-};
-
-export const base64ToBytes = (base64: string): Uint8Array => {
-  return fromBase64(base64);
-};
-
-export const bytesToHex = (bytes: Uint8Array): string => {
-  return toHex(bytes);
-};
-
-export const hexToBytes = (hex: string): Uint8Array => {
-  return fromHex(hex);
 };
