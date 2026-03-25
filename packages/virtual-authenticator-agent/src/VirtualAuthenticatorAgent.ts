@@ -517,7 +517,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     assertSchema(
       meta,
       AuthenticatorAgentMetaArgsSchema.safeExtend({
-        userId: z.literal(UUIDMapper.bytesToUUID(options.publicKey.user.id)),
         origin: z.literal(origin),
       }),
     );
@@ -1403,8 +1402,9 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     if (credentialIdFilter?.length > 0) {
       const containsCredentialId = credentialIdFilter.find(
         (credentialIdFilterItem) =>
-          credentialIdFilterItem.id ===
-          assertionCreationData.credentialIdResult,
+          Buffer.from(credentialIdFilterItem.id).equals(
+            Buffer.from(assertionCreationData.credentialIdResult),
+          ),
       );
 
       if (containsCredentialId === undefined) {

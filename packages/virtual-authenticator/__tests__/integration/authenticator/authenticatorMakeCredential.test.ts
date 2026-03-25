@@ -33,6 +33,7 @@ import {
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
 import { UserPresenceRequired } from '../../../src/exceptions/UserPresenceRequired';
 import { UserVerificationRequired } from '../../../src/exceptions/UserVerificationRequired';
+import { UserNotExists } from '../../../src/exceptions/repository/UserNotExists';
 import { PrismaWebAuthnRepository } from '../../../src/repositories/webAuthnPublicKeyRepository/PrismaWebAuthnRepository';
 import type { RegistrationState } from '../../../src/state/RegistrationStateSchema';
 import type { AuthenticatorMakeCredentialArgs } from '../../../src/validation/AuthenticatorMakeCredentialArgsSchema';
@@ -700,13 +701,9 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   });
 
   describe('AuthenticatorMetaArgs.userId', () => {
-    test.each([
-      { userId: randomUUID() },
-      { userId: 'NON_UUID' },
-      { userId: (1234).toString() },
-    ])('Work with userId: $userId', async ({ userId }) => {
+    test('Works with an existing userId', async () => {
       const meta: Partial<AuthenticatorMetaArgs> = {
-        userId,
+        userId: USER_ID,
       };
 
       await performAuthenticatorMakeCredentialAndVerify({
@@ -715,6 +712,25 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
         meta,
       });
+    });
+
+    test.each([
+      { userId: randomUUID() },
+      { userId: 'NON_UUID' },
+      { userId: (1234).toString() },
+    ])('Throws UserNotExists for userId: $userId', async ({ userId }) => {
+      const meta: Partial<AuthenticatorMetaArgs> = {
+        userId,
+      };
+
+      await expect(() =>
+        performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          prisma,
+          authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          meta,
+        }),
+      ).rejects.toThrowError(UserNotExists);
     });
   });
 

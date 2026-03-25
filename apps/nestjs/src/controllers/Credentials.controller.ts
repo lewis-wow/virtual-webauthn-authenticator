@@ -16,10 +16,7 @@ import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator-agent';
 import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
-import type {
-  PublicKeyCredentialCreationOptions,
-  PublicKeyCredentialUserEntity,
-} from '@repo/virtual-authenticator/validation';
+import type { PublicKeyCredentialCreationOptions } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt as JwtDecorator } from '../decorators/Jwt.decorator';
@@ -100,17 +97,15 @@ export class CredentialsController {
           throw new NoActiveVirtualAuthenticator();
         }
 
-        const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-          id: UUIDMapper.UUIDtoBytes(userId),
-          name: name,
-          displayName:
-            publicKeyCredentialCreationOptions.user?.displayName ?? name,
-        };
-
         const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
           {
             ...publicKeyCredentialCreationOptions,
-            user: publicKeyCredentialUserEntity,
+            user: {
+              id: UUIDMapper.UUIDtoBytes(userId),
+              name,
+              displayName:
+                publicKeyCredentialCreationOptions.user?.displayName ?? name,
+            },
           };
 
         this.logger.debug('Creating credential', {

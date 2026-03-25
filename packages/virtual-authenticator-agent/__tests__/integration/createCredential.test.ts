@@ -46,6 +46,7 @@ import { UserVerification } from '@repo/virtual-authenticator/enums';
 import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';
 import { CredentialExcluded } from '@repo/virtual-authenticator/exceptions';
 import { CredentialTypesNotSupported } from '@repo/virtual-authenticator/exceptions';
+import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import { PrismaVirtualAuthenticatorRepository } from '@repo/virtual-authenticator/repositories';
 import { PrismaWebAuthnRepository } from '@repo/virtual-authenticator/repositories';
 import { StateAction } from '@repo/virtual-authenticator/state';
@@ -372,7 +373,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
    * Per spec: The user handle is used to identify the user account and must be a valid identifier
    */
   describe('meta.userId', () => {
-    test('Should throw type mismatch when userId is invalid', async () => {
+    test('Should throw UserNotExists when userId does not exist', async () => {
       await expect(async () =>
         performPublicKeyCredentialRegistrationAndVerify({
           stateManager,
@@ -384,7 +385,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
             origin: RP_ORIGIN,
           },
         }),
-      ).rejects.toThrowError(TypeAssertionError);
+      ).rejects.toThrowError(UserNotExists);
     });
   });
 
@@ -2793,16 +2794,12 @@ describe('VirtualAuthenticator.createCredential()', () => {
         ).rejects.toThrow();
       });
 
-      /**
-       * Note: The implementation strictly requires user.id to be a valid UUID (16 bytes).
-       * The WebAuthn spec allows 1-64 bytes, but the implementation enforces UUID format.
-       */
-      test('Should reject user.id with 1 byte (fails due to strict UUID format)', async () => {
+      test('Should accept user.id with 1 byte', async () => {
         const userIdBytes = new Uint8Array(1);
         userIdBytes[0] = 1;
 
-        await expect(async () =>
-          performPublicKeyCredentialRegistrationAndVerify({
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
             stateManager,
             agent,
             publicKeyCredentialCreationOptions: {
@@ -2812,19 +2809,16 @@ describe('VirtualAuthenticator.createCredential()', () => {
                 id: userIdBytes,
               },
             },
-          }),
-        ).rejects.toThrowError(TypeAssertionError);
+          });
+
+        expect(registrationVerification.verified).toBe(true);
       });
 
-      /**
-       * Note: The implementation strictly requires user.id to be a valid UUID (16 bytes).
-       * The WebAuthn spec allows 1-64 bytes, but the implementation enforces UUID format.
-       */
-      test('Should reject user.id with 64 bytes (fails due to strict UUID format)', async () => {
+      test('Should accept user.id with 64 bytes', async () => {
         const userIdBytes = new Uint8Array(64);
 
-        await expect(async () =>
-          performPublicKeyCredentialRegistrationAndVerify({
+        const { registrationVerification } =
+          await performPublicKeyCredentialRegistrationAndVerify({
             stateManager,
             agent,
             publicKeyCredentialCreationOptions: {
@@ -2834,8 +2828,9 @@ describe('VirtualAuthenticator.createCredential()', () => {
                 id: userIdBytes,
               },
             },
-          }),
-        ).rejects.toThrowError(TypeAssertionError);
+          });
+
+        expect(registrationVerification.verified).toBe(true);
       });
     });
 

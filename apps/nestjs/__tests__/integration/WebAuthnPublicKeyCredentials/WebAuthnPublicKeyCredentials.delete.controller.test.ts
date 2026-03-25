@@ -160,6 +160,7 @@ describe('WebAuthnPublicKeyCredentialsController Get - GET /api/webauthn-public-
             "rpId": "example.com",
             "transports": [],
             "updatedAt": "1970-01-01T00:00:00.000Z",
+            "userHandle": null,
             "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
             "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
             "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {

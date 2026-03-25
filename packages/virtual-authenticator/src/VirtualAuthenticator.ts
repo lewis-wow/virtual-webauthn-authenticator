@@ -332,7 +332,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     );
 
     // Step 7.2: Let userHandle be userEntity.id.
-    const userHandle = UUIDMapper.bytesToUUID(userEntity.id);
+    const userHandle = userEntity.id;
 
     // Step 7.3: Let credentialSource be a new public key credential source
     // with the following fields:
@@ -374,7 +374,8 @@ export class VirtualAuthenticator implements IAuthenticator {
                 COSEPublicKey:
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
-                userId: userHandle,
+                userId: meta.userId,
+                userHandle,
                 virtualAuthenticatorId: meta.virtualAuthenticatorId,
                 apiKeyId: meta.apiKeyId,
                 isClientSideDiscoverable: true,
@@ -622,9 +623,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     const credentialId = UUIDMapper.UUIDtoBytes(
       webAuthnPublicKeyCredentialWithMeta.id,
     );
-    const userHandle = UUIDMapper.UUIDtoBytes(
-      webAuthnPublicKeyCredentialWithMeta.userId,
-    );
+    const userHandle = webAuthnPublicKeyCredentialWithMeta.userHandle;
 
     const authenticatorGetAssertionResponse: AuthenticatorGetAssertionResponse =
       {
