@@ -2,7 +2,7 @@
 
 [![codecov](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator/graph/badge.svg?token=4J12KNM8S0)](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator)
 
-Traditional password-based authentication is inherently vulnerable to phishing and data breaches. While the industry is shifting toward hardware or platform-based passkeys to mitigate these risks, these solutions introduce usability challenges, requiring users to manage physical devices and risking access loss if the authenticator is misplaced. Server-side authenticators offer a more user-friendly alternative by removing strict device dependencies, but they demand rigorous protection of cryptographic material.
+Traditional password authentication is inherently vulnerable to phishing and data breaches. Although the industry is moving toward more secure hardware and platform passkeys, these solutions introduce usability challenges. Users must manage physical devices and risk account lockouts if they lose them. Server-side authenticators offer a more user-friendly alternative. They eliminate the strict dependence on specific hardware but require strong protection of cryptographic material in a cloud environment. This thesis proposes and demonstrates an implementation of such a virtual authenticator in Node.js. The solution includes a web extension to intercept standard WebAuthn API calls and route them to the authenticator web service.
 
 ## Run project in dev mode
 
