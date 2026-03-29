@@ -1,20 +1,12 @@
 #!/bin/sh
 
-# A wrapper script for dotenvx to select the .env file based on the ENVIRONMENT variable.
-# Example Usage:
-# ENVIRONMENT=STAGING ./dotenvx.sh npm run start
-# This will execute: dotenvx -f .env.staging -- npm run start
+# A wrapper script for dotenvx to select the .env file based on the ENVIRONMENT variable
 
-# --- Configuration ---
-# Set a default environment if the ENVIRONMENT variable is not provided.
 DEFAULT_ENV="development"
 SCRIPT_DIR=$(dirname "$0")
 
-# --- Script Logic ---
-
-# 1. Determine the environment.
-#    Use the value of the $ENVIRONMENT variable. If it's empty or not set, fall back to the default.
-if [ -z "$ENVIRONMENT" ]; then
+if [ -z "$ENVIRONMENT" ]
+then
   echo "⚠️ Warning: ENVIRONMENT variable not set. Defaulting to '$DEFAULT_ENV'."
   CURRENT_ENV="$DEFAULT_ENV"
 else
@@ -22,17 +14,27 @@ else
 fi
 
 ROOT_ENV_FILE="${SCRIPT_DIR}/../.env.${CURRENT_ENV}"
+ROOT_KEYS_FILE="${SCRIPT_DIR}/../.env.keys"
 ENV_FILE=".env.${CURRENT_ENV}"
 
-# 4. Check if the required .env file exists before attempting to use it.
-if [ ! -f "$ENV_FILE" ]; then
+if [ ! -f "$ENV_FILE" ]
+then
   echo "⚠️ Warning: Environment file '$ENV_FILE' not found for ENVIRONMENT='$CURRENT_ENV'."
-  # exit 1
 fi
 
-# 5. Execute the dotenvx command.
-#    -f "$ENV_FILE": Specifies which environment file to load.
-#    --: Separates dotenvx's options from the command you want to run.
-#    "$@": Passes all arguments from this script directly to the command.
+DOTENVX_CMD="run"
+
+if [ "$1" = "run" ] || [ "$1" = "get" ] || [ "$1" = "set" ] || [ "$1" = "ls" ] || [ "$1" = "pro" ] || [ "$1" = "ext" ] || [ "$1" = "encrypt" ] || [ "$1" = "decrypt" ] || [ "$1" = "keys" ]
+then
+  DOTENVX_CMD="$1"
+  shift
+fi
+
 echo "Loading environment from '$ENV_FILE'..."
-npx dotenvx run -f "$ROOT_ENV_FILE" -f "$ENV_FILE" -- "$@"
+
+if [ "$DOTENVX_CMD" = "run" ]
+then
+  npx dotenvx "$DOTENVX_CMD" -fk "$ROOT_KEYS_FILE" -f "$ROOT_ENV_FILE" -f "$ENV_FILE" -- "$@"
+else
+  npx dotenvx "$DOTENVX_CMD" -fk "$ROOT_KEYS_FILE" -f "$ROOT_ENV_FILE" -f "$ENV_FILE" "$@"
+fi
