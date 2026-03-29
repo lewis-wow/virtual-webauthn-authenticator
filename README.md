@@ -146,6 +146,25 @@ pnpm start
 
 The server will be available at `http://localhost:4000`.
 
+## Environment Configuration with dotenvx
+
+This project uses [dotenvx](https://dotenvx.com/) for managing environment variables across different environments (development, test, production) with built-in encryption support for sensitive production secrets.
+
+- **Development & Test**: Environment files (`.env.development`, `.env.test`) contain plaintext variables
+- **Production**: Environment file (`.env.production`) contains encrypted variables
+- **Encryption**: Uses public-key cryptography where encrypted secrets are stored in version control and decrypted at runtime using a private key
+
+The decryption key is stored in `.env.keys`:
+
+```
+DOTENV_PRIVATE_KEY_PRODUCTION=<your_private_key_here>
+```
+
+**IMPORTANT**: The `.env.keys` file contains sensitive cryptographic material and should:
+
+- **Never** be committed to version control
+- Only exist on production servers and in secure CI/CD secret management
+
 ### Icons resources
 
 <https://simpleicons.org>
