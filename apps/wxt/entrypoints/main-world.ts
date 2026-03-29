@@ -1,14 +1,12 @@
 import { mainWorldToContentScriptMessaging } from '@/messaging/mainWorldToContentScriptMessaging';
 import { Exception } from '@repo/exception';
 import { Logger } from '@repo/logger';
-import { delayPromise, randomInt } from '@repo/utils';
 import {
   convertBrowserCreationOptions,
   convertBrowserRequestOptions,
   createPublicKeyCredentialResponseImpl,
   PublicKeyCredentialImpl,
 } from '@repo/virtual-authenticator/browser';
-import { parseAuthenticatorData } from '@repo/virtual-authenticator/cbor';
 import {
   PublicKeyCredentialCreationOptionsDtoSchema,
   PublicKeyCredentialDtoSchema,
@@ -58,7 +56,10 @@ export default defineUnlistedScript(() => {
       clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
 
-    logger.info('Public key credential:', publicKeyCredential);
+    logger.info(
+      'Public key credential:',
+      JSON.stringify(publicKeyCredential.toJSON()),
+    );
 
     return publicKeyCredential;
   };
@@ -100,7 +101,10 @@ export default defineUnlistedScript(() => {
       clientExtensionResults: parsedPublicKeyCredential.clientExtensionResults,
     });
 
-    logger.info('Public key credential:', publicKeyCredential);
+    logger.info(
+      'Public key credential:',
+      JSON.stringify(publicKeyCredential.toJSON()),
+    );
 
     return publicKeyCredential;
   };

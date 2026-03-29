@@ -4,7 +4,7 @@ import { ApiKeyManager, JwtIssuer } from '@repo/auth';
 import { JWT_ALG } from '@repo/auth';
 import { Permission, TokenType } from '@repo/auth/enums';
 import { PrismaAuthJwksRepository } from '@repo/auth/repositories';
-import type { JwtPayload } from '@repo/auth/zod-validation';
+import type { JwtPayload } from '@repo/auth/validation';
 import { Jwks, Jwt } from '@repo/crypto';
 import { DependencyContainer } from '@repo/dependency-container';
 import { Logger } from '@repo/logger';

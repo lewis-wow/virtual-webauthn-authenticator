@@ -1,4 +1,3 @@
-import { BytesMapper } from '@repo/core/mappers';
 import type { Uint8Array_ } from '@repo/types';
 import type {
   AuthenticationExtensionsClientOutputs,
@@ -6,10 +5,10 @@ import type {
   AuthenticatorAttestationResponse,
   PublicKeyCredential,
 } from '@repo/types/dom';
-import { Buffer } from 'buffer';
+import { toBase64Url } from '@repo/utils';
 
 import { PublicKeyCredentialType } from '../enums/PublicKeyCredentialType';
-import { bytesToArrayBuffer } from './helpers';
+import { arrayBufferToBytes, bytesToArrayBuffer } from './helpers';
 
 export type PublicKeyCredentialImplOptions = {
   id: string;
@@ -45,8 +44,8 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
    * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredential-tojson
    */
   toJSON(): PublicKeyCredentialJSON {
-    const rawIdBytes = BytesMapper.arrayBufferToBytes(this.rawId);
-    const rawIdBase64url = Buffer.from(rawIdBytes).toString('base64url');
+    const rawIdBytes = arrayBufferToBytes(this.rawId);
+    const rawIdBase64url = toBase64Url(rawIdBytes);
 
     // Check if this is an attestation (registration) or assertion (authentication) response
     if ('attestationObject' in this.response) {
@@ -54,10 +53,10 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
       const attestationResponse = this
         .response as AuthenticatorAttestationResponse;
 
-      const clientDataJSONBytes = BytesMapper.arrayBufferToBytes(
+      const clientDataJSONBytes = arrayBufferToBytes(
         attestationResponse.clientDataJSON,
       );
-      const attestationObjectBytes = BytesMapper.arrayBufferToBytes(
+      const attestationObjectBytes = arrayBufferToBytes(
         attestationResponse.attestationObject,
       );
 
@@ -67,11 +66,8 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
         type: this.type,
         authenticatorAttachment: this.authenticatorAttachment,
         response: {
-          clientDataJSON:
-            Buffer.from(clientDataJSONBytes).toString('base64url'),
-          attestationObject: Buffer.from(attestationObjectBytes).toString(
-            'base64url',
-          ),
+          clientDataJSON: toBase64Url(clientDataJSONBytes),
+          attestationObject: toBase64Url(attestationObjectBytes),
           transports: attestationResponse.getTransports(),
         },
         clientExtensionResults: this.getClientExtensionResults(),
@@ -80,17 +76,15 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
       // Authentication response
       const assertionResponse = this.response as AuthenticatorAssertionResponse;
 
-      const clientDataJSONBytes = BytesMapper.arrayBufferToBytes(
+      const clientDataJSONBytes = arrayBufferToBytes(
         assertionResponse.clientDataJSON,
       );
-      const authenticatorDataBytes = BytesMapper.arrayBufferToBytes(
+      const authenticatorDataBytes = arrayBufferToBytes(
         assertionResponse.authenticatorData,
       );
-      const signatureBytes = BytesMapper.arrayBufferToBytes(
-        assertionResponse.signature,
-      );
+      const signatureBytes = arrayBufferToBytes(assertionResponse.signature);
       const userHandleBytes = assertionResponse.userHandle
-        ? BytesMapper.arrayBufferToBytes(assertionResponse.userHandle)
+        ? arrayBufferToBytes(assertionResponse.userHandle)
         : null;
 
       return {
@@ -99,14 +93,11 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
         type: this.type,
         authenticatorAttachment: this.authenticatorAttachment,
         response: {
-          clientDataJSON:
-            Buffer.from(clientDataJSONBytes).toString('base64url'),
-          authenticatorData: Buffer.from(authenticatorDataBytes).toString(
-            'base64url',
-          ),
-          signature: Buffer.from(signatureBytes).toString('base64url'),
+          clientDataJSON: toBase64Url(clientDataJSONBytes),
+          authenticatorData: toBase64Url(authenticatorDataBytes),
+          signature: toBase64Url(signatureBytes),
           userHandle: userHandleBytes
-            ? Buffer.from(userHandleBytes).toString('base64url')
+            ? toBase64Url(userHandleBytes)
             : undefined,
         },
         clientExtensionResults: this.getClientExtensionResults(),

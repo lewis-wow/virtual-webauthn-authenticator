@@ -14,7 +14,6 @@ import { generateRandomUUIDBytes } from '@repo/virtual-authenticator/__tests__/h
 import { unreachable } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
-import { UUIDMapper } from '@repo/core/mappers';
 import {
   Jwks,
   Jwt,
@@ -22,6 +21,7 @@ import {
 } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
+import { uuidToBytes } from '@repo/utils';
 import { AuthorizationGesture } from '@repo/virtual-authenticator';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { AttestationHandlerRegistry } from '@repo/virtual-authenticator';
@@ -1193,9 +1193,7 @@ describe('VirtualAuthenticator.getCredential()', () => {
           allowCredentials: [
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,
-              id: UUIDMapper.UUIDtoBytes(
-                '00000000-0000-0000-0000-000000000000',
-              ),
+              id: uuidToBytes('00000000-0000-0000-0000-000000000000'),
             },
             {
               type: PublicKeyCredentialType.PUBLIC_KEY,

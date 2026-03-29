@@ -1,4 +1,4 @@
-import { OriginSchema } from '@repo/core/zod-validation';
+import { OriginSchema } from '@repo/core/validation';
 import { AuthenticatorMetaArgsSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 

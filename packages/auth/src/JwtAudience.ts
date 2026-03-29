@@ -3,7 +3,7 @@ import { Jwt } from '@repo/crypto';
 import {
   JwtPayloadSchema,
   type JwtPayload,
-} from './zod-validation/JwtPayloadSchema';
+} from './validation/JwtPayloadSchema';
 
 export type JwtAudienceConfig = {
   aud: string;

@@ -1,9 +1,14 @@
 import { assertSchema, assertShape } from '@repo/assert';
 import * as cbor from '@repo/cbor';
-import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
+import {
+  bytesToUuid,
+  toBase64Url,
+  tryBytesToUuid,
+  uuidToBytes,
+} from '@repo/utils';
 import { type IAuthenticator } from '@repo/virtual-authenticator';
 import {
   decodeAttestationObject,
@@ -222,16 +227,14 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         await authenticator.webAuthnRepository.findAllByRpIdAndCredentialIds({
           rpId,
           credentialIds: pkOptions.allowCredentials
-            .map((allowCredential) =>
-              UUIDMapper.tryBytesToUUID(allowCredential.id),
-            )
+            .map((allowCredential) => tryBytesToUuid(allowCredential.id))
             .filter((allowCredentialId) => allowCredentialId !== null),
         });
 
       allowCredentialDescriptorList =
         webAuthnPublicKeyCredentialWithMetaList.map(
           (webAuthnPublicKeyCredentialWithMeta) => ({
-            id: UUIDMapper.UUIDtoBytes(webAuthnPublicKeyCredentialWithMeta.id),
+            id: uuidToBytes(webAuthnPublicKeyCredentialWithMeta.id),
             type: PublicKeyCredentialType.PUBLIC_KEY,
             transports: webAuthnPublicKeyCredentialWithMeta.transports,
           }),
@@ -517,7 +520,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     assertSchema(
       meta,
       AuthenticatorAgentMetaArgsSchema.safeExtend({
-        userId: z.literal(UUIDMapper.bytesToUUID(options.publicKey.user.id)),
+        userId: z.literal(bytesToUuid(options.publicKey.user.id)),
         origin: z.literal(origin),
       }),
     );
@@ -718,7 +721,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // instance whose fields are:
     const collectedClientData: CollectedClientData = {
       type: CollectedClientDataType.WEBAUTHN_CREATE,
-      challenge: Buffer.from(pkOptions.challenge).toString('base64url'),
+      challenge: toBase64Url(pkOptions.challenge),
       origin: meta.origin,
       crossOrigin: meta.crossOrigin ?? false,
       topOrigin: meta.crossOrigin ? meta.topOrigin : undefined,
@@ -997,7 +1000,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // Step 22.SUCCESS.3: Return the result of running constructCredentialAlg
     // with the current global object.
     const pubKeyCred: PublicKeyCredential = {
-      id: Buffer.from(credentialId).toString('base64url'),
+      id: toBase64Url(credentialId),
       rawId: credentialId,
       type: PublicKeyCredentialType.PUBLIC_KEY,
       response: {
@@ -1230,7 +1233,7 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     // instance whose fields are:
     const collectedClientData: CollectedClientData = {
       type: CollectedClientDataType.WEBAUTHN_GET,
-      challenge: Buffer.from(pkOptions.challenge).toString('base64url'),
+      challenge: toBase64Url(pkOptions.challenge),
       origin: meta.origin,
       crossOrigin: meta.crossOrigin ?? false,
       topOrigin: meta.crossOrigin ? meta.topOrigin : undefined,

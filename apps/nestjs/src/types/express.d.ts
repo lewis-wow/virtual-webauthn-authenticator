@@ -1,4 +1,4 @@
-import type { JwtPayload } from '@repo/zod-validation';
+import type { JwtPayload } from '@repo/auth/validation';
 
 declare global {
   namespace Express {

@@ -1,9 +1,9 @@
 import { USER_ID } from '../../../../auth/__tests__/helpers/consts';
 
-import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import type { PrismaClient } from '@repo/prisma';
+import { bytesToUuid } from '@repo/utils';
 import { verifySignature } from '@simplewebauthn/server/helpers';
 import { expect } from 'vitest';
 
@@ -152,9 +152,7 @@ export const performAuthenticatorGetAssertionAndVerify = async (
     const webAuthnPublicKeyCredential =
       await prisma.webAuthnPublicKeyCredential.findUnique({
         where: {
-          id: UUIDMapper.bytesToUUID(
-            parsedGetAssertionAuthenticatorData.credentialID!,
-          ),
+          id: bytesToUuid(parsedGetAssertionAuthenticatorData.credentialID!),
         },
       });
 

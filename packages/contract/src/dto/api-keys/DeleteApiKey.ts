@@ -1,4 +1,4 @@
-import { ApiKeySchema } from '@repo/auth/zod-validation';
+import { ApiKeySchema } from '@repo/auth/validation';
 
 import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';
 

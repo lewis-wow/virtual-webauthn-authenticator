@@ -7,7 +7,7 @@
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
     "./exceptions": "./src/exceptions/index.ts",
-    "./zod-validation": "./src/zod-validation/index.ts",
+    "./validation": "./src/validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
     "./repositories": "./src/repositories/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"

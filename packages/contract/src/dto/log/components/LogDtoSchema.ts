@@ -1,5 +1,5 @@
-import { LogSchema } from '@repo/activity-log/zod-validation';
-import { DateSchemaCodec } from '@repo/core/zod-validation';
+import { LogSchema } from '@repo/activity-log/validation';
+import { DateSchemaCodec } from '@repo/core/validation';
 
 export const LogDtoSchema = LogSchema.extend({
   createdAt: DateSchemaCodec,
