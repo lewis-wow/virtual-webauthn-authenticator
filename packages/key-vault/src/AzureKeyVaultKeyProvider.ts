@@ -18,7 +18,7 @@ import { isECAlgorithm } from '@repo/keys/helpers';
 import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
 import type { Uint8Array_ } from '@repo/types';
 import type { JsonWebKey } from '@repo/types/dom';
-import { toBase64Url } from '@repo/utils';
+import { toBase64Url, wrapIsNullish } from '@repo/utils';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
@@ -55,10 +55,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
   private readonly keyClient: KeyClient;
   private readonly cryptographyClientFactory: CryptographyClientFactory;
 
-  private _toBase64Url(bytes: Uint8Array_ | undefined): string | undefined {
-    return bytes === undefined ? undefined : toBase64Url(bytes);
-  }
-
   constructor(opts: AzureKeyVaultKeyProviderOptions) {
     this.keyClient = opts.keyClient;
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
@@ -70,17 +66,39 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     return {
       kty: azureJsonWebKey.kty,
       crv: azureJsonWebKey.crv,
-      x: this._toBase64Url(azureJsonWebKey.x as Uint8Array_ | undefined),
-      y: this._toBase64Url(azureJsonWebKey.y as Uint8Array_ | undefined),
-      e: this._toBase64Url(azureJsonWebKey.e as Uint8Array_ | undefined),
-      n: this._toBase64Url(azureJsonWebKey.n as Uint8Array_ | undefined),
-      d: this._toBase64Url(azureJsonWebKey.d as Uint8Array_ | undefined),
-      dp: this._toBase64Url(azureJsonWebKey.dp as Uint8Array_ | undefined),
-      dq: this._toBase64Url(azureJsonWebKey.dq as Uint8Array_ | undefined),
-      p: this._toBase64Url(azureJsonWebKey.p as Uint8Array_ | undefined),
-      q: this._toBase64Url(azureJsonWebKey.q as Uint8Array_ | undefined),
-      qi: this._toBase64Url(azureJsonWebKey.qi as Uint8Array_ | undefined),
-      k: this._toBase64Url(azureJsonWebKey.k as Uint8Array_ | undefined),
+      x: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.x as Uint8Array_ | undefined,
+      ),
+      y: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.y as Uint8Array_ | undefined,
+      ),
+      e: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.e as Uint8Array_ | undefined,
+      ),
+      n: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.n as Uint8Array_ | undefined,
+      ),
+      d: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.d as Uint8Array_ | undefined,
+      ),
+      dp: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.dp as Uint8Array_ | undefined,
+      ),
+      dq: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.dq as Uint8Array_ | undefined,
+      ),
+      p: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.p as Uint8Array_ | undefined,
+      ),
+      q: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.q as Uint8Array_ | undefined,
+      ),
+      qi: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.qi as Uint8Array_ | undefined,
+      ),
+      k: wrapIsNullish(toBase64Url)(
+        azureJsonWebKey.k as Uint8Array_ | undefined,
+      ),
       key_ops: azureJsonWebKey.keyOps,
     };
   }

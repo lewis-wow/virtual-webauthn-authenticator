@@ -5,6 +5,7 @@ import { Prisma, type PrismaClient } from '@repo/prisma';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
 
+import { API_KEY_CONFIG } from './constants';
 import { Permission } from './enums/Permission';
 import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
@@ -40,24 +41,6 @@ export type ApiKeyManagerOptions = {
 
 export class ApiKeyManager {
   private readonly prisma: PrismaClient;
-  /**
-   * Hashing cost.
-   */
-  private readonly BCRYPT_ROUNDS = 12;
-  /**
-   * Byte length for the 'secret' part. 32 bytes = 44 base64url chars.
-   */
-  private readonly SECRET_BYTE_LENGTH = 32;
-  /**
-   * Byte length for the 'lookupKey' part. 16 bytes = 22 base64url chars.
-   */
-  private readonly LOOKUP_BYTE_LENGTH = 16;
-
-  private readonly SECRET_START_LENGTH = 8;
-  /**
-   * Prefix for all live keys.
-   */
-  static readonly KEY_PREFIX = 'sk_live_';
 
   constructor(opts: ApiKeyManagerOptions) {
     this.prisma = opts.prisma;
@@ -82,7 +65,9 @@ export class ApiKeyManager {
     // Calculate expected char length of the secret in base64url
     // Formula: ceil((bytes * 8) / 6)
     // For 32 bytes, this is 43 characters.
-    const secretCharLength = Math.ceil((this.SECRET_BYTE_LENGTH * 8) / 6);
+    const secretCharLength = Math.ceil(
+      (API_KEY_CONFIG.SECRET_BYTE_LENGTH * 8) / 6,
+    );
 
     // Key must be longer than just the secret part + separator
     if (providedKey.length <= secretCharLength) {
@@ -121,19 +106,24 @@ export class ApiKeyManager {
     const { userId, name, expiresAt, permissions: _ } = opts;
 
     const internalLookupKey = this._generateRandomString(
-      this.LOOKUP_BYTE_LENGTH,
+      API_KEY_CONFIG.LOOKUP_BYTE_LENGTH,
     );
-    const start = internalLookupKey.substring(0, this.SECRET_START_LENGTH);
+    const start = internalLookupKey.substring(
+      0,
+      API_KEY_CONFIG.SECRET_START_LENGTH,
+    );
 
-    const lookupKey = `${ApiKeyManager.KEY_PREFIX}${internalLookupKey}`;
+    const lookupKey = `${API_KEY_CONFIG.KEY_PREFIX}${internalLookupKey}`;
 
-    const secret = this._generateRandomString(this.SECRET_BYTE_LENGTH);
+    const secret = this._generateRandomString(
+      API_KEY_CONFIG.SECRET_BYTE_LENGTH,
+    );
 
     // This is the key you show to the user ONE TIME.
     const plaintextKey = `${lookupKey}_${secret}`;
 
     // This is what you store in the database.
-    const hashedKey = await hash(secret, this.BCRYPT_ROUNDS);
+    const hashedKey = await hash(secret, API_KEY_CONFIG.BCRYPT_ROUNDS);
 
     const apiKey = await this.prisma.apiKey.create({
       data: {
@@ -143,7 +133,7 @@ export class ApiKeyManager {
         lookupKey,
         name,
         start,
-        prefix: ApiKeyManager.KEY_PREFIX,
+        prefix: API_KEY_CONFIG.KEY_PREFIX,
         permissions: [
           Permission['CREDENTIAL.CREATE'],
           Permission['CREDENTIAL.GET'],

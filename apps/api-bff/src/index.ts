@@ -4,19 +4,17 @@ import { RequestLogFormatter } from '@repo/bff';
 import { proxy } from '@repo/proxy';
 import { cors } from 'hono/cors';
 
+import { API_ROUTE_PATTERN, CORS_CONFIG } from './constants';
 import { container } from './container';
 import { env } from './env';
 import { factory } from './factory';
-
-const CORS_ALLOW_ORIGINS = '*';
-const API_ROUTE_PATTERN = '/api/*';
 
 const app = factory.createApp();
 
 app.use(
   '*',
   cors({
-    origin: CORS_ALLOW_ORIGINS,
+    origin: CORS_CONFIG.ALLOW_ORIGINS,
   }),
 );
 

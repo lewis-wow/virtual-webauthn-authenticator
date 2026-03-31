@@ -100,23 +100,20 @@ export class VirtualAuthenticator implements IAuthenticator {
   /**
    * Finds and returns the first supported public key credential parameter from a given list.
    *
-   * This function iterates through an array of `PubKeyCredParamLoose` objects and returns the
-   * first one that successfully validates against the `PubKeyCredParamStrictSchema`.
+   * This function finds the first parameter from an array of `PubKeyCredParam` objects
+   * that successfully validates against the `PubKeyCredParamStrictSchema`.
    *
-   * @param {PubKeyCredParamLoose[]} pubKeyCredParams - An array of public key credential parameters to check.
-   * @returns {PubKeyCredParamStrict} The first parameter from the array that is supported (passes strict validation).
+   * @param pubKeyCredParams - An array of public key credential parameters to check.
+   * @returns The first parameter from the array that is supported (passes strict validation), or null if none are supported.
    */
   private _findFirstSupportedCredTypesAndPubKeyAlgOrNull(
     pubKeyCredParams: PubKeyCredParam[],
   ): SupportedPubKeyCredParam | null {
-    for (const pubKeyCredParam of pubKeyCredParams) {
-      const result = SupportedPubKeyCredParamSchema.safeParse(pubKeyCredParam);
-      if (result.success) {
-        return result.data;
-      }
-    }
+    const result = pubKeyCredParams
+      .map((param) => SupportedPubKeyCredParamSchema.safeParse(param))
+      .find((result) => result.success);
 
-    return null;
+    return result?.success ? result.data : null;
   }
 
   /**

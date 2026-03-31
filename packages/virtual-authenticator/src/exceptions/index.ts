@@ -17,3 +17,4 @@ export * from './UnknownUserVerificationType';
 export * from './UserPresenceNotAvailable';
 export * from './VirtualAuthenticatorNotActive';
 export * from './VirtualAuthenticatorNotFound';
+export * from './UnsupportedAttestationFormat';
