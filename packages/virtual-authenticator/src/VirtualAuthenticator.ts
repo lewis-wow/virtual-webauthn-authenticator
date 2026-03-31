@@ -1,7 +1,7 @@
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
-import { UUIDMapper } from '@repo/core/mappers';
 import type { Uint8Array_ } from '@repo/types';
+import { bytesToUuid, tryBytesToUuid, uuidToBytes } from '@repo/utils';
 import { randomUUID } from 'node:crypto';
 import { match } from 'ts-pattern';
 import z from 'zod';
@@ -254,7 +254,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     ) {
       const credentialIds = excludeCredentialDescriptorList
         .map((excludeCredentialDescriptor) =>
-          UUIDMapper.tryBytesToUUID(excludeCredentialDescriptor.id),
+          tryBytesToUuid(excludeCredentialDescriptor.id),
         )
         .filter(
           (excludeCredentialDescriptorId) =>
@@ -313,9 +313,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // Step 7.1: Let (publicKey, privateKey) be a new pair of cryptographic
     // keys using the FIRST supported algorithm
     const webAuthnPublicKeyCredentialId = randomUUID();
-    const rawCredentialId = UUIDMapper.UUIDtoBytes(
-      webAuthnPublicKeyCredentialId,
-    );
+    const rawCredentialId = uuidToBytes(webAuthnPublicKeyCredentialId);
 
     const webAuthnPublicKeyCredentialPublicKey = await this.keyProvider
       .generateKeyPair({
@@ -332,7 +330,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     );
 
     // Step 7.2: Let userHandle be userEntity.id.
-    const userHandle = UUIDMapper.bytesToUUID(userEntity.id);
+    const userHandle = bytesToUuid(userEntity.id);
 
     // Step 7.3: Let credentialSource be a new public key credential source
     // with the following fields:
@@ -525,7 +523,7 @@ export class VirtualAuthenticator implements IAuthenticator {
           apiKeyId: meta.apiKeyId,
           allowCredentialDescriptorList: allowCredentialDescriptorList?.map(
             (allowCredentialDescriptor) =>
-              UUIDMapper.bytesToUUID(allowCredentialDescriptor.id),
+              bytesToUuid(allowCredentialDescriptor.id),
           ),
         },
       );
@@ -619,12 +617,8 @@ export class VirtualAuthenticator implements IAuthenticator {
     // selectedCredential.userHandle.
     // NOTE: If, within allowCredentialDescriptorList, the client supplied exactly one credential and it was successfully employed, then its credential ID is not returned since the client already knows it.
 
-    const credentialId = UUIDMapper.UUIDtoBytes(
-      webAuthnPublicKeyCredentialWithMeta.id,
-    );
-    const userHandle = UUIDMapper.UUIDtoBytes(
-      webAuthnPublicKeyCredentialWithMeta.userId,
-    );
+    const credentialId = uuidToBytes(webAuthnPublicKeyCredentialWithMeta.id);
+    const userHandle = uuidToBytes(webAuthnPublicKeyCredentialWithMeta.userId);
 
     const authenticatorGetAssertionResponse: AuthenticatorGetAssertionResponse =
       {

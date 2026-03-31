@@ -5,8 +5,8 @@ import {
 
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { UUIDMapper } from '@repo/core/mappers';
 import { isExceptionShape } from '@repo/exception';
+import { bytesToUuid } from '@repo/utils';
 import {
   UserPresenceRequiredAgentException,
   UserVerificationRequiredAgentException,
@@ -177,7 +177,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });
 
-  const webAuthnPublicKeyCredentialId = UUIDMapper.bytesToUUID(
+  const webAuthnPublicKeyCredentialId = bytesToUuid(
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     Buffer.from(response.body.id, 'base64url'),
   );

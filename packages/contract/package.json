@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "run-p barrel:* && pnpm generate:spec",
-    "barrel:zod-validation": "../../scripts/barrel.ts ./src/dto",
+    "barrel:validation": "../../scripts/barrel.ts ./src/dto",
     "test:unit": "vitest run --config __tests__/vitest.unit.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit",

@@ -7,8 +7,7 @@ import {
 } from '@azure/keyvault-keys';
 import { assertSchema } from '@repo/assert';
 import * as cbor from '@repo/cbor';
-import { KeyMapper } from '@repo/keys';
-import { KeyAlgorithmMapper } from '@repo/keys';
+import { JWKPublicKeyToCOSEPublicKey, KeyAlgorithmMapper } from '@repo/keys';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import {
   COSEKeyAlgorithm,
@@ -19,7 +18,7 @@ import { isECAlgorithm } from '@repo/keys/helpers';
 import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
 import type { Uint8Array_ } from '@repo/types';
 import type { JsonWebKey } from '@repo/types/dom';
-import { toB64 } from '@repo/utils';
+import { toBase64Url } from '@repo/utils';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/virtual-authenticator/enums';
 import type {
   IKeyProvider,
@@ -56,6 +55,10 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
   private readonly keyClient: KeyClient;
   private readonly cryptographyClientFactory: CryptographyClientFactory;
 
+  private _toBase64Url(bytes: Uint8Array_ | undefined): string | undefined {
+    return bytes === undefined ? undefined : toBase64Url(bytes);
+  }
+
   constructor(opts: AzureKeyVaultKeyProviderOptions) {
     this.keyClient = opts.keyClient;
     this.cryptographyClientFactory = opts.cryptographyClientFactory;
@@ -67,17 +70,17 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     return {
       kty: azureJsonWebKey.kty,
       crv: azureJsonWebKey.crv,
-      x: toB64(azureJsonWebKey.x as Uint8Array_ | undefined),
-      y: toB64(azureJsonWebKey.y as Uint8Array_ | undefined),
-      e: toB64(azureJsonWebKey.e as Uint8Array_ | undefined),
-      n: toB64(azureJsonWebKey.n as Uint8Array_ | undefined),
-      d: toB64(azureJsonWebKey.d as Uint8Array_ | undefined),
-      dp: toB64(azureJsonWebKey.dp as Uint8Array_ | undefined),
-      dq: toB64(azureJsonWebKey.dq as Uint8Array_ | undefined),
-      p: toB64(azureJsonWebKey.p as Uint8Array_ | undefined),
-      q: toB64(azureJsonWebKey.q as Uint8Array_ | undefined),
-      qi: toB64(azureJsonWebKey.qi as Uint8Array_ | undefined),
-      k: toB64(azureJsonWebKey.k as Uint8Array_ | undefined),
+      x: this._toBase64Url(azureJsonWebKey.x as Uint8Array_ | undefined),
+      y: this._toBase64Url(azureJsonWebKey.y as Uint8Array_ | undefined),
+      e: this._toBase64Url(azureJsonWebKey.e as Uint8Array_ | undefined),
+      n: this._toBase64Url(azureJsonWebKey.n as Uint8Array_ | undefined),
+      d: this._toBase64Url(azureJsonWebKey.d as Uint8Array_ | undefined),
+      dp: this._toBase64Url(azureJsonWebKey.dp as Uint8Array_ | undefined),
+      dq: this._toBase64Url(azureJsonWebKey.dq as Uint8Array_ | undefined),
+      p: this._toBase64Url(azureJsonWebKey.p as Uint8Array_ | undefined),
+      q: this._toBase64Url(azureJsonWebKey.q as Uint8Array_ | undefined),
+      qi: this._toBase64Url(azureJsonWebKey.qi as Uint8Array_ | undefined),
+      k: this._toBase64Url(azureJsonWebKey.k as Uint8Array_ | undefined),
       key_ops: azureJsonWebKey.keyOps,
     };
   }
@@ -246,7 +249,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       hsm,
     });
 
-    const COSEPublicKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(
+    const COSEPublicKey = JWKPublicKeyToCOSEPublicKey(
       jwk,
       pubKeyCredParams.alg,
     );

@@ -1,9 +1,9 @@
 import { USER_ID, USER_NAME } from '../../../../auth/__tests__/helpers/consts';
 
-import { UUIDMapper } from '@repo/core/mappers';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { PrismaClient } from '@repo/prisma';
+import { bytesToUuid } from '@repo/utils';
 import { expect } from 'vitest';
 
 import type { IAuthenticator } from '../../../src/IAuthenticator';
@@ -163,7 +163,7 @@ export const performAuthenticatorMakeCredentialAndVerify = async (
   const webAuthnPublicKeyCredentialCount =
     await prisma.webAuthnPublicKeyCredential.count({
       where: {
-        id: UUIDMapper.bytesToUUID(parsedAuthenticatorData.credentialID!),
+        id: bytesToUuid(parsedAuthenticatorData.credentialID!),
       },
     });
 

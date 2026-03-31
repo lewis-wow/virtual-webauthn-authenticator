@@ -3,7 +3,7 @@ import {
   PaginationRequestMetaSchema,
   PaginationResultSchema,
   SortKeysSchema,
-} from '@repo/pagination/zod-validation';
+} from '@repo/pagination/validation';
 
 import { VirtualAuthenticatorDtoSchema } from './components/VirtualAuthenticatorDtoSchema';
 

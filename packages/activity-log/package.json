@@ -6,8 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
-    "./validation": "./src/validation/index.ts",
-    "./zod-validation": "./src/zod-validation/index.ts"
+    "./validation": "./src/validation/index.ts"
   },
   "scripts": {
     "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",

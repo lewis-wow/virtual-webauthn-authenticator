@@ -39,7 +39,12 @@ export const UserVerificationDialog = ({
   };
 
   return (
-    <Dialog open={true}>
+    <Dialog
+      open={true}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
@@ -63,6 +68,7 @@ export const UserVerificationDialog = ({
                 id="pin"
                 type="password"
                 placeholder="Enter your PIN"
+                autoComplete="off"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 onKeyDown={(e) => {

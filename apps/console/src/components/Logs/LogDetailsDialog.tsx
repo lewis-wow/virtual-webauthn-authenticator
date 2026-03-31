@@ -1,6 +1,6 @@
 'use client';
 
-import type { Log } from '@repo/activity-log/zod-validation';
+import type { Log } from '@repo/activity-log/validation';
 import { Button } from '@repo/ui/components/Button';
 import {
   Dialog,
