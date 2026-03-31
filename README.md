@@ -1,24 +1,50 @@
 # Virtual WebAuthn Authenticator
 
-This repository is a personal project and is not intended for production use.
-
 [![codecov](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator/graph/badge.svg?token=4J12KNM8S0)](https://codecov.io/gh/lewis-wow/virtual-webauthn-authenticator)
 
 Traditional password authentication is inherently vulnerable to phishing and data breaches. Although the industry is moving toward more secure hardware and platform passkeys, these solutions introduce usability challenges. Users must manage physical devices and risk account lockouts if they lose them. Server-side authenticators offer a more user-friendly alternative. They eliminate the strict dependence on specific hardware but require strong protection of cryptographic material in a cloud environment. This thesis proposes and demonstrates an implementation of such a virtual authenticator in Node.js. The solution includes a web extension to intercept standard WebAuthn API calls and route them to the authenticator web service.
 
-## Run project in dev mode
+## About This Project
 
-To start the project in development mode, run the command below. This will launch all applications in the `apps` directory, excluding the example Next.js application.
+This is a thesis project exploring server-side WebAuthn authenticators as an alternative to traditional hardware security keys. It's designed for research and demonstration purposes, not production use.
+
+**License**: See [LICENSE](LICENSE) file.
+
+## Development prerequisites
+
+- **Node.js** 18+
+- **pnpm** package manager for monorepo
+- **Docker & Docker Compose** for PostgreSQL and Key Vault
+
+## Project Structure
+
+- **`apps/`** — Main applications
+- **`packages/`** — Shared libraries (auth, crypto, database, UI components, etc.)
+- **`examples/`** — Example Next.js app with passkeys integration
+
+## Getting Started
+
+### Run in Development Mode
 
 ```bash
-./docker-compose-test.sh
+./docker-compose-test.sh  # Start PostgreSQL and Key Vault
 pnpm dev --filter '!@repo/nextjs-example'
 ```
 
-Without extension:
+Without browser extension:
 
 ```bash
+./docker-compose-test.sh  # Start PostgreSQL and Key Vault
 pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
+```
+
+### Run Tests
+
+```bash
+pnpm test                   # All tests
+pnpm test:unit              # Unit tests
+pnpm test:integration       # Integration tests
+pnpm coverage               # Coverage report
 ```
 
 ## Authenticator flow
@@ -115,43 +141,39 @@ pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
  +--------------------+                 +--------------------+
 ```
 
-## WebAuthn spec
+## Example Relying Party Application
 
-<https://www.w3.org/TR/webauthn-3/>
-
-## FIDO CTAP2 spec
-
-<https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html>
-
-## Key Vault
-
-[Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/)
-
-[LowKey Vault for development](https://github.com/nagyesta/lowkey-vault)
-
-## WebAuthn official demo
-
-<https://webauthn.io/>
-
-## Example
-
-To run the Next.js passkeys example, navigate to the example directory, prepare the database, and start the server:
+Try the Next.js passkeys example:
 
 ```bash
-cd examples/nextjs
-pnpm db:generate
-pnpm db:push
-pnpm start
+cd examples/nextjs && pnpm db:generate && pnpm db:push && pnpm start
 ```
 
-The server will be available at `http://localhost:4000`.
+Available at `http://localhost:4000`.
 
-### Icons resources
+## Configuration
 
-<https://simpleicons.org>
+**Environment Variables**: Managed with [dotenvx](https://dotenvx.com/) for dev/test/production with encryption support for secrets.
 
-<https://lucide.dev/icons/blocks>
+- Dev/Test: `.env.development`, `.env.test` (plaintext)
+- Production: `.env.production` (encrypted), decryption key in `.env.keys`
+- ⚠️ **Never commit `.env.keys`** to version control
 
-<https://portal.azure.com>
+**Key Vault**: Uses [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/) (production) or [LowKey Vault](https://github.com/nagyesta/lowkey-vault) (development)
 
-<https://www.plasmo.com>
+## Resources
+
+**Specifications:**
+
+- [WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/)
+- [FIDO CTAP2](https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html)
+
+**Key Vault:**
+
+- [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/) (production)
+- [LowKey Vault](https://github.com/nagyesta/lowkey-vault) (development)
+
+**Tools & References:**
+
+- [WebAuthn.io Demo](https://webauthn.io/)
+- [Icons: Simple Icons](https://simpleicons.org) | [Lucide](https://lucide.dev/icons/blocks) | [Azure Portal](https://portal.azure.com) | [Plasmo](https://www.plasmo.com)
