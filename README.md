@@ -6,7 +6,7 @@ Traditional password authentication is inherently vulnerable to phishing and dat
 
 ## About This Project
 
-This is a **thesis project** exploring server-side WebAuthn authenticators as an alternative to traditional hardware security keys. It's designed for research and demonstration purposes, not production use.
+This is a thesis project exploring server-side WebAuthn authenticators as an alternative to traditional hardware security keys. It's designed for research and demonstration purposes, not production use.
 
 **License**: See [LICENSE](LICENSE) file.
 
