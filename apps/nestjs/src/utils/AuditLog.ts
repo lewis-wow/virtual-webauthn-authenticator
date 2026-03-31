@@ -1,7 +1,7 @@
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { TokenType } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/zod-validation';
+import type { JwtPayload } from '@repo/auth/validation';
 
 /**
  * Options for logging an activity.

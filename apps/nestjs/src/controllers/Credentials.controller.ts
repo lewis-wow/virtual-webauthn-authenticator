@@ -90,11 +90,6 @@ export class CredentialsController {
       entity: LogEntity.CREDENTIAL,
       jwtPayload,
       entityId: bytesToUuid(publicKeyCredentialRawId),
-      apiKeyId:
-        jwtPayload.tokenType === TokenType.API_KEY
-          ? jwtPayload.apiKeyId
-          : undefined,
-      userId: jwtPayload.userId,
     });
   }
 
