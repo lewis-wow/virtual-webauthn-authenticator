@@ -1,4 +1,3 @@
-import { BytesMapper } from '@repo/core/mappers';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyParam } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
@@ -16,7 +15,10 @@ import {
   AuthenticatorResponseImpl,
   type AuthenticatorResponseImplOptions,
 } from './AuthenticatorResponseImpl';
-import { bytesToArrayBuffer } from './helpers/bytesConversion';
+import {
+  arrayBufferToBytes,
+  bytesToArrayBuffer,
+} from './helpers/bytesConversion';
 
 export type DecodedAttestationObject = {
   authData: Uint8Array_;
@@ -51,23 +53,17 @@ export class AuthenticatorAttestationResponseImpl
 
   getAuthenticatorData(): ArrayBuffer {
     if (this._attestationObjectMap?.has('authData')) {
-      return BytesMapper.bytesToArrayBuffer(
-        this._attestationObjectMap.get('authData')!,
-      );
+      return bytesToArrayBuffer(this._attestationObjectMap.get('authData')!);
     }
 
     // 1. Decode the top-level CBOR map
-    // Use BytesMapper to ensure we have a clean Uint8Array for the CBOR decoder
-    const attestationBytes = BytesMapper.arrayBufferToBytes(
-      this.attestationObject,
-    );
+    // Normalize to Uint8Array for CBOR decoder input
+    const attestationBytes = arrayBufferToBytes(this.attestationObject);
 
     this._attestationObjectMap = decodeAttestationObject(attestationBytes);
 
     // Normalize to Uint8Array using Mapper, then store the underlying ArrayBuffer
-    return BytesMapper.bytesToArrayBuffer(
-      this._attestationObjectMap.get('authData')!,
-    );
+    return bytesToArrayBuffer(this._attestationObjectMap.get('authData')!);
   }
 
   getPublicKey(): ArrayBuffer | null {
@@ -76,9 +72,7 @@ export class AuthenticatorAttestationResponseImpl
     }
 
     // Get authData as Uint8Array for parsing
-    const authData = BytesMapper.arrayBufferToBytes(
-      this.getAuthenticatorData(),
-    );
+    const authData = arrayBufferToBytes(this.getAuthenticatorData());
 
     const parsedAuthenticatorData = parseAuthenticatorData(authData);
     const publicKey = parsedAuthenticatorData.credentialPublicKey;
@@ -88,7 +82,7 @@ export class AuthenticatorAttestationResponseImpl
     }
 
     const rawKeyBytes = encodeCOSEPublicKey(publicKey);
-    this._publicKey = BytesMapper.bytesToArrayBuffer(rawKeyBytes);
+    this._publicKey = bytesToArrayBuffer(rawKeyBytes);
     this._publicKeyAlgorithm = publicKey.get(COSEKeyParam.alg);
     return this._publicKey;
   }

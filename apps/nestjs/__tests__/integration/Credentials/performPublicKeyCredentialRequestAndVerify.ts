@@ -6,8 +6,8 @@ import {
 
 import { GetCredentialBodySchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { UUIDMapper } from '@repo/core/mappers';
 import { isExceptionShape } from '@repo/exception';
+import { uuidToBytes } from '@repo/utils';
 import {
   CredentialSelectAgentException,
   UserPresenceRequiredAgentException,
@@ -197,9 +197,7 @@ export const performPublicKeyCredentialRequestAndVerify = async (
       authenticatorData: expect.any(String),
       clientDataJSON: expect.any(String),
       signature: expect.any(String),
-      userHandle: Buffer.from(UUIDMapper.UUIDtoBytes(USER_ID)).toString(
-        'base64url',
-      ),
+      userHandle: Buffer.from(uuidToBytes(USER_ID)).toString('base64url'),
     },
     type: PublicKeyCredentialType.PUBLIC_KEY,
   });

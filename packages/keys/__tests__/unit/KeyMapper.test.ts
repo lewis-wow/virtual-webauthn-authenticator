@@ -8,7 +8,8 @@ import type {
   COSEPublicKeyOKP,
   COSEPublicKeyRSA,
 } from '../../src/COSEPublicKey.js';
-import { KeyMapper } from '../../src/KeyMapper.js';
+import { COSEPublicKeyToJWKPublicKey } from '../../src/COSEPublicKeyToJWKPublicKey.js';
+import { JWKPublicKeyToCOSEPublicKey } from '../../src/JWKPublicKeyToCOSEPublicKey.js';
 import { COSEKeyAlgorithm } from '../../src/enums/COSEKeyAlgorithm.js';
 import { COSEKeyCurveName } from '../../src/enums/COSEKeyCurveName.js';
 import { COSEKeyParam } from '../../src/enums/COSEKeyParam.js';
@@ -161,7 +162,7 @@ describe('KeyMapper', () => {
     describe('EC Keys', () => {
       test('should convert EC P-256 COSE key to JWK', () => {
         const coseKey = createECPublicKey();
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.kty).toBe('EC');
         expect(jwk.crv).toBe('P-256');
@@ -175,7 +176,7 @@ describe('KeyMapper', () => {
           x: new Uint8Array(48).fill(0x04),
           y: new Uint8Array(48).fill(0x05),
         });
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.kty).toBe('EC');
         expect(jwk.crv).toBe('P-384');
@@ -187,7 +188,7 @@ describe('KeyMapper', () => {
           x: new Uint8Array(66).fill(0x04),
           y: new Uint8Array(66).fill(0x05),
         });
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.kty).toBe('EC');
         expect(jwk.crv).toBe('P-521');
@@ -201,7 +202,7 @@ describe('KeyMapper', () => {
           x: xBytes,
           y: yBytes,
         });
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.x).toBe('AQIDBAUGBwg');
         expect(jwk.y).toBe('CQoLDA0ODxA');
@@ -211,7 +212,7 @@ describe('KeyMapper', () => {
     describe('RSA Keys', () => {
       test('should convert RSA COSE key to JWK', () => {
         const coseKey = createRSAPublicKey();
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.n).toBeDefined();
         expect(jwk.e).toBeDefined();
@@ -225,7 +226,7 @@ describe('KeyMapper', () => {
           n: nBytes,
           e: eBytes,
         });
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.n).toBe('AQIDBA');
         expect(jwk.e).toBe('AQAB');
@@ -235,7 +236,7 @@ describe('KeyMapper', () => {
     describe('OKP Keys', () => {
       test('should convert OKP Ed25519 COSE key to JWK', () => {
         const coseKey = createOKPPublicKey();
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.crv).toBe('Ed25519');
         expect(jwk.x).toBeDefined();
@@ -247,7 +248,7 @@ describe('KeyMapper', () => {
         const coseKey = createOKPPublicKey({
           x: xBytes,
         });
-        const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+        const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
         expect(jwk.x).toBe('AQIDBAUGBwg');
       });
@@ -258,7 +259,7 @@ describe('KeyMapper', () => {
         const invalidKey = new Map() as COSEPublicKey;
         invalidKey.set(COSEKeyParam.kty, 999 as COSEKeyType);
 
-        expect(() => KeyMapper.COSEPublicKeyToJWKPublicKey(invalidKey)).toThrow(
+        expect(() => COSEPublicKeyToJWKPublicKey(invalidKey)).toThrow(
           UnsupportedKeyType,
         );
       });
@@ -266,7 +267,7 @@ describe('KeyMapper', () => {
       test('should throw UnsupportedKeyType for undefined key type', () => {
         const invalidKey = new Map() as COSEPublicKey;
 
-        expect(() => KeyMapper.COSEPublicKeyToJWKPublicKey(invalidKey)).toThrow(
+        expect(() => COSEPublicKeyToJWKPublicKey(invalidKey)).toThrow(
           UnsupportedKeyType,
         );
       });
@@ -277,7 +278,7 @@ describe('KeyMapper', () => {
     describe('EC Keys', () => {
       test('should convert EC P-256 JWK to COSE key', () => {
         const jwk = createECJWK();
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+        const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
         expect(coseKey.get(COSEKeyParam.kty)).toBe(COSEKeyType.EC);
         expect((coseKey as COSEPublicKeyEC).get(COSEKeyTypeParam.crv)).toBe(
@@ -293,7 +294,7 @@ describe('KeyMapper', () => {
 
       test('should convert EC P-384 JWK to COSE key', () => {
         const jwk = createECJWK({ crv: 'P-384' });
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+        const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
         expect((coseKey as COSEPublicKeyEC).get(COSEKeyTypeParam.crv)).toBe(
           COSEKeyCurveName['P-384'],
@@ -302,7 +303,7 @@ describe('KeyMapper', () => {
 
       test('should convert EC P-521 JWK to COSE key', () => {
         const jwk = createECJWK({ crv: 'P-521' });
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+        const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
         expect((coseKey as COSEPublicKeyEC).get(COSEKeyTypeParam.crv)).toBe(
           COSEKeyCurveName['P-521'],
@@ -311,7 +312,7 @@ describe('KeyMapper', () => {
 
       test('should set algorithm parameter when provided', () => {
         const jwk = createECJWK();
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(
+        const coseKey = JWKPublicKeyToCOSEPublicKey(
           jwk,
           COSEKeyAlgorithm.ES256,
         );
@@ -321,7 +322,7 @@ describe('KeyMapper', () => {
 
       test('should not set algorithm parameter when not provided', () => {
         const jwk = createECJWK();
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+        const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
         expect(coseKey.get(COSEKeyParam.alg)).toBeUndefined();
       });
@@ -330,7 +331,7 @@ describe('KeyMapper', () => {
     describe('RSA Keys', () => {
       test('should convert RSA JWK to COSE key', () => {
         const jwk = createRSAJWK();
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+        const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
         expect(coseKey.get(COSEKeyParam.kty)).toBe(COSEKeyType.RSA);
         expect(
@@ -343,7 +344,7 @@ describe('KeyMapper', () => {
 
       test('should set algorithm parameter for RSA keys when provided', () => {
         const jwk = createRSAJWK();
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(
+        const coseKey = JWKPublicKeyToCOSEPublicKey(
           jwk,
           COSEKeyAlgorithm.RS256,
         );
@@ -355,7 +356,7 @@ describe('KeyMapper', () => {
     describe('OKP Keys', () => {
       test('should convert OKP Ed25519 JWK to COSE key', () => {
         const jwk = createOKPJWK();
-        const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+        const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
         expect(coseKey.get(COSEKeyParam.kty)).toBe(COSEKeyType.OKP);
         expect((coseKey as COSEPublicKeyOKP).get(COSEKeyTypeParam.crv)).toBe(
@@ -373,7 +374,7 @@ describe('KeyMapper', () => {
           kty: 'unknown' as string,
         };
 
-        expect(() => KeyMapper.JWKPublicKeyToCOSEPublicKey(invalidJWK)).toThrow(
+        expect(() => JWKPublicKeyToCOSEPublicKey(invalidJWK)).toThrow(
           UnsupportedKeyType,
         );
       });
@@ -381,7 +382,7 @@ describe('KeyMapper', () => {
       test('should throw UnsupportedKeyType for undefined key type', () => {
         const invalidJWK: JsonWebKey = {};
 
-        expect(() => KeyMapper.JWKPublicKeyToCOSEPublicKey(invalidJWK)).toThrow(
+        expect(() => JWKPublicKeyToCOSEPublicKey(invalidJWK)).toThrow(
           UnsupportedKeyType,
         );
       });
@@ -391,8 +392,8 @@ describe('KeyMapper', () => {
   describe('Bidirectional conversion consistency', () => {
     test('EC key should survive round-trip conversion', () => {
       const originalCoseKey = createECPublicKey();
-      const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(originalCoseKey);
-      const convertedCoseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+      const jwk = COSEPublicKeyToJWKPublicKey(originalCoseKey);
+      const convertedCoseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
       expect(convertedCoseKey.get(COSEKeyParam.kty)).toBe(
         originalCoseKey.get(COSEKeyParam.kty),
@@ -414,8 +415,8 @@ describe('KeyMapper', () => {
 
     test('EC JWK should survive round-trip conversion', () => {
       const originalJWK = createECJWK();
-      const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(originalJWK);
-      const convertedJWK = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+      const coseKey = JWKPublicKeyToCOSEPublicKey(originalJWK);
+      const convertedJWK = COSEPublicKeyToJWKPublicKey(coseKey);
 
       expect(convertedJWK.kty).toBe(originalJWK.kty);
       expect(convertedJWK.crv).toBe(originalJWK.crv);
@@ -425,8 +426,8 @@ describe('KeyMapper', () => {
 
     test('RSA JWK should survive round-trip conversion', () => {
       const originalJWK = createRSAJWK();
-      const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(originalJWK);
-      const convertedJWK = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+      const coseKey = JWKPublicKeyToCOSEPublicKey(originalJWK);
+      const convertedJWK = COSEPublicKeyToJWKPublicKey(coseKey);
 
       expect(convertedJWK.n).toBe(originalJWK.n);
       expect(convertedJWK.e).toBe(originalJWK.e);
@@ -434,8 +435,8 @@ describe('KeyMapper', () => {
 
     test('OKP JWK should survive round-trip conversion', () => {
       const originalJWK = createOKPJWK();
-      const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(originalJWK);
-      const convertedJWK = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+      const coseKey = JWKPublicKeyToCOSEPublicKey(originalJWK);
+      const convertedJWK = COSEPublicKeyToJWKPublicKey(coseKey);
 
       expect(convertedJWK.crv).toBe(originalJWK.crv);
       expect(convertedJWK.x).toBe(originalJWK.x);
@@ -449,7 +450,7 @@ describe('KeyMapper', () => {
       coseKey.set(COSEKeyTypeParam.crv, COSEKeyCurveName['P-256']);
       // x and y not set
 
-      const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+      const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
       expect(jwk.kty).toBe('EC');
       expect(jwk.x).toBeUndefined();
@@ -461,7 +462,7 @@ describe('KeyMapper', () => {
       coseKey.set(COSEKeyParam.kty, COSEKeyType.RSA);
       // n and e not set
 
-      const jwk = KeyMapper.COSEPublicKeyToJWKPublicKey(coseKey);
+      const jwk = COSEPublicKeyToJWKPublicKey(coseKey);
 
       expect(jwk.n).toBeUndefined();
       expect(jwk.e).toBeUndefined();
@@ -474,7 +475,7 @@ describe('KeyMapper', () => {
         // x and y not set
       };
 
-      const coseKey = KeyMapper.JWKPublicKeyToCOSEPublicKey(jwk);
+      const coseKey = JWKPublicKeyToCOSEPublicKey(jwk);
 
       expect(coseKey.get(COSEKeyParam.kty)).toBe(COSEKeyType.EC);
       expect(

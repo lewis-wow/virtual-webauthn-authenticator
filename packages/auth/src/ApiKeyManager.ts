@@ -1,6 +1,6 @@
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import type { PaginationResult } from '@repo/pagination/zod-validation';
+import type { PaginationResult } from '@repo/pagination/validation';
 import { Prisma, type PrismaClient } from '@repo/prisma';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
@@ -11,7 +11,7 @@ import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFaile
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
 import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
 import { ApiKeyRevokeFailed } from './exceptions/ApiKeyRevokeFailed';
-import type { ApiKey } from './zod-validation/ApiKeySchema';
+import type { ApiKey } from './validation/ApiKeySchema';
 
 const LOG_PREFIX = 'API_KEY';
 const log = new Logger({

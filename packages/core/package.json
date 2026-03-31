@@ -5,7 +5,7 @@
   "type": "module",
   "exports": {
     "./mappers": "./src/mappers/index.ts",
-    "./zod-validation": "./src/zod-validation/index.ts",
+    "./validation": "./src/validation/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {

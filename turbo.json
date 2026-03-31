@@ -22,7 +22,7 @@
     "@repo/keys#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["src/validation/index.ts", "src/zod-validation/index.ts"]
+      "outputs": ["src/validation/index.ts"]
     },
     "@repo/virtual-authenticator#build": {
       "dependsOn": ["^build"],

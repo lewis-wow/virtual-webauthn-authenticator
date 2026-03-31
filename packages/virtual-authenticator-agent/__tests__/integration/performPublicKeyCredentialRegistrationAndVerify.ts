@@ -4,8 +4,7 @@ import {
   VIRTUAL_AUTHENTICATOR_ID,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
-import { UUIDMapper } from '@repo/core/mappers';
-import { toB64 } from '@repo/utils';
+import { bytesToUuid, toBase64Url } from '@repo/utils';
 import { decodeAttestationObject } from '@repo/virtual-authenticator/cbor';
 import { parseAuthenticatorData } from '@repo/virtual-authenticator/cbor';
 import { PublicKeyCredentialDtoSchema } from '@repo/virtual-authenticator/dto';
@@ -115,7 +114,9 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
     response: PublicKeyCredentialDtoSchema.encode(
       publicKeyCredential,
     ) as RegistrationResponseJSON,
-    expectedChallenge: toB64(publicKeyCredentialCreationOptions.challenge),
+    expectedChallenge: toBase64Url(
+      publicKeyCredentialCreationOptions.challenge,
+    ),
     expectedOrigin: meta.origin,
     expectedRPID,
     requireUserVerification:
@@ -145,7 +146,7 @@ export const performPublicKeyCredentialRegistrationAndVerify = async (
 
   expect(registrationVerification.registrationInfo!.credential).toBeDefined();
 
-  const credentialUuid = UUIDMapper.bytesToUUID(publicKeyCredential.rawId);
+  const credentialUuid = bytesToUuid(publicKeyCredential.rawId);
 
   return {
     webAuthnCredential: registrationVerification.registrationInfo!.credential,

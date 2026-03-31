@@ -1,12 +1,12 @@
 import { Pagination } from '@repo/pagination';
 import { OrderByDirection } from '@repo/pagination/enums';
-import type { PaginationResult } from '@repo/pagination/zod-validation';
+import type { PaginationResult } from '@repo/pagination/validation';
 import { PrismaClient, Prisma } from '@repo/prisma';
 import type { MakeNullableOptional, TypedEventEmitter } from '@repo/types';
 import type EventEmitter from 'node:events';
 
 import type { LogOrderByKeys } from './enums/LogOrderByKeys';
-import type { Log } from './zod-validation/LogSchema';
+import type { Log } from './validation/LogSchema';
 
 const DEFAULT_HISTORY_LIMIT = 20;
 const DEFAULT_SORT_ORDER = OrderByDirection.DESC;

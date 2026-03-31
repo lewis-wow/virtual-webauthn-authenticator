@@ -20,7 +20,6 @@ import {
 import { unreachable } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
-import { UUIDMapper } from '@repo/core/mappers';
 import {
   Jwks,
   Jwt,
@@ -30,6 +29,7 @@ import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
+import { bytesToUuid, uuidToBytes } from '@repo/utils';
 import { AuthorizationGesture } from '@repo/virtual-authenticator';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import { AttestationHandlerRegistry } from '@repo/virtual-authenticator';
@@ -1167,9 +1167,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
      * Per spec: If credential exists for this RP and is in excludeCredentials, throw error
      */
     test('Should allow creation when excludeCredentials has non-matching UUIDs', async () => {
-      const nonExistentId = UUIDMapper.UUIDtoBytes(
-        '00000000-0000-0000-0000-000000000000',
-      );
+      const nonExistentId = uuidToBytes('00000000-0000-0000-0000-000000000000');
 
       const publicKeyCredentialCreationOptions = {
         ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
@@ -2270,8 +2268,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
       expect(firstCredential.rawId).not.toEqual(secondCredential.rawId);
 
       // Verify both credentials exist in database using the repository's existsByRpIdAndCredentialIds method
-      const firstCredentialId = UUIDMapper.bytesToUUID(firstCredential.rawId);
-      const secondCredentialId = UUIDMapper.bytesToUUID(secondCredential.rawId);
+      const firstCredentialId = bytesToUuid(firstCredential.rawId);
+      const secondCredentialId = bytesToUuid(secondCredential.rawId);
 
       const firstExists =
         await webAuthnPublicKeyCredentialRepository.findAllByRpIdAndCredentialIds(

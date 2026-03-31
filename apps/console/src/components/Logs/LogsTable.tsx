@@ -1,6 +1,6 @@
 'use client';
 
-import type { Log } from '@repo/activity-log/zod-validation';
+import type { Log } from '@repo/activity-log/validation';
 import { DataTable } from '@repo/ui/components/DataTable';
 import type {
   ColumnDef,

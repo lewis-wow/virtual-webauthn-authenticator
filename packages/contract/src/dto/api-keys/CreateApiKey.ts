@@ -1,5 +1,5 @@
-import { ApiKeySchema } from '@repo/auth/zod-validation';
-import { DurationSchema } from '@repo/core/zod-validation';
+import { ApiKeySchema } from '@repo/auth/validation';
+import { DurationSchema } from '@repo/core/validation';
 import z from 'zod';
 
 import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';

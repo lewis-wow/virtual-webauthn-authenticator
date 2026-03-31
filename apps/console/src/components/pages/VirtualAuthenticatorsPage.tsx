@@ -130,6 +130,7 @@ export const VirtualAuthenticatorsPage = () => {
                       name="pin"
                       label="PIN"
                       placeholder="Enter a PIN (min 4 characters)"
+                      autoComplete="off"
                       required
                       className="w-full"
                     />
