@@ -1,7 +1,7 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { Permission, TokenType } from '@repo/auth/enums';
+import { Permission } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
   CreateCredentialResponseSchema,
@@ -10,7 +10,6 @@ import {
 import { nestjsContract } from '@repo/contract/nestjs';
 import { UUIDMapper } from '@repo/core/mappers';
 import { Jwks, Jwt } from '@repo/crypto';
-import { Forbidden } from '@repo/exception/http';
 import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
@@ -27,6 +26,8 @@ import { NoActiveVirtualAuthenticator } from '../exceptions/NoActiveVirtualAuthe
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
+import { auditLog } from '../utils/AuditLog';
+import { requirePermission } from '../utils/PermissionCheck';
 
 @Controller()
 @UseFilters(ExceptionFilter)
@@ -41,6 +42,36 @@ export class CredentialsController {
   ) {}
 
   /**
+   * Validates that a user exists and has an active virtual authenticator.
+   * @param userId - The ID of the user to validate
+   * @returns The active virtual authenticator for the user
+   * @throws UserNotExists if the user doesn't exist
+   * @throws NoActiveVirtualAuthenticator if no active authenticator exists for the user
+   */
+  private async _validateUserAndGetActiveAuthenticator(
+    userId: string,
+  ): Promise<any> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UserNotExists();
+    }
+
+    const activeVirtualAuthenticator =
+      await this.prisma.virtualAuthenticator.findFirst({
+        where: { userId, isActive: true },
+      });
+
+    if (!activeVirtualAuthenticator) {
+      throw new NoActiveVirtualAuthenticator();
+    }
+
+    return activeVirtualAuthenticator;
+  }
+
+  /**
    * Logs a credential audit event.
    * @param action - The action performed (CREATE or GET)
    * @param credentialRawId - The raw ID of the credential
@@ -53,15 +84,12 @@ export class CredentialsController {
   }): Promise<void> {
     const { action, publicKeyCredentialRawId, jwtPayload } = opts;
 
-    await this.activityLog.audit({
+    await auditLog({
+      activityLog: this.activityLog,
       action,
       entity: LogEntity.CREDENTIAL,
       entityId: UUIDMapper.bytesToUUID(publicKeyCredentialRawId),
-      apiKeyId:
-        jwtPayload.tokenType === TokenType.API_KEY
-          ? jwtPayload.apiKeyId
-          : undefined,
-      userId: jwtPayload.userId,
+      jwtPayload,
     });
   }
 
@@ -79,26 +107,10 @@ export class CredentialsController {
           nextState,
         } = body;
 
-        if (!permissions.includes(Permission['CREDENTIAL.CREATE'])) {
-          throw new Forbidden();
-        }
-
-        const user = await this.prisma.user.findUnique({
-          where: { id: userId },
-        });
-
-        if (!user) {
-          throw new UserNotExists();
-        }
+        requirePermission(permissions, Permission['CREDENTIAL.CREATE']);
 
         const activeVirtualAuthenticator =
-          await this.prisma.virtualAuthenticator.findFirst({
-            where: { userId, isActive: true },
-          });
-
-        if (!activeVirtualAuthenticator) {
-          throw new NoActiveVirtualAuthenticator();
-        }
+          await this._validateUserAndGetActiveAuthenticator(userId);
 
         const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
           id: UUIDMapper.UUIDtoBytes(userId),
@@ -172,26 +184,10 @@ export class CredentialsController {
         } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['CREDENTIAL.GET'])) {
-          throw new Forbidden();
-        }
-
-        const user = await this.prisma.user.findUnique({
-          where: { id: userId },
-        });
-
-        if (!user) {
-          throw new UserNotExists();
-        }
+        requirePermission(permissions, Permission['CREDENTIAL.GET']);
 
         const activeVirtualAuthenticator =
-          await this.prisma.virtualAuthenticator.findFirst({
-            where: { userId, isActive: true },
-          });
-
-        if (!activeVirtualAuthenticator) {
-          throw new NoActiveVirtualAuthenticator();
-        }
+          await this._validateUserAndGetActiveAuthenticator(userId);
 
         this.logger.debug('Getting credential', {
           userId: userId,

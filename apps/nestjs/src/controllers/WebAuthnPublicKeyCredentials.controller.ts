@@ -2,7 +2,7 @@ import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { Permission, TokenType } from '@repo/auth/enums';
+import { Permission } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
   DeleteWebAuthnPublicKeyCredentialResponseSchema,
@@ -10,12 +10,10 @@ import {
   ListWebAuthnPublicKeyCredentialsResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { Forbidden } from '@repo/exception/http';
 import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import { Prisma, WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
-import { PrismaErrorCode } from '@repo/prisma/enums';
+import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
 import { WebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
@@ -25,6 +23,9 @@ import { WebAuthnPublicKeyCredentialNotFound } from '../exceptions/WebAuthnPubli
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
+import { auditLog } from '../utils/AuditLog';
+import { requirePermission } from '../utils/PermissionCheck';
+import { handlePrismaNotFoundError } from '../utils/PrismaErrorHandler';
 
 @Controller()
 @UseFilters(ExceptionFilter)
@@ -44,13 +45,10 @@ export class WebAuthnPublicKeyCredentialsController {
       async ({ query }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (
-          !permissions.includes(
-            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
-          )
-        ) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+        );
 
         const pagination = new Pagination(async ({ pagination }) => {
           const webAuthnPublicKeyCredentials =
@@ -92,13 +90,10 @@ export class WebAuthnPublicKeyCredentialsController {
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (
-          !permissions.includes(
-            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
-          )
-        ) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+        );
 
         const webAuthnPublicKeyCredential =
           await this.prisma.webAuthnPublicKeyCredential.findUnique({
@@ -133,13 +128,10 @@ export class WebAuthnPublicKeyCredentialsController {
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (
-          !permissions.includes(
-            Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.DELETE'],
-          )
-        ) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.DELETE'],
+        );
 
         let webAuthnPublicKeyCredential;
         try {
@@ -154,13 +146,10 @@ export class WebAuthnPublicKeyCredentialsController {
               },
             });
         } catch (error) {
-          if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === PrismaErrorCode.RECORDS_NOT_FOUND) {
-              throw new WebAuthnPublicKeyCredentialNotFound();
-            }
-          }
-
-          // Handle other errors (db connection issues, etc.)
+          handlePrismaNotFoundError({
+            error,
+            notFoundException: new WebAuthnPublicKeyCredentialNotFound(),
+          });
           throw error;
         }
 
@@ -181,15 +170,11 @@ export class WebAuthnPublicKeyCredentialsController {
           await pollOperation.pollUntilDone();
         }
 
-        await this.activityLog.audit({
+        await auditLog({
+          activityLog: this.activityLog,
           action: LogAction.DELETE,
           entity: LogEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL,
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          jwtPayload,
         });
 
         return {

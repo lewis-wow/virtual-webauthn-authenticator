@@ -1,7 +1,7 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { Permission, TokenType } from '@repo/auth/enums';
+import { Permission } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/zod-validation';
 import {
   CreateVirtualAuthenticatorResponseSchema,
@@ -10,12 +10,9 @@ import {
   UpdateVirtualAuthenticatorResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { Forbidden } from '@repo/exception/http';
 import { HttpStatusCode } from '@repo/http';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
-import { Prisma } from '@repo/prisma';
-import { PrismaErrorCode } from '@repo/prisma/enums';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';
@@ -23,6 +20,9 @@ import { VirtualAuthenticatorNotFound } from '../exceptions/VirtualAuthenticator
 import { ExceptionFilter } from '../filters/Exception.filter';
 import { AuthenticatedGuard } from '../guards/Authenticated.guard';
 import { PrismaService } from '../services/Prisma.service';
+import { auditLog } from '../utils/AuditLog';
+import { requirePermission } from '../utils/PermissionCheck';
+import { handlePrismaNotFoundError } from '../utils/PrismaErrorHandler';
 
 @Controller()
 @UseFilters(ExceptionFilter)
@@ -41,9 +41,10 @@ export class VirtualAuthenticatorsController {
       async ({ body }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['VIRTUAL_AUTHENTICATOR.CREATE'])) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['VIRTUAL_AUTHENTICATOR.CREATE'],
+        );
 
         const virtualAuthenticator =
           await this.prisma.virtualAuthenticator.create({
@@ -59,15 +60,11 @@ export class VirtualAuthenticatorsController {
           userId,
         });
 
-        await this.activityLog.audit({
+        await auditLog({
+          activityLog: this.activityLog,
           action: LogAction.CREATE,
           entity: LogEntity.VIRTUAL_AUTHENTICATOR,
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          jwtPayload,
         });
 
         return {
@@ -88,9 +85,10 @@ export class VirtualAuthenticatorsController {
       async ({ query }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['VIRTUAL_AUTHENTICATOR.READ'])) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['VIRTUAL_AUTHENTICATOR.READ'],
+        );
 
         const pagination = new Pagination(async ({ pagination }) => {
           return this.prisma.virtualAuthenticator.findMany({
@@ -124,9 +122,10 @@ export class VirtualAuthenticatorsController {
       async ({ params, body }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['VIRTUAL_AUTHENTICATOR.WRITE'])) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['VIRTUAL_AUTHENTICATOR.WRITE'],
+        );
 
         let virtualAuthenticator;
         try {
@@ -152,12 +151,10 @@ export class VirtualAuthenticatorsController {
             });
           });
         } catch (error) {
-          if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === PrismaErrorCode.RECORDS_NOT_FOUND) {
-              throw new VirtualAuthenticatorNotFound();
-            }
-          }
-
+          handlePrismaNotFoundError({
+            error,
+            notFoundException: new VirtualAuthenticatorNotFound(),
+          });
           throw error;
         }
 
@@ -166,15 +163,11 @@ export class VirtualAuthenticatorsController {
           userId,
         });
 
-        await this.activityLog.audit({
+        await auditLog({
+          activityLog: this.activityLog,
           action: LogAction.UPDATE,
           entity: LogEntity.VIRTUAL_AUTHENTICATOR,
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          jwtPayload,
         });
 
         return {
@@ -195,9 +188,10 @@ export class VirtualAuthenticatorsController {
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
-        if (!permissions.includes(Permission['VIRTUAL_AUTHENTICATOR.DELETE'])) {
-          throw new Forbidden();
-        }
+        requirePermission(
+          permissions,
+          Permission['VIRTUAL_AUTHENTICATOR.DELETE'],
+        );
 
         let virtualAuthenticator;
         try {
@@ -208,12 +202,10 @@ export class VirtualAuthenticatorsController {
             },
           });
         } catch (error) {
-          if (error instanceof Prisma.PrismaClientKnownRequestError) {
-            if (error.code === PrismaErrorCode.RECORDS_NOT_FOUND) {
-              throw new VirtualAuthenticatorNotFound();
-            }
-          }
-
+          handlePrismaNotFoundError({
+            error,
+            notFoundException: new VirtualAuthenticatorNotFound(),
+          });
           throw error;
         }
 
@@ -222,15 +214,11 @@ export class VirtualAuthenticatorsController {
           userId,
         });
 
-        await this.activityLog.audit({
+        await auditLog({
+          activityLog: this.activityLog,
           action: LogAction.DELETE,
           entity: LogEntity.VIRTUAL_AUTHENTICATOR,
-
-          apiKeyId:
-            jwtPayload.tokenType === TokenType.API_KEY
-              ? jwtPayload.apiKeyId
-              : undefined,
-          userId: jwtPayload.userId,
+          jwtPayload,
         });
 
         return {

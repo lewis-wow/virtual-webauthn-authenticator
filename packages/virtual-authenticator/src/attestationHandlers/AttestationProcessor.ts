@@ -1,3 +1,4 @@
+import { UnsupportedAttestationFormat } from '../exceptions';
 import type { AttestationHandlerRegistry } from './AttestationHandlerRegistry';
 
 export type ProcessArgs = {
@@ -15,7 +16,7 @@ export class AttestationProcessor {
     const attestationHandler = this.registry.get(attestationFormat);
 
     if (!attestationHandler) {
-      throw new Error('Unsupported attestation format is used.');
+      throw new UnsupportedAttestationFormat();
     }
 
     return attestationHandler.createAttestation(data);
