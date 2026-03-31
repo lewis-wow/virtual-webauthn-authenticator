@@ -1,9 +1,3 @@
-import { describe, expect, test } from 'vitest';
-
-import {
-  arrayBufferToBase64url,
-  base64urlToArrayBuffer,
-} from '../../../../src/browser/helpers/encodingConversion.js';
 import {
   fromBase64,
   fromBase64Url,
@@ -12,6 +6,12 @@ import {
   toBase64Url,
   toHex,
 } from '@repo/utils';
+import { describe, expect, test } from 'vitest';
+
+import {
+  arrayBufferToBase64url,
+  base64urlToArrayBuffer,
+} from '../../../../src/browser/helpers/encodingConversion.js';
 
 describe('encodingConversion', () => {
   describe('arrayBufferToBase64url', () => {
