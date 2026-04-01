@@ -4,7 +4,7 @@ import {
   USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { set, WRONG_UUID } from '@repo/core/__tests__/helpers';
+import { set, WRONG_UUID } from '@repo/test-utils';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,

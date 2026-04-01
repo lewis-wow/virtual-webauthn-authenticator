@@ -29,6 +29,7 @@
     "@repo/auth": "workspace:*",
     "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/test-utils": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",

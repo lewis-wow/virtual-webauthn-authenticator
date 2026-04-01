@@ -573,6 +573,9 @@ importers:
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
+      '@repo/test-utils':
+        specifier: workspace:*
+        version: link:../../packages/test-utils
       '@repo/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -1827,6 +1830,28 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
 
+  packages/test-utils:
+    dependencies:
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.23
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/lodash-es':
+        specifier: ^4.17.12
+        version: 4.17.12
+      type-fest:
+        specifier: ^5.0.1
+        version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+
   packages/types:
     devDependencies:
       '@azure/keyvault-keys':
@@ -2183,6 +2208,9 @@ importers:
       '@repo/prisma':
         specifier: workspace:*
         version: link:../prisma
+      '@repo/test-utils':
+        specifier: workspace:*
+        version: link:../test-utils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config

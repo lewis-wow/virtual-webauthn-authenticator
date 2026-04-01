@@ -5,7 +5,7 @@ import {
   upsertTestingUser,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { WRONG_UUID } from '@repo/core/__tests__/helpers';
+import { WRONG_UUID } from '@repo/test-utils';
 import {
   upsertTestingVirtualAuthenticator,
   upsertTestingWebAuthnPublicKeyCredential,

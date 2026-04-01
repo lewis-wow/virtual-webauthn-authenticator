@@ -3,7 +3,7 @@ import {
   USER_ID,
   USER_NAME,
 } from '@repo/auth/__tests__/helpers';
-import { set } from '@repo/core/__tests__/helpers';
+import { set } from '@repo/test-utils';
 // import { mock } from 'vitest-mock-extended'; // Remove mock if unused
 import { InMemoryJwksRepository } from '@repo/virtual-authenticator/__tests__/helpers';
 import { KeyVaultKeyIdGenerator } from '@repo/virtual-authenticator/__tests__/helpers';
