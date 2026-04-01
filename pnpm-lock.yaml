@@ -1308,6 +1308,21 @@ importers:
         specifier: ^5.5.4
         version: 5.9.2
 
+  packages/enums:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+
   packages/env-config:
     dependencies:
       '@t3-oss/env-core':
