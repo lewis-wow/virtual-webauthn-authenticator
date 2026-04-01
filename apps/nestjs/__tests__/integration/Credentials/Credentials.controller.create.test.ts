@@ -4,7 +4,6 @@ import {
   USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { set, WRONG_UUID } from '@repo/test-utils';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -18,6 +17,7 @@ import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { set, WRONG_UUID } from '@repo/test-utils';
 import {
   UserPresenceRequiredAgentException,
   UserVerificationRequiredAgentException,

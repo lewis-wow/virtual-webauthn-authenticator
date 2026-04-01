@@ -3,7 +3,6 @@ import {
   USER_ID,
   USER_NAME,
 } from '@repo/auth/__tests__/helpers';
-import { set } from '@repo/test-utils';
 // import { mock } from 'vitest-mock-extended'; // Remove mock if unused
 import { InMemoryJwksRepository } from '@repo/virtual-authenticator/__tests__/helpers';
 import { KeyVaultKeyIdGenerator } from '@repo/virtual-authenticator/__tests__/helpers';
@@ -28,6 +27,7 @@ import {
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
+import { set } from '@repo/test-utils';
 import type { Uint8Array_ } from '@repo/types';
 import { bytesToUuid, uuidToBytes } from '@repo/utils';
 import { AuthorizationGesture } from '@repo/virtual-authenticator';

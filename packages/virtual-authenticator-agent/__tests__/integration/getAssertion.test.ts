@@ -1,5 +1,4 @@
 import { upsertTestingUser, USER_ID } from '@repo/auth/__tests__/helpers';
-import { set } from '@repo/test-utils';
 import { InMemoryJwksRepository } from '@repo/virtual-authenticator/__tests__/helpers';
 import { KeyVaultKeyIdGenerator } from '@repo/virtual-authenticator/__tests__/helpers';
 import { MockKeyProvider } from '@repo/virtual-authenticator/__tests__/helpers';
@@ -20,6 +19,7 @@ import {
   JwsSignatureVerificationFailedException,
 } from '@repo/crypto';
 import { PrismaClient } from '@repo/prisma';
+import { set } from '@repo/test-utils';
 import type { Uint8Array_ } from '@repo/types';
 import { uuidToBytes } from '@repo/utils';
 import { AuthorizationGesture } from '@repo/virtual-authenticator';

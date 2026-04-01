@@ -4,7 +4,6 @@ import {
   USER_ID,
   USER_JWT_PAYLOAD,
 } from '@repo/auth/__tests__/helpers';
-import { set } from '@repo/test-utils';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -20,6 +19,7 @@ import {
 } from '@repo/contract/dto';
 import { HttpStatusCode } from '@repo/http';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
+import { set } from '@repo/test-utils';
 import {
   CredentialSelectAgentException,
   UserPresenceRequiredAgentException,
