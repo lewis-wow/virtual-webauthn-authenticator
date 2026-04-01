@@ -8,14 +8,14 @@ import { getBaseUrl } from './getBaseUrl';
 
 const c = initContract();
 
-export const $apiContract = c.router({
+const apiContract = c.router({
   api: {
     ...nestjsContract.api,
     ...authServerContract.api,
   },
 });
 
-export const $api = initTsrReactQuery($apiContract, {
+export const $api = initTsrReactQuery(apiContract, {
   baseUrl: getBaseUrl(),
   baseHeaders: {
     'X-Auth-Type': AuthType.SESSION,
