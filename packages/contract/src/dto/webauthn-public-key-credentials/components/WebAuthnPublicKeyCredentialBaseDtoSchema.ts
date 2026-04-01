@@ -1,5 +1,5 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
-import { DateSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
+import { DateSchemaCodec } from '@repo/validation';
 import { WebAuthnPublicKeyCredentialBaseSchema } from '@repo/virtual-authenticator/validation';
 
 export const WebAuthnPublicKeyCredentialBaseDtoSchema =

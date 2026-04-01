@@ -77,9 +77,6 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@repo/dependency-container':
         specifier: workspace:*
         version: link:../../packages/dependency-container
@@ -180,9 +177,6 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@repo/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
@@ -313,9 +307,6 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@repo/dependency-container':
         specifier: workspace:*
         version: link:../../packages/dependency-container
@@ -340,6 +331,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../../packages/validation
       '@tanstack/react-query':
         specifier: ^5.90.5
         version: 5.90.5(react@19.1.0)
@@ -497,9 +491,6 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@repo/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
@@ -663,9 +654,6 @@ importers:
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../../packages/core
       '@repo/env-config':
         specifier: workspace:*
         version: link:../../packages/env-config
@@ -1031,9 +1019,6 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1126,9 +1111,6 @@ importers:
       '@repo/auth':
         specifier: workspace:*
         version: link:../auth
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/http':
         specifier: workspace:*
         version: link:../http
@@ -1138,6 +1120,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
@@ -1193,52 +1178,6 @@ importers:
       zod-to-ts:
         specifier: ^2.0.0
         version: 2.0.0(typescript@5.9.2)(zod@4.1.12)
-
-  packages/core:
-    dependencies:
-      '@repo/assert':
-        specifier: workspace:*
-        version: link:../assert
-      '@repo/enums':
-        specifier: workspace:*
-        version: link:../enums
-      '@repo/utils':
-        specifier: workspace:*
-        version: link:../utils
-      buffer:
-        specifier: ^6.0.3
-        version: 6.0.3
-      zod:
-        specifier: ^4.1.12
-        version: 4.1.12
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../eslint-config
-      '@repo/types':
-        specifier: workspace:*
-        version: link:../types
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
-      '@types/lodash-es':
-        specifier: ^4.17.12
-        version: 4.17.12
-      '@types/node':
-        specifier: ^22.5.2
-        version: 22.15.3
-      jose:
-        specifier: ^6.1.0
-        version: 6.1.0
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.23
-      type-fest:
-        specifier: ^5.0.1
-        version: 5.0.1
-      typescript:
-        specifier: ^5.5.4
-        version: 5.9.2
 
   packages/crypto:
     dependencies:
@@ -1481,9 +1420,6 @@ importers:
         specifier: ^1.0.11
         version: 1.0.11
     devDependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1551,9 +1487,6 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
     devDependencies:
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -1677,9 +1610,6 @@ importers:
       '@mermaid-js/mermaid-cli':
         specifier: ^11.12.0
         version: 11.12.0(@babel/core@7.28.5)(@babel/template@7.27.2)(@types/react@19.2.2)(puppeteer@24.38.0(typescript@5.9.2))(tsx@4.20.6)(yaml@2.8.1)
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
@@ -2072,6 +2002,28 @@ importers:
         specifier: ^4.1.12
         version: 4.1.12
 
+  packages/validation:
+    dependencies:
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+
   packages/virtual-authenticator:
     dependencies:
       '@repo/assert':
@@ -2080,9 +2032,6 @@ importers:
       '@repo/cbor':
         specifier: workspace:*
         version: link:../cbor
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto
@@ -2104,6 +2053,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
@@ -2165,9 +2117,6 @@ importers:
       '@repo/cbor':
         specifier: workspace:*
         version: link:../cbor
-      '@repo/core':
-        specifier: workspace:*
-        version: link:../core
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto
@@ -2186,6 +2135,9 @@ importers:
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
+      '@repo/validation':
+        specifier: workspace:*
+        version: link:../validation
       '@repo/virtual-authenticator':
         specifier: workspace:*
         version: link:../virtual-authenticator
@@ -16025,8 +15977,8 @@ snapshots:
       '@typescript-eslint/parser': 8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2)
       eslint: 9.34.0(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.34.0(jiti@2.6.1))
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.34.0(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.34.0(jiti@2.6.1))
       eslint-plugin-react: 7.37.5(eslint@9.34.0(jiti@2.6.1))
       eslint-plugin-react-hooks: 5.2.0(eslint@9.34.0(jiti@2.6.1))
@@ -16049,7 +16001,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.34.0(jiti@2.6.1)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.1(supports-color@10.2.2)
@@ -16060,22 +16012,22 @@ snapshots:
       tinyglobby: 0.2.15
       unrs-resolver: 1.11.1
     optionalDependencies:
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.34.0(jiti@2.6.1))
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.34.0(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2)
       eslint: 9.34.0(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.34.0(jiti@2.6.1))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1))
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1)(eslint@9.34.0(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -16086,7 +16038,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.34.0(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.34.0(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.40.0(eslint@9.34.0(jiti@2.6.1))(typescript@5.9.2))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1)))(eslint@9.34.0(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3

@@ -27,7 +27,6 @@
   },
   "devDependencies": {
     "@repo/auth": "workspace:*",
-    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/test-utils": "workspace:*",
     "@repo/prisma": "workspace:*",
@@ -45,13 +44,13 @@
   "dependencies": {
     "@repo/assert": "workspace:*",
     "@repo/cbor": "workspace:*",
-    "@repo/core": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/validation": "workspace:*",
     "@repo/virtual-authenticator": "workspace:*",
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",

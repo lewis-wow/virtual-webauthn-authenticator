@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
 import { AuthenticatorAttestationResponseSchema } from '@repo/virtual-authenticator/validation';
 
 export const AuthenticatorAttestationResponseDtoSchema =

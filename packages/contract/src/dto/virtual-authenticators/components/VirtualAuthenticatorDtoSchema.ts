@@ -1,4 +1,4 @@
-import { DateSchemaCodec } from '@repo/core/validation';
+import { DateSchemaCodec } from '@repo/validation';
 import { VirtualAuthenticatorUserVerificationTypeSchema } from '@repo/virtual-authenticator/validation';
 import z from 'zod';
 

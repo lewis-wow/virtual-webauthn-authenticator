@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
 
 import { AuthenticationExtensionsPRFValuesSchema } from '../../validation/spec/AuthenticationExtensionsPRFValuesSchema';
 

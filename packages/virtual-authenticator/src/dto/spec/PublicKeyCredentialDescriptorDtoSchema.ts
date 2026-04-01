@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
 import { PublicKeyCredentialDescriptorSchema } from '@repo/virtual-authenticator/validation';
 
 export const PublicKeyCredentialDescriptorDtoSchema =

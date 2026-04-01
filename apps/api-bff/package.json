@@ -14,7 +14,6 @@
     "@repo/auth": "workspace:*",
     "@repo/bff": "workspace:*",
     "@repo/contract": "workspace:*",
-    "@repo/core": "workspace:*",
     "@repo/dependency-container": "workspace:*",
     "@repo/env-config": "workspace:*",
     "@repo/exception": "workspace:*",

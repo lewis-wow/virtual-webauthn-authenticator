@@ -11,7 +11,6 @@ import {
   CreateApiKeyBodySchema,
   CreateApiKeyFormSchema,
 } from '@repo/contract/dto';
-import type { Duration } from '@repo/core/validation';
 import { useCursorPagination } from '@repo/pagination/hooks';
 // The new standalone table
 import { Button } from '@repo/ui/components/Button';
@@ -27,6 +26,7 @@ import {
   CardTitle,
 } from '@repo/ui/components/ui/card';
 import { Form } from '@repo/ui/components/ui/form';
+import type { Duration } from '@repo/validation';
 import { keepPreviousData } from '@tanstack/react-query';
 import { Key, Plus } from 'lucide-react';
 // Added 'Key' import

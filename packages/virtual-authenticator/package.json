@@ -43,7 +43,6 @@
   "dependencies": {
     "@repo/assert": "workspace:*",
     "@repo/cbor": "workspace:*",
-    "@repo/core": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
@@ -51,6 +50,7 @@
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/utils": "workspace:*",
+    "@repo/validation": "workspace:*",
     "buffer": "^6.0.3",
     "cbor2": "^2.0.1",
     "class-transformer": "^0.5.1",

@@ -15,7 +15,6 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/core": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",
