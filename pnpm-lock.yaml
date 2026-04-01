@@ -1196,6 +1196,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils
@@ -1304,6 +1307,21 @@ importers:
       type-fest:
         specifier: ^5.0.1
         version: 5.0.1
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
+
+  packages/enums:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: ^5.5.4
         version: 5.9.2
