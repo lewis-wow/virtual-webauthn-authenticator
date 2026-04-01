@@ -1196,6 +1196,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/enums':
+        specifier: workspace:*
+        version: link:../enums
       '@repo/utils':
         specifier: workspace:*
         version: link:../utils

@@ -27,6 +27,7 @@
     "buffer": "^6.0.3",
     "zod": "^4.1.12",
     "@repo/utils": "workspace:*",
+    "@repo/enums": "workspace:*",
     "@repo/assert": "workspace:*"
   }
 }
