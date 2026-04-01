@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
 
 import { AuthenticatorMakeCredentialResponseSchema } from '../validation/AuthenticatorMakeCredentialResponseSchema';
 

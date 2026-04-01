@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
 
 import { AuthenticationExtensionsLargeBlobInputsSchema } from '../../validation/spec/AuthenticationExtensionsLargeBlobInputsSchema';
 

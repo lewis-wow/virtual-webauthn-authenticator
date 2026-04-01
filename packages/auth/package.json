@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@hono/node-server": "^1.19.5",
-    "@repo/core": "workspace:*",
     "@repo/assert": "workspace:*",
     "@repo/pagination": "workspace:*",
     "@repo/eslint-config": "workspace:*",

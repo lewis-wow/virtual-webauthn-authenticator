@@ -1,4 +1,4 @@
-import { BytesSchemaCodec } from '@repo/core/validation';
+import { BytesSchemaCodec } from '@repo/validation';
 import z from 'zod';
 
 import { AuthenticatorGetAssertionArgsSchema } from '../validation/AuthenticatorGetAssertionArgsSchema';

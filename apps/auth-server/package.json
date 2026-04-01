@@ -15,7 +15,6 @@
     "@repo/auth": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/contract": "workspace:*",
-    "@repo/core": "workspace:*",
     "@repo/env-config": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/logger": "workspace:*",

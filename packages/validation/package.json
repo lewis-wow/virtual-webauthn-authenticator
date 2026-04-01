@@ -1,0 +1,23 @@
+{
+  "name": "@repo/validation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@repo/enums": "workspace:*",
+    "@repo/types": "workspace:*",
+    "zod": "^4.1.12"
+  }
+}
