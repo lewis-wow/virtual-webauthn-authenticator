@@ -1,0 +1,25 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "apps/api-bff/src/index.ts",
+    "apps/auth-server/src/index.ts",
+    "apps/nestjs/src/main.ts",
+    "apps/wxt/entrypoints/**/*.{ts,tsx}",
+    "apps/console/next.config.ts",
+    "apps/console/src/middleware.ts",
+    "apps/console/src/app/**/{page,layout,route}.{ts,tsx}"
+  ],
+  "project": ["apps/**/*.{ts,tsx,mts,cts}", "packages/**/*.{ts,tsx,mts,cts}"],
+  "ignore": [
+    "**/*.d.ts",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/__tests__/**",
+    "**/generated/**",
+    "**/dist/**",
+    "**/.next/**",
+    "**/.wxt/**",
+    "coverage/**"
+  ],
+  "ignoreBinaries": ["dotenvx"]
+}

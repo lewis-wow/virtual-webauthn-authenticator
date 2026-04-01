@@ -161,6 +161,15 @@ Available at `http://localhost:4000`.
 
 **Key Vault**: Uses [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/) (production) or [LowKey Vault](https://github.com/nagyesta/lowkey-vault) (development)
 
+### Find Dead Code
+
+```bash
+pnpm dead-code          # Unused files + exports
+pnpm dead-code:report   # Same report, always exits 0
+pnpm dead-code:files    # Unused files only
+pnpm dead-code:exports  # Unused exports only
+```
+
 ## Resources
 
 **Specifications:**
