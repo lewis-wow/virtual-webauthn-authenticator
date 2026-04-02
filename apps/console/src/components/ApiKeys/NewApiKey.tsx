@@ -2,10 +2,7 @@ import { Button } from '@repo/ui/components/Button';
 import { ClipboardCopyButton } from '@repo/ui/components/ClipboardCopyButton';
 import { cn } from '@repo/ui/lib/utils';
 import { Eye, EyeOff } from 'lucide-react';
-// Removed CopyIcon
 import { useState } from 'react';
-
-// Import the new component
 
 export type NewApiKeyProps = {
   plaintextKey?: string;
@@ -39,7 +36,6 @@ export const NewApiKey = ({
           </span>
         </p>
 
-        {/* Logic adjusted here */}
         {plaintextKey !== undefined ? (
           <div className="flex items-center gap-2">
             <code className="text-sm text-muted-foreground font-mono break-all">

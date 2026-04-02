@@ -38,7 +38,6 @@ export const VirtualAuthenticatorsPage = () => {
   const queryClient = $api.useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState<string | null>(null);
 
-  // --- Queries ---
   const listQuery = $api.api.virtualAuthenticators.list.useQuery({
     queryKey: ['api', 'virtualAuthenticators', 'list'],
     queryData: {
@@ -48,7 +47,6 @@ export const VirtualAuthenticatorsPage = () => {
     },
   });
 
-  // --- Mutations ---
   const createMutation = $api.api.virtualAuthenticators.create.useMutation({
     onSuccess: () => {
       form.reset({ pin: '' });
@@ -87,7 +85,6 @@ export const VirtualAuthenticatorsPage = () => {
     },
   });
 
-  // --- Form ---
   const form = useForm({
     resolver: zodResolver(CreateAuthenticatorFormSchema),
     defaultValues: {
@@ -95,13 +92,11 @@ export const VirtualAuthenticatorsPage = () => {
     },
   });
 
-  // --- Data ---
   const authenticators = (listQuery.data?.body?.data ??
     []) as VirtualAuthenticator[];
 
   return (
     <Page pageTitle="Virtual Authenticators">
-      {/* --- Create Section --- */}
       <Card>
         <CardHeader>
           <CardTitle>Create Virtual Authenticator</CardTitle>
@@ -149,7 +144,6 @@ export const VirtualAuthenticatorsPage = () => {
         </CardContent>
       </Card>
 
-      {/* --- Authenticators List --- */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">

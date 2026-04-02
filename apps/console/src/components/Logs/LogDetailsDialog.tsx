@@ -34,7 +34,6 @@ export const LogDetailsDialog = ({ log }: LogDetailsDialogProps) => {
       </DialogTrigger>
 
       <DialogContent className="max-w-lg" showCloseButton={false}>
-        {/* --- ADDED CLOSE BUTTON HERE --- */}
         <DialogClose asChild>
           <Button
             variant="ghost"
@@ -44,7 +43,6 @@ export const LogDetailsDialog = ({ log }: LogDetailsDialogProps) => {
             <span className="sr-only">Close</span>
           </Button>
         </DialogClose>
-        {/* ------------------------------- */}
 
         <DialogHeader>
           <DialogTitle>Event Details</DialogTitle>

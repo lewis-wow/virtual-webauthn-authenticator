@@ -23,21 +23,23 @@ import { Ban, Copy, MoreHorizontal, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-export interface ApiKeysTableProps {
+export type ApiKeysTableProps = {
   data: readonly ApiKey[];
   pagination: PaginationState;
   rowCount: number;
   onPaginationChange: (updater: any) => void;
-}
+};
 
-// --- 1. Dedicated Row Actions Component ---
-const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
+type ApiKeyRowActionsProps = {
+  apiKey: ApiKey;
+};
+
+const ApiKeyRowActions = ({ apiKey }: ApiKeyRowActionsProps) => {
   const queryClient = $api.useQueryClient();
 
   const [showRevokeDialog, setShowRevokeDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // --- Mutations ---
   const authApiKeyRevokeMutation = $api.api.auth.apiKeys.update.useMutation({
     onSuccess: () => {
       toast.success('API key has been revoked.');
@@ -60,7 +62,6 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
     onError: () => toast.error('Failed to delete key.'),
   });
 
-  // --- Logic ---
   const isRevoked = apiKey.revokedAt !== null;
 
   const handleRevoke = () => {
@@ -146,14 +147,12 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   );
 };
 
-// --- 2. Main Table Component ---
-
-export function ApiKeysTable({
+export const ApiKeysTable = ({
   data,
   pagination,
   rowCount,
   onPaginationChange,
-}: ApiKeysTableProps) {
+}: ApiKeysTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const columns: ColumnDef<ApiKey>[] = useMemo(
@@ -236,4 +235,4 @@ export function ApiKeysTable({
       }}
     />
   );
-}
+};

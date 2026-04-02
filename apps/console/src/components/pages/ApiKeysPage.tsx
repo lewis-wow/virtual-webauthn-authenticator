@@ -1,9 +1,7 @@
 'use client';
 
-// The "New Key" display component
 import { ApiKeysTable } from '@/components/ApiKeys/ApiKeysTable';
 import { NewApiKey } from '@/components/ApiKeys/NewApiKey';
-// Components
 import { Page } from '@/components/Page/Page';
 import { $api } from '@/lib/tsr';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,7 +10,6 @@ import {
   CreateApiKeyFormSchema,
 } from '@repo/contract/dto';
 import { useCursorPagination } from '@repo/pagination/hooks';
-// The new standalone table
 import { Button } from '@repo/ui/components/Button';
 import { Guard } from '@repo/ui/components/Guard/Guard';
 import { SelectField } from '@repo/ui/components/SelectField';
@@ -29,7 +26,6 @@ import { Form } from '@repo/ui/components/ui/form';
 import type { Duration } from '@repo/validation';
 import { keepPreviousData } from '@tanstack/react-query';
 import { Key, Plus } from 'lucide-react';
-// Added 'Key' import
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -45,8 +41,6 @@ const EXPIRATION_OPTIONS = [
 export const ApiKeysPage = () => {
   const queryClient = $api.useQueryClient();
 
-  // --- 1. Pagination State & Hook ---
-  // Break the Cycle: Local state to hold the latest API meta
   const [latestMeta, setLatestMeta] = useState({
     hasNext: false,
     nextCursor: null as string | null,
@@ -58,8 +52,6 @@ export const ApiKeysPage = () => {
       nextCursor: latestMeta.nextCursor,
       hasNextPage: latestMeta.hasNext,
     });
-
-  // --- 2. Queries & Mutations ---
 
   const authApiKeysListQuery = $api.api.auth.apiKeys.list.useQuery({
     queryKey: [
@@ -89,18 +81,15 @@ export const ApiKeysPage = () => {
       });
 
       toast('API key has been created.');
-      // Invalidate the list to refetch the current page
       void queryClient.invalidateQueries({
         queryKey: ['api', 'auth', 'apiKeys', 'list'],
       });
     },
   });
 
-  // --- 3. Data Sync ---
   const apiKeysData = authApiKeysListQuery.data?.body?.data ?? [];
   const currentMeta = authApiKeysListQuery.data?.body?.meta;
 
-  // Sync Query Result to State for Pagination
   useEffect(() => {
     if (currentMeta) {
       setLatestMeta({
@@ -109,8 +98,6 @@ export const ApiKeysPage = () => {
       });
     }
   }, [currentMeta]);
-
-  // --- 4. Form Setup ---
   const form = useForm({
     resolver: zodResolver(CreateApiKeyFormSchema),
     defaultValues: {
@@ -123,7 +110,6 @@ export const ApiKeysPage = () => {
 
   return (
     <Page pageTitle="API keys">
-      {/* --- Create Key Section --- */}
       <Card>
         <CardHeader>
           <CardTitle>Create New API Key</CardTitle>
@@ -174,7 +160,6 @@ export const ApiKeysPage = () => {
         </CardContent>
       </Card>
 
-      {/* --- Success: New Key Display --- */}
       {authApiKeyCreateMutation.data?.body && (
         <div className="mb-6">
           <Card className="border-green-500/50 bg-green-500/5">
@@ -196,10 +181,8 @@ export const ApiKeysPage = () => {
         </div>
       )}
 
-      {/* --- Existing Keys Table --- */}
       <Card>
         <CardHeader>
-          {/* UPDATED HEADER STYLE */}
           <div className="flex items-center gap-2">
             <Key className="h-5 w-5 text-muted-foreground" />
             <CardTitle>Your API Keys</CardTitle>
