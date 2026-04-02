@@ -35,11 +35,6 @@ export const ErrorDialog = ({ error, onClose }: ErrorDialogProps) => {
         <div className="py-4">
           <div className="rounded-lg border bg-muted p-4">
             <div className="mb-2 font-medium text-sm">Error Details:</div>
-
-            {/* 2. Added ScrollArea
-                - h-[200px] limits the height of the code block.
-                - bg-background creates contrast against the bg-muted container.
-            */}
             <ScrollArea className="h-[200px] w-full rounded-md border bg-background p-4">
               <pre className="text-xs">
                 <code>{JSON.stringify(error, null, 2)}</code>

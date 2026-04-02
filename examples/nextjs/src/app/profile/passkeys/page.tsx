@@ -6,7 +6,7 @@ import { Button } from '@repo/ui/components/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function ManagePasskeysPage() {
+const ManagePasskeysPage = () => {
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
@@ -38,4 +38,5 @@ export default function ManagePasskeysPage() {
       </div>
     </div>
   );
-}
+};
+export default ManagePasskeysPage;

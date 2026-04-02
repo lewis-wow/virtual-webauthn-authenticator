@@ -5,10 +5,10 @@ import z from 'zod';
  * Returns true if validation succeeds, false otherwise.
  * Using this in a conditional narrows the type of 'data' for TypeScript.
  */
-export function isSchema<T extends z.ZodTypeAny>(
+export const isSchema = <T extends z.ZodTypeAny>(
   data: unknown,
   schema: T,
-): data is z.infer<T> {
+): data is z.infer<T> => {
   const result = schema.safeParse(data);
   return result.success;
-}
+};

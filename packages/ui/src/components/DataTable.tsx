@@ -26,23 +26,20 @@ import { useState } from 'react';
 export type DataTableProps<TData, TValue> = {
   columns: ColumnDef<TData, TValue>[];
   data: readonly TData[];
-  // Pagination
   pagination: PaginationState;
   paginationOptions: Pick<PaginationOptions, 'onPaginationChange' | 'rowCount'>;
-  // Sorting (Optional: allows parent to control sorting state)
   sorting?: SortingState;
   onSortingChange?: OnChangeFn<SortingState>;
 };
 
-export function DataTable<TData, TValue>({
+export const DataTable = <TData, TValue>({
   columns,
   data,
   pagination,
   paginationOptions,
   sorting: controlledSorting,
   onSortingChange: controlledOnSortingChange,
-}: DataTableProps<TData, TValue>) {
-  // Fallback to local state if no sorting props are provided
+}: DataTableProps<TData, TValue>) => {
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
 
   const sorting = controlledSorting ?? localSorting;
@@ -56,11 +53,10 @@ export function DataTable<TData, TValue>({
       sorting,
     },
     ...paginationOptions,
-    onSortingChange, // Bind sorting change handler
+    onSortingChange,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(), // Enable sorting model
-    manualPagination: true, // You already had this for server-side pagination
-    // manualSorting: true, // Uncomment this if you are doing SERVER-SIDE sorting
+    getSortedRowModel: getSortedRowModel(),
+    manualPagination: true,
   });
 
   return (
@@ -165,4 +161,4 @@ export function DataTable<TData, TValue>({
       </div>
     </div>
   );
-}
+};

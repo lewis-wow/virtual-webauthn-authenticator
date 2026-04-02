@@ -14,11 +14,6 @@ export type QueryFn<T extends { id: string }> = (opts: {
     id: 'asc';
   };
 }) => Promise<T[]>;
-
-/**
- * Handles cursor-based pagination for database queries.
- * @template T - Type of items being paginated, must have an 'id' property
- */
 export class Pagination<T extends { id: string }> {
   constructor(private readonly _queryFn: QueryFn<T>) {}
 

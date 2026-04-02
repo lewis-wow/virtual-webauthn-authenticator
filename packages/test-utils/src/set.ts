@@ -21,7 +21,7 @@ type DeepSet<T> = T extends Primitive
  * @param payload The update specification (values, nested objects, or updater functions).
  * @returns A new deep copy of the object with updates applied.
  */
-export function set<T>(target: T, payload: DeepSet<T>): T {
+export const set = <T>(target: T, payload: DeepSet<T>): T => {
   // Case 1: Payload is a function -> Call it with current target
   if (typeof payload === 'function') {
     return (payload as unknown as UpdateFn<T>)(target);
@@ -58,4 +58,4 @@ export function set<T>(target: T, payload: DeepSet<T>): T {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return clone as any;
-}
+};

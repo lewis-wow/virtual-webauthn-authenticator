@@ -26,8 +26,6 @@ export default defineContentScript({
       onMount: (container) => {
         // Create a root for React
         const root = ReactDOM.createRoot(container);
-
-        // Pass the container as a prop so we can target it for Portals
         root.render(
           <ShadowRootProvider container={container}>
             <ExtensionDialogProvider>

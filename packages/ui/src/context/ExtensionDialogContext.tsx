@@ -9,11 +9,13 @@ export const ExtensionDialogContext = createContext<
   ExtensionDialogContextType | undefined
 >(undefined);
 
+type ExtensionDialogProviderProps = {
+  children: ReactNode;
+};
+
 export const ExtensionDialogProvider = ({
   children,
-}: {
-  children: ReactNode;
-}) => {
+}: ExtensionDialogProviderProps) => {
   const [activeModal, setActiveModal] = useState<ReactNode | null>(null);
 
   const openDialog = (component: ReactNode) => setActiveModal(component);

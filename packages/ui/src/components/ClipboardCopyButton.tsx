@@ -20,7 +20,6 @@ export const ClipboardCopyButton = ({
   const [isCopied, setIsCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
-    // Prevent event bubbling if used inside a clickable row/card
     e.stopPropagation();
 
     if (!text) return;
@@ -51,7 +50,6 @@ export const ClipboardCopyButton = ({
       ) : (
         <Copy className="h-4 w-4" />
       )}
-      <span className="sr-only">Copy</span>
     </Button>
   );
 };

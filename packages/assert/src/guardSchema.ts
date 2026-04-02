@@ -6,8 +6,8 @@ import z from 'zod';
  * const isUser = createGuard(UserSchema);
  * if (isUser(data)) { ... }
  */
-export function guardSchema<T extends z.ZodTypeAny>(schema: T) {
+export const guardSchema = <T extends z.ZodTypeAny>(schema: T) => {
   return (data: unknown): data is z.infer<T> => {
     return schema.safeParse(data).success;
   };
-}
+};

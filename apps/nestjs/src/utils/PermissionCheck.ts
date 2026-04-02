@@ -11,11 +11,11 @@ import { Forbidden } from '@repo/exception/http';
  * @example
  * requirePermission(userPermissions, Permission['CREDENTIAL.CREATE']);
  */
-export function requirePermission(
+export const requirePermission = (
   permissions: string[],
   requiredPermission: string,
-): void {
+): void => {
   if (!permissions.includes(requiredPermission)) {
     throw new Forbidden();
   }
-}
+};

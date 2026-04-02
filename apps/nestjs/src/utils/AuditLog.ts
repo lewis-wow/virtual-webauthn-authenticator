@@ -3,16 +3,13 @@ import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/auth/validation';
 
-/**
- * Options for logging an activity.
- */
-export interface AuditLogOptions {
+export type AuditLogArgs = {
   activityLog: ActivityLog;
   action: LogAction;
   entity: LogEntity;
   jwtPayload: JwtPayload;
   entityId?: string;
-}
+};
 
 /**
  * Helper function to standardize activity logging across controllers.
@@ -29,7 +26,7 @@ export interface AuditLogOptions {
  *   jwtPayload,
  * });
  */
-export async function auditLog(opts: AuditLogOptions): Promise<void> {
+export const auditLog = async (opts: AuditLogArgs): Promise<void> => {
   const { activityLog, action, entity, entityId, jwtPayload } = opts;
 
   await activityLog.audit({
@@ -42,4 +39,4 @@ export async function auditLog(opts: AuditLogOptions): Promise<void> {
         : undefined,
     userId: jwtPayload.userId,
   });
-}
+};
