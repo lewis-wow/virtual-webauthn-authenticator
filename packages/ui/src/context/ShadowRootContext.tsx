@@ -1,16 +1,18 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
 
 const ShadowRootContext = createContext<HTMLElement | null>(null);
 
 export const useShadowRoot = () => useContext(ShadowRootContext);
 
+type ShadowRootProviderProps = {
+  container: HTMLElement;
+  children: ReactNode;
+};
+
 export const ShadowRootProvider = ({
   container,
   children,
-}: {
-  container: HTMLElement;
-  children: React.ReactNode;
-}) => {
+}: ShadowRootProviderProps) => {
   return (
     <ShadowRootContext.Provider value={container}>
       {children}

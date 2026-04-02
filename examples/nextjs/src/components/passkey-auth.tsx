@@ -7,11 +7,11 @@ import { Label } from '@repo/ui/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export const PasskeyAuth = ({
-  mode = 'signin',
-}: {
+type PasskeyAuthProps = {
   mode?: 'signin' | 'add';
-}) => {
+};
+
+export const PasskeyAuth = ({ mode = 'signin' }: PasskeyAuthProps) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);

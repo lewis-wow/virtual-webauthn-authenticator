@@ -36,11 +36,11 @@ export type WebAuthnTableProps = {
   onPaginationChange: (updater: any) => void;
 };
 
-const WebAuthnRowActions = ({
-  credential,
-}: {
+type WebAuthnRowActionsProps = {
   credential: WebAuthnPublicKeyCredential;
-}) => {
+};
+
+const WebAuthnRowActions = ({ credential }: WebAuthnRowActionsProps) => {
   const queryClient = $api.useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 

@@ -8,11 +8,11 @@ export const metadata: Metadata = {
   description: 'Virtual WebAuthn Authenticator',
 };
 
-const RootLayout = ({
-  children,
-}: Readonly<{
+type RootLayoutProps = {
   children: React.ReactNode;
-}>) => {
+};
+
+const RootLayout = ({ children }: RootLayoutProps) => {
   return (
     <html lang="en" className="h-full">
       <body className="h-full bg-background font-sans antialiased">
