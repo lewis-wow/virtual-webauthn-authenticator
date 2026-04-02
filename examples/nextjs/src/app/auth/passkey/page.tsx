@@ -1,7 +1,7 @@
 import { PasskeyAuth } from '@/components/passkey-auth';
 import Link from 'next/link';
 
-export default function PasskeyPage() {
+const PasskeyPage = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center space-y-6 p-4">
       <h1 className="text-3xl font-bold">Passkey Sign In</h1>
@@ -16,4 +16,5 @@ export default function PasskeyPage() {
       </div>
     </div>
   );
-}
+};
+export default PasskeyPage;

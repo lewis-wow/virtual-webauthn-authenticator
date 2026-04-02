@@ -7,7 +7,7 @@ import { Label } from '@repo/ui/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export function LoginForm() {
+export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -64,4 +64,4 @@ export function LoginForm() {
       </Button>
     </form>
   );
-}
+};

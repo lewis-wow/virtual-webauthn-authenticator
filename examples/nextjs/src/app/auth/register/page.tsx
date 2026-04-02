@@ -1,7 +1,7 @@
 import { RegisterForm } from '@/components/register-form';
 import Link from 'next/link';
 
-export default function RegisterPage() {
+const RegisterPage = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center space-y-6 p-4">
       <h1 className="text-3xl font-bold">Create Account</h1>
@@ -18,4 +18,5 @@ export default function RegisterPage() {
       </div>
     </div>
   );
-}
+};
+export default RegisterPage;

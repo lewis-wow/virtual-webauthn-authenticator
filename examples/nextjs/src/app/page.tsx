@@ -5,7 +5,7 @@ import { Button } from '@repo/ui/components/Button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-export default function Home() {
+const HomePage = () => {
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
@@ -98,4 +98,5 @@ export default function Home() {
       </Link>
     </div>
   );
-}
+};
+export default HomePage;

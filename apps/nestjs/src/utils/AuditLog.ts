@@ -29,7 +29,7 @@ export interface AuditLogOptions {
  *   jwtPayload,
  * });
  */
-export async function auditLog(opts: AuditLogOptions): Promise<void> {
+export const auditLog = async (opts: AuditLogOptions): Promise<void> => {
   const { activityLog, action, entity, entityId, jwtPayload } = opts;
 
   await activityLog.audit({
@@ -42,4 +42,4 @@ export async function auditLog(opts: AuditLogOptions): Promise<void> {
         : undefined,
     userId: jwtPayload.userId,
   });
-}
+};

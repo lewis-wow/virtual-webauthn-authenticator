@@ -21,10 +21,10 @@ import { PrismaErrorCode } from '@repo/prisma/enums';
  *   throw error;
  * }
  */
-export function handlePrismaNotFoundError(opts: {
+export const handlePrismaNotFoundError = (opts: {
   error: unknown;
   notFoundException: Exception;
-}): void {
+}): void => {
   const { error, notFoundException } = opts;
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -32,4 +32,4 @@ export function handlePrismaNotFoundError(opts: {
       throw notFoundException;
     }
   }
-}
+};

@@ -34,14 +34,14 @@ export type DataTableProps<TData, TValue> = {
   onSortingChange?: OnChangeFn<SortingState>;
 };
 
-export function DataTable<TData, TValue>({
+export const DataTable = <TData, TValue>({
   columns,
   data,
   pagination,
   paginationOptions,
   sorting: controlledSorting,
   onSortingChange: controlledOnSortingChange,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData, TValue>) => {
   // Fallback to local state if no sorting props are provided
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
 
@@ -165,4 +165,4 @@ export function DataTable<TData, TValue>({
       </div>
     </div>
   );
-}
+};

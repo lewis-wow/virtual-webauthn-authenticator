@@ -1,11 +1,11 @@
-function generateRandomBytes(length) {
+const generateRandomBytes = (length) => {
   const array = new Uint8Array(length);
   window.crypto.getRandomValues(array);
 
   return array;
-}
+};
 
-function generateUuidBuffer() {
+const generateUuidBuffer = () => {
   const uuidString = window.crypto.randomUUID();
   const hexString = uuidString.replace(/-/g, '');
   const bytes = new Uint8Array(16);
@@ -16,7 +16,7 @@ function generateUuidBuffer() {
   }
 
   return bytes;
-}
+};
 
 navigator.credentials.create({
   publicKey: {

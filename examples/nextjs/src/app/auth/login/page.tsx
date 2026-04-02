@@ -1,7 +1,7 @@
 import { LoginForm } from '@/components/login-form';
 import Link from 'next/link';
 
-export default function LoginPage() {
+const LoginPage = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center space-y-6 p-4">
       <h1 className="text-3xl font-bold">Login</h1>
@@ -20,4 +20,5 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+};
+export default LoginPage;

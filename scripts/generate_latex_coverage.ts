@@ -47,7 +47,7 @@ const KEY_PACKAGES: KeyPackageDefinition[] = [
   { key: 'keys', label: 'keys' },
 ];
 
-function createEmptyMetrics(): GroupMetrics {
+const createEmptyMetrics = (): GroupMetrics => {
   return {
     stmtTotal: 0,
     stmtCovered: 0,
@@ -58,28 +58,28 @@ function createEmptyMetrics(): GroupMetrics {
     lineTotal: 0,
     lineCovered: 0,
   };
-}
+};
 
-function pct(covered: number, total: number): string {
+const pct = (covered: number, total: number): string => {
   if (total === 0) return '100.00';
   return ((covered / total) * 100).toFixed(2);
-}
+};
 
-function formatPercent(covered: number, total: number): string {
+const formatPercent = (covered: number, total: number): string => {
   return `${pct(covered, total).replace(/\.00$/, '')}\\%`;
-}
+};
 
-function formatRatio(covered: number, total: number): string {
+const formatRatio = (covered: number, total: number): string => {
   return `${covered.toLocaleString('en-US')} / ${total.toLocaleString('en-US')}`;
-}
+};
 
-function escapeLatex(s: string): string {
+const escapeLatex = (s: string): string => {
   return s.replace(/_/g, '\\_').replace(/&/g, '\\&');
-}
+};
 
 /** Extract the group key (e.g. "apps/api-bff" or "packages/auth") from an
  *  absolute file path, relative to the project root. */
-function groupKey(filePath: string): string | null {
+const groupKey = (filePath: string): string | null => {
   // Normalise to forward slashes and strip everything up to the workspace root
   const normalised = filePath.replace(/\\/g, '/');
   const marker = normalised.includes('/apps/')
@@ -97,9 +97,9 @@ function groupKey(filePath: string): string | null {
   );
   const subfolder = afterMarker.split('/')[0];
   return marker.slice(1, -1) + '/' + subfolder; // e.g. "apps/api-bff"
-}
+};
 
-function packageKey(filePath: string): string | null {
+const packageKey = (filePath: string): string | null => {
   const normalised = filePath.replace(/\\/g, '/');
   const marker = '/packages/';
 
@@ -109,9 +109,9 @@ function packageKey(filePath: string): string | null {
     normalised.indexOf(marker) + marker.length,
   );
   return afterMarker.split('/')[0] ?? null;
-}
+};
 
-function accumulateMetrics(metrics: GroupMetrics, fc: FileCoverage): void {
+const accumulateMetrics = (metrics: GroupMetrics, fc: FileCoverage): void => {
   metrics.stmtTotal += Object.keys(fc.statementMap).length;
   metrics.stmtCovered += Object.values(fc.s).filter((n) => n > 0).length;
 
@@ -132,13 +132,13 @@ function accumulateMetrics(metrics: GroupMetrics, fc: FileCoverage): void {
 
   metrics.lineTotal += lineHit.size;
   metrics.lineCovered += [...lineHit.values()].filter(Boolean).length;
-}
+};
 
-function printSection(title: string, content: string): void {
+const printSection = (title: string, content: string): void => {
   const divider = '='.repeat(24);
   console.log(`\n${divider} ${title} ${divider}\n`);
   console.log(content);
-}
+};
 
 try {
   const fileContent = await readFile(inputPath, 'utf-8');

@@ -66,7 +66,7 @@ interface SchemaRow {
   requiredCount: number;
 }
 
-function escapeLatex(value: string): string {
+const escapeLatex = (value: string): string => {
   return value
     .replace(/\\/g, '\\textbackslash{}')
     .replace(/&/g, '\\&')
@@ -78,17 +78,17 @@ function escapeLatex(value: string): string {
     .replace(/}/g, '\\}')
     .replace(/~/g, '\\textasciitilde{}')
     .replace(/\^/g, '\\textasciicircum{}');
-}
+};
 
-function truncate(value: string, maxLength: number): string {
+const truncate = (value: string, maxLength: number): string => {
   if (value.length <= maxLength) {
     return value;
   }
 
   return `${value.slice(0, maxLength - 3)}...`;
-}
+};
 
-function schemaLabel(schema?: SchemaObject): string {
+const schemaLabel = (schema?: SchemaObject): string => {
   if (!schema) {
     return '-';
   }
@@ -130,13 +130,13 @@ function schemaLabel(schema?: SchemaObject): string {
   }
 
   return schema.title ?? schema.id ?? 'object';
-}
+};
 
-function summarizeDescription(operation: OperationObject): string {
+const summarizeDescription = (operation: OperationObject): string => {
   return truncate(operation.summary ?? '-', 72);
-}
+};
 
-function buildApiRows(document: OpenApiDocument): ApiRow[] {
+const buildApiRows = (document: OpenApiDocument): ApiRow[] => {
   const rows: ApiRow[] = [];
 
   for (const [path, pathItem] of Object.entries(document.paths ?? {})) {
@@ -160,9 +160,9 @@ function buildApiRows(document: OpenApiDocument): ApiRow[] {
       left.path.localeCompare(right.path) ||
       left.method.localeCompare(right.method),
   );
-}
+};
 
-function buildSchemaRows(document: OpenApiDocument): SchemaRow[] {
+const buildSchemaRows = (document: OpenApiDocument): SchemaRow[] => {
   return Object.entries(document.components?.schemas ?? {})
     .map(([name, schema]) => ({
       name,
@@ -171,13 +171,13 @@ function buildSchemaRows(document: OpenApiDocument): SchemaRow[] {
       requiredCount: schema.required?.length ?? 0,
     }))
     .sort((left, right) => left.name.localeCompare(right.name));
-}
+};
 
-function printSection(title: string, content: string): void {
+const printSection = (title: string, content: string): void => {
   const divider = '='.repeat(24);
   console.log(`\n${divider} ${title} ${divider}\n`);
   console.log(content);
-}
+};
 
 try {
   const fileContent = await readFile(inputPath, 'utf-8');
