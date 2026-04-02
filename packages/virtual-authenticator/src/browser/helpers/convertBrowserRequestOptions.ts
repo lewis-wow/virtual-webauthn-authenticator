@@ -4,10 +4,6 @@ import type { AuthenticationExtensionsClientInputs } from '../../validation/spec
 import type { PublicKeyCredentialRequestOptions } from '../../validation/spec/PublicKeyCredentialRequestOptionsSchema';
 import { bufferSourceToBytes } from './bytesConversion';
 
-/**
- * Converts browser CredentialRequestOptions to internal PublicKeyCredentialRequestOptions.
- * Browser APIs use BufferSource (ArrayBuffer/ArrayBufferView) while internal types use Uint8Array_.
- */
 export const convertBrowserRequestOptions = (
   publicKey: DOMPublicKeyCredentialRequestOptions | undefined,
 ): PublicKeyCredentialRequestOptions | undefined => {

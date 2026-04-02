@@ -4,10 +4,6 @@ import type { AuthenticationExtensionsClientInputs } from '../../validation/spec
 import type { PublicKeyCredentialCreationOptions } from '../../validation/spec/PublicKeyCredentialCreationOptionsSchema';
 import { bufferSourceToBytes } from './bytesConversion';
 
-/**
- * Converts browser CredentialCreationOptions to internal PublicKeyCredentialCreationOptions.
- * Browser APIs use BufferSource (ArrayBuffer/ArrayBufferView) while internal types use Uint8Array_.
- */
 export const convertBrowserCreationOptions = (
   publicKey: PublicKeyCredentialCreationOptionsDOM | undefined,
 ): PublicKeyCredentialCreationOptions | undefined => {
