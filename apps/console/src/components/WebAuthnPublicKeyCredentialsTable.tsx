@@ -36,7 +36,6 @@ export interface WebAuthnTableProps {
   onPaginationChange: (updater: any) => void;
 }
 
-// --- 1. Row Actions Component ---
 const WebAuthnRowActions = ({
   credential,
 }: {

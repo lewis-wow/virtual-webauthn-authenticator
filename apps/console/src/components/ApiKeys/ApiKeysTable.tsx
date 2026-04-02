@@ -30,14 +30,12 @@ export interface ApiKeysTableProps {
   onPaginationChange: (updater: any) => void;
 }
 
-// --- 1. Dedicated Row Actions Component ---
 const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   const queryClient = $api.useQueryClient();
 
   const [showRevokeDialog, setShowRevokeDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  // --- Mutations ---
   const authApiKeyRevokeMutation = $api.api.auth.apiKeys.update.useMutation({
     onSuccess: () => {
       toast.success('API key has been revoked.');
@@ -60,7 +58,6 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
     onError: () => toast.error('Failed to delete key.'),
   });
 
-  // --- Logic ---
   const isRevoked = apiKey.revokedAt !== null;
 
   const handleRevoke = () => {
@@ -145,8 +142,6 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
     </>
   );
 };
-
-// --- 2. Main Table Component ---
 
 export function ApiKeysTable({
   data,

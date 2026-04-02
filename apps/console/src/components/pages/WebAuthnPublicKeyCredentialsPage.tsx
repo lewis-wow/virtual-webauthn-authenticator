@@ -17,13 +17,11 @@ import { Fingerprint } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export const WebAuthnPublicKeyCredentialsPage = () => {
-  // 1. Break the Cycle: Local state to hold the latest API meta
   const [latestMeta, setLatestMeta] = useState({
     hasNext: false,
     nextCursor: null as string | null,
   });
 
-  // 2. Initialize the Hook
   const { pagination, onPaginationChange, cursor, rowCount } =
     useCursorPagination({
       defaultPageSize: 10,
@@ -31,7 +29,6 @@ export const WebAuthnPublicKeyCredentialsPage = () => {
       hasNextPage: latestMeta.hasNext,
     });
 
-  // 3. Run the Query
   const credentialsQuery = $api.api.webAuthnPublicKeyCredentials.list.useQuery({
     queryKey: [
       'api',
@@ -49,12 +46,9 @@ export const WebAuthnPublicKeyCredentialsPage = () => {
     placeholderData: keepPreviousData,
   });
 
-  // Handle data extraction (safely defaulting to empty array if data structure varies)
-  // Assumes API returns { body: { data: [], meta: {} } } like the logs API
   const credentials = credentialsQuery.data?.body?.data ?? [];
   const currentMeta = credentialsQuery.data?.body?.meta;
 
-  // 4. Sync Query Result to State
   useEffect(() => {
     if (currentMeta) {
       setLatestMeta({

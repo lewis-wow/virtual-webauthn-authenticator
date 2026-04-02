@@ -14,7 +14,6 @@ export type AuthGuardProps = {
 
 export const AuthGuard = ({ requireAuthState, children }: AuthGuardProps) => {
   const router = useRouter();
-  // 1. Add state to track if a redirect has been triggered
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const profileGetQuery = $api.api.profile.get.useQuery({
@@ -25,35 +24,28 @@ export const AuthGuard = ({ requireAuthState, children }: AuthGuardProps) => {
   const isAuthenticated = !!profileGetQuery.data?.body.jwtPayload;
 
   useEffect(() => {
-    // If the query is loading, we do nothing yet
     if (profileGetQuery.isFetching) {
       return;
     }
 
-    // 2. Determine if we need to redirect
     const shouldRedirectToSignin =
       requireAuthState === 'authenticated' && !isAuthenticated;
     const shouldRedirectToHome =
       requireAuthState === 'unauthenticated' && isAuthenticated;
 
     if (shouldRedirectToSignin) {
-      setIsRedirecting(true); // Keep loading state active
+      setIsRedirecting(true);
       router.push('/auth/signin');
       return;
     }
 
     if (shouldRedirectToHome) {
-      setIsRedirecting(true); // Keep loading state active
+      setIsRedirecting(true);
       router.push('/');
       return;
     }
-
-    // Optional: If we made it here, no redirect happened.
-    // If you had logic that might re-evaluate, you'd set isRedirecting(false) here,
-    // but typically for an auth guard, once you're good, you're good.
   }, [requireAuthState, isAuthenticated, profileGetQuery.isFetching, router]);
 
-  // 3. Combine query loading AND redirecting state
   const shouldShowLoader =
     (!!requireAuthState && profileGetQuery.isFetching) || isRedirecting;
 

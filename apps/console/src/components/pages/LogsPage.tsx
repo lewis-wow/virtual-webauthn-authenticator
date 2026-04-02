@@ -5,7 +5,6 @@ import { Page } from '@/components/Page/Page';
 import { $api } from '@/lib/tsr';
 import { useCursorPagination } from '@repo/pagination/hooks';
 import { Guard } from '@repo/ui/components/Guard/Guard';
-// Ensure this path matches where you saved the hook
 import {
   Card,
   CardContent,
@@ -18,16 +17,11 @@ import { Activity } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export const LogsPage = () => {
-  // 1. Break the Cycle: Local state to hold the latest API meta
-  // We need this because the Hook needs data that comes from the Query,
-  // but the Query needs the Cursor from the Hook.
   const [latestMeta, setLatestMeta] = useState({
     hasNext: false,
     nextCursor: null as string | null,
   });
 
-  // 2. Initialize the Hook
-  // We feed it the meta we captured from the last successful fetch
   const { pagination, onPaginationChange, cursor, rowCount } =
     useCursorPagination({
       defaultPageSize: 10,
@@ -35,8 +29,6 @@ export const LogsPage = () => {
       hasNextPage: latestMeta.hasNext,
     });
 
-  // 3. Run the Query
-  // Note: We use the 'cursor' and 'pagination' directly from the hook
   const logsQuery = $api.api.logs.list.useQuery({
     queryKey: [
       'api',
@@ -57,9 +49,6 @@ export const LogsPage = () => {
   const logsData = logsQuery.data?.body?.data ?? [];
   const currentMeta = logsQuery.data?.body?.meta;
 
-  // 4. Sync Query Result to State
-  // When new data arrives, update our local meta so the Hook knows
-  // what the *next* cursor is for the *next* page turn.
   useEffect(() => {
     if (currentMeta) {
       setLatestMeta({
