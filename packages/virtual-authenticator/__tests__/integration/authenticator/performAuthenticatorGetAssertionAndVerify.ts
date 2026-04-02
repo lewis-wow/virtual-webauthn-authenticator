@@ -1,4 +1,4 @@
-import { USER_ID } from '../../../../auth/__tests__/helpers/consts';
+import { USER_ID } from '../../../../jwt/__tests__/helpers/consts';
 
 import { Hash } from '@repo/crypto';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';

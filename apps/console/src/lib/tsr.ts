@@ -1,4 +1,4 @@
-import { AuthType } from '@repo/auth/enums';
+import { AuthType } from '@repo/jwt/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { initContract } from '@ts-rest/core';

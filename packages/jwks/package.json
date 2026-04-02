@@ -1,0 +1,22 @@
+{
+  "name": "@repo/jwks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@repo/crypto": "workspace:*",
+    "@repo/prisma": "workspace:*"
+  }
+}

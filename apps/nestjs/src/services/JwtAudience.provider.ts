@@ -1,5 +1,5 @@
 import { Provider } from '@nestjs/common';
-import { JwtAudience } from '@repo/auth';
+import { JwtAudience } from '@repo/jwt';
 
 import { Env, ENV_PROVIDER_TOKEN } from './Env.provider';
 

@@ -1,4 +1,4 @@
-import { USER_ID, USER_NAME } from '../../../auth/__tests__/helpers';
+import { USER_ID, USER_NAME } from '../../../jwt/__tests__/helpers';
 
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { uuidToBytes } from '@repo/utils';

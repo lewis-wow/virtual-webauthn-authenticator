@@ -1,4 +1,4 @@
-import { upsertTestingUser, USER_ID } from '@repo/auth/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '@repo/jwt/__tests__/helpers';
 import { InMemoryJwksRepository } from '@repo/virtual-authenticator/__tests__/helpers';
 import { KeyVaultKeyIdGenerator } from '@repo/virtual-authenticator/__tests__/helpers';
 import { MockKeyProvider } from '@repo/virtual-authenticator/__tests__/helpers';

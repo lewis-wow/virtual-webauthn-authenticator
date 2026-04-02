@@ -2,8 +2,8 @@ import { KeyClient } from '@azure/keyvault-keys';
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { Permission } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/validation';
+import { Permission } from '@repo/jwt/enums';
+import type { JwtPayload } from '@repo/jwt/validation';
 import {
   DeleteWebAuthnPublicKeyCredentialResponseSchema,
   GetWebAuthnPublicKeyCredentialResponseSchema,

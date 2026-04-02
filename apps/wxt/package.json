@@ -15,11 +15,11 @@
     "dotenvx": "../../scripts/dotenvx.sh"
   },
   "dependencies": {
-    "@repo/auth": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/utils": "workspace:*",
     "@repo/env-config": "workspace:*",
     "@repo/exception": "workspace:*",
+    "@repo/jwt": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/ui": "workspace:*",

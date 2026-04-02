@@ -3,7 +3,7 @@ import {
   upsertTestingUser,
   USER_ID,
   USER_JWT_PAYLOAD,
-} from '@repo/auth/__tests__/helpers';
+} from '@repo/jwt/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -12,7 +12,7 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience } from '@repo/auth';
+import { JwtAudience } from '@repo/jwt';
 import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,

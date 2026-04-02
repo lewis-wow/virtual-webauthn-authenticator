@@ -1,4 +1,4 @@
-import { JwtPayloadSchema } from '@repo/auth/validation';
+import { JwtPayloadSchema } from '@repo/jwt/validation';
 import { HttpStatusCode } from '@repo/http';
 import z from 'zod';
 

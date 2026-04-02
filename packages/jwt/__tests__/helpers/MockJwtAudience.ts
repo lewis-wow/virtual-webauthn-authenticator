@@ -1,8 +1,7 @@
+import type { JwtAudienceConfig } from '@repo/jwt';
+import type { JwtPayload } from '@repo/jwt/validation';
 import type { MaybePromise } from '@repo/types';
 import { createLocalJWKSet, type JSONWebKeySet, jwtVerify } from 'jose';
-
-import type { JwtAudienceConfig } from '../../src/JwtAudience';
-import type { JwtPayload } from '../../src/validation/JwtPayloadSchema';
 
 export type MockJwtAudienceConfig = JwtAudienceConfig;
 

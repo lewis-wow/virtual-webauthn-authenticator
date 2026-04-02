@@ -1,5 +1,5 @@
 import { container } from '@/container';
-import { BearerTokenMapper } from '@repo/auth/mappers';
+import { BearerTokenMapper } from '@repo/jwt/mappers';
 import { RequestLogFormatter } from '@repo/bff';
 import { proxy } from '@repo/proxy';
 import { cookies } from 'next/headers';
