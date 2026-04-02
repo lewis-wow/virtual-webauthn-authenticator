@@ -113,7 +113,7 @@ export class PublicKeyCredentialImpl implements PublicKeyCredential {
 /**
  * Type definition for the JSON representation of a PublicKeyCredential
  */
-export interface PublicKeyCredentialJSON {
+export type PublicKeyCredentialJSON = {
   id: string;
   rawId: string;
   type: typeof PublicKeyCredentialType.PUBLIC_KEY;
@@ -127,4 +127,4 @@ export interface PublicKeyCredentialJSON {
     transports?: string[];
   };
   clientExtensionResults: AuthenticationExtensionsClientOutputs;
-}
+};

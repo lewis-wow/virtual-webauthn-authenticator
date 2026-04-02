@@ -16,7 +16,7 @@ const HTTP_METHODS = [
 ];
 const inputPath = resolve(process.argv[2] ?? DEFAULT_INPUT);
 
-interface OpenApiDocument {
+type OpenApiDocument = {
   openapi?: string;
   info?: {
     title?: string;
@@ -26,18 +26,18 @@ interface OpenApiDocument {
   components?: {
     schemas?: Record<string, SchemaObject>;
   };
-}
+};
 
-interface PathItem {
+type PathItem = {
   [method: string]: OperationObject | unknown;
-}
+};
 
-interface OperationObject {
+type OperationObject = {
   summary?: string;
   operationId?: string;
-}
+};
 
-interface SchemaObject {
+type SchemaObject = {
   $ref?: string;
   title?: string;
   id?: string;
@@ -51,20 +51,20 @@ interface SchemaObject {
   allOf?: SchemaObject[];
   enum?: unknown[];
   const?: unknown;
-}
+};
 
-interface ApiRow {
+type ApiRow = {
   method: string;
   path: string;
   description: string;
-}
+};
 
-interface SchemaRow {
+type SchemaRow = {
   name: string;
   kind: string;
   propertyCount: number;
   requiredCount: number;
-}
+};
 
 const escapeLatex = (value: string): string => {
   return value

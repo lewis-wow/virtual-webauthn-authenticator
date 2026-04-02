@@ -9,20 +9,20 @@ const inputPath = resolve(process.argv[2] ?? DEFAULT_INPUT);
 
 type BranchHits = number[];
 
-interface CoverageLocation {
+type CoverageLocation = {
   start: { line: number };
-}
+};
 
-interface FileCoverage {
+type FileCoverage = {
   statementMap: Record<string, CoverageLocation>;
   s: Record<string, number>;
   branchMap: Record<string, unknown>;
   b: Record<string, BranchHits>;
   fnMap: Record<string, unknown>;
   f: Record<string, number>;
-}
+};
 
-interface GroupMetrics {
+type GroupMetrics = {
   stmtTotal: number;
   stmtCovered: number;
   branchTotal: number;
@@ -31,12 +31,12 @@ interface GroupMetrics {
   fnCovered: number;
   lineTotal: number;
   lineCovered: number;
-}
+};
 
-interface KeyPackageDefinition {
+type KeyPackageDefinition = {
   key: string;
   label: string;
-}
+};
 
 const KEY_PACKAGES: KeyPackageDefinition[] = [
   { key: 'virtual-authenticator', label: 'virtual-authenticator' },
