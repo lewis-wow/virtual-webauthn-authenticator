@@ -29,12 +29,12 @@ import {
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-export interface WebAuthnTableProps {
+export type WebAuthnTableProps = {
   data: readonly WebAuthnPublicKeyCredential[];
   pagination: PaginationState;
   rowCount: number;
   onPaginationChange: (updater: any) => void;
-}
+};
 
 const WebAuthnRowActions = ({
   credential,

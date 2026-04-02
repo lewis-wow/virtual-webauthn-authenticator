@@ -23,14 +23,18 @@ import { Ban, Copy, MoreHorizontal, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-export interface ApiKeysTableProps {
+export type ApiKeysTableProps = {
   data: readonly ApiKey[];
   pagination: PaginationState;
   rowCount: number;
   onPaginationChange: (updater: any) => void;
-}
+};
 
-const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
+type ApiKeyRowActionsProps = {
+  apiKey: ApiKey;
+};
+
+const ApiKeyRowActions = ({ apiKey }: ApiKeyRowActionsProps) => {
   const queryClient = $api.useQueryClient();
 
   const [showRevokeDialog, setShowRevokeDialog] = useState(false);
