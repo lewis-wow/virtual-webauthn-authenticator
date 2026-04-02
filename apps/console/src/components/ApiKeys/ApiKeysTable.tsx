@@ -143,12 +143,12 @@ const ApiKeyRowActions = ({ apiKey }: { apiKey: ApiKey }) => {
   );
 };
 
-export function ApiKeysTable({
+export const ApiKeysTable = ({
   data,
   pagination,
   rowCount,
   onPaginationChange,
-}: ApiKeysTableProps) {
+}: ApiKeysTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([]);
 
   const columns: ColumnDef<ApiKey>[] = useMemo(
@@ -231,4 +231,4 @@ export function ApiKeysTable({
       }}
     />
   );
-}
+};

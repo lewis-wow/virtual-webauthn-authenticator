@@ -20,12 +20,12 @@ export type LogsTableProps = {
   onPaginationChange: (updater: any) => void;
 };
 
-export function LogsTable({
+export const LogsTable = ({
   data,
   pagination,
   onPaginationChange,
   rowCount,
-}: LogsTableProps) {
+}: LogsTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'createdAt', desc: true },
   ]);
@@ -132,4 +132,4 @@ export function LogsTable({
       }}
     />
   );
-}
+};
