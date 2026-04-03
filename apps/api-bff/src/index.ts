@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server';
-import { BearerTokenMapper } from '@repo/auth/mappers';
 import { RequestLogFormatter } from '@repo/bff';
+import { BearerTokenMapper } from '@repo/jwt/mappers';
 import { proxy } from '@repo/proxy';
 import { cors } from 'hono/cors';
 

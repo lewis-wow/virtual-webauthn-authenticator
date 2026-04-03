@@ -1,8 +1,6 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { Permission } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/validation';
 import {
   CreateCredentialResponseSchema,
   GetCredentialResponseSchema,
@@ -10,6 +8,8 @@ import {
 import { nestjsContract } from '@repo/contract/nestjs';
 import { Jwks, Jwt } from '@repo/crypto';
 import { HttpStatusCode } from '@repo/http';
+import { Permission } from '@repo/jwt/enums';
+import type { JwtPayload } from '@repo/jwt/validation';
 import { Logger } from '@repo/logger';
 import type { Uint8Array_ } from '@repo/types';
 import { bytesToUuid, uuidToBytes } from '@repo/utils';

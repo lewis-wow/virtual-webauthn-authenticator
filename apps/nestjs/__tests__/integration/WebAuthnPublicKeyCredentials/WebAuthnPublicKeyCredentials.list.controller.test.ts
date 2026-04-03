@@ -4,7 +4,7 @@ import {
   MockJwtAudience,
   upsertTestingUser,
   USER_JWT_PAYLOAD,
-} from '@repo/auth/__tests__/helpers';
+} from '@repo/jwt/__tests__/helpers';
 import {
   upsertTestingVirtualAuthenticator,
   upsertTestingWebAuthnPublicKeyCredential,
@@ -13,7 +13,7 @@ import {
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience } from '@repo/auth';
+import { JwtAudience } from '@repo/jwt';
 import { WRONG_UUID } from '@repo/test-utils';
 import request from 'supertest';
 import { describe, test, expect, afterAll, beforeAll } from 'vitest';

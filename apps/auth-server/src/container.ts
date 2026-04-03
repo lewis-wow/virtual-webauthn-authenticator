@@ -1,12 +1,13 @@
 import { env } from '@/env';
 import { ActivityLog } from '@repo/activity-log';
-import { ApiKeyManager, JwtIssuer } from '@repo/auth';
-import { JWT_ALG } from '@repo/auth';
-import { Permission, TokenType } from '@repo/auth/enums';
-import { PrismaAuthJwksRepository } from '@repo/auth/repositories';
-import type { JwtPayload } from '@repo/auth/validation';
 import { Jwks, Jwt } from '@repo/crypto';
 import { DependencyContainer } from '@repo/dependency-container';
+import { PrismaAuthJwksRepository } from '@repo/jwks';
+import { ApiKeyManager } from '@repo/jwt';
+import { JWT_ALG } from '@repo/jwt';
+import { JwtIssuer } from '@repo/jwt';
+import { Permission, TokenType } from '@repo/jwt/enums';
+import type { JwtPayload } from '@repo/jwt/validation';
 import { Logger } from '@repo/logger';
 import { PrismaClientExtended } from '@repo/prisma';
 import { betterAuth } from 'better-auth';

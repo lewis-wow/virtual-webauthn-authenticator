@@ -1,4 +1,4 @@
-import { USER_ID } from '../../../auth/__tests__/helpers';
+import { USER_ID } from '../../../jwt/__tests__/helpers';
 import {
   KEY_VAULT_KEY_ID,
   KEY_VAULT_KEY_NAME,

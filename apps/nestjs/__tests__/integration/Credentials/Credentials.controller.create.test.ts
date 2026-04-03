@@ -3,7 +3,7 @@ import {
   upsertTestingUser,
   USER_ID,
   USER_JWT_PAYLOAD,
-} from '@repo/auth/__tests__/helpers';
+} from '@repo/jwt/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
   RP_ID,
@@ -12,10 +12,10 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience } from '@repo/auth';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
+import { JwtAudience } from '@repo/jwt';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { set, WRONG_UUID } from '@repo/test-utils';
 import {

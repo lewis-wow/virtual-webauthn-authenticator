@@ -1,5 +1,5 @@
 {
-  "name": "@repo/auth",
+  "name": "@repo/jwt",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,37 +9,33 @@
     "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
-    "./repositories": "./src/repositories/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
-    "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
-    "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@hono/node-server": "^1.19.5",
-    "@repo/assert": "workspace:*",
-    "@repo/pagination": "workspace:*",
+    "@repo/jwks": "workspace:*",
     "@repo/eslint-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/vitest-config": "workspace:*",
     "@types/node": "^22.5.2",
+    "jose": "^6.1.0",
     "type-fest": "^5.0.1",
-    "typescript": "^5.5.4",
-    "vitest": "^3.2.4"
+    "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@repo/http": "workspace:*",
+    "@repo/assert": "workspace:*",
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
+    "@repo/http": "workspace:*",
     "@repo/logger": "workspace:*",
+    "@repo/pagination": "workspace:*",
     "@repo/prisma": "workspace:*",
     "bcryptjs": "^3.0.3",
-    "hono": "^4.9.10",
-    "jose": "^6.1.0",
     "zod": "^4.1.12"
   }
 }

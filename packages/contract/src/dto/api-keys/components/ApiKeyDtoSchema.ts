@@ -1,4 +1,4 @@
-import { ApiKeySchema } from '@repo/auth/validation';
+import { ApiKeySchema } from '@repo/jwt/validation';
 import { DateSchemaCodec } from '@repo/validation';
 
 export const ApiKeyDtoSchema = ApiKeySchema.extend({

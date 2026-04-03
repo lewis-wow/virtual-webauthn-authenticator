@@ -1,4 +1,4 @@
-import { upsertTestingUser, USER_ID } from '../../../../auth/__tests__/helpers';
+import { upsertTestingUser, USER_ID } from '../../../../jwt/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
 import { encodeCOSEPublicKey } from '@repo/keys/cbor';

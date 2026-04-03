@@ -1,4 +1,4 @@
-import { USER_ID } from '@repo/auth/__tests__/helpers';
+import { USER_ID } from '@repo/jwt/__tests__/helpers';
 import {
   RP_ORIGIN,
   VIRTUAL_AUTHENTICATOR_ID,

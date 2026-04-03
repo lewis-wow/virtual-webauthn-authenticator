@@ -4,12 +4,12 @@ import {
   MockJwtAudience,
   upsertTestingUser,
   USER_JWT_PAYLOAD,
-} from '@repo/auth/__tests__/helpers';
+} from '@repo/jwt/__tests__/helpers';
 
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience } from '@repo/auth';
+import { JwtAudience } from '@repo/jwt';
 import { WRONG_UUID } from '@repo/test-utils';
 import { VirtualAuthenticatorUserVerificationType } from '@repo/virtual-authenticator/enums';
 import request from 'supertest';
@@ -26,7 +26,7 @@ const TEST_VIRTUAL_AUTHENTICATOR_ID = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
 const API_PATH = `/api/virtual-authenticators/${TEST_VIRTUAL_AUTHENTICATOR_ID}`;
 
 const upsertTestingVirtualAuthenticator = async () => {
-  const { USER_ID } = await import('@repo/auth/__tests__/helpers');
+  const { USER_ID } = await import('@repo/jwt/__tests__/helpers');
 
   return await prisma.virtualAuthenticator.upsert({
     where: { id: TEST_VIRTUAL_AUTHENTICATOR_ID },

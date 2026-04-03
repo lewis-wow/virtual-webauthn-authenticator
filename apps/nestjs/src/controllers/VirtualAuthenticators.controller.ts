@@ -1,8 +1,6 @@
 import { Controller, UseFilters, UseGuards } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { Permission } from '@repo/auth/enums';
-import type { JwtPayload } from '@repo/auth/validation';
 import {
   CreateVirtualAuthenticatorResponseSchema,
   DeleteVirtualAuthenticatorResponseSchema,
@@ -11,6 +9,8 @@ import {
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { HttpStatusCode } from '@repo/http';
+import { Permission } from '@repo/jwt/enums';
+import type { JwtPayload } from '@repo/jwt/validation';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
