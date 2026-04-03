@@ -328,9 +328,6 @@ importers:
       '@repo/env-config':
         specifier: workspace:*
         version: link:../../packages/env-config
-      '@repo/jwt':
-        specifier: workspace:*
-        version: link:../../packages/jwt
       '@repo/logger':
         specifier: workspace:*
         version: link:../../packages/logger

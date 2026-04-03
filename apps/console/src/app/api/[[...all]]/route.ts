@@ -1,5 +1,5 @@
 import { container } from '@/container';
-import { BearerTokenMapper } from '@repo/auth/mappers';
+import { toBearerToken } from '@repo/auth';
 import { RequestLogFormatter } from '@repo/bff';
 import { proxy } from '@repo/proxy';
 import { cookies } from 'next/headers';
@@ -22,7 +22,7 @@ const handler = async (request: Request): Promise<Response> => {
 
   const response = await proxy('http://localhost:3001', request, {
     headers: {
-      Authorization: jwt ? BearerTokenMapper.toBearerToken(jwt) : null,
+      Authorization: jwt ? toBearerToken(jwt) : null,
     },
   });
 

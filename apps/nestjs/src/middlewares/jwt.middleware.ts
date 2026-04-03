@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { BearerTokenMapper } from '@repo/auth/mappers';
+import { tryFromBearerToken } from '@repo/auth';
 import { JwtAudience } from '@repo/jwt';
 import { Logger } from '@repo/logger';
 import { Request, Response, NextFunction } from 'express';
@@ -18,7 +18,7 @@ export class JwtMiddleware implements NestMiddleware {
   async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
     const authorizationHeader = req.headers['authorization'];
 
-    const jwt = BearerTokenMapper.tryFromBearerToken(authorizationHeader);
+    const jwt = tryFromBearerToken(authorizationHeader);
 
     if (jwt === null) {
       req.user = null;

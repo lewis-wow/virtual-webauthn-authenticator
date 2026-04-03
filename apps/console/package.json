@@ -33,7 +33,6 @@
     "@repo/contract": "workspace:*",
     "@repo/dependency-container": "workspace:*",
     "@repo/env-config": "workspace:*",
-    "@repo/jwt": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/pagination": "workspace:*",
     "@repo/prisma": "workspace:*",
