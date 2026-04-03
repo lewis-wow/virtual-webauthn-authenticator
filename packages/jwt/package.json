@@ -7,7 +7,6 @@
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
     "./validation": "./src/validation/index.ts",
-    "./mappers": "./src/mappers/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
