@@ -1,9 +1,9 @@
 import { Controller, UseFilters } from '@nestjs/common';
 import { ActivityLog } from '@repo/activity-log';
-import type { JwtPayload } from '@repo/jwt/validation';
 import { ListLogsResponseSchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { HttpStatusCode } from '@repo/http';
+import type { JwtPayload } from '@repo/jwt/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
 import { Jwt } from '../decorators/Jwt.decorator';

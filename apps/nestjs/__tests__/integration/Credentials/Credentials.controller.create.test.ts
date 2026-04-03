@@ -12,10 +12,10 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience } from '@repo/jwt';
 import { CreateCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
+import { JwtAudience } from '@repo/jwt';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { set, WRONG_UUID } from '@repo/test-utils';
 import {

@@ -1,6 +1,6 @@
-import { AuthType } from '@repo/jwt/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import { nestjsContract } from '@repo/contract/nestjs';
+import { AuthType } from '@repo/jwt/enums';
 import { initContract } from '@ts-rest/core';
 import { initTsrReactQuery } from '@ts-rest/react-query/v5';
 

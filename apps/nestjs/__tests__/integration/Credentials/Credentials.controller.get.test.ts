@@ -12,12 +12,12 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { JwtAudience } from '@repo/jwt';
 import {
   CreateCredentialBodySchema,
   GetCredentialBodySchema,
 } from '@repo/contract/dto';
 import { HttpStatusCode } from '@repo/http';
+import { JwtAudience } from '@repo/jwt';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { set } from '@repo/test-utils';
 import {

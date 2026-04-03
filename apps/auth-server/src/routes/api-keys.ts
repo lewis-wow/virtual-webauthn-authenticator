@@ -2,7 +2,6 @@ import { factory } from '@/factory';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { TokenType } from '@repo/jwt/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import {
   CreateApiKeyResponseSchema,
@@ -13,6 +12,7 @@ import {
   UpdateApiKeyResponseSchema,
 } from '@repo/contract/dto';
 import { Unauthorized } from '@repo/exception/http';
+import { TokenType } from '@repo/jwt/enums';
 import { add } from 'date-fns';
 
 export const apiKey = factory.createApp();
