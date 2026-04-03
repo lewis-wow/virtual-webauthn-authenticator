@@ -1,6 +1,6 @@
 import { serve } from '@hono/node-server';
+import { toBearerToken, tryFromBearerToken } from '@repo/auth';
 import { RequestLogFormatter } from '@repo/bff';
-import { BearerTokenMapper } from '@repo/jwt/mappers';
 import { proxy } from '@repo/proxy';
 import { cors } from 'hono/cors';
 
@@ -47,7 +47,7 @@ app.all(API_ROUTE_PATTERN, async (ctx) => {
   const tokenFetch = ctx.get('container').resolve('tokenFetch');
 
   const authorizationHeader = ctx.req.header('Authorization');
-  const apiKey = BearerTokenMapper.tryFromBearerToken(authorizationHeader);
+  const apiKey = tryFromBearerToken(authorizationHeader);
 
   let jwt: string | null = null;
   if (apiKey !== null) {
@@ -60,7 +60,7 @@ app.all(API_ROUTE_PATTERN, async (ctx) => {
 
   const response = await proxy(env.API_BASE_URL, ctx.req.raw, {
     headers: {
-      Authorization: jwt ? BearerTokenMapper.toBearerToken(jwt) : null,
+      Authorization: jwt ? toBearerToken(jwt) : null,
     },
   });
 

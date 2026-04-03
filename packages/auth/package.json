@@ -1,5 +1,5 @@
 {
-  "name": "@repo/jwt",
+  "name": "@repo/auth",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,30 +7,21 @@
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
     "./validation": "./src/validation/index.ts",
-    "./__tests__/helpers": "./__tests__/helpers/index.ts"
+    "./helpers": "./src/helpers/index.ts"
   },
   "scripts": {
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@hono/node-server": "^1.19.5",
-    "@repo/jwks": "workspace:*",
-    "@repo/prisma": "workspace:*",
     "@repo/eslint-config": "workspace:*",
-    "@repo/vitest-config": "workspace:*",
-    "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "jose": "^6.1.0",
-    "type-fest": "^5.0.1",
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@repo/auth": "workspace:*",
     "@repo/assert": "workspace:*",
-    "@repo/crypto": "workspace:*",
-    "@repo/http": "workspace:*",
+    "@repo/types": "workspace:*",
     "zod": "^4.1.12"
   }
 }

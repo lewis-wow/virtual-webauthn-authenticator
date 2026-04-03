@@ -1,0 +1,33 @@
+{
+  "name": "@repo/api-key",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./exceptions": "./src/exceptions/index.ts",
+    "./validation": "./src/validation/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.5.4",
+    "@types/node": "^22.5.2"
+  },
+  "dependencies": {
+    "@repo/auth": "workspace:*",
+    "@repo/exception": "workspace:*",
+    "@repo/http": "workspace:*",
+    "@repo/utils": "workspace:*",
+    "@repo/jwt": "workspace:*",
+    "@repo/logger": "workspace:*",
+    "@repo/pagination": "workspace:*",
+    "@repo/prisma": "workspace:*",
+    "bcryptjs": "^3.0.3",
+    "zod": "^4.1.12"
+  }
+}

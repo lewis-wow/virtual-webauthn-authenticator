@@ -34,6 +34,7 @@
   "dependencies": {
     "@ngneat/falso": "^8.0.2",
     "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.0",
+    "@repo/api-key": "workspace:*",
     "@repo/http": "workspace:*",
     "@repo/jwt": "workspace:*",
     "@repo/pagination": "workspace:*",

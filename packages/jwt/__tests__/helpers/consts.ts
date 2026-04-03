@@ -1,7 +1,5 @@
+import { Permission, TokenType } from '@repo/auth/enums';
 import type { JwtPayload } from '@repo/jwt/validation';
-
-import { Permission } from '../../src/enums';
-import { TokenType } from '../../src/enums/TokenType';
 
 export const USER_ID = 'f84468a3-f383-41ce-83e2-5aab4a712c15';
 export const USER_EMAIL = 'john.doe@example.com';

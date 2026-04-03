@@ -1,12 +1,13 @@
+import { Permission } from '@repo/auth/enums';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import type { PaginationResult } from '@repo/pagination/validation';
 import { Prisma, type PrismaClient } from '@repo/prisma';
+import { toBase64Url } from '@repo/utils';
 import { compare, hash } from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
-import { API_KEY_CONFIG } from './constants';
-import { Permission } from './enums/Permission';
+import { API_KEY_CONFIG } from './consts';
 import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
 import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
@@ -46,13 +47,8 @@ export class ApiKeyManager {
     this.prisma = opts.prisma;
   }
 
-  /**
-   * Generates a new, secure random string.
-   * @param length Number of random bytes to generate.
-   * @returns A base64url-encoded string.
-   */
   private _generateRandomString(length: number): string {
-    return randomBytes(length).toString('base64url');
+    return toBase64Url(Uint8Array.from(randomBytes(length)));
   }
 
   /**
@@ -91,12 +87,6 @@ export class ApiKeyManager {
     return { lookupKey, secret };
   }
 
-  /**
-   * Generates a new API key.
-   * This is the only time the plaintext key is available.
-   *
-   * @returns The plaintext key (e.g., 'sk_live_..._...') and the DB record.
-   */
   async generate(opts: {
     userId: string;
     name?: string | null;
@@ -119,10 +109,8 @@ export class ApiKeyManager {
       API_KEY_CONFIG.SECRET_BYTE_LENGTH,
     );
 
-    // This is the key you show to the user ONE TIME.
     const plaintextKey = `${lookupKey}_${secret}`;
 
-    // This is what you store in the database.
     const hashedKey = await hash(secret, API_KEY_CONFIG.BCRYPT_ROUNDS);
 
     const apiKey = await this.prisma.apiKey.create({
@@ -155,15 +143,7 @@ export class ApiKeyManager {
     };
   }
 
-  /**
-   * Validates a provided plaintext API key.
-   * This is the O(1) lookup and secure comparison.
-   *
-   * @param providedKey The full plaintext key from the user.
-   * @returns The ApiKey record if valid, otherwise null.
-   */
   async verify(providedKey: string): Promise<ApiKey | null> {
-    // Use fixed-length parsing to handle secrets containing underscores
     const parsed = this._parseKey(providedKey);
 
     if (!parsed) {
@@ -190,7 +170,6 @@ export class ApiKeyManager {
       return null;
     }
 
-    // Check for revocation or expiration
     if (apiKey.revokedAt) {
       log.warn('API key has been revoked', { keyId: apiKey.id });
       return null;
@@ -201,7 +180,6 @@ export class ApiKeyManager {
       return null;
     }
 
-    // Secure Hash Comparison
     const isValid = await compare(secret, apiKey.hashedKey);
 
     if (!isValid) {
@@ -210,7 +188,6 @@ export class ApiKeyManager {
     }
 
     // Update last used time.
-    // We do this after returning, so we don't slow down the request.
     void this.prisma.apiKey
       .update({
         where: { id: apiKey.id },
@@ -234,10 +211,6 @@ export class ApiKeyManager {
     } as ApiKey;
   }
 
-  /**
-   * Revokes a key by its 'id' (cuid).
-   * This is a soft-delete.
-   */
   async revoke(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
@@ -300,10 +273,6 @@ export class ApiKeyManager {
     } as ApiKey;
   }
 
-  /**
-   * Deletes a key by its 'id' (cuid).
-   * This is a hard-delete. Use with caution.
-   */
   async delete(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
@@ -336,9 +305,6 @@ export class ApiKeyManager {
     } as ApiKey;
   }
 
-  /**
-   * Gets the public-safe details of a single key.
-   */
   async get(opts: { userId: string; id: string }): Promise<ApiKey> {
     const { userId, id } = opts;
 
@@ -367,9 +333,6 @@ export class ApiKeyManager {
     } as ApiKey;
   }
 
-  /**
-   * Lists all public-safe key details for a user.
-   */
   async list(opts: {
     userId: string;
     limit?: number;

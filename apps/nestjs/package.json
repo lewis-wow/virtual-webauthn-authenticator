@@ -22,6 +22,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/serve-static": "^5.0.4",
     "@repo/activity-log": "workspace:*",
+    "@repo/auth": "workspace:*",
     "@repo/http": "workspace:*",
     "@repo/contract": "workspace:*",
     "@repo/crypto": "workspace:*",
