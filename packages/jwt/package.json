@@ -17,6 +17,7 @@
   "devDependencies": {
     "@hono/node-server": "^1.19.5",
     "@repo/jwks": "workspace:*",
+    "@repo/prisma": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
     "@repo/types": "workspace:*",
