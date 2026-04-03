@@ -1,2 +1,2 @@
 export * from './ApiKeyManager';
-export * from './constants';
+export * from './consts';

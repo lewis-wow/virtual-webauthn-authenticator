@@ -1,11 +1,4 @@
-/**
- * API Key generation and validation constants
- */
 export const API_KEY_CONFIG = {
-  /**
-   * Bcrypt hashing cost (higher = more secure but slower)
-   * Recommended: 10-12 for good balance between security and performance
-   */
   BCRYPT_ROUNDS: 12,
 
   /**

@@ -7,7 +7,7 @@ import { toBase64Url } from '@repo/utils';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'node:crypto';
 
-import { API_KEY_CONFIG } from './constants';
+import { API_KEY_CONFIG } from './consts';
 import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
 import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';
