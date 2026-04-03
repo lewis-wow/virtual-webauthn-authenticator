@@ -1,6 +1,6 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
+import { BearerTokenMapper } from '@repo/auth/mappers';
 import { JwtAudience } from '@repo/jwt';
-import { BearerTokenMapper } from '@repo/jwt/mappers';
 import { Logger } from '@repo/logger';
 import { Request, Response, NextFunction } from 'express';
 

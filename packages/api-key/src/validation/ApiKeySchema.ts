@@ -1,4 +1,4 @@
-import { PermissionSchema } from '@repo/jwt/validation';
+import { PermissionSchema } from '@repo/auth/validation';
 import z from 'zod';
 
 export const ApiKeySchema = z

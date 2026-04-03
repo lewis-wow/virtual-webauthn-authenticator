@@ -19,6 +19,7 @@
     "@types/node": "^22.5.2"
   },
   "dependencies": {
+    "@repo/auth": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
     "@repo/utils": "workspace:*",

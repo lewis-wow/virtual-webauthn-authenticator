@@ -68,6 +68,9 @@ importers:
       '@repo/activity-log':
         specifier: workspace:*
         version: link:../../packages/activity-log
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@repo/bff':
         specifier: workspace:*
         version: link:../../packages/bff
@@ -174,6 +177,9 @@ importers:
       '@repo/api-key':
         specifier: workspace:*
         version: link:../../packages/api-key
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -307,6 +313,9 @@ importers:
       '@repo/api-key':
         specifier: workspace:*
         version: link:../../packages/api-key
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@repo/bff':
         specifier: workspace:*
         version: link:../../packages/bff
@@ -494,6 +503,9 @@ importers:
       '@repo/activity-log':
         specifier: workspace:*
         version: link:../../packages/activity-log
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@repo/contract':
         specifier: workspace:*
         version: link:../../packages/contract
@@ -966,6 +978,9 @@ importers:
 
   packages/api-key:
     dependencies:
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../auth
       '@repo/exception':
         specifier: workspace:*
         version: link:../exception
@@ -1037,6 +1052,31 @@ importers:
       zod:
         specifier: ^4.1.12
         version: 4.1.12
+
+  packages/auth:
+    dependencies:
+      '@repo/assert':
+        specifier: workspace:*
+        version: link:../assert
+      '@repo/types':
+        specifier: workspace:*
+        version: link:../types
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.5.2
+        version: 22.15.3
+      typescript:
+        specifier: ^5.5.4
+        version: 5.9.2
 
   packages/bff:
     dependencies:
@@ -1402,6 +1442,9 @@ importers:
       '@repo/assert':
         specifier: workspace:*
         version: link:../assert
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../auth
       '@repo/crypto':
         specifier: workspace:*
         version: link:../crypto

@@ -1,4 +1,4 @@
-import { Permission } from '@repo/jwt/enums';
+import { Permission } from '@repo/auth/enums';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import type { PaginationResult } from '@repo/pagination/validation';
@@ -48,7 +48,7 @@ export class ApiKeyManager {
   }
 
   private _generateRandomString(length: number): string {
-    return toBase64Url(randomBytes(length));
+    return toBase64Url(Uint8Array.from(randomBytes(length)));
   }
 
   /**
