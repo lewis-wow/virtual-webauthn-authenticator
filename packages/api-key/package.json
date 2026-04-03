@@ -21,6 +21,7 @@
   "dependencies": {
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
+    "@repo/utils": "workspace:*",
     "@repo/jwt": "workspace:*",
     "@repo/logger": "workspace:*",
     "@repo/pagination": "workspace:*",
