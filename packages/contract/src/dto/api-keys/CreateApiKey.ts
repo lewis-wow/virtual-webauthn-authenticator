@@ -1,4 +1,4 @@
-import { ApiKeySchema } from '@repo/jwt/validation';
+import { ApiKeySchema } from '@repo/api-key/validation';
 import { DurationSchema } from '@repo/validation';
 import z from 'zod';
 

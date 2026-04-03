@@ -1,12 +1,12 @@
+import { Permission } from '@repo/jwt/enums';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import type { PaginationResult } from '@repo/pagination/validation';
 import { Prisma, type PrismaClient } from '@repo/prisma';
 import { compare, hash } from 'bcryptjs';
-import { randomBytes } from 'crypto';
+import { randomBytes } from 'node:crypto';
 
 import { API_KEY_CONFIG } from './constants';
-import { Permission } from './enums/Permission';
 import { ApiKeyDeleteEnabledFailed } from './exceptions/ApiKeyDeleteEnabledFailed';
 import { ApiKeyDeleteFailed } from './exceptions/ApiKeyDeleteFailed';
 import { ApiKeyNotFound } from './exceptions/ApiKeyNotFound';

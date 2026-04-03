@@ -1,7 +1,6 @@
 import z from 'zod';
 
 import { TokenType } from '../enums/TokenType';
-import { ApiKeySchema } from './ApiKeySchema';
 import { JwtRegisteredClaimsSchema } from './JwtRegisteredClaimsSchema';
 import { UserSchema } from './UserSchema';
 import { PermissionSchema } from './enums/PermissionSchema';
@@ -20,8 +19,10 @@ export const JwtPayloadSchema = JwtRegisteredClaimsSchema.extend({
     }),
     z.object({
       tokenType: z.literal(TokenType.API_KEY),
-      apiKeyId: ApiKeySchema.shape.id,
-      metadata: ApiKeySchema.shape.metadata,
+      apiKeyId: z.uuid(),
+      metadata: z.object({
+        createdWebAuthnPublicKeyCredentialCount: z.int().nonnegative(),
+      }),
     }),
   ]),
 );

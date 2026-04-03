@@ -1,9 +1,9 @@
 import { env } from '@/env';
 import { ActivityLog } from '@repo/activity-log';
+import { ApiKeyManager } from '@repo/api-key';
 import { Jwks, Jwt } from '@repo/crypto';
 import { DependencyContainer } from '@repo/dependency-container';
 import { PrismaAuthJwksRepository } from '@repo/jwks';
-import { ApiKeyManager } from '@repo/jwt';
 import { JWT_ALG } from '@repo/jwt';
 import { JwtIssuer } from '@repo/jwt';
 import { Permission, TokenType } from '@repo/jwt/enums';

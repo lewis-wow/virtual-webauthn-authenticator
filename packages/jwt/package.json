@@ -6,7 +6,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./enums": "./src/enums/index.ts",
-    "./exceptions": "./src/exceptions/index.ts",
     "./validation": "./src/validation/index.ts",
     "./mappers": "./src/mappers/index.ts",
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
@@ -30,12 +29,7 @@
   "dependencies": {
     "@repo/assert": "workspace:*",
     "@repo/crypto": "workspace:*",
-    "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
-    "@repo/logger": "workspace:*",
-    "@repo/pagination": "workspace:*",
-    "@repo/prisma": "workspace:*",
-    "bcryptjs": "^3.0.3",
     "zod": "^4.1.12"
   }
 }

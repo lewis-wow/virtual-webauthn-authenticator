@@ -1,4 +1,4 @@
-import { ApiKeySchema } from '@repo/jwt/validation';
+import { ApiKeySchema } from '@repo/api-key/validation';
 
 import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';
 

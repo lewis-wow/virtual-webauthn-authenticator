@@ -1,6 +1,5 @@
+import { PermissionSchema } from '@repo/jwt/validation';
 import z from 'zod';
-
-import { PermissionSchema } from './enums/PermissionSchema';
 
 export const ApiKeySchema = z
   .object({

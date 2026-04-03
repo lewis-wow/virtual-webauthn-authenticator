@@ -1,4 +1,3 @@
-export * from './ApiKeySchema';
 export * from './JwtPayloadSchema';
 export * from './JwtRegisteredClaimsSchema';
 export * from './UserSchema';
