@@ -7,12 +7,18 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.37.1",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@repo/vitest-config": "workspace:*",
+    "@types/node": "^22.5.2",
+    "vitest": "^3.2.4",
     "typescript": "^5.5.4"
   },
   "dependencies": {
