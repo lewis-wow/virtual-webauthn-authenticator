@@ -10,10 +10,13 @@
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
+    "test:integration": "vitest run --config __tests__/vitest.integration.config.ts",
+    "test:integration:coverage": "vitest run --coverage --config __tests__/vitest.integration.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
+    "@dotenvx/dotenvx": "^1.37.1",
     "@hono/node-server": "^1.19.5",
     "@repo/jwks": "workspace:*",
     "@repo/prisma": "workspace:*",
@@ -24,7 +27,8 @@
     "@types/node": "^22.5.2",
     "jose": "^6.1.0",
     "type-fest": "^5.0.1",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
