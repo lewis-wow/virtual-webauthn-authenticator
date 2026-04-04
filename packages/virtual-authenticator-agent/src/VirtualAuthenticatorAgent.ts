@@ -111,14 +111,12 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
   private async _mapAuthenticatorErrorToAgentError(opts: {
     error: unknown;
-    state: RegistrationState | AuthenticationState;
     optionsHash: string;
   }): Promise<unknown> {
-    const { error, state, optionsHash } = opts;
+    const { error, optionsHash } = opts;
 
     if (error instanceof CredentialSelectException) {
       const stateToken = await this.stateManager.createToken({
-        prevState: state,
         prevOptionsHash: optionsHash,
         action: StateAction.CREDENTIAL_SELECTION,
       });
@@ -131,7 +129,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     if (error instanceof UserPresenceRequired) {
       const stateToken = await this.stateManager.createToken({
-        prevState: state,
         prevOptionsHash: optionsHash,
         action: StateAction.USER_PRESENCE,
       });
@@ -144,7 +141,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
 
     if (error instanceof UserVerificationRequired) {
       const stateToken = await this.stateManager.createToken({
-        prevState: state,
         prevOptionsHash: optionsHash,
         action: StateAction.USER_VERIFICATION,
       });
@@ -311,7 +307,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     } catch (error) {
       throw await this._mapAuthenticatorErrorToAgentError({
         error,
-        state,
         optionsHash,
       });
     }
@@ -534,13 +529,10 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);
 
-      const { action, prevState, prevOptionsHash } = prevStatetokenPayload;
-      assertSchema(prevState, RegistrationStateSchema);
+      const { action, prevOptionsHash } = prevStatetokenPayload;
 
       // State options hash validation
       assertShape(optionsHash, prevOptionsHash);
-      // State shape validation
-      assertShape(nextState, prevState);
 
       switch (action) {
         case StateAction.USER_PRESENCE:
@@ -920,7 +912,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
         throw await this._mapAuthenticatorErrorToAgentError({
           error,
           optionsHash,
-          state,
         });
       });
 
@@ -1075,13 +1066,11 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
       const prevStatetokenPayload =
         await this.stateManager.validateToken(prevStateToken);
 
-      const { action, prevState, prevOptionsHash } = prevStatetokenPayload;
-      assertSchema(prevState, AuthenticationStateSchema);
+      const { action, prevOptionsHash } = prevStatetokenPayload;
 
       // State options hash validation
       assertShape(optionsHash, prevOptionsHash);
       // State shape validation
-      assertShape(nextState, prevState);
 
       switch (action) {
         case StateAction.CREDENTIAL_SELECTION:
