@@ -40,11 +40,11 @@ type KeyPackageDefinition = {
 
 const KEY_PACKAGES: KeyPackageDefinition[] = [
   { key: 'virtual-authenticator', label: 'virtual-authenticator' },
+  { key: 'virtual-authenticator-agent', label: 'virtual-authenticator-agent' },
   { key: 'key-vault', label: 'key-vault' },
   { key: 'cbor', label: 'cbor' },
-  { key: 'crypto', label: 'crypto (JWT)' },
-  { key: 'auth', label: 'auth (API Key Manager)' },
   { key: 'keys', label: 'keys' },
+  { key: 'crypto', label: 'crypto' },
 ];
 
 const createEmptyMetrics = (): GroupMetrics => {
