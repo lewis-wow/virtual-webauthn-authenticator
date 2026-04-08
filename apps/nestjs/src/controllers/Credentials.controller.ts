@@ -3,8 +3,8 @@ import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission } from '@repo/auth/enums';
 import {
-  CreateCredentialResponseSchema,
-  GetCredentialResponseSchema,
+  CreatePublicKeyCredentialResponseSchema,
+  CreatePublicKeyAssertionResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { Jwks, Jwt } from '@repo/crypto';
@@ -162,7 +162,7 @@ export class CredentialsController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: CreateCredentialResponseSchema[HttpStatusCode.OK_200].encode(
+          body: CreatePublicKeyCredentialResponseSchema[HttpStatusCode.OK_200].encode(
             publicKeyCredential,
           ),
         };
@@ -170,11 +170,11 @@ export class CredentialsController {
     );
   }
 
-  @TsRestHandler(nestjsContract.api.credentials.get)
+  @TsRestHandler(nestjsContract.api.credentials.assertion)
   @UseGuards(AuthenticatedGuard)
   async getCredential(@JwtDecorator() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.credentials.get,
+      nestjsContract.api.credentials.assertion,
       async ({ body }) => {
         const {
           publicKeyCredentialRequestOptions,
@@ -226,7 +226,7 @@ export class CredentialsController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: GetCredentialResponseSchema[HttpStatusCode.OK_200].encode(
+          body: CreatePublicKeyAssertionResponseSchema[HttpStatusCode.OK_200].encode(
             publicKeyCredential,
           ),
         };

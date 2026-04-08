@@ -29,10 +29,10 @@ export const WebAuthnPublicKeyCredentialsPage = () => {
       hasNextPage: latestMeta.hasNext,
     });
 
-  const credentialsQuery = $api.api.webAuthnPublicKeyCredentials.list.useQuery({
+  const credentialsQuery = $api.api.credentials.list.useQuery({
     queryKey: [
       'api',
-      'webAuthnPublicKeyCredentials',
+      'credentials',
       'list',
       pagination.pageIndex,
       pagination.pageSize,

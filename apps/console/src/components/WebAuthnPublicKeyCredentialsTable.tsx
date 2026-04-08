@@ -45,11 +45,11 @@ const WebAuthnRowActions = ({ credential }: WebAuthnRowActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const deleteMutation =
-    $api.api.webAuthnPublicKeyCredentials.delete.useMutation({
+    $api.api.credentials.delete.useMutation({
       onSuccess: () => {
         toast.success('Credential deleted successfully.');
         void queryClient.invalidateQueries({
-          queryKey: ['api', 'webAuthnPublicKeyCredentials', 'list'],
+          queryKey: ['api', 'credentials', 'list'],
         });
         setShowDeleteDialog(false);
       },

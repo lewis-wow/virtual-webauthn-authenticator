@@ -2,7 +2,7 @@ import { BytesSchemaCodec } from '@repo/validation';
 import { DateSchemaCodec } from '@repo/validation';
 import { WebAuthnPublicKeyCredentialBaseSchema } from '@repo/virtual-authenticator/validation';
 
-export const WebAuthnPublicKeyCredentialBaseDtoSchema =
+export const PublicKeyCredentialBaseDtoSchema =
   WebAuthnPublicKeyCredentialBaseSchema.extend({
     COSEPublicKey: BytesSchemaCodec,
 

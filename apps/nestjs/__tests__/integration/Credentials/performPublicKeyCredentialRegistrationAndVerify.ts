@@ -3,7 +3,7 @@ import {
   RP_ORIGIN,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
-import { CreateCredentialBodySchema } from '@repo/contract/dto';
+import { CreatePublicKeyCredentialBodySchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { isExceptionShape } from '@repo/exception';
 import { bytesToUuid } from '@repo/utils';
@@ -30,7 +30,7 @@ import z from 'zod';
 export type PerformPublicKeyCredentialRegistrationAndVerifyArgs = {
   app: App;
   token: string | undefined;
-  payload: z.input<typeof CreateCredentialBodySchema>;
+  payload: z.input<typeof CreatePublicKeyCredentialBodySchema>;
   expectStatus: number;
   /**
    * When true, skips the state token retry loop.
@@ -50,7 +50,7 @@ export type PerformPublicKeyCredentialRegistrationAndVerifyResult = {
 const sendCreateCredentialRequest = async (opts: {
   app: App;
   token: string | undefined;
-  payload: z.input<typeof CreateCredentialBodySchema>;
+  payload: z.input<typeof CreatePublicKeyCredentialBodySchema>;
 }) => {
   const { app, token, payload } = opts;
 

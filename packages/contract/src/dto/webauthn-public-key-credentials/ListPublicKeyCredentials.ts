@@ -5,7 +5,7 @@ import {
   SortKeysSchema,
 } from '@repo/pagination/validation';
 
-import { WebAuthnPublicKeyCredentialDtoSchema } from './components/WebAuthnPublicKeyCredentialDtoSchema';
+import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDtoSchema';
 
 // =============================================================================
 // OPERATION: LIST
@@ -15,15 +15,15 @@ import { WebAuthnPublicKeyCredentialDtoSchema } from './components/WebAuthnPubli
 // Inputs
 // -------------------------------------
 
-export const ListWebAuthnPublicKeyCredentialsQuerySchema =
+export const ListPublicKeyCredentialsQuerySchema =
   PaginationRequestMetaSchema(SortKeysSchema);
 
 // -------------------------------------
 // Outputs
 // -------------------------------------
 
-export const ListWebAuthnPublicKeyCredentialsResponseSchema = {
+export const ListPublicKeyCredentialsResponseSchema = {
   [HttpStatusCode.OK_200]: PaginationResultSchema(
-    WebAuthnPublicKeyCredentialDtoSchema,
+    PublicKeyCredentialDtoSchema,
   ),
 };

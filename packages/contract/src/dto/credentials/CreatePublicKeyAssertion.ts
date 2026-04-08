@@ -13,7 +13,7 @@ import z from 'zod';
 // Inputs
 // -------------------------------------
 
-export const GetCredentialBodySchema = z.object({
+export const CreatePublicKeyAssertionBodySchema = z.object({
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptionsDtoSchema,
   meta: AuthenticatorAgentMetaArgsSchema.pick({
     origin: true,
@@ -26,6 +26,6 @@ export const GetCredentialBodySchema = z.object({
 // Outputs
 // -------------------------------------
 
-export const GetCredentialResponseSchema = {
+export const CreatePublicKeyAssertionResponseSchema = {
   [HttpStatusCode.OK_200]: AuthenticatorAgentGetAssertionResponseDtoSchema,
 } as const;

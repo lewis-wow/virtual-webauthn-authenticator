@@ -8,7 +8,7 @@ import {
 import { DateSchemaCodec } from '@repo/validation';
 import { WebAuthnPublicKeyCredentialKeyVaultKeyMetaSchema } from '@repo/virtual-authenticator/validation';
 
-export const WebAuthnPublicKeyCredentialKeyVaultKeyMetaDtoSchema =
+export const PublicKeyCredentialKeyVaultKeyMetaDtoSchema =
   WebAuthnPublicKeyCredentialKeyVaultKeyMetaSchema.extend({
     createdAt: DateSchemaCodec,
     updatedAt: DateSchemaCodec,

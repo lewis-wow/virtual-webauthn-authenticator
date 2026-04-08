@@ -4,9 +4,9 @@ import { ActivityLog } from '@repo/activity-log';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
 import { Permission } from '@repo/auth/enums';
 import {
-  DeleteWebAuthnPublicKeyCredentialResponseSchema,
-  GetWebAuthnPublicKeyCredentialResponseSchema,
-  ListWebAuthnPublicKeyCredentialsResponseSchema,
+  DeletePublicKeyCredentialResponseSchema,
+  GetPublicKeyCredentialResponseSchema,
+  ListPublicKeyCredentialsResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { HttpStatusCode } from '@repo/http';
@@ -37,11 +37,11 @@ export class WebAuthnPublicKeyCredentialsController {
     private readonly activityLog: ActivityLog,
   ) {}
 
-  @TsRestHandler(nestjsContract.api.webAuthnPublicKeyCredentials.list)
+  @TsRestHandler(nestjsContract.api.credentials.list)
   @UseGuards(AuthenticatedGuard)
   async listWebAuthnPublicKeyCredentials(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.webAuthnPublicKeyCredentials.list,
+      nestjsContract.api.credentials.list,
       async ({ query }) => {
         const { userId, permissions } = jwtPayload;
 
@@ -74,7 +74,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: ListWebAuthnPublicKeyCredentialsResponseSchema[
+          body: ListPublicKeyCredentialsResponseSchema[
             HttpStatusCode.OK_200
           ].encode(result),
         };
@@ -82,11 +82,11 @@ export class WebAuthnPublicKeyCredentialsController {
     );
   }
 
-  @TsRestHandler(nestjsContract.api.webAuthnPublicKeyCredentials.get)
+  @TsRestHandler(nestjsContract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
   async getWebAuthnPublicKeyCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.webAuthnPublicKeyCredentials.get,
+      nestjsContract.api.credentials.get,
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
@@ -112,7 +112,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: GetWebAuthnPublicKeyCredentialResponseSchema[
+          body: GetPublicKeyCredentialResponseSchema[
             HttpStatusCode.OK_200
           ].encode(webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential),
         };
@@ -120,11 +120,11 @@ export class WebAuthnPublicKeyCredentialsController {
     );
   }
 
-  @TsRestHandler(nestjsContract.api.webAuthnPublicKeyCredentials.delete)
+  @TsRestHandler(nestjsContract.api.credentials.delete)
   @UseGuards(AuthenticatedGuard)
   async deleteWebAuthnPublicKeyCredential(@Jwt() jwtPayload: JwtPayload) {
     return tsRestHandler(
-      nestjsContract.api.webAuthnPublicKeyCredentials.delete,
+      nestjsContract.api.credentials.delete,
       async ({ params }) => {
         const { userId, permissions } = jwtPayload;
 
@@ -179,7 +179,7 @@ export class WebAuthnPublicKeyCredentialsController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: DeleteWebAuthnPublicKeyCredentialResponseSchema[
+          body: DeletePublicKeyCredentialResponseSchema[
             HttpStatusCode.OK_200
           ].encode(webAuthnPublicKeyCredential as WebAuthnPublicKeyCredential),
         };
