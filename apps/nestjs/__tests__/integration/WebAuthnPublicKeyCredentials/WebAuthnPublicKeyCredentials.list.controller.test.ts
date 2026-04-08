@@ -13,6 +13,7 @@ import {
 import { KeyClient } from '@azure/keyvault-keys';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { nestjsContract } from '@repo/contract/nestjs';
 import { JwtAudience } from '@repo/jwt';
 import { WRONG_UUID } from '@repo/test-utils';
 import request from 'supertest';
@@ -25,7 +26,7 @@ import { JWT_CONFIG } from '../../helpers/consts';
 import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
 import { prisma } from '../../helpers/prisma';
 
-const API_PATH = '/api/webauthn-public-key-credentials';
+const API_PATH = nestjsContract.api.credentials.list.path;
 
 const cleanupWebAuthnPublicKeyCredentials = async () => {
   await prisma.$transaction([
