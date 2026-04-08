@@ -27,7 +27,10 @@ import { JWT_CONFIG } from '../../helpers/consts';
 import { jwtIssuer, getJSONWebKeySet } from '../../helpers/jwt';
 import { prisma } from '../../helpers/prisma';
 
-const API_PATH = nestjsContract.api.credentials.delete.path.replace(':id', WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID);
+const API_PATH = nestjsContract.api.credentials.delete.path.replace(
+  ':id',
+  WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,
+);
 
 const cleanupWebAuthnPublicKeyCredentials = async () => {
   await prisma.$transaction([

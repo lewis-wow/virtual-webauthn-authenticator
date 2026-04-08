@@ -16,14 +16,10 @@ export const GET_PUBLIC_KEY_CREDENTIAL_FIELDS = {
 // -------------------------------------
 
 export const GetPublicKeyCredentialFormSchema =
-  PublicKeyCredentialBaseDtoSchema.pick(
-    GET_PUBLIC_KEY_CREDENTIAL_FIELDS,
-  );
+  PublicKeyCredentialBaseDtoSchema.pick(GET_PUBLIC_KEY_CREDENTIAL_FIELDS);
 
 export const GetPublicKeyCredentialParamsSchema =
-  PublicKeyCredentialBaseDtoSchema.pick(
-    GET_PUBLIC_KEY_CREDENTIAL_FIELDS,
-  );
+  PublicKeyCredentialBaseDtoSchema.pick(GET_PUBLIC_KEY_CREDENTIAL_FIELDS);
 
 // -------------------------------------
 // Outputs

@@ -17,9 +17,7 @@ export const DELETE_PUBLIC_KEY_CREDENTIAL_FIELDS = {
 // -------------------------------------
 
 export const DeletePublicKeyCredentialFormSchema =
-  PublicKeyCredentialBaseDtoSchema.pick(
-    DELETE_PUBLIC_KEY_CREDENTIAL_FIELDS,
-  );
+  PublicKeyCredentialBaseDtoSchema.pick(DELETE_PUBLIC_KEY_CREDENTIAL_FIELDS);
 
 export const DeletePublicKeyCredentialParamsSchema =
   PublicKeyCredentialBaseDtoSchema.pick(

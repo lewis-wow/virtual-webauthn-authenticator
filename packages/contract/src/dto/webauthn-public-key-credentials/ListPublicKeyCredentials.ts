@@ -23,7 +23,5 @@ export const ListPublicKeyCredentialsQuerySchema =
 // -------------------------------------
 
 export const ListPublicKeyCredentialsResponseSchema = {
-  [HttpStatusCode.OK_200]: PaginationResultSchema(
-    PublicKeyCredentialDtoSchema,
-  ),
+  [HttpStatusCode.OK_200]: PaginationResultSchema(PublicKeyCredentialDtoSchema),
 };

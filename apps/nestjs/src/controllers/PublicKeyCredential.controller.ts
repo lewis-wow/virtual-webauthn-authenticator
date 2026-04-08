@@ -181,9 +181,9 @@ export class PublicKeyCredentialController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: CreatePublicKeyCredentialResponseSchema[HttpStatusCode.OK_200].encode(
-            publicKeyCredential,
-          ),
+          body: CreatePublicKeyCredentialResponseSchema[
+            HttpStatusCode.OK_200
+          ].encode(publicKeyCredential),
         };
       },
     );
@@ -249,9 +249,9 @@ export class PublicKeyCredentialController {
 
         return {
           status: HttpStatusCode.OK_200,
-          body: CreatePublicKeyAssertionResponseSchema[HttpStatusCode.OK_200].encode(
-            publicKeyCredential,
-          ),
+          body: CreatePublicKeyAssertionResponseSchema[
+            HttpStatusCode.OK_200
+          ].encode(publicKeyCredential),
         };
       },
     );

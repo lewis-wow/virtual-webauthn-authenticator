@@ -1,13 +1,13 @@
 import { initContract } from '@ts-rest/core';
 
 import {
-  CreatePublicKeyCredentialBodySchema,
-  CreatePublicKeyCredentialResponseSchema,
-} from '../dto/credentials/CreatePublicKeyCredential';
-import {
   CreatePublicKeyAssertionBodySchema,
   CreatePublicKeyAssertionResponseSchema,
 } from '../dto/credentials/CreatePublicKeyAssertion';
+import {
+  CreatePublicKeyCredentialBodySchema,
+  CreatePublicKeyCredentialResponseSchema,
+} from '../dto/credentials/CreatePublicKeyCredential';
 import {
   DeletePublicKeyCredentialParamsSchema,
   DeletePublicKeyCredentialResponseSchema,
