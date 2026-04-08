@@ -2,12 +2,11 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'node:path';
 
-import { CredentialsController } from './controllers/Credentials.controller';
 import { HealthcheckController } from './controllers/Healthcheck.controller';
 import { LogsController } from './controllers/Logs.controller';
 import { ProfileController } from './controllers/Profile.controller';
+import { PublicKeyCredentialController } from './controllers/PublicKeyCredential.controller';
 import { VirtualAuthenticatorsController } from './controllers/VirtualAuthenticators.controller';
-import { WebAuthnPublicKeyCredentialsController } from './controllers/WebAuthnPublicKeyCredentials.controller';
 import { ExceptionFilter } from './filters/Exception.filter';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { RequestIdMiddleware } from './middlewares/requestId.middleware';
@@ -37,9 +36,8 @@ import { VirtualAuthenticatorAgentProvider } from './services/VirtualAuthenticat
   controllers: [
     HealthcheckController,
     ProfileController,
-    CredentialsController,
+    PublicKeyCredentialController,
     VirtualAuthenticatorsController,
-    WebAuthnPublicKeyCredentialsController,
     LogsController,
   ],
   providers: [
