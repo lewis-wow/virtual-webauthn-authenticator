@@ -13,8 +13,8 @@ import {
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import {
-  CreateCredentialBodySchema,
-  GetCredentialBodySchema,
+  CreatePublicKeyCredentialBodySchema,
+  CreatePublicKeyAssertionBodySchema,
 } from '@repo/contract/dto';
 import { HttpStatusCode } from '@repo/http';
 import { JwtAudience } from '@repo/jwt';
@@ -74,7 +74,7 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
   meta: {
     origin: RP_ORIGIN,
   },
-} as z.input<typeof CreateCredentialBodySchema>;
+} as z.input<typeof CreatePublicKeyCredentialBodySchema>;
 
 /**
  * Reusable base query for GET /api/credentials
@@ -89,7 +89,7 @@ const PUBLIC_KEY_CREDENTIAL_REQUEST_PAYLOAD = {
     origin: RP_ORIGIN,
   },
   nextState: {},
-} as z.input<typeof GetCredentialBodySchema>;
+} as z.input<typeof CreatePublicKeyAssertionBodySchema>;
 
 describe('CredentialsController - POST /api/assertion', () => {
   let app: INestApplication;

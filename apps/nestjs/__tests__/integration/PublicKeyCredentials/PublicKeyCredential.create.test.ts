@@ -12,7 +12,7 @@ import {
 
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import { CreateCredentialBodySchema } from '@repo/contract/dto';
+import { CreatePublicKeyCredentialBodySchema } from '@repo/contract/dto';
 import { RequestValidationFailed } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import { JwtAudience } from '@repo/jwt';
@@ -66,7 +66,7 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
   meta: {
     origin: RP_ORIGIN,
   },
-} as z.input<typeof CreateCredentialBodySchema>;
+} as z.input<typeof CreatePublicKeyCredentialBodySchema>;
 
 const cleanupWebAuthnPublicKeyCredentials = async () => {
   await prisma.$transaction([

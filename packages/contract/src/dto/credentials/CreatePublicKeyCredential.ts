@@ -16,7 +16,7 @@ import z from 'zod';
 // Inputs
 // -------------------------------------
 
-export const CreateCredentialBodySchema = z.object({
+export const CreatePublicKeyCredentialBodySchema = z.object({
   publicKeyCredentialCreationOptions:
     PublicKeyCredentialCreationOptionsDtoSchema.extend({
       /**
@@ -42,6 +42,6 @@ export const CreateCredentialBodySchema = z.object({
 // Outputs
 // -------------------------------------
 
-export const CreateCredentialResponseSchema = {
+export const CreatePublicKeyCredentialResponseSchema = {
   [HttpStatusCode.OK_200]: AuthenticatorAgentCreateCredentialResponseDtoSchema,
 };

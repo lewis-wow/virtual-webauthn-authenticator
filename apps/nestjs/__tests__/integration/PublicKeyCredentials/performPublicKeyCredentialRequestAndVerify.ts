@@ -4,7 +4,7 @@ import {
   RP_ORIGIN,
 } from '@repo/virtual-authenticator/__tests__/helpers';
 
-import { GetCredentialBodySchema } from '@repo/contract/dto';
+import { CreatePublicKeyAssertionBodySchema } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { isExceptionShape } from '@repo/exception';
 import { uuidToBytes } from '@repo/utils';
@@ -33,7 +33,7 @@ import z from 'zod';
 export type PerformPublicKeyCredentialRequestAndVerifyArgs = {
   app: App;
   token: string | undefined;
-  payload: z.input<typeof GetCredentialBodySchema>;
+  payload: z.input<typeof CreatePublicKeyAssertionBodySchema>;
   registrationVerification: VerifiedRegistrationResponse;
   expectStatus: number;
   /**
@@ -56,12 +56,12 @@ export type PerformPublicKeyCredentialRequestAndVerifyResult = {
 const sendGetCredentialRequest = async (opts: {
   app: App;
   token: string | undefined;
-  payload: z.input<typeof GetCredentialBodySchema>;
+  payload: z.input<typeof CreatePublicKeyAssertionBodySchema>;
 }) => {
   const { app, token, payload } = opts;
 
   const requestInit = request(app).post(
-    nestjsContract.api.credentials.get.path,
+    nestjsContract.api.credentials.assertion.path,
   );
   if (token !== undefined) {
     requestInit.set('Authorization', `Bearer ${token}`);
