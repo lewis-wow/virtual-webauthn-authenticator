@@ -175,8 +175,10 @@ model WebAuthnPublicKeyCredential {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId])
-  @@index([rpId]) // Add an index to rpId for fast lookups
+  // Covers combined search (userId, rpId) and prefix search by userId
+  @@index([userId, rpId])
+  // Covers search by rpId alone
+  @@index([rpId])
   @@map("webAuthnPublicKeyCredential")
 }
 
