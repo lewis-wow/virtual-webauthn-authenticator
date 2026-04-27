@@ -13,6 +13,7 @@ import {
   COSEKeyAlgorithm,
   COSEKeyParam,
   JWKKeyAlgorithm,
+  JWKKeyType,
 } from '@repo/keys/enums';
 import { isECAlgorithm } from '@repo/keys/helpers';
 import { COSEKeyAlgorithmSchema } from '@repo/keys/validation';
@@ -132,7 +133,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
     let keyVaultKey: KeyVaultKey;
 
     switch (keyType) {
-      case 'EC':
+      case JWKKeyType.EC:
         // Create EC key (P-256, P-384, P-521)
         keyVaultKey = await this.keyClient.createEcKey(keyName, {
           keyOps: [KnownKeyOperations.Sign, KnownKeyOperations.Verify],
@@ -141,7 +142,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
         });
         break;
 
-      case 'RSA':
+      case JWKKeyType.RSA:
         // Create RSA key (RS256, RS384, RS512, PS256, PS384, PS512)
         keyVaultKey = await this.keyClient.createRsaKey(keyName, {
           keyOps: [KnownKeyOperations.Sign, KnownKeyOperations.Verify],
@@ -150,7 +151,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
         });
         break;
 
-      case 'OKP':
+      case JWKKeyType.OKP:
         // OKP keys (Ed25519/EdDSA) are NOT supported by Azure Key Vault
         throw new OKPKeyTypeNotSupported();
 
@@ -159,23 +160,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
           message: `Unsupported key type: ${keyType}`,
         });
     }
-
-    return {
-      jwk: this._azureKeyVaultKeyToJsonWebKey(keyVaultKey.key!),
-      meta: {
-        keyVaultKey,
-      },
-    };
-  }
-
-  /**
-   * Retrieves an existing key from Azure Key Vault.
-   * @param opts.keyName - The name of the key to retrieve
-   * @returns KeyPayload containing the JWK and Key Vault metadata
-   */
-  private async _getKey(opts: { keyName: string }): Promise<KeyPayload> {
-    const { keyName } = opts;
-    const keyVaultKey = await this.keyClient.getKey(keyName);
 
     return {
       jwk: this._azureKeyVaultKeyToJsonWebKey(keyVaultKey.key!),
@@ -195,7 +179,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
    * @returns SignPayload containing the signature and metadata
    */
   private async _sign(opts: {
-    keyVaultKey: KeyVaultKey;
+    keyVaultKey: string;
     algorithm: JWKKeyAlgorithm;
     data: Uint8Array_;
   }): Promise<SignPayload> {
@@ -308,14 +292,6 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
       throw new UnexpectedWebAuthnPublicKeyCredentialKeyMetaType();
     }
 
-    const {
-      meta: { keyVaultKey },
-    } = await this._getKey({
-      keyName:
-        webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta
-          .keyVaultKeyName,
-    });
-
     const COSEPublicKey = decodeCOSEPublicKey(
       webAuthnPublicKeyCredential.COSEPublicKey,
     );
@@ -330,7 +306,9 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
     const signature = await this._sign({
       algorithm: JWKKeyAlgorithm,
-      keyVaultKey,
+      keyVaultKey:
+        webAuthnPublicKeyCredential.webAuthnPublicKeyCredentialKeyVaultKeyMeta
+          .keyVaultKeyId!,
       data,
     });
 
