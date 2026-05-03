@@ -7,20 +7,8 @@ import {
 
 import { VirtualAuthenticatorDtoSchema } from './components/VirtualAuthenticatorDtoSchema';
 
-// =============================================================================
-// OPERATION: LIST
-// =============================================================================
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
-
 export const ListVirtualAuthenticatorsQuerySchema =
   PaginationRequestMetaSchema(SortKeysSchema);
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const ListVirtualAuthenticatorsResponseSchema = {
   [HttpStatusCode.OK_200]: PaginationResultSchema(

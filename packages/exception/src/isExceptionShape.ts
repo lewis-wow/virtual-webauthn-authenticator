@@ -14,7 +14,6 @@ export type AnyExceptionConstructor = ExceptionConstructor<AnyException>;
 export const isExceptionShape = <TCtor extends AnyExceptionConstructor>(
   exceptionConstructor: TCtor,
 ) => {
-  // Infer the instance type from the constructor
   type TInstance = InstanceType<TCtor>;
 
   return (shape: {

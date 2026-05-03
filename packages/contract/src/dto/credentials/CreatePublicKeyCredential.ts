@@ -8,14 +8,6 @@ import {
 import { RegistrationStateSchema } from '@repo/virtual-authenticator/state';
 import z from 'zod';
 
-// =============================================================================
-// OPERATION: CREATE
-// =============================================================================
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
-
 export const CreatePublicKeyCredentialBodySchema = z.object({
   publicKeyCredentialCreationOptions:
     PublicKeyCredentialCreationOptionsDtoSchema.extend({
@@ -37,10 +29,6 @@ export const CreatePublicKeyCredentialBodySchema = z.object({
   nextState: RegistrationStateSchema.optional(),
   prevStateToken: z.string().optional(),
 });
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const CreatePublicKeyCredentialResponseSchema = {
   [HttpStatusCode.OK_200]: AuthenticatorAgentCreateCredentialResponseDtoSchema,

@@ -32,7 +32,6 @@ export class PackedAttestationHandler implements AttestationHandler {
 
     const dataToSign = createDataToSign(data);
 
-    // Sign the data to create the attestation signature
     const { signature, alg } = await this.keyProvider
       .sign({
         data: dataToSign,

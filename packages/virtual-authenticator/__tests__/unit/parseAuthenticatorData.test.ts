@@ -15,8 +15,6 @@ import { describe, expect, test } from 'vitest';
 
 import { parseAuthenticatorData } from '../../src/cbor/parseAuthenticatorData.js';
 
-// --- Test Data ---
-
 /**
  * Helper function to create a COSE EC public key map
  */
@@ -123,8 +121,6 @@ const createAuthData = (options: {
 
   return result;
 };
-
-// --- End Test Data ---
 
 describe('parseAuthenticatorData', () => {
   describe('Validation', () => {

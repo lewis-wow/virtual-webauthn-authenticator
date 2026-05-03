@@ -49,7 +49,7 @@ export default defineConfig({
         fs.mkdirSync(distFolder, { recursive: true });
       }
 
-      // --- 2. ZIP Generation ---
+      // 2. ZIP Generation
       // We do this in parallel or before CRX to ensure we have both formats
       const archive = archiver('zip', { zlib: { level: 9 } });
       const stream = fs.createWriteStream(zipPath);
@@ -68,7 +68,7 @@ export default defineConfig({
         archive.finalize();
       });
 
-      // --- 3. CRX Generation ---
+      // 3. CRX Generation
       // Check for Private Key
       if (!fs.existsSync(keyPath)) {
         console.warn('⚠️  Skipping CRX pack: "key.pem" not found in root.');

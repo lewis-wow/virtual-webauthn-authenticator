@@ -4,8 +4,6 @@ import { see } from '../../meta/see';
 import { BytesSchema } from '../BytesSchema';
 import { PublicKeyCredentialTypeSchema } from '../enums/PublicKeyCredentialTypeSchema';
 
-// Used to exclude existing credentials for a user
-
 /**
  * @see https://www.w3.org/TR/webauthn/#dictdef-publickeycredentialdescriptor
  */

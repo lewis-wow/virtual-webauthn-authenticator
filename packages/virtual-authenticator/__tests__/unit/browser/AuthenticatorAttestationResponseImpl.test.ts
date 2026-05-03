@@ -14,8 +14,6 @@ import { AuthenticatorAttestationResponseImpl } from '../../../src/browser/Authe
 import { AuthenticatorTransport } from '../../../src/enums/index.js';
 import { AlgorithmIdentifierNotFoundInCoseKey } from '../../../src/exceptions/index.js';
 
-// --- Test Data Helpers ---
-
 /**
  * Helper function to create a COSE EC public key map
  */
@@ -105,8 +103,6 @@ const createAttestationObject = (authData?: Uint8Array_): Uint8Array_ => {
 
   return cbor.encode(attestationObject);
 };
-
-// --- End Test Data Helpers ---
 
 describe('AuthenticatorAttestationResponseImpl', () => {
   const createMockOptions = () => ({

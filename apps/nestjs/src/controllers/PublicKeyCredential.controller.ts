@@ -12,7 +12,6 @@ import {
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
 import { HttpStatusCode } from '@repo/http';
-import { Jwks, Jwt } from '@repo/jwt';
 import type { JwtPayload } from '@repo/jwt/validation';
 import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
@@ -46,15 +45,9 @@ export class PublicKeyCredentialController {
     private readonly virtualAuthenticatorAgent: VirtualAuthenticatorAgent,
     private readonly logger: Logger,
     private readonly activityLog: ActivityLog,
-    private readonly jwt: Jwt,
-    private readonly jwks: Jwks,
     private readonly prisma: PrismaService,
     private readonly keyClient: KeyClient,
   ) {}
-
-  // ===========================================================================
-  // Helpers
-  // ===========================================================================
 
   /**
    * Validates that a user exists and has an active virtual authenticator.
@@ -108,10 +101,6 @@ export class PublicKeyCredentialController {
     });
   }
 
-  // ===========================================================================
-  // Create (POST /public-key-credentials)
-  // ===========================================================================
-
   @TsRestHandler(nestjsContract.api.credentials.create)
   @UseGuards(AuthenticatedGuard)
   async createCredential(@JwtDecorator() jwtPayload: JwtPayload) {
@@ -157,7 +146,6 @@ export class PublicKeyCredentialController {
             },
             sameOriginWithAncestors: true,
 
-            // Internal options
             meta: {
               origin: meta.origin,
               userId: userId,
@@ -188,10 +176,6 @@ export class PublicKeyCredentialController {
       },
     );
   }
-
-  // ===========================================================================
-  // Assertion (POST /assertions)
-  // ===========================================================================
 
   @TsRestHandler(nestjsContract.api.credentials.assertion)
   @UseGuards(AuthenticatedGuard)
@@ -225,7 +209,6 @@ export class PublicKeyCredentialController {
             },
             sameOriginWithAncestors: true,
 
-            // Internal options
             meta: {
               origin: meta.origin,
               userId: userId,
@@ -256,10 +239,6 @@ export class PublicKeyCredentialController {
       },
     );
   }
-
-  // ===========================================================================
-  // List (GET /public-key-credentials)
-  // ===========================================================================
 
   @TsRestHandler(nestjsContract.api.credentials.list)
   @UseGuards(AuthenticatedGuard)
@@ -306,10 +285,6 @@ export class PublicKeyCredentialController {
     );
   }
 
-  // ===========================================================================
-  // Get (GET /public-key-credentials/:id)
-  // ===========================================================================
-
   @TsRestHandler(nestjsContract.api.credentials.get)
   @UseGuards(AuthenticatedGuard)
   async getPublicKeyCredential(@JwtDecorator() jwtPayload: JwtPayload) {
@@ -347,10 +322,6 @@ export class PublicKeyCredentialController {
       },
     );
   }
-
-  // ===========================================================================
-  // Delete (DELETE /public-key-credentials/:id)
-  // ===========================================================================
 
   @TsRestHandler(nestjsContract.api.credentials.delete)
   @UseGuards(AuthenticatedGuard)

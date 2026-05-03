@@ -5,14 +5,6 @@ import { PublicKeyCredentialRequestOptionsDtoSchema } from '@repo/virtual-authen
 import { AuthenticationStateSchema } from '@repo/virtual-authenticator/state';
 import z from 'zod';
 
-// =============================================================================
-// OPERATION: GET
-// =============================================================================
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
-
 export const CreatePublicKeyAssertionBodySchema = z.object({
   publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptionsDtoSchema,
   meta: AuthenticatorAgentMetaArgsSchema.pick({
@@ -21,10 +13,6 @@ export const CreatePublicKeyAssertionBodySchema = z.object({
   nextState: AuthenticationStateSchema.optional(),
   prevStateToken: z.string().optional(),
 });
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const CreatePublicKeyAssertionResponseSchema = {
   [HttpStatusCode.OK_200]: AuthenticatorAgentGetAssertionResponseDtoSchema,
