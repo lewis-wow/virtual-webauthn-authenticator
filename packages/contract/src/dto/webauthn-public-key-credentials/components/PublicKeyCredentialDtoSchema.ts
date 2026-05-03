@@ -16,6 +16,6 @@ export const PublicKeyCredentialDtoSchema = (
         PUBLIC_KEY_CREDENTIAL_VARIANTS,
       )
 ).meta({
-  id: 'StoredPublicKeyCredential',
-  title: 'StoredPublicKeyCredential',
+  id: 'PublicKeyCredential',
+  title: 'PublicKeyCredential',
 });
