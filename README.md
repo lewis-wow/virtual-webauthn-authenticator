@@ -4,6 +4,26 @@
 
 Traditional password authentication is inherently vulnerable to phishing and data breaches. Although the industry is moving toward more secure hardware and platform passkeys, these solutions introduce usability challenges. Users must manage physical devices and risk account lockouts if they lose them. Server-side authenticators offer a more user-friendly alternative. They eliminate the strict dependence on specific hardware but require strong protection of cryptographic material in a cloud environment. This thesis proposes and demonstrates an implementation of such a virtual authenticator in Node.js. The solution includes a web extension to intercept standard WebAuthn API calls and route them to the authenticator web service.
 
+<!-- TOC_START -->
+## Table of Contents
+
+- [About This Project](#about-this-project)
+- [Development prerequisites](#development-prerequisites)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+  - [1. Install Dependencies](#1-install-dependencies)
+  - [2. Start Infrastructure](#2-start-infrastructure)
+  - [3. Run in Development Mode](#3-run-in-development-mode)
+  - [Run Tests](#run-tests)
+- [Authenticator flow](#authenticator-flow)
+- [Architecture](#architecture)
+- [Example Relying Party Application](#example-relying-party-application)
+  - [1. Set Up the Database Schema](#1-set-up-the-database-schema)
+  - [2. Run in Development Mode](#2-run-in-development-mode)
+- [Configuration](#configuration)
+- [Resources](#resources)
+<!-- TOC_END -->
+
 ## About This Project
 
 This is a thesis project exploring server-side WebAuthn authenticators as an alternative to traditional hardware security keys. It's designed for research and demonstration purposes, not production use.

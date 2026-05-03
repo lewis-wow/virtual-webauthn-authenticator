@@ -18,6 +18,7 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
     "check-types": "turbo run check-types",
     "coverage:latex": "./scripts/generate_latex_coverage.ts coverage/coverage-final.json",
+    "docs:toc": "tsx ./scripts/generate_readme_toc.ts",
     "openapi:latex": "./scripts/generate_latex_openapi.ts packages/contract/generated/openapi.json"
   },
   "devDependencies": {
