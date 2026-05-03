@@ -1,5 +1,8 @@
 {
   "extends": "@repo/typescript-config/base.json",
-  "include": ["src", "__tests__", "../shared-dts/zod.d.ts"],
-  "exclude": ["node_modules"]
+  "include": ["src", "scripts", "__tests__", "../shared-dts/zod.d.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "types": ["node"]
+  }
 }

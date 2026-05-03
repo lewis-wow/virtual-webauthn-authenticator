@@ -1,6 +1,7 @@
 #!/usr/bin/env tsx
-import { readFile } from 'fs/promises';
-import { resolve } from 'path';
+/// <reference types="node" />
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
 console.log('🌀 Starting OpenAPI to LaTeX conversion...');
 
