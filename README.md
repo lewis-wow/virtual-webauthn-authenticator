@@ -24,17 +24,31 @@ This is a thesis project exploring server-side WebAuthn authenticators as an alt
 
 ## Getting Started
 
-### Run in Development Mode
+### 1. Install Dependencies
 
 ```bash
-./docker-compose-test.sh  # Start PostgreSQL and Key Vault
+pnpm install
+```
+
+### 2. Start Infrastructure
+
+Start PostgreSQL and the [LowKey Vault](https://github.com/nagyesta/lowkey-vault) development Key Vault mock:
+
+```bash
+./docker-compose-test.sh
+```
+
+> **Note:** `./docker-compose-test.sh` starts a [LowKey Vault](https://github.com/nagyesta/lowkey-vault) container — a local Azure Key Vault mock intended for development only.
+
+### 3. Run in Development Mode
+
+```bash
 pnpm dev --filter '!@repo/nextjs-example'
 ```
 
 Without browser extension:
 
 ```bash
-./docker-compose-test.sh  # Start PostgreSQL and Key Vault
 pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
 ```
 
