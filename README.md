@@ -42,11 +42,13 @@ Start PostgreSQL and the [LowKey Vault](https://github.com/nagyesta/lowkey-vault
 
 ### 3. Run in Development Mode
 
+> **Note:** Starts all services in development mode, excluding the example relying party application.
+
 ```bash
 pnpm dev --filter '!@repo/nextjs-example'
 ```
 
-Without browser extension:
+> **Note:** Starts all services in development mode, excluding both the example relying party application and the browser extension.
 
 ```bash
 pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
@@ -157,10 +159,20 @@ pnpm coverage               # Coverage report
 
 ## Example Relying Party Application
 
-Try the Next.js passkeys example:
+The `examples/nextjs` directory contains a full Next.js application that demonstrates passkeys integration using [better-auth](https://www.better-auth.com/) as the relying party.
+
+### 1. Set Up the Database Schema
+
+From the monorepo root, generate the Prisma client and push the schema:
 
 ```bash
-cd examples/nextjs && pnpm db:generate && pnpm db:push && pnpm start
+pnpm --filter @repo/nextjs-example db:generate && pnpm --filter @repo/nextjs-example db:push
+```
+
+### 2. Run in Development Mode
+
+```bash
+pnpm dev --filter @repo/nextjs-example
 ```
 
 Available at `http://localhost:4000`.
