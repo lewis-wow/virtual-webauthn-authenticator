@@ -15,6 +15,8 @@ Traditional password authentication is inherently vulnerable to phishing and dat
   - [2. Start Infrastructure](#2-start-infrastructure)
   - [3. Run in Development Mode](#3-run-in-development-mode)
   - [Run Tests](#run-tests)
+  - [Build and Start for Production](#build-and-start-for-production)
+  - [Code Quality](#code-quality)
 - [Authenticator flow](#authenticator-flow)
 - [Architecture](#architecture)
 - [Example Relying Party Application](#example-relying-party-application)
@@ -81,6 +83,30 @@ pnpm test                   # All tests
 pnpm test:unit              # Unit tests
 pnpm test:integration       # Integration tests
 pnpm coverage               # Coverage report
+```
+
+### Build and Start for Production
+
+To build the project for production:
+
+```bash
+pnpm build
+```
+
+To start the built project in production mode:
+
+```bash
+pnpm start
+```
+
+### Code Quality
+
+You can use the following commands to ensure code quality:
+
+```bash
+pnpm format       # Format code with Prettier
+pnpm lint         # Run ESLint
+pnpm check-types  # Run TypeScript type-checking
 ```
 
 ## Authenticator flow
