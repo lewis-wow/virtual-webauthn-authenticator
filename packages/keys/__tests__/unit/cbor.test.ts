@@ -13,8 +13,6 @@ import { COSEKeyParam } from '../../src/enums/COSEKeyParam.js';
 import { COSEKeyType } from '../../src/enums/COSEKeyType.js';
 import { COSEKeyTypeParam } from '../../src/enums/COSEKeyTypeParam.js';
 
-// --- Test Data Helpers ---
-
 /**
  * Helper function to create a COSE EC public key map
  */
@@ -48,8 +46,6 @@ const createOKPPublicKey = (): COSEPublicKeyOKP => {
   map.set(COSEKeyTypeParam.x, new Uint8Array(32).fill(0x06));
   return map;
 };
-
-// --- End Test Data Helpers ---
 
 describe('CBOR', () => {
   describe('encodeCOSEPublicKey', () => {

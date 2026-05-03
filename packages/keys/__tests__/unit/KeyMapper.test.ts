@@ -17,8 +17,6 @@ import { COSEKeyType } from '../../src/enums/COSEKeyType.js';
 import { COSEKeyTypeParam } from '../../src/enums/COSEKeyTypeParam.js';
 import { UnsupportedKeyType } from '../../src/exceptions/UnsupportedKeyType.js';
 
-// --- Test Data Helpers ---
-
 /**
  * Helper function to create a COSE EC public key map
  */
@@ -154,8 +152,6 @@ const createOKPJWK = (options?: { crv?: string; x?: string }): JsonWebKey => {
     x,
   };
 };
-
-// --- End Test Data Helpers ---
 
 describe('KeyMapper', () => {
   describe('COSEPublicKeyToJWKPublicKey', () => {

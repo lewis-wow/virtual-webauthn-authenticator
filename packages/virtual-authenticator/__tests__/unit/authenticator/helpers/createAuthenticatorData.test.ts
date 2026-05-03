@@ -52,8 +52,6 @@ describe('createAuthenticatorData', () => {
     expect(result1.slice(0, 32)).not.toEqual(result2.slice(0, 32));
   });
 
-  // --- UP (User Present) flag ---
-
   test('UP flag (bit 0) is set when userPresenceEnabled is true', async () => {
     const result = await createAuthenticatorData({
       ...defaults,
@@ -69,8 +67,6 @@ describe('createAuthenticatorData', () => {
     });
     expect(result[32]! & FLAG_UP).toBe(0);
   });
-
-  // --- UV (User Verified) flag ---
 
   test('UV flag (bit 2) is set when userVerificationEnabled and requireUserVerification are both true', async () => {
     const result = await createAuthenticatorData({
@@ -99,8 +95,6 @@ describe('createAuthenticatorData', () => {
     expect(result[32]! & FLAG_UV).toBe(0);
   });
 
-  // --- BE / BS flags (always set) ---
-
   test('BE flag (bit 3) is always set', async () => {
     const result = await createAuthenticatorData(defaults);
     expect(result[32]! & FLAG_BE).toBe(FLAG_BE);
@@ -110,8 +104,6 @@ describe('createAuthenticatorData', () => {
     const result = await createAuthenticatorData(defaults);
     expect(result[32]! & FLAG_BS).toBe(FLAG_BS);
   });
-
-  // --- AT (Attested Credential Data) flag ---
 
   test('AT flag (bit 6) is set when attestedCredentialData is provided', async () => {
     const result = await createAuthenticatorData({
@@ -128,8 +120,6 @@ describe('createAuthenticatorData', () => {
     });
     expect(result[32]! & FLAG_AT).toBe(0);
   });
-
-  // --- Counter ---
 
   test('counter is encoded as big-endian uint32 at bytes 33–36', async () => {
     const counter = 0x0102_0304;
@@ -170,8 +160,6 @@ describe('createAuthenticatorData', () => {
     expect(result[35]).toBe(0xff);
     expect(result[36]).toBe(0xff);
   });
-
-  // --- Attested credential data appended ---
 
   test('attestedCredentialData is appended after the 37-byte header', async () => {
     const attestedCredentialData = new Uint8Array([0xaa, 0xbb, 0xcc]);
