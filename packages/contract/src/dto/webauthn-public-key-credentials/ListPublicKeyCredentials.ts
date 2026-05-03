@@ -7,20 +7,8 @@ import {
 
 import { PublicKeyCredentialDtoSchema } from './components/PublicKeyCredentialDtoSchema';
 
-// =============================================================================
-// OPERATION: LIST
-// =============================================================================
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
-
 export const ListPublicKeyCredentialsQuerySchema =
   PaginationRequestMetaSchema(SortKeysSchema);
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const ListPublicKeyCredentialsResponseSchema = {
   [HttpStatusCode.OK_200]: PaginationResultSchema(PublicKeyCredentialDtoSchema),

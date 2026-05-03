@@ -8,14 +8,6 @@ export const DELETE_PUBLIC_KEY_CREDENTIAL_FIELDS = {
   id: true,
 } as const;
 
-// =============================================================================
-// OPERATION: DELETE
-// =============================================================================
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
-
 export const DeletePublicKeyCredentialFormSchema =
   PublicKeyCredentialBaseDtoSchema.pick(DELETE_PUBLIC_KEY_CREDENTIAL_FIELDS);
 
@@ -23,10 +15,6 @@ export const DeletePublicKeyCredentialParamsSchema =
   PublicKeyCredentialBaseDtoSchema.pick(
     pick(DELETE_PUBLIC_KEY_CREDENTIAL_FIELDS, 'id'),
   );
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const DeletePublicKeyCredentialResponseSchema = {
   [HttpStatusCode.OK_200]: PublicKeyCredentialDtoSchema,

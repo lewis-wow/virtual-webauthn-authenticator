@@ -4,14 +4,6 @@ import z from 'zod';
 
 import { VirtualAuthenticatorDtoSchema } from './components/VirtualAuthenticatorDtoSchema';
 
-// =============================================================================
-// OPERATION: CREATE
-// =============================================================================
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
-
 export const CreateVirtualAuthenticatorBodySchema = z
   .object({
     userVerificationType: z.nativeEnum(
@@ -34,10 +26,6 @@ export const CreateVirtualAuthenticatorBodySchema = z
       path: ['pin'],
     },
   );
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const CreateVirtualAuthenticatorResponseSchema = {
   [HttpStatusCode.OK_200]: VirtualAuthenticatorDtoSchema,

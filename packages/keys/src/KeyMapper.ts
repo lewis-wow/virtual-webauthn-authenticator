@@ -80,8 +80,6 @@ export class KeyMapper {
 
     const coseKey = new Map() as COSEPublicKey;
 
-    // Set the algorithm parameter if provided
-    // Per WebAuthn spec: The COSEKey-encoded credential public key MUST contain the "alg" parameter
     if (alg !== undefined) {
       coseKey.set(COSEKeyParam.alg, alg);
     }

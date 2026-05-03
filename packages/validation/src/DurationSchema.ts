@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-// Must be a number, an integer, and non-negative (no -30 days)
-
 const TimeUnit = z.int().nonnegative();
 
 export const DurationSchema = z.object({

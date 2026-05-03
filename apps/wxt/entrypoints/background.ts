@@ -38,8 +38,6 @@ export default defineBackground(() => {
       logger.info('credentials.create', { response });
 
       if (response.status === 200) {
-        // Response body is raw JSON (validateResponse defaults to false) so it is
-        // serializable and compatible with the messaging protocol.
         return {
           ok: true as const,
           data: response.body,

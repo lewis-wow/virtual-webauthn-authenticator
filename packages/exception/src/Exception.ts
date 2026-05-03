@@ -18,7 +18,6 @@ export class Exception<TData = undefined>
   public readonly data: TData;
 
   constructor(opts?: Partial<AnyExceptionShape>) {
-    // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
     const status = opts?.status ?? ctor.status;

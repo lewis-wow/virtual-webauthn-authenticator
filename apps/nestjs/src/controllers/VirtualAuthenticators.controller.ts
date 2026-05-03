@@ -131,7 +131,6 @@ export class VirtualAuthenticatorsController {
         try {
           virtualAuthenticator = await this.prisma.$transaction(async (tx) => {
             if (body.isActive === true) {
-              // Deactivate all authenticators for this user
               await tx.virtualAuthenticator.updateMany({
                 where: { userId },
                 data: { isActive: false },

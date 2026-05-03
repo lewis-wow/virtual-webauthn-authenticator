@@ -11,8 +11,6 @@ import type { ValueOfEnum } from '@repo/types';
  * @see https://www.iana.org/assignments/cose/cose.xhtml#key-type-parameters
  */
 export const COSEKeyTypeParam = {
-  // --- Key Type 1: OKP (Octet Key Pair) ---
-
   /**
    * OKP: EC identifier (crv).
    * EC2: EC identifier (crv).

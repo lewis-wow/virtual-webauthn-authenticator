@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 
-// Internal payload structure
 export type InteractionPayload<TArgs, TReturn> = {
   resolve: (result: TReturn) => void;
   reject: (reason?: any) => void;
@@ -29,7 +28,6 @@ export class InteractionService<TEventMap extends EventMapBase = any> {
     this.eventEmitter = opts.eventEmitter;
   }
 
-  // Internal map stores the wrapper functions
   private readonly listenerMap = new Map<
     Function,
     (payload: InteractionPayload<any, any>) => void
@@ -80,10 +78,8 @@ export class InteractionService<TEventMap extends EventMapBase = any> {
       >,
     ) => {
       try {
-        // Pass the control directly to the user listener
         listener(payload.args, payload.resolve, payload.reject);
       } catch (e) {
-        // Safety net: if the listener setup crashes synchronously, reject the promise
         payload.reject(e);
       }
     };

@@ -2,10 +2,6 @@ import { omit, pick } from 'lodash-es';
 
 import { ApiKeyDtoSchema } from './components/ApiKeyDtoSchema';
 
-// =============================================================================
-// OPERATION: UPDATE
-// =============================================================================
-
 export const UPDATE_API_KEY_FIELDS = {
   id: true,
   name: true,
@@ -15,10 +11,6 @@ export const UPDATE_API_KEY_FIELDS = {
   revokedAt: true,
   enabled: true,
 } as const;
-
-// -------------------------------------
-// Inputs
-// -------------------------------------
 
 export const UpdateApiKeyFormSchema = ApiKeyDtoSchema.pick(
   UPDATE_API_KEY_FIELDS,
@@ -31,9 +23,5 @@ export const UpdateApiKeyBodySchema = ApiKeyDtoSchema.pick(
 export const UpdateApiKeyParamsSchema = ApiKeyDtoSchema.pick(
   pick(UPDATE_API_KEY_FIELDS, 'id'),
 );
-
-// -------------------------------------
-// Outputs
-// -------------------------------------
 
 export const UpdateApiKeyResponseSchema = ApiKeyDtoSchema;
