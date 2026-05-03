@@ -181,6 +181,8 @@ Available at `http://localhost:4000`.
 
 **Environment Variables**: Managed with [dotenvx](https://dotenvx.com/) for dev/test/production with encryption support for secrets.
 
+By default, the environment is set to `development`. This can be changed by setting the `ENVIRONMENT` variable (e.g., `export ENVIRONMENT=production`). The default setting is defined in `.vscode/settings.json`.
+
 - Dev/Test: `.env.development`, `.env.test` (plaintext)
 - Production: `.env.production` (encrypted), decryption key in `.env.keys`
 - ⚠️ **Never commit `.env.keys`** to version control
