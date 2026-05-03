@@ -1,6 +1,6 @@
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
 
 const README_PATH = path.join(process.cwd(), 'README.md');
 
@@ -25,9 +25,9 @@ function run() {
     const title = match[2];
 
     const level = levelString.length; // 1, 2, or 3
-    
+
     // We don't skip the TOC itself, to match VS Code extensions
-    
+
     const anchor = generateAnchor(title);
     // h1 gets 0 indent, h2 gets 2 spaces, h3 gets 4 spaces
     const indent = '  '.repeat(level - 1);
@@ -55,7 +55,7 @@ function run() {
   }
 
   fs.writeFileSync(README_PATH, updatedContent, 'utf-8');
-  
+
   // Format the file with Prettier to ensure consistent formatting
   try {
     execSync(`npx prettier --write ${README_PATH}`);
@@ -63,7 +63,9 @@ function run() {
     console.error('Failed to format README.md with Prettier:', err);
   }
 
-  console.log('README.md Table of Contents updated and formatted successfully.');
+  console.log(
+    'README.md Table of Contents updated and formatted successfully.',
+  );
 }
 
 run();
