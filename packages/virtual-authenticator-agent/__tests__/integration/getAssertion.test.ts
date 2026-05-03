@@ -17,7 +17,7 @@ import {
   Jwks,
   Jwt,
   JwsSignatureVerificationFailedException,
-} from '@repo/crypto';
+} from '@repo/jwt';
 import { PrismaClient } from '@repo/prisma';
 import { set } from '@repo/test-utils';
 import type { Uint8Array_ } from '@repo/types';

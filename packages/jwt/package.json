@@ -10,27 +10,31 @@
     "./__tests__/helpers": "./__tests__/helpers/index.ts"
   },
   "scripts": {
+    "test:unit": "vitest run --config __tests__/vitest.unit.config.ts",
+    "test:unit:coverage": "vitest run --coverage --config __tests__/vitest.unit.config.ts",
     "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
     "@hono/node-server": "^1.19.5",
-    "@repo/jwks": "workspace:*",
-    "@repo/prisma": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/vitest-config": "workspace:*",
     "@repo/types": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.5.2",
-    "jose": "^6.1.0",
     "type-fest": "^5.0.1",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
     "@repo/assert": "workspace:*",
     "@repo/crypto": "workspace:*",
+    "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
+    "@repo/prisma": "workspace:*",
+    "jose": "^6.1.0",
+    "ts-pattern": "^5.8.0",
     "zod": "^4.1.12"
   }
 }

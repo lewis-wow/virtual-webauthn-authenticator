@@ -23,7 +23,7 @@ import {
   Jwks,
   Jwt,
   JwsSignatureVerificationFailedException,
-} from '@repo/crypto';
+} from '@repo/jwt';
 import { decodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';

@@ -17,7 +17,7 @@ import {
 } from '@repo/virtual-authenticator/__tests__/helpers';
 import { unreachable } from '@repo/virtual-authenticator/__tests__/helpers';
 
-import { Jwks, Jwt } from '@repo/crypto';
+import { Jwks, Jwt } from '@repo/jwt';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
 import { AuthorizationGesture } from '@repo/virtual-authenticator';

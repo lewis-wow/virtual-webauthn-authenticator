@@ -3,9 +3,6 @@ import stableStringify from 'fast-json-stable-stringify';
 import * as crypto from 'node:crypto';
 
 export class Hash {
-  // A separator that won't appear in Hex or Base64
-  private static readonly DELIMITER = ':';
-
   static sha256(data: crypto.BinaryLike): Uint8Array_ {
     const hash = crypto.createHash('sha256').update(data).digest();
 
@@ -22,28 +19,5 @@ export class Hash {
 
   static sha256JSONHex(json: object): string {
     return Hash.sha256Hex(stableStringify(json));
-  }
-
-  static initOnion(hash: string | undefined): string[] {
-    if (hash === undefined) {
-      return [];
-    }
-
-    return [hash];
-  }
-
-  static pushOnion(hash: string, hashes: string[]): string[] {
-    return [hash, ...hashes];
-  }
-
-  static popOnion(
-    hashes: string[] | undefined,
-  ): [string | undefined, string[] | undefined] {
-    if (hashes === undefined) {
-      return [undefined, undefined];
-    }
-
-    const [first, ...rest] = hashes;
-    return [first, rest];
   }
 }

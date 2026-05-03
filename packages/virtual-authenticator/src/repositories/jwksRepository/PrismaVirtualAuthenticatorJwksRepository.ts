@@ -1,4 +1,4 @@
-import type { IJwksRepository, Jwk } from '@repo/crypto';
+import type { IJwksRepository, Jwk } from '@repo/jwt';
 import type { PrismaClient } from '@repo/prisma';
 
 export type PrismaVirtualAuthenticatorJwksRepositoryOptions = {

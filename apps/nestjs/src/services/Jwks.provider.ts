@@ -1,5 +1,5 @@
 import { Provider } from '@nestjs/common';
-import { Jwks } from '@repo/crypto';
+import { Jwks } from '@repo/jwt';
 import { PrismaVirtualAuthenticatorJwksRepository } from '@repo/virtual-authenticator/repositories';
 
 import { Env, ENV_PROVIDER_TOKEN } from './Env.provider';

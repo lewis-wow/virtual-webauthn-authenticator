@@ -6,7 +6,7 @@ import {
   type JSONWebKeySet,
 } from 'jose';
 
-import { Encryption } from '../Encryption';
+import { Encryption } from '@repo/crypto';
 import type { IJwksRepository, Jwk } from './IJwksRepository';
 
 export type JwksOptions = {

@@ -7,7 +7,7 @@ import {
   JwtInvalidException,
   JwsSignatureVerificationFailedException,
 } from '../../src/exceptions/jose/index';
-import { Jwt } from '../../src/jwt/Jwt';
+import { Jwt } from '../../src/Jwt';
 
 // Mock jose
 vi.mock('jose', async (importOriginal) => {

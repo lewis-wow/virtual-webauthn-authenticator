@@ -1,5 +1,5 @@
 import { Provider } from '@nestjs/common';
-import { Jwks, Jwt } from '@repo/crypto';
+import { Jwks, Jwt } from '@repo/jwt';
 import { VirtualAuthenticator } from '@repo/virtual-authenticator';
 import {
   VirtualAuthenticatorAgent,

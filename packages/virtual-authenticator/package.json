@@ -46,6 +46,7 @@
     "@repo/crypto": "workspace:*",
     "@repo/exception": "workspace:*",
     "@repo/http": "workspace:*",
+    "@repo/jwt": "workspace:*",
     "@repo/keys": "workspace:*",
     "@repo/prisma": "workspace:*",
     "@repo/types": "workspace:*",

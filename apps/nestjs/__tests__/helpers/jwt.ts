@@ -1,4 +1,4 @@
-import { Jwks, Jwt } from '@repo/crypto';
+import { Jwks, Jwt } from '@repo/jwt';
 import { PrismaAuthJwksRepository } from '@repo/jwks';
 import { JwtIssuer } from '@repo/jwt';
 

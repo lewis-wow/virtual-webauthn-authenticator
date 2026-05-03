@@ -11,7 +11,7 @@ import {
   ListPublicKeyCredentialsResponseSchema,
 } from '@repo/contract/dto';
 import { nestjsContract } from '@repo/contract/nestjs';
-import { Jwks, Jwt } from '@repo/crypto';
+import { Jwks, Jwt } from '@repo/jwt';
 import { HttpStatusCode } from '@repo/http';
 import type { JwtPayload } from '@repo/jwt/validation';
 import { Logger } from '@repo/logger';
