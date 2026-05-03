@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
-import { generateOpenApi, SchemaTransformerSync } from '@ts-rest/open-api';
-import { mkdirSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { generateOpenApi, type SchemaTransformerSync } from '@ts-rest/open-api';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { stringify } from 'yaml';
 import { z } from 'zod';
 import { zodToTs, printNode, createAuxiliaryTypeStore } from 'zod-to-ts';

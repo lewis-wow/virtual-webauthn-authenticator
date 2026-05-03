@@ -1,6 +1,8 @@
 import type { Configuration } from 'webpack';
 
-const path = require('path');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const path = require('node:path');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const nodeExternals = require('webpack-node-externals');
 
 const config = (

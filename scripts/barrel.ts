@@ -1,7 +1,8 @@
 #!/usr/bin/env tsx
-import { execSync } from 'child_process';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
+/// <reference types="node" />
+import { execSync } from 'node:child_process';
+import { readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
 const HEADER_CONTENT = `/**
  * @file Automatically generated.

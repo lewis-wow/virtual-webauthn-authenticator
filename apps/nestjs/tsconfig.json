@@ -26,8 +26,9 @@
     "strictNullChecks": true,
     "strictBindCallApply": true,
     "noImplicitAny": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "types": ["node"]
   },
-  "include": ["src", "src/**/*.d.ts", "__tests__"],
+  "include": ["src", "src/**/*.d.ts", "webpack.config.ts", "__tests__"],
   "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
 }
