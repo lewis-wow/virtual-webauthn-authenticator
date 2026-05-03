@@ -2,12 +2,12 @@ import * as jose from 'jose';
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
 
+import { Jwt } from '../../src/Jwt';
 import {
   JwtExpiredException,
   JwtInvalidException,
   JwsSignatureVerificationFailedException,
 } from '../../src/exceptions/jose/index';
-import { Jwt } from '../../src/jwt/Jwt';
 
 // Mock jose
 vi.mock('jose', async (importOriginal) => {

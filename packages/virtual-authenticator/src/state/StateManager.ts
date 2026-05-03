@@ -1,4 +1,4 @@
-import { Jwt } from '@repo/crypto';
+import { Jwt } from '@repo/jwt';
 
 import {
   StateTokenPayloadSchema,

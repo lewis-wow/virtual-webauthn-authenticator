@@ -1,19 +1,19 @@
 import type { Exception } from '@repo/exception';
 
-import { JoseAlgNotAllowedException } from '../../exceptions/jose/JoseAlgNotAllowedException';
-import { JoseNotSupportedException } from '../../exceptions/jose/JoseNotSupportedException';
-import { JweDecryptionFailedException } from '../../exceptions/jose/JweDecryptionFailedException';
-import { JweInvalidException } from '../../exceptions/jose/JweInvalidException';
-import { JwkInvalidException } from '../../exceptions/jose/JwkInvalidException';
-import { JwksInvalidException } from '../../exceptions/jose/JwksInvalidException';
-import { JwksMultipleMatchingKeysException } from '../../exceptions/jose/JwksMultipleMatchingKeysException';
-import { JwksNoMatchingKeyException } from '../../exceptions/jose/JwksNoMatchingKeyException';
-import { JwksTimeoutException } from '../../exceptions/jose/JwksTimeoutException';
-import { JwsInvalidException } from '../../exceptions/jose/JwsInvalidException';
-import { JwsSignatureVerificationFailedException } from '../../exceptions/jose/JwsSignatureVerificationFailedException';
-import { JwtClaimValidationFailedException } from '../../exceptions/jose/JwtClaimValidationFailedException';
-import { JwtExpiredException } from '../../exceptions/jose/JwtExpiredException';
-import { JwtInvalidException } from '../../exceptions/jose/JwtInvalidException';
+import { JoseAlgNotAllowedException } from '../exceptions/jose/JoseAlgNotAllowedException';
+import { JoseNotSupportedException } from '../exceptions/jose/JoseNotSupportedException';
+import { JweDecryptionFailedException } from '../exceptions/jose/JweDecryptionFailedException';
+import { JweInvalidException } from '../exceptions/jose/JweInvalidException';
+import { JwkInvalidException } from '../exceptions/jose/JwkInvalidException';
+import { JwksInvalidException } from '../exceptions/jose/JwksInvalidException';
+import { JwksMultipleMatchingKeysException } from '../exceptions/jose/JwksMultipleMatchingKeysException';
+import { JwksNoMatchingKeyException } from '../exceptions/jose/JwksNoMatchingKeyException';
+import { JwksTimeoutException } from '../exceptions/jose/JwksTimeoutException';
+import { JwsInvalidException } from '../exceptions/jose/JwsInvalidException';
+import { JwsSignatureVerificationFailedException } from '../exceptions/jose/JwsSignatureVerificationFailedException';
+import { JwtClaimValidationFailedException } from '../exceptions/jose/JwtClaimValidationFailedException';
+import { JwtExpiredException } from '../exceptions/jose/JwtExpiredException';
+import { JwtInvalidException } from '../exceptions/jose/JwtInvalidException';
 
 const JOSE_ERROR_MAP = {
   ERR_JWT_CLAIM_VALIDATION_FAILED: JwtClaimValidationFailedException,

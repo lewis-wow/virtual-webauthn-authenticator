@@ -2,7 +2,7 @@ import type {
   IJwksRepository,
   Jwk,
   JwksRepositoryCreateOptions,
-} from '@repo/crypto';
+} from '@repo/jwt';
 import { randomUUID } from 'node:crypto';
 
 export class InMemoryJwksRepository implements IJwksRepository {

@@ -1,5 +1,4 @@
-import { Jwt } from '@repo/crypto';
-
+import { Jwt } from './Jwt';
 import {
   JwtPayloadSchema,
   type JwtPayload,

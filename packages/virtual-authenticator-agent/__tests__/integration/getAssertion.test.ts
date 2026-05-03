@@ -13,11 +13,7 @@ import { generateRandomUUIDBytes } from '@repo/virtual-authenticator/__tests__/h
 import { unreachable } from '@repo/virtual-authenticator/__tests__/helpers';
 
 import { TypeAssertionError } from '@repo/assert';
-import {
-  Jwks,
-  Jwt,
-  JwsSignatureVerificationFailedException,
-} from '@repo/crypto';
+import { Jwks, Jwt, JwsSignatureVerificationFailedException } from '@repo/jwt';
 import { PrismaClient } from '@repo/prisma';
 import { set } from '@repo/test-utils';
 import type { Uint8Array_ } from '@repo/types';
