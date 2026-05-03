@@ -40,9 +40,9 @@ This is a thesis project exploring server-side WebAuthn authenticators as an alt
 
 ## Project Structure
 
-- **`apps/`** — Main applications
-- **`packages/`** — Shared libraries (auth, crypto, database, UI components, etc.)
-- **`examples/`** — Example Next.js app with passkeys integration
+- **[`apps/`](./apps/)** — Main applications
+- **[`packages/`](./packages/)** — Shared libraries (auth, crypto, database, UI components, etc.)
+- **[`examples/`](./examples/)** — Example Next.js app with passkeys integration
 
 ## Getting Started
 
@@ -205,7 +205,7 @@ pnpm check-types  # Run TypeScript type-checking
 
 ## Example Relying Party Application
 
-The `examples/nextjs` directory contains a full Next.js application that demonstrates passkeys integration using [better-auth](https://www.better-auth.com/) as the relying party.
+The [`examples/nextjs`](./examples/nextjs/) directory contains a full Next.js application that demonstrates passkeys integration using [better-auth](https://www.better-auth.com/) as the relying party.
 
 ### 1. Set Up the Database Schema
 
@@ -227,11 +227,11 @@ Available at `http://localhost:4000`.
 
 **Environment Variables**: Managed with [dotenvx](https://dotenvx.com/) for dev/test/production with encryption support for secrets.
 
-By default, the environment is set to `development`. This can be changed by setting the `ENVIRONMENT` variable (e.g., `export ENVIRONMENT=production`). The default setting is defined in `.vscode/settings.json`.
+By default, the environment is set to `development`. This can be changed by setting the `ENVIRONMENT` variable (e.g., `export ENVIRONMENT=production`). The default setting is defined in [`.vscode/settings.json`](./.vscode/settings.json).
 
-- Dev/Test: `.env.development`, `.env.test` (plaintext)
-- Production: `.env.production` (encrypted), decryption key in `.env.keys`
-- ⚠️ **Never commit `.env.keys`** to version control
+- Dev/Test: [`.env.development`](./.env.development), [`.env.test`](./.env.test) (plaintext)
+- Production: [`.env.production`](./.env.production) (encrypted), decryption key in [`.env.keys`](./.env.keys)
+- ⚠️ **Never commit [`.env.keys`](./.env.keys)** to version control
 
 **Key Vault**: Uses [Azure Key Vault](https://learn.microsoft.com/en-us/azure/key-vault/) (production) or [LowKey Vault](https://github.com/nagyesta/lowkey-vault) (development)
 
