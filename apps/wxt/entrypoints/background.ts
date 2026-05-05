@@ -65,7 +65,7 @@ export default defineBackground(() => {
 
       logger.info('credentials.get', { request: req.data });
 
-      const response = await client.api.credentials.get({
+      const response = await client.api.credentials.assertion({
         body: req.data,
       });
 
