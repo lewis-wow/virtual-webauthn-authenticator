@@ -22,7 +22,12 @@ export type ErrorDialogProps = {
 
 export const ErrorDialog = ({ error, onClose }: ErrorDialogProps) => {
   return (
-    <Dialog open={true}>
+    <Dialog
+      open={true}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
