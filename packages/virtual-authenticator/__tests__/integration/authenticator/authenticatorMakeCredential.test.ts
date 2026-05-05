@@ -28,6 +28,7 @@ import { PublicKeyCredentialType } from '../../../src/enums/PublicKeyCredentialT
 import { VirtualAuthenticatorUserVerificationType } from '../../../src/enums/VirtualAuthenticatorUserVerificationType';
 import {
   CredentialTypesNotSupported,
+  UserNotExists,
   UserVerificationNotAvailable,
 } from '../../../src/exceptions';
 import { CredentialExcluded } from '../../../src/exceptions/CredentialExcluded';
@@ -704,18 +705,23 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       { userId: randomUUID() },
       { userId: 'NON_UUID' },
       { userId: (1234).toString() },
-    ])('Work with userId: $userId', async ({ userId }) => {
-      const meta: Partial<AuthenticatorMetaArgs> = {
-        userId,
-      };
+    ])(
+      'Failes with userId that is not in the database or in invalid format: $userId',
+      async ({ userId }) => {
+        const meta: Partial<AuthenticatorMetaArgs> = {
+          userId,
+        };
 
-      await performAuthenticatorMakeCredentialAndVerify({
-        authenticator,
-        prisma,
-        authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-        meta,
-      });
-    });
+        await expect(() =>
+          performAuthenticatorMakeCredentialAndVerify({
+            authenticator,
+            prisma,
+            authenticatorMakeCredentialArgs: AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+            meta,
+          }),
+        ).rejects.toThrowError(UserNotExists);
+      },
+    );
   });
 
   describe('RegistrationState', () => {

@@ -3,6 +3,7 @@ import {
   upsertTestingUser,
   USER_ID,
   USER_JWT_PAYLOAD,
+  USER_NAME,
 } from '@repo/jwt/__tests__/helpers';
 import {
   CHALLENGE_BASE64URL,
@@ -20,6 +21,7 @@ import { HttpStatusCode } from '@repo/http';
 import { JwtAudience } from '@repo/jwt';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import { set } from '@repo/test-utils';
+import { toBase64Url, uuidToBytes } from '@repo/utils';
 import {
   CredentialSelectAgentException,
   UserPresenceRequiredAgentException,
@@ -63,6 +65,11 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_PAYLOAD = {
     rp: {
       id: RP_ID,
       name: RP_ID,
+    },
+    user: {
+      id: toBase64Url(uuidToBytes(USER_ID)),
+      name: USER_NAME,
+      displayName: USER_NAME,
     },
     pubKeyCredParams: [
       { alg: COSEKeyAlgorithm.ES256, type: PublicKeyCredentialType.PUBLIC_KEY },
