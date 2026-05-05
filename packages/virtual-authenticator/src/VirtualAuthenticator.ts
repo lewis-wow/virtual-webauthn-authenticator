@@ -616,9 +616,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     // NOTE: If, within allowCredentialDescriptorList, the client supplied exactly one credential and it was successfully employed, then its credential ID is not returned since the client already knows it.
 
     const credentialId = uuidToBytes(webAuthnPublicKeyCredentialWithMeta.id);
-    const userHandle =
-      webAuthnPublicKeyCredentialWithMeta.userHandle ??
-      uuidToBytes(webAuthnPublicKeyCredentialWithMeta.userId);
+    const userHandle = webAuthnPublicKeyCredentialWithMeta.userHandle ?? null;
 
     const authenticatorGetAssertionResponse: AuthenticatorGetAssertionResponse =
       {
