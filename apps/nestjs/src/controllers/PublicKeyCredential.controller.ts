@@ -115,7 +115,10 @@ export class PublicKeyCredentialController {
           nextState,
         } = body;
 
-        requirePermission(permissions, Permission['CREDENTIAL.CREATE']);
+        requirePermission(
+          permissions,
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.REGISTRATION'],
+        );
 
         const activeVirtualAuthenticator =
           await this._validateUserAndGetActiveAuthenticator(userId);
@@ -191,7 +194,10 @@ export class PublicKeyCredentialController {
         } = body;
         const { userId, apiKeyId, permissions } = jwtPayload;
 
-        requirePermission(permissions, Permission['CREDENTIAL.GET']);
+        requirePermission(
+          permissions,
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.ASSERTION'],
+        );
 
         const activeVirtualAuthenticator =
           await this._validateUserAndGetActiveAuthenticator(userId);
@@ -250,7 +256,7 @@ export class PublicKeyCredentialController {
 
         requirePermission(
           permissions,
-          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.LIST'],
         );
 
         const pagination = new Pagination(async ({ pagination }) => {
@@ -295,7 +301,7 @@ export class PublicKeyCredentialController {
 
         requirePermission(
           permissions,
-          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.READ'],
+          Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.GET'],
         );
 
         const webAuthnPublicKeyCredential =

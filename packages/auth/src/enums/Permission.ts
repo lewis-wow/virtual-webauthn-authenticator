@@ -3,14 +3,11 @@ import type { ValueOfEnum } from '@repo/types';
 import { PermissionEntity } from './PermissionEntity';
 
 export const Permission = {
-  // Credential
-  [`${PermissionEntity.CREDENTIAL}.CREATE` as const]: `${PermissionEntity.CREDENTIAL}.CREATE`,
-  [`${PermissionEntity.CREDENTIAL}.GET` as const]: `${PermissionEntity.CREDENTIAL}.GET`,
-
   // WebAuthnPublicKeyCredential
-  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.CREATE` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.CREATE`,
-  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.READ` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.READ`,
-  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.WRITE` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.WRITE`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.REGISTRATION` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.REGISTRATION`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.ASSERTION` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.ASSERTION`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.LIST` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.LIST`,
+  [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.GET` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.GET`,
   [`${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.DELETE` as const]: `${PermissionEntity.WEB_AUTHN_PUBLIC_KEY_CREDENTIAL}.DELETE`,
 
   // VirtualAuthenticator
