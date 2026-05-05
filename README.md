@@ -16,7 +16,9 @@ Traditional password authentication is inherently vulnerable to phishing and dat
   - [Getting Started](#getting-started)
     - [1. Install Dependencies](#1-install-dependencies)
     - [2. Start Infrastructure](#2-start-infrastructure)
-    - [3. Run in Development Mode](#3-run-in-development-mode)
+    - [3. Build packages and applications](#3-build-packages-and-applications)
+    - [4. Migrate database](#4-migrate-database)
+    - [5. Run in Development Mode](#5-run-in-development-mode)
     - [Run Tests](#run-tests)
     - [Code Quality](#code-quality)
   - [Authenticator flow](#authenticator-flow)
@@ -65,7 +67,19 @@ Start PostgreSQL and the [LowKey Vault](https://github.com/nagyesta/lowkey-vault
 
 > **Note:** `./docker-compose-test.sh` starts a [LowKey Vault](https://github.com/nagyesta/lowkey-vault) container — a local Azure Key Vault mock intended for development only.
 
-### 3. Run in Development Mode
+### 3. Build packages and applications
+
+```bash
+pnpm build
+```
+
+### 4. Migrate database
+
+```bash
+pnpm --filter '@repo/prisma' db:migrate
+```
+
+### 5. Run in Development Mode
 
 > **Note:** Starts all services in development mode, excluding the example relying party application.
 
