@@ -37,6 +37,7 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
       isClientSideDiscoverable: true,
+      userHandle: new Uint8Array(Buffer.from('Test User Handle From RP')),
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         create: {
           id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,

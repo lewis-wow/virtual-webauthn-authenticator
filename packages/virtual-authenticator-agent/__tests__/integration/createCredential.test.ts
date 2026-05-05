@@ -362,29 +362,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
   });
 
   /**
-   * Tests for meta.userId validation
-   * @see https://www.w3.org/TR/webauthn-3/#user-handle
-   *
-   * Per spec: The user handle is used to identify the user account and must be a valid identifier
-   */
-  describe('meta.userId', () => {
-    test('Should throw type mismatch when userId is invalid', async () => {
-      await expect(async () =>
-        performPublicKeyCredentialRegistrationAndVerify({
-          stateManager,
-          agent,
-          publicKeyCredentialCreationOptions:
-            PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-          meta: {
-            userId: 'INVALID_USER_ID',
-            origin: RP_ORIGIN,
-          },
-        }),
-      ).rejects.toThrowError(TypeAssertionError);
-    });
-  });
-
-  /**
    * Tests for user.id byte length validation
    * @see https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialuserentity-id
    * @see https://www.w3.org/TR/webauthn-3/#user-handle
@@ -2785,51 +2762,6 @@ describe('VirtualAuthenticator.createCredential()', () => {
             },
           }),
         ).rejects.toThrow();
-      });
-
-      /**
-       * Note: The implementation strictly requires user.id to be a valid UUID (16 bytes).
-       * The WebAuthn spec allows 1-64 bytes, but the implementation enforces UUID format.
-       */
-      test('Should reject user.id with 1 byte (fails due to strict UUID format)', async () => {
-        const userIdBytes = new Uint8Array(1);
-        userIdBytes[0] = 1;
-
-        await expect(async () =>
-          performPublicKeyCredentialRegistrationAndVerify({
-            stateManager,
-            agent,
-            publicKeyCredentialCreationOptions: {
-              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-              user: {
-                ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
-                id: userIdBytes,
-              },
-            },
-          }),
-        ).rejects.toThrowError(TypeAssertionError);
-      });
-
-      /**
-       * Note: The implementation strictly requires user.id to be a valid UUID (16 bytes).
-       * The WebAuthn spec allows 1-64 bytes, but the implementation enforces UUID format.
-       */
-      test('Should reject user.id with 64 bytes (fails due to strict UUID format)', async () => {
-        const userIdBytes = new Uint8Array(64);
-
-        await expect(async () =>
-          performPublicKeyCredentialRegistrationAndVerify({
-            stateManager,
-            agent,
-            publicKeyCredentialCreationOptions: {
-              ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
-              user: {
-                ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS.user,
-                id: userIdBytes,
-              },
-            },
-          }),
-        ).rejects.toThrowError(TypeAssertionError);
       });
     });
 
