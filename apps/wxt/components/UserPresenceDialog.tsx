@@ -20,7 +20,12 @@ export const UserPresenceDialog = ({
   onConfirm,
 }: UserPresenceDialogProps) => {
   return (
-    <Dialog open={true}>
+    <Dialog
+      open={true}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center gap-2">
