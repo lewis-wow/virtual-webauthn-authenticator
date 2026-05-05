@@ -327,7 +327,7 @@ export class VirtualAuthenticator implements IAuthenticator {
     );
 
     // Step 7.2: Let userHandle be userEntity.id.
-    const userHandle = bytesToUuid(userEntity.id);
+    const userHandle = userEntity.id;
 
     // Step 7.3: Let credentialSource be a new public key credential source
     // with the following fields:
@@ -369,7 +369,8 @@ export class VirtualAuthenticator implements IAuthenticator {
                 COSEPublicKey:
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
-                userId: userHandle,
+                userId: meta.userId,
+                userHandle,
                 virtualAuthenticatorId: meta.virtualAuthenticatorId,
                 apiKeyId: meta.apiKeyId,
                 isClientSideDiscoverable: true,
@@ -615,7 +616,9 @@ export class VirtualAuthenticator implements IAuthenticator {
     // NOTE: If, within allowCredentialDescriptorList, the client supplied exactly one credential and it was successfully employed, then its credential ID is not returned since the client already knows it.
 
     const credentialId = uuidToBytes(webAuthnPublicKeyCredentialWithMeta.id);
-    const userHandle = uuidToBytes(webAuthnPublicKeyCredentialWithMeta.userId);
+    const userHandle =
+      webAuthnPublicKeyCredentialWithMeta.userHandle ??
+      uuidToBytes(webAuthnPublicKeyCredentialWithMeta.userId);
 
     const authenticatorGetAssertionResponse: AuthenticatorGetAssertionResponse =
       {

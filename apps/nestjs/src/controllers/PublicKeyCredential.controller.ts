@@ -17,14 +17,11 @@ import { Logger } from '@repo/logger';
 import { Pagination } from '@repo/pagination';
 import { WebAuthnPublicKeyCredentialKeyMetaType } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
-import { bytesToUuid, uuidToBytes } from '@repo/utils';
+import { bytesToUuid } from '@repo/utils';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator-agent';
 import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
-import type {
-  PublicKeyCredentialCreationOptions,
-  PublicKeyCredentialUserEntity,
-} from '@repo/virtual-authenticator/validation';
+import { PublicKeyCredentialCreationOptionsSchema } from '@repo/virtual-authenticator/validation';
 import { WebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
@@ -107,7 +104,7 @@ export class PublicKeyCredentialController {
     return tsRestHandler(
       nestjsContract.api.credentials.create,
       async ({ body }) => {
-        const { userId, apiKeyId, permissions, name } = jwtPayload;
+        const { userId, apiKeyId, permissions } = jwtPayload;
         const {
           publicKeyCredentialCreationOptions,
           meta,
@@ -123,18 +120,10 @@ export class PublicKeyCredentialController {
         const activeVirtualAuthenticator =
           await this._validateUserAndGetActiveAuthenticator(userId);
 
-        const publicKeyCredentialUserEntity: PublicKeyCredentialUserEntity = {
-          id: uuidToBytes(userId),
-          name: name,
-          displayName:
-            publicKeyCredentialCreationOptions.user?.displayName ?? name,
-        };
-
-        const publicKeyCredentialCreationOptionsWithUser: PublicKeyCredentialCreationOptions =
-          {
-            ...publicKeyCredentialCreationOptions,
-            user: publicKeyCredentialUserEntity,
-          };
+        const publicKeyCredentialCreationOptionsWithUser =
+          PublicKeyCredentialCreationOptionsSchema.parse(
+            publicKeyCredentialCreationOptions,
+          );
 
         this.logger.debug('Creating credential', {
           userId: userId,
