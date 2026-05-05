@@ -3,12 +3,7 @@ import * as cbor from '@repo/cbor';
 import { Hash } from '@repo/crypto';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
 import type { Uint8Array_ } from '@repo/types';
-import {
-  bytesToUuid,
-  toBase64Url,
-  tryBytesToUuid,
-  uuidToBytes,
-} from '@repo/utils';
+import { toBase64Url, tryBytesToUuid, uuidToBytes } from '@repo/utils';
 import { type IAuthenticator } from '@repo/virtual-authenticator';
 import {
   decodeAttestationObject,
@@ -520,7 +515,6 @@ export class VirtualAuthenticatorAgent implements IAuthenticatorAgent {
     assertSchema(
       meta,
       AuthenticatorAgentMetaArgsSchema.safeExtend({
-        userId: z.literal(bytesToUuid(options.publicKey.user.id)),
         origin: z.literal(origin),
       }),
     );

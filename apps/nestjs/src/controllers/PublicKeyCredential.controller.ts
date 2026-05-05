@@ -21,7 +21,6 @@ import { bytesToUuid } from '@repo/utils';
 import { VirtualAuthenticatorAgent } from '@repo/virtual-authenticator-agent';
 import { UserNotExists } from '@repo/virtual-authenticator/exceptions';
 import { WebAuthnPublicKeyCredentialWithMeta } from '@repo/virtual-authenticator/types';
-import { PublicKeyCredentialCreationOptionsSchema } from '@repo/virtual-authenticator/validation';
 import { WebAuthnPublicKeyCredential } from '@repo/virtual-authenticator/validation';
 import { tsRestHandler, TsRestHandler } from '@ts-rest/nest';
 
@@ -120,11 +119,6 @@ export class PublicKeyCredentialController {
         const activeVirtualAuthenticator =
           await this._validateUserAndGetActiveAuthenticator(userId);
 
-        const publicKeyCredentialCreationOptionsWithUser =
-          PublicKeyCredentialCreationOptionsSchema.parse(
-            publicKeyCredentialCreationOptions,
-          );
-
         this.logger.debug('Creating credential', {
           userId: userId,
         });
@@ -133,7 +127,7 @@ export class PublicKeyCredentialController {
           await this.virtualAuthenticatorAgent.createCredential({
             origin: meta.origin,
             options: {
-              publicKey: publicKeyCredentialCreationOptionsWithUser,
+              publicKey: publicKeyCredentialCreationOptions,
               signal: undefined,
             },
             sameOriginWithAncestors: true,
