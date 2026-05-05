@@ -2,7 +2,7 @@ import { factory } from '@/factory';
 import { requireAuthMiddleware } from '@/middlewares/requireAuthMiddleware';
 import { sValidator } from '@hono/standard-validator';
 import { LogAction, LogEntity } from '@repo/activity-log/enums';
-import { TokenType } from '@repo/auth/enums';
+import { Permission, TokenType } from '@repo/auth/enums';
 import { authServerContract } from '@repo/contract/auth-server';
 import {
   CreateApiKeyResponseSchema,
@@ -30,13 +30,13 @@ apiKey.on(
     const plaintextKey = bearerToken?.replace('Bearer ', '');
 
     if (!plaintextKey) {
-      throw new Unauthorized('API key is invalid.');
+      throw new Unauthorized({ message: 'API key is invalid.' });
     }
 
     const apiKey = await apiKeyManager.verify(plaintextKey);
 
     if (!apiKey) {
-      throw new Unauthorized('API key is invalid.');
+      throw new Unauthorized({ message: 'API key is invalid.' });
     }
 
     const user = await prisma.user.findUniqueOrThrow({
@@ -76,7 +76,10 @@ apiKey.post(
     const apiKey = await apiKeyManager.generate({
       userId: ctx.var.user!.id,
       name: json.name,
-      permissions: json.permissions,
+      permissions: [
+        Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.REGISTRATION'],
+        Permission['WEB_AUTHN_PUBLIC_KEY_CREDENTIAL.ASSERTION'],
+      ],
       expiresAt,
     });
 

@@ -93,7 +93,7 @@ export class ApiKeyManager {
     expiresAt?: Date | null;
     permissions?: Permission[] | null;
   }): Promise<{ plaintextKey: string; apiKey: ApiKey }> {
-    const { userId, name, expiresAt, permissions: _ } = opts;
+    const { userId, name, expiresAt, permissions } = opts;
 
     const internalLookupKey = this._generateRandomString(
       API_KEY_CONFIG.LOOKUP_BYTE_LENGTH,
@@ -122,10 +122,7 @@ export class ApiKeyManager {
         name,
         start,
         prefix: API_KEY_CONFIG.KEY_PREFIX,
-        permissions: [
-          Permission['CREDENTIAL.CREATE'],
-          Permission['CREDENTIAL.GET'],
-        ],
+        permissions: permissions ?? [],
       },
     });
 
