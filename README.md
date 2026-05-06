@@ -93,6 +93,8 @@ pnpm dev --filter '!@repo/nextjs-example'
 pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
 ```
 
+For a step-by-step guide with screenshots, see [docs/how-to-start.md](docs/how-to-start.md).
+
 ### Run Tests
 
 ```bash
