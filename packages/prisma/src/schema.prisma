@@ -167,9 +167,9 @@ model WebAuthnPublicKeyCredential {
   rpId String
 
   // Supplied by RP:
-  userHandle      Bytes // Relying's Party user ID
-  userName        String // Relying's Party user name
-  userDisplayName String // Relying's Party user diplay name
+  userHandle        Bytes // Relying's Party user ID
+  rpUserName        String // Relying's Party user name
+  rpUserDisplayName String // Relying's Party user diplay name
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

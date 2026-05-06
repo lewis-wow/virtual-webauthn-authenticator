@@ -10,8 +10,8 @@ export type CreateKeyVaultDataArgs = {
   rpId: string;
 
   userHandle: Uint8Array_;
-  userName: string;
-  userDisplayName: string;
+  rpUserName: string;
+  rpUserDisplayName: string;
 
   virtualAuthenticatorId: string;
   apiKeyId: string | null;

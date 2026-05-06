@@ -98,7 +98,7 @@ const WebAuthnRowActions = ({ credential }: WebAuthnRowActionsProps) => {
       <DeleteConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title={`Delete "${credential.userDisplayName}"?`}
+        title={`Delete "${credential.rpUserDisplayName}"?`}
         description="This will permanently delete this credential from Azure Key Vault. You will no longer be able to use this authenticator to log in."
         confirmText="Delete Credential"
         isPending={deleteMutation.isPending}

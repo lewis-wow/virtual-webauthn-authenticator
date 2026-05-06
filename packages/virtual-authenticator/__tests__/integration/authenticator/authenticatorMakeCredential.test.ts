@@ -771,8 +771,8 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         });
 
       expect(webAuthnPublicKeyCredential?.userHandle).toStrictEqual(userHandle);
-      expect(webAuthnPublicKeyCredential?.userName).toBe(userEntity.name);
-      expect(webAuthnPublicKeyCredential?.userDisplayName).toBe(
+      expect(webAuthnPublicKeyCredential?.rpUserName).toBe(userEntity.name);
+      expect(webAuthnPublicKeyCredential?.rpUserDisplayName).toBe(
         userEntity.displayName,
       );
     });

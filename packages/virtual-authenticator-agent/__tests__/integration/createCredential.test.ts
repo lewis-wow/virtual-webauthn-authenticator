@@ -1335,8 +1335,8 @@ describe('VirtualAuthenticator.createCredential()', () => {
         expect(webAuthnPublicKeyCredential?.userHandle).toStrictEqual(
           userHandle,
         );
-        expect(webAuthnPublicKeyCredential?.userName).toBe(userName);
-        expect(webAuthnPublicKeyCredential?.userDisplayName).toBe(
+        expect(webAuthnPublicKeyCredential?.rpUserName).toBe(userName);
+        expect(webAuthnPublicKeyCredential?.rpUserDisplayName).toBe(
           userDisplayName,
         );
       });

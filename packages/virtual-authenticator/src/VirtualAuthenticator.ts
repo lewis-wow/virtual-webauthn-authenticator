@@ -373,8 +373,8 @@ export class VirtualAuthenticator implements IAuthenticator {
                 rpId: rpEntity.id,
 
                 userHandle,
-                userName: userEntity.name,
-                userDisplayName: userEntity.displayName,
+                rpUserName: userEntity.name,
+                rpUserDisplayName: userEntity.displayName,
 
                 virtualAuthenticatorId: meta.virtualAuthenticatorId,
                 apiKeyId: meta.apiKeyId,
