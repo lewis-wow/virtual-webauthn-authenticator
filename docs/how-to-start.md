@@ -40,11 +40,7 @@ Start all services, excluding the example relying party app:
 pnpm dev --filter '!@repo/nextjs-example'
 ```
 
-Exclude both the example app and the browser extension:
-
-```bash
-pnpm dev --filter '!@repo/nextjs-example' --filter '!@repo/wxt'
-```
+And go to [http://localhost:3006](http://localhost:3006) to setup authenticator and API keys in Console application.
 
 ## Screens
 
