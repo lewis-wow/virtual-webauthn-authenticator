@@ -6,7 +6,7 @@ export const WebAuthnPublicKeyCredentialBaseSchema = z.object({
   id: z.uuid(),
   userId: z.string(),
 
-  userHandle: BytesSchema.nullable().optional(),
+  userHandle: BytesSchema,
   userName: z.string(),
   userDisplayName: z.string(),
 

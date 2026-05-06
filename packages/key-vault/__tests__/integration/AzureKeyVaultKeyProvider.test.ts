@@ -324,7 +324,9 @@ describe('AzureKeyVaultKeyProvider', () => {
         const webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta =
           {
             id: credentialId,
-            name: null,
+            userHandle: new Uint8Array(),
+            userName: '',
+            userDisplayName: '',
             userId: 'test-user-id',
             COSEPublicKey: keyPairResult.COSEPublicKey,
             counter: 0,
@@ -382,7 +384,9 @@ describe('AzureKeyVaultKeyProvider', () => {
         const webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta =
           {
             id: credentialId,
-            name: null,
+            userHandle: new Uint8Array(),
+            userName: '',
+            userDisplayName: '',
             userId: 'test-user-id',
             COSEPublicKey: keyPairResult.COSEPublicKey,
             counter: 0,
@@ -437,7 +441,9 @@ describe('AzureKeyVaultKeyProvider', () => {
         const webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta =
           {
             id: credentialId,
-            name: null,
+            userHandle: new Uint8Array(),
+            userName: '',
+            userDisplayName: '',
             userId: 'test-user-id',
             COSEPublicKey: keyPairResult.COSEPublicKey,
             counter: 0,
@@ -494,11 +500,13 @@ describe('AzureKeyVaultKeyProvider', () => {
         const webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta =
           {
             id: credentialId,
-            name: null,
             userId: 'test-user-id',
             COSEPublicKey: keyPairResult.COSEPublicKey,
             counter: 0,
             transports: [],
+            userHandle: new Uint8Array(),
+            userName: '',
+            userDisplayName: '',
             rpId: 'localhost',
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -551,9 +559,11 @@ describe('AzureKeyVaultKeyProvider', () => {
         const webAuthnPublicKeyCredential: WebAuthnPublicKeyCredentialWithMeta =
           {
             id: credentialId,
-            name: null,
             userId: 'test-user-id',
             COSEPublicKey: keyPairResult.COSEPublicKey,
+            userHandle: new Uint8Array(),
+            userName: '',
+            userDisplayName: '',
             counter: 0,
             transports: [],
             rpId: 'localhost',
