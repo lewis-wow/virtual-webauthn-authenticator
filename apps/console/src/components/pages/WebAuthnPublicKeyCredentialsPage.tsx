@@ -64,7 +64,7 @@ export const WebAuthnPublicKeyCredentialsPage = () => {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Fingerprint className="h-5 w-5 text-muted-foreground" />
-            <CardTitle>Passkeys & Hardware Tokens</CardTitle>
+            <CardTitle>Passkeys</CardTitle>
           </div>
           <CardDescription>
             Manage your credentials stored in Azure Key Vault.
