@@ -3,7 +3,6 @@ import {
   USER_ID,
   USER_NAME,
 } from '@repo/jwt/__tests__/helpers';
-// import { mock } from 'vitest-mock-extended'; // Remove mock if unused
 import { InMemoryJwksRepository } from '@repo/virtual-authenticator/__tests__/helpers';
 import { KeyVaultKeyIdGenerator } from '@repo/virtual-authenticator/__tests__/helpers';
 import { MockKeyProvider } from '@repo/virtual-authenticator/__tests__/helpers';
@@ -78,6 +77,32 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   timeout: 60000,
 } as PublicKeyCredentialCreationOptions;
 
+const cleanupWebAuthnPublicKeyCredentials = async (opts: {
+  prisma: PrismaClient;
+}) => {
+  const { prisma } = opts;
+
+  await prisma.$transaction([
+    prisma.webAuthnPublicKeyCredential.deleteMany(),
+    prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
+  ]);
+};
+
+const upsertVirtualAuthenticator = async (opts: { prisma: PrismaClient }) => {
+  const { prisma } = opts;
+
+  await prisma.virtualAuthenticator.upsert({
+    where: { id: VIRTUAL_AUTHENTICATOR_ID },
+    update: {},
+    create: {
+      isActive: true,
+      id: VIRTUAL_AUTHENTICATOR_ID,
+      userId: USER_ID,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+    },
+  });
+};
+
 /**
  * Tests for VirtualAuthenticator.createCredential() method
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
@@ -88,24 +113,32 @@ const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
  */
 describe('VirtualAuthenticator.createCredential()', () => {
   const prisma = new PrismaClient();
+
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
+
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+
   const virtualAuthenticatorRepository =
     new PrismaVirtualAuthenticatorRepository({ prisma });
+
   const authorizationGesture = new AuthorizationGesture({
     virtualAuthenticatorRepository,
   });
+
   const attestationHandlerRegistry =
     new AttestationHandlerRegistry().registerAll([
       new NoneAttestationHandler(),
       new PackedAttestationHandler({ keyProvider }),
     ]);
+
   const attestationProcessor = new AttestationProcessor(
     attestationHandlerRegistry,
   );
+
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     virtualAuthenticatorRepository,
@@ -113,17 +146,22 @@ describe('VirtualAuthenticator.createCredential()', () => {
     authorizationGesture,
     attestationProcessor,
   });
+
   const extensionRegistry = new ExtensionRegistry().registerAll([
     new CredPropsExtension(),
   ]);
+
   const extensionProcessor = new ExtensionProcessor(extensionRegistry);
 
   const jwksRepository = new InMemoryJwksRepository();
+
   const jwks = new Jwks({
     encryptionKey: 'test-encryption-key',
     jwksRepository,
   });
+
   const jwt = new Jwt({ jwks });
+
   const stateManager = new StateManager({ jwt });
 
   const agent = new VirtualAuthenticatorAgent({
@@ -132,29 +170,13 @@ describe('VirtualAuthenticator.createCredential()', () => {
     stateManager,
   });
 
-  const cleanupWebAuthnPublicKeyCredentials = async () => {
-    await prisma.$transaction([
-      prisma.webAuthnPublicKeyCredential.deleteMany(),
-      prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
-    ]);
-  };
-
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
-    await prisma.virtualAuthenticator.upsert({
-      where: { id: VIRTUAL_AUTHENTICATOR_ID },
-      update: {},
-      create: {
-        id: VIRTUAL_AUTHENTICATOR_ID,
-        userId: USER_ID,
-        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
-        isActive: true,
-      },
-    });
+    await upsertVirtualAuthenticator({ prisma });
   });
 
   afterEach(async () => {
-    await cleanupWebAuthnPublicKeyCredentials();
+    await cleanupWebAuthnPublicKeyCredentials({ prisma });
   });
 
   afterAll(async () => {
@@ -197,7 +219,7 @@ describe('VirtualAuthenticator.createCredential()', () => {
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
           attestation,
-        } satisfies PublicKeyCredentialCreationOptions;
+        };
 
         const { attestationObjectMap } =
           await performPublicKeyCredentialRegistrationAndVerify({
@@ -1281,6 +1303,44 @@ describe('VirtualAuthenticator.createCredential()', () => {
    */
   describe('PublicKeyCredentialCreationOptions.user', () => {
     describe('user.name and user.displayName', () => {
+      test('Should persist user handle and display name', async () => {
+        const userHandle = new Uint8Array([11, 12, 13, 14, 15, 16, 17, 18]);
+        const userName = 'user@example.com';
+        const userDisplayName = 'Stored User';
+
+        const publicKeyCredentialCreationOptions = {
+          ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
+          attestation: Attestation.NONE,
+          user: {
+            id: userHandle,
+            name: userName,
+            displayName: userDisplayName,
+          },
+        } satisfies PublicKeyCredentialCreationOptions;
+
+        const { credentialUuid } =
+          await performPublicKeyCredentialRegistrationAndVerify({
+            stateManager,
+            agent,
+            publicKeyCredentialCreationOptions,
+          });
+
+        const webAuthnPublicKeyCredential =
+          await prisma.webAuthnPublicKeyCredential.findUnique({
+            where: {
+              id: credentialUuid,
+            },
+          });
+
+        expect(webAuthnPublicKeyCredential?.userHandle).toStrictEqual(
+          userHandle,
+        );
+        expect(webAuthnPublicKeyCredential?.userName).toBe(userName);
+        expect(webAuthnPublicKeyCredential?.userDisplayName).toBe(
+          userDisplayName,
+        );
+      });
+
       test('Should work with valid name and displayName', async () => {
         const publicKeyCredentialCreationOptions = {
           ...PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS,
