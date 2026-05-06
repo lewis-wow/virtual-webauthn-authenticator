@@ -13,11 +13,12 @@ generator client {
 }
 
 generator erd {
-  provider     = "prisma-erd-generator"
-  theme        = "neutral"
-  disableEmoji = true
-  output       = "../ERD.pdf"
-  disabled     = true
+  provider        = "prisma-erd-generator"
+  theme           = "neutral"
+  disableEmoji    = true
+  output          = "../ERD.pdf"
+  disabled        = true
+  puppeteerConfig = "./puppeteerConfig.json"
 }
 
 model User {
