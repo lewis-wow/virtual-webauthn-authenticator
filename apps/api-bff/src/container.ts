@@ -1,7 +1,6 @@
 import { TokenFetch } from '@repo/bff';
 import { DependencyContainer } from '@repo/dependency-container';
 import { Logger } from '@repo/logger';
-import { LRUCache } from 'lru-cache';
 
 import { env } from './env';
 
@@ -14,15 +13,8 @@ export const container = new DependencyContainer()
       level: env.LOG_LEVEL,
     });
   })
-  .register('cache', () => {
-    return new LRUCache<string, string>({
-      max: 100,
-      ttl: 1000 * 60 * 60, // 1 hour in milliseconds
-    });
-  })
-  .register('tokenFetch', ({ cache }) => {
+  .register('tokenFetch', () => {
     return new TokenFetch({
-      cache,
       fetch: async (opts: { apiKey: string }) => {
         const response = await fetch(
           `${env.AUTH_BASE_URL}/api/auth/api-keys/token`,
