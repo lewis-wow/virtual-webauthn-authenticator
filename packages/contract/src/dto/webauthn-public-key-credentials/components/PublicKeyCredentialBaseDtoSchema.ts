@@ -6,6 +6,8 @@ export const PublicKeyCredentialBaseDtoSchema =
   WebAuthnPublicKeyCredentialBaseSchema.extend({
     COSEPublicKey: BytesSchemaCodec,
 
+    userHandle: BytesSchemaCodec,
+
     createdAt: DateSchemaCodec,
     updatedAt: DateSchemaCodec,
   });
