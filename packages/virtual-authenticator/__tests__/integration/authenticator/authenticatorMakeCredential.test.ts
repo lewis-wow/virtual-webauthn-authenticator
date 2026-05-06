@@ -5,6 +5,7 @@ import { encodeCOSEPublicKey } from '@repo/keys/cbor';
 import { COSEKeyAlgorithm, COSEKeyParam } from '@repo/keys/enums';
 import { PrismaClient } from '@repo/prisma';
 import type { Uint8Array_ } from '@repo/types';
+import { bytesToUuid } from '@repo/utils';
 import { verifySignature } from '@simplewebauthn/server/helpers';
 import { randomUUID } from 'node:crypto';
 import {
@@ -48,6 +49,31 @@ import {
   performAuthenticatorMakeCredentialAndVerify,
 } from './performAuthenticatorMakeCredentialAndVerify';
 
+const cleanupWebAuthnPublicKeyCredentials = async (opts: {
+  prisma: PrismaClient;
+}) => {
+  const { prisma } = opts;
+
+  await prisma.$transaction([
+    prisma.webAuthnPublicKeyCredential.deleteMany(),
+    prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
+  ]);
+};
+
+const upsertVirtualAuthenticator = async (opts: { prisma: PrismaClient }) => {
+  const { prisma } = opts;
+
+  await prisma.virtualAuthenticator.upsert({
+    where: { id: VIRTUAL_AUTHENTICATOR_ID },
+    update: {},
+    create: {
+      id: VIRTUAL_AUTHENTICATOR_ID,
+      userId: USER_ID,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+    },
+  });
+};
+
 /**
  * Tests for VirtualAuthenticator.createCredential() method
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-make-cred
@@ -58,24 +84,32 @@ import {
  */
 describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
   const prisma = new PrismaClient();
+
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
+
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+
   const virtualAuthenticatorRepository =
     new MockVirtualAuthenticatorRepository();
+
   const authorizationGesture = new AuthorizationGesture({
     virtualAuthenticatorRepository,
   });
+
   const attestationHandlerRegistry =
     new AttestationHandlerRegistry().registerAll([
       new NoneAttestationHandler(),
       new PackedAttestationHandler({ keyProvider }),
     ]);
+
   const attestationProcessor = new AttestationProcessor(
     attestationHandlerRegistry,
   );
+
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     virtualAuthenticatorRepository,
@@ -84,36 +118,21 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     attestationProcessor,
   });
 
-  const cleanupWebAuthnPublicKeyCredentials = async () => {
-    await prisma.$transaction([
-      prisma.webAuthnPublicKeyCredential.deleteMany(),
-      prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
-    ]);
-  };
-
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
-
-    await prisma.virtualAuthenticator.upsert({
-      where: { id: VIRTUAL_AUTHENTICATOR_ID },
-      update: {},
-      create: {
-        id: VIRTUAL_AUTHENTICATOR_ID,
-        userId: USER_ID,
-        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
-      },
-    });
+    await upsertVirtualAuthenticator({ prisma });
   });
 
   afterEach(async () => {
-    await cleanupWebAuthnPublicKeyCredentials();
+    await cleanupWebAuthnPublicKeyCredentials({ prisma });
   });
 
   afterAll(async () => {
     await prisma.user.deleteMany();
   });
 
-  describe('AuthenticatorMakeCredentialArgs.requireUserPresence', () => {
+  // Tests:
+  describe('args.requireUserPresence', () => {
     test('args.requireUserPresence: true, meta.userPresenceEnabled: true', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
@@ -139,8 +158,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
       } as AuthenticatorMakeCredentialArgs;
 
       const meta: Partial<AuthenticatorMetaArgs> = {
-        // userPresenceEnabled must be `true`
-        userPresenceEnabled: false as true,
+        userPresenceEnabled: false,
       };
 
       await expect(() =>
@@ -197,7 +215,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     });
   });
 
-  describe('AuthenticatorMakeCredentialArgs.requireUserVerification', () => {
+  describe('args.requireUserVerification', () => {
     test('args.requireUserVerification: true, meta.userVerificationEnabled: true', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
@@ -273,7 +291,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     });
   });
 
-  describe('AuthenticatorMakeCredentialArgs.requireResidentKey', () => {
+  describe('args.requireResidentKey', () => {
     // Discoverable (Resident Key): Private key stored in Authenticator database - Key Vault in this implementation.
     // Non-Discoverable (Non-Resident Key): Private key stored on RP Server databse (as an encrypted blob) - Not in this implementation.
     // The credential is discoverable if requireResidentKey is true or the authenticator chooses to create a client-side discoverable credential.
@@ -302,41 +320,34 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     );
   });
 
-  describe('AuthenticatorMakeCredentialArgs.enterpriseAttestationPossible', () => {
-    test('args.enterpriseAttestationPossible: false', async () => {
-      const authenticatorMakeCredentialArgs = {
-        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-        enterpriseAttestationPossible: false,
-      } as AuthenticatorMakeCredentialArgs;
+  describe('args.enterpriseAttestationPossible', () => {
+    test.each([
+      { enterpriseAttestationPossible: false },
+      { enterpriseAttestationPossible: true },
+    ])(
+      'args.enterpriseAttestationPossible: $enterpriseAttestationPossible',
+      async ({ enterpriseAttestationPossible }) => {
+        const authenticatorMakeCredentialArgs = {
+          ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+          enterpriseAttestationPossible,
+        };
 
-      await performAuthenticatorMakeCredentialAndVerify({
-        authenticator,
-        prisma,
-        authenticatorMakeCredentialArgs,
-      });
-    });
+        const { attestationObjectMap } =
+          await performAuthenticatorMakeCredentialAndVerify({
+            authenticator,
+            prisma,
+            authenticatorMakeCredentialArgs,
+          });
 
-    test('args.enterpriseAttestationPossible: true', async () => {
-      const authenticatorMakeCredentialArgs = {
-        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
-        enterpriseAttestationPossible: true,
-      } as AuthenticatorMakeCredentialArgs;
-
-      const { attestationObjectMap } =
-        await performAuthenticatorMakeCredentialAndVerify({
-          authenticator,
-          prisma,
-          authenticatorMakeCredentialArgs,
-        });
-
-      // Most preferable format by the authenticator
-      expect(attestationObjectMap.get('fmt')).toBe(
-        VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
-      );
-    });
+        // Most preferable format by the authenticator
+        expect(attestationObjectMap.get('fmt')).toBe(
+          VirtualAuthenticator.MOST_PREFFERED_ATTESTATION_FORMAT,
+        );
+      },
+    );
   });
 
-  describe('AuthenticatorMakeCredentialArgs.attestationFormats', () => {
+  describe('args.attestationFormats', () => {
     test.each(
       [
         { attestationFormats: [Fmt.NONE], expectedFmt: Fmt.NONE },
@@ -390,7 +401,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         const authenticatorMakeCredentialArgs = {
           ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
           attestationFormats,
-        } as AuthenticatorMakeCredentialArgs;
+        };
 
         const { attestationObjectMap } =
           await performAuthenticatorMakeCredentialAndVerify({
@@ -404,7 +415,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     );
   });
 
-  describe('AuthenticatorMakeCredentialArgs.credTypesAndPubKeyAlgs', () => {
+  describe('args.credTypesAndPubKeyAlgs', () => {
     test.each(
       [
         // ONLY Supported algorithms
@@ -477,7 +488,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
         const authenticatorMakeCredentialArgs = {
           ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
           credTypesAndPubKeyAlgs,
-        } as AuthenticatorMakeCredentialArgs;
+        };
 
         const { parsedAuthenticatorData } =
           await performAuthenticatorMakeCredentialAndVerify({
@@ -542,7 +553,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
           .join(', '),
       })),
     )(
-      'No supported args.credTypesAndPubKeyAlgs $credTypesAndPubKeyAlgsDisplay',
+      'No supported args.credTypesAndPubKeyAlgs: $credTypesAndPubKeyAlgsDisplay',
       async ({ credTypesAndPubKeyAlgs, expectedError }) => {
         const authenticatorMakeCredentialArgs = {
           ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
@@ -560,7 +571,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     );
   });
 
-  describe('AuthenticatorMakeCredentialArgs.excludeCredentialDescriptorList', () => {
+  describe('args.excludeCredentialDescriptorList', () => {
     let credentialId: Uint8Array_;
 
     beforeEach(async () => {
@@ -668,13 +679,13 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     );
   });
 
-  describe('AuthenticatorMakeCredentialArgs.hash', () => {
+  describe('args.hash', () => {
     test('Signature is valid', async () => {
       const authenticatorMakeCredentialArgs = {
         ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
         hash: CLIENT_DATA_HASH,
         attestationFormats: [Fmt.PACKED],
-      } as AuthenticatorMakeCredentialArgs;
+      };
 
       const { attestationObjectMap, parsedAuthenticatorData } =
         await performAuthenticatorMakeCredentialAndVerify({
@@ -700,7 +711,74 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     });
   });
 
-  describe('AuthenticatorMetaArgs.userId', () => {
+  describe('args.rpEntity', () => {
+    test('Persists rpEntity values', async () => {
+      const rpEntity = {
+        id: 'custom.example.com',
+        name: 'Custom RP',
+      };
+
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        rpEntity,
+      };
+
+      const { parsedAuthenticatorData } =
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          prisma,
+          authenticatorMakeCredentialArgs,
+        });
+
+      const webAuthnPublicKeyCredential =
+        await prisma.webAuthnPublicKeyCredential.findUnique({
+          where: {
+            id: bytesToUuid(parsedAuthenticatorData.credentialID!),
+          },
+        });
+
+      expect(webAuthnPublicKeyCredential?.rpId).toBe(rpEntity.id);
+    });
+  });
+
+  describe('args.userEntity', () => {
+    test('Persists userEntity values', async () => {
+      const userHandle = new Uint8Array([11, 12, 13, 14]);
+
+      const userEntity = {
+        id: userHandle,
+        name: 'custom-user',
+        displayName: 'Custom User',
+      };
+
+      const authenticatorMakeCredentialArgs = {
+        ...AUTHENTICATOR_MAKE_CREDENTIAL_ARGS,
+        userEntity,
+      } as AuthenticatorMakeCredentialArgs;
+
+      const { parsedAuthenticatorData } =
+        await performAuthenticatorMakeCredentialAndVerify({
+          authenticator,
+          prisma,
+          authenticatorMakeCredentialArgs,
+        });
+
+      const webAuthnPublicKeyCredential =
+        await prisma.webAuthnPublicKeyCredential.findUnique({
+          where: {
+            id: bytesToUuid(parsedAuthenticatorData.credentialID!),
+          },
+        });
+
+      expect(webAuthnPublicKeyCredential?.userHandle).toStrictEqual(userHandle);
+      expect(webAuthnPublicKeyCredential?.userName).toBe(userEntity.name);
+      expect(webAuthnPublicKeyCredential?.userDisplayName).toBe(
+        userEntity.displayName,
+      );
+    });
+  });
+
+  describe('meta.userId', () => {
     test.each([
       { userId: randomUUID() },
       { userId: 'NON_UUID' },
@@ -724,7 +802,7 @@ describe('VirtualAuthenticator.authenticatorMakeCredential()', () => {
     );
   });
 
-  describe('RegistrationState', () => {
+  describe('state', () => {
     describe('Invalid UserPresence state', () => {
       test('Throws UserPresenceRequired when state is undefined and requireUserPresence is true', async () => {
         const authenticatorMakeCredentialArgs = {

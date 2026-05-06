@@ -43,6 +43,31 @@ import {
   performAuthenticatorMakeCredentialAndVerify,
 } from './performAuthenticatorMakeCredentialAndVerify';
 
+const cleanupWebAuthnPublicKeyCredentials = async (opts: {
+  prisma: PrismaClient;
+}) => {
+  const { prisma } = opts;
+
+  await prisma.$transaction([
+    prisma.webAuthnPublicKeyCredential.deleteMany(),
+    prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
+  ]);
+};
+
+const upsertVirtualAuthenticator = async (opts: { prisma: PrismaClient }) => {
+  const { prisma } = opts;
+
+  await prisma.virtualAuthenticator.upsert({
+    where: { id: VIRTUAL_AUTHENTICATOR_ID },
+    update: {},
+    create: {
+      id: VIRTUAL_AUTHENTICATOR_ID,
+      userId: USER_ID,
+      userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
+    },
+  });
+};
+
 /**
  * Tests for VirtualAuthenticator.authenticatorGetAssertion() method
  * @see https://www.w3.org/TR/webauthn-3/#sctn-op-get-assertion
@@ -50,24 +75,32 @@ import {
  */
 describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
   const prisma = new PrismaClient();
+
   const keyVaultKeyIdGenerator = new KeyVaultKeyIdGenerator();
+
   const keyProvider = new MockKeyProvider({ keyVaultKeyIdGenerator });
+
   const webAuthnPublicKeyCredentialRepository = new PrismaWebAuthnRepository({
     prisma,
   });
+
   const virtualAuthenticatorRepository =
     new MockVirtualAuthenticatorRepository();
+
   const authorizationGesture = new AuthorizationGesture({
     virtualAuthenticatorRepository,
   });
+
   const attestationHandlerRegistry =
     new AttestationHandlerRegistry().registerAll([
       new NoneAttestationHandler(),
       new PackedAttestationHandler({ keyProvider }),
     ]);
+
   const attestationProcessor = new AttestationProcessor(
     attestationHandlerRegistry,
   );
+
   const authenticator = new VirtualAuthenticator({
     webAuthnRepository: webAuthnPublicKeyCredentialRepository,
     virtualAuthenticatorRepository,
@@ -76,27 +109,11 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     attestationProcessor,
   });
 
-  const cleanupWebAuthnPublicKeyCredentials = async () => {
-    await prisma.$transaction([
-      prisma.webAuthnPublicKeyCredential.deleteMany(),
-      prisma.webAuthnPublicKeyCredentialKeyVaultKeyMeta.deleteMany(),
-    ]);
-  };
-
   let authenticatorMakeCredentialResponse: AuthenticatorMakeCredentialResponse;
 
   beforeAll(async () => {
     await upsertTestingUser({ prisma });
-
-    await prisma.virtualAuthenticator.upsert({
-      where: { id: VIRTUAL_AUTHENTICATOR_ID },
-      update: {},
-      create: {
-        id: VIRTUAL_AUTHENTICATOR_ID,
-        userId: USER_ID,
-        userVerificationType: VirtualAuthenticatorUserVerificationType.NONE,
-      },
-    });
+    await upsertVirtualAuthenticator({ prisma });
   });
 
   beforeEach(async () => {
@@ -110,14 +127,14 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
   });
 
   afterEach(async () => {
-    await cleanupWebAuthnPublicKeyCredentials();
+    await cleanupWebAuthnPublicKeyCredentials({ prisma });
   });
 
   afterAll(async () => {
     await prisma.user.deleteMany();
   });
 
-  describe('AuthenticatorMakeCredentialArgs.requireUserPresence', () => {
+  describe('args.requireUserPresence', () => {
     test('args.requireUserPresence: true, meta.userPresenceEnabled: true', async () => {
       const authenticatorGetAssertionArgs = {
         ...AUTHENTICATOR_GET_ASSERTION_ARGS,
@@ -197,7 +214,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     });
   });
 
-  describe('AuthenticatorMakeCredentialArgs.requireUserVerification', () => {
+  describe('args.requireUserVerification', () => {
     test('args.requireUserVerification: true, meta.userVerificationEnabled: true', async () => {
       const authenticatorGetAssertionArgs = {
         ...AUTHENTICATOR_GET_ASSERTION_ARGS,
@@ -277,7 +294,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     });
   });
 
-  describe('AuthenticatorMakeCredentialArgs.allowCredentialDescriptorList', () => {
+  describe('args.allowCredentialDescriptorList', () => {
     test('Client-side discovery for single credential', async () => {
       const authenticatorGetAssertionArgs = {
         ...AUTHENTICATOR_GET_ASSERTION_ARGS,
@@ -302,7 +319,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
       const authenticatorGetAssertionArgs = {
         ...AUTHENTICATOR_GET_ASSERTION_ARGS,
         allowCredentialDescriptorList: undefined,
-      } as AuthenticatorGetAssertionArgs;
+      };
 
       const meta: AuthenticatorMetaArgs = {
         userId: USER_ID,
@@ -361,7 +378,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
             id: authenticatorMakeCredentialResponse.credentialId,
           },
         ],
-      } as AuthenticatorGetAssertionArgs;
+      };
 
       await performAuthenticatorGetAssertionAndVerify({
         authenticator,
@@ -372,7 +389,7 @@ describe('VirtualAuthenticator.authenticatorGetAssertion()', () => {
     });
   });
 
-  describe('AuthenticationState', () => {
+  describe('state', () => {
     describe('Invalid CredentialSelection state', () => {
       test('Throws CredentialSelectException when multiple credentials exist and no credentialId in state', async () => {
         // Create a second credential for the same RP

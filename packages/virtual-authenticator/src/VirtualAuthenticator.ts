@@ -363,17 +363,20 @@ export class VirtualAuthenticator implements IAuthenticator {
             await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential(
               {
                 id: webAuthnPublicKeyCredentialId,
-                name: userEntity.displayName,
+                userId: meta.userId,
+
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta:
                   webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
                 COSEPublicKey:
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
-                userId: meta.userId,
+
                 userHandle,
+                userName: userEntity.name,
+                userDisplayName: userEntity.displayName,
+
                 virtualAuthenticatorId: meta.virtualAuthenticatorId,
                 apiKeyId: meta.apiKeyId,
-                isClientSideDiscoverable: true,
               },
             );
 

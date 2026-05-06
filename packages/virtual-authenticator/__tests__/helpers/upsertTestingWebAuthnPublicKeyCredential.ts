@@ -36,8 +36,9 @@ export const upsertTestingWebAuthnPublicKeyCredential = async (opts: {
       COSEPublicKey: cbor.encode(COSEPublicKey),
       webAuthnPublicKeyCredentialKeyMetaType:
         WebAuthnPublicKeyCredentialKeyMetaType.KEY_VAULT,
-      isClientSideDiscoverable: true,
       userHandle: new Uint8Array(Buffer.from('Test User Handle From RP')),
+      userName: 'User Name',
+      userDisplayName: 'User Display Name',
       webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
         create: {
           id: WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID,

@@ -4,9 +4,12 @@ import { BytesSchema } from './BytesSchema';
 
 export const WebAuthnPublicKeyCredentialBaseSchema = z.object({
   id: z.uuid(),
-  name: z.string().nullable(),
   userId: z.string(),
+
   userHandle: BytesSchema.nullable().optional(),
+  userName: z.string(),
+  userDisplayName: z.string(),
+
   COSEPublicKey: BytesSchema,
   counter: z.number().int().nonnegative(),
   transports: z.array(z.string()),

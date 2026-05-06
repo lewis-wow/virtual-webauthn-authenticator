@@ -5,14 +5,16 @@ import type { ApplicablePublicKeyCredential } from '../../validation/spec/Applic
 
 export type CreateKeyVaultDataArgs = {
   id: string;
-  name?: string;
+  userId: string;
   COSEPublicKey: Uint8Array_;
   rpId: string;
-  userId: string;
-  userHandle?: Uint8Array_ | null;
+
+  userHandle: Uint8Array_;
+  userName: string;
+  userDisplayName: string;
+
   virtualAuthenticatorId: string;
   apiKeyId: string | null;
-  isClientSideDiscoverable: boolean;
 } & {
   webAuthnPublicKeyCredentialKeyVaultKeyMeta: {
     keyVaultKeyId: string | null;
