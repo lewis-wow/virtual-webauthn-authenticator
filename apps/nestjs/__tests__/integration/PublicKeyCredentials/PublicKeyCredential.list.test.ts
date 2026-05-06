@@ -161,10 +161,10 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
               "counter": 0,
               "createdAt": "1970-01-01T00:00:00.000Z",
               "id": "0cc9f49f-2967-404e-b45c-3dc7110681c5",
-              "name": null,
               "rpId": "example.com",
               "transports": [],
               "updatedAt": "1970-01-01T00:00:00.000Z",
+              "userDisplayName": "User Display Name",
               "userHandle": {
                 "0": 84,
                 "1": 101,
@@ -192,6 +192,7 @@ describe('WebAuthnPublicKeyCredentialsController List - GET /api/webauthn-public
                 "9": 32,
               },
               "userId": "f84468a3-f383-41ce-83e2-5aab4a712c15",
+              "userName": "User Name",
               "webAuthnPublicKeyCredentialKeyMetaType": "KEY_VAULT",
               "webAuthnPublicKeyCredentialKeyVaultKeyMeta": {
                 "createdAt": "1970-01-01T00:00:00.000Z",
