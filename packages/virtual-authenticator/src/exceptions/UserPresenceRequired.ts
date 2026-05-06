@@ -18,6 +18,7 @@ export const UserPresenceRequiredDataSchema = z.object({
   requireUserVerification: z.boolean(),
   requireUserPresence: z.boolean(),
   userVerificationType: VirtualAuthenticatorUserVerificationTypeSchema,
+  userDisplayName: z.string().optional(),
 });
 
 export type UserPresenceRequiredData = z.infer<

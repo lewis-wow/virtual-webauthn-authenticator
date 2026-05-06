@@ -79,6 +79,7 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         select: {
           id: true,
           userDisplayName: true,
+          userName: true,
           user: {
             select: {
               id: true,
@@ -95,10 +96,12 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     return webAuthnPublicKeyCredentialCandidates.map(
       (webAuthnPublicKeyCredentialCandidate) => ({
         id: webAuthnPublicKeyCredentialCandidate.id,
-        name: webAuthnPublicKeyCredentialCandidate.userDisplayName,
         userId: webAuthnPublicKeyCredentialCandidate.user.id,
-        userDisplayName: webAuthnPublicKeyCredentialCandidate.user.name,
         userEmail: webAuthnPublicKeyCredentialCandidate.user.email,
+        userName: webAuthnPublicKeyCredentialCandidate.user.name,
+
+        rpUserDisplayName: webAuthnPublicKeyCredentialCandidate.userDisplayName,
+        rpUserName: webAuthnPublicKeyCredentialCandidate.userName,
       }),
     );
   }

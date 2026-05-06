@@ -18,8 +18,8 @@ export type CredentialOptionsDialogProps = {
   onConfirm: (credentialId: string) => void;
   credentialOptions: {
     id: string;
-    name: string | null;
-    userDisplayName: string;
+    rpUserName: string;
+    rpUserDisplayName: string;
   }[];
 };
 
@@ -93,13 +93,11 @@ export const CredentialOptionsDialog = ({
                           isSelected && 'text-primary',
                         )}
                       >
-                        {credential.name ?? credential.userDisplayName}
+                        {credential.rpUserName}
                       </span>
-                      {credential.name && (
-                        <span className="text-xs text-muted-foreground truncate">
-                          {credential.userDisplayName}
-                        </span>
-                      )}
+                      <span className="text-xs text-muted-foreground truncate">
+                        {credential.rpUserDisplayName}
+                      </span>
                     </div>
                   </button>
                 );

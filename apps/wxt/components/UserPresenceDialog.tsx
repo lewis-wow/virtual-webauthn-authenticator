@@ -11,11 +11,13 @@ import {
 import { Fingerprint } from 'lucide-react';
 
 export type UserPresenceDialogProps = {
+  userDisplayName?: string;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
 export const UserPresenceDialog = ({
+  userDisplayName,
   onCancel,
   onConfirm,
 }: UserPresenceDialogProps) => {
@@ -38,6 +40,14 @@ export const UserPresenceDialog = ({
         </DialogHeader>
 
         <div className="py-4">
+          {userDisplayName && (
+            <p className="text-sm text-muted-foreground">
+              User:{' '}
+              <span className="font-medium text-foreground">
+                {userDisplayName}
+              </span>
+            </p>
+          )}
           <p className="text-sm text-muted-foreground">
             The authenticator requires confirmation that you are physically
             present. Press &quot;Confirm&quot; to continue.

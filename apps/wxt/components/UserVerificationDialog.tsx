@@ -16,12 +16,14 @@ import * as React from 'react';
 
 export type UserVerificationDialogProps = {
   userVerificationType: string;
+  userDisplayName?: string;
   onCancel: () => void;
   onConfirm: (opts: { pin?: string }) => void;
 };
 
 export const UserVerificationDialog = ({
   userVerificationType,
+  userDisplayName,
   onCancel,
   onConfirm,
 }: UserVerificationDialogProps) => {
@@ -61,6 +63,14 @@ export const UserVerificationDialog = ({
         </DialogHeader>
 
         <div className="py-4">
+          {userDisplayName && (
+            <p className="text-sm text-muted-foreground">
+              User:{' '}
+              <span className="font-medium text-foreground">
+                {userDisplayName}
+              </span>
+            </p>
+          )}
           {requiresPin ? (
             <div className="space-y-2">
               <Label htmlFor="pin">PIN</Label>

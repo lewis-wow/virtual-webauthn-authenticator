@@ -8,6 +8,7 @@ import {
   UserPresenceRequiredAgentException,
   UserVerificationRequiredAgentException,
 } from '@repo/virtual-authenticator-agent/exceptions';
+import { CredentialOptionsEmpty } from '@repo/virtual-authenticator/exceptions';
 import { match } from 'ts-pattern';
 
 import { CredentialOptionsDialog } from './CredentialOptionsDialog';
@@ -49,10 +50,21 @@ export const App = () => {
                 };
 
                 if (error.data.requireUserVerification) {
+                  const selectedCredentialOption =
+                    error.data.credentialOptions.find(
+                      (credentialOption) =>
+                        credentialOption.id === selectedCredentialOptionId,
+                    ) ?? null;
+
+                  console.log({ selectedCredentialOption });
+
                   // Chain into UV dialog before resolving
                   openDialog(
                     <UserVerificationDialog
                       userVerificationType={error.data.userVerificationType}
+                      userDisplayName={
+                        selectedCredentialOption?.rpUserDisplayName
+                      }
                       onCancel={() => {
                         resolve(null);
                         closeDialog();
@@ -83,6 +95,7 @@ export const App = () => {
             return (
               <UserVerificationDialog
                 userVerificationType={error.data.userVerificationType}
+                userDisplayName={error.data.userDisplayName}
                 onCancel={() => {
                   resolve(null);
                   closeDialog();
@@ -104,6 +117,7 @@ export const App = () => {
 
           return (
             <UserPresenceDialog
+              userDisplayName={error.data.userDisplayName}
               onCancel={() => {
                 resolve(null);
                 closeDialog();
@@ -126,6 +140,7 @@ export const App = () => {
             return (
               <UserVerificationDialog
                 userVerificationType={error.data.userVerificationType}
+                userDisplayName={error.data.userDisplayName}
                 onCancel={() => {
                   resolve(null);
                   closeDialog();
@@ -145,11 +160,16 @@ export const App = () => {
             );
           },
         )
+        .when(isExceptionShape(CredentialOptionsEmpty), () => {
+          resolve(null);
+
+          return null;
+        })
         .otherwise((error) => {
           logger.exceptionOrError(error, 'Error occured.');
           resolve(null);
 
-          return null;
+          return <ErrorDialog error={error} onClose={closeDialog} />;
         });
 
       openDialog(component);

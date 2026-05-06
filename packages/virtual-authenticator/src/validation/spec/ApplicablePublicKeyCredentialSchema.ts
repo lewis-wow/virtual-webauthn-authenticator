@@ -6,10 +6,12 @@ import z from 'zod';
  */
 export const ApplicablePublicKeyCredentialSchema = z.object({
   id: z.string(),
-  name: z.string().nullable(),
   userId: z.string(),
-  userDisplayName: z.string(),
+  userName: z.string(),
   userEmail: z.string(),
+
+  rpUserName: z.string(),
+  rpUserDisplayName: z.string(),
 });
 
 export type ApplicablePublicKeyCredential = z.infer<

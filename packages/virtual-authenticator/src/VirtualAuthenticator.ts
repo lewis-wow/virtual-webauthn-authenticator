@@ -303,6 +303,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       requireUserVerification,
       state,
       applicablePublicKeyCredentials: undefined,
+      userDisplayName: userEntity.displayName,
     });
 
     // Step 7: Once the authorization gesture has been completed, generate
@@ -549,6 +550,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       requireUserVerification,
       state,
       applicablePublicKeyCredentials: credentialOptions,
+      userDisplayName: credentialOptions[0]!.rpUserDisplayName,
     });
 
     // Collect an authorization gesture confirming user consent for using selectedCredential.
