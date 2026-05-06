@@ -303,6 +303,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       requireUserVerification,
       state,
       applicablePublicKeyCredentials: undefined,
+      userDisplayName: userEntity.displayName,
     });
 
     // Step 7: Once the authorization gesture has been completed, generate
@@ -363,17 +364,20 @@ export class VirtualAuthenticator implements IAuthenticator {
             await this.webAuthnRepository.createKeyVaultWebAuthnPublicKeyCredential(
               {
                 id: webAuthnPublicKeyCredentialId,
-                name: userEntity.displayName,
+                userId: meta.userId,
+
                 webAuthnPublicKeyCredentialKeyVaultKeyMeta:
                   webAuthnPublicKeyCredentialPublicKey.webAuthnPublicKeyCredentialKeyVaultKeyMeta,
                 COSEPublicKey:
                   webAuthnPublicKeyCredentialPublicKey.COSEPublicKey,
                 rpId: rpEntity.id,
-                userId: meta.userId,
+
                 userHandle,
+                rpUserName: userEntity.name,
+                rpUserDisplayName: userEntity.displayName,
+
                 virtualAuthenticatorId: meta.virtualAuthenticatorId,
                 apiKeyId: meta.apiKeyId,
-                isClientSideDiscoverable: true,
               },
             );
 
@@ -546,6 +550,7 @@ export class VirtualAuthenticator implements IAuthenticator {
       requireUserVerification,
       state,
       applicablePublicKeyCredentials: credentialOptions,
+      userDisplayName: credentialOptions[0]!.rpUserDisplayName,
     });
 
     // Collect an authorization gesture confirming user consent for using selectedCredential.

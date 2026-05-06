@@ -53,7 +53,7 @@ app.all(API_ROUTE_PATTERN, async (ctx) => {
   if (apiKey !== null) {
     logger.debug('API key', { apiKey });
 
-    jwt = await tokenFetch.fetchToken(apiKey, { apiKey });
+    jwt = await tokenFetch.fetchToken({ apiKey });
 
     logger.debug('JWT received', { jwt });
   }

@@ -98,7 +98,7 @@ const WebAuthnRowActions = ({ credential }: WebAuthnRowActionsProps) => {
       <DeleteConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title={`Delete "${credential.name || 'Unnamed'}"?`}
+        title={`Delete "${credential.rpUserDisplayName}"?`}
         description="This will permanently delete this credential from Azure Key Vault. You will no longer be able to use this authenticator to log in."
         confirmText="Delete Credential"
         isPending={deleteMutation.isPending}
@@ -119,7 +119,7 @@ export const WebAuthnPublicKeyCredentialsTable = ({
   const columns: ColumnDef<WebAuthnPublicKeyCredential>[] = useMemo(
     () => [
       {
-        accessorKey: 'name',
+        accessorKey: 'rpUserDisplayName',
         header: 'Name',
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export const WebAuthnPublicKeyCredentialsTable = ({
               <Fingerprint className="h-4 w-4" />
             </div>
             <span className="font-medium">
-              {row.getValue('name') || 'Unnamed Credential'}
+              {row.getValue('rpUserDisplayName')}
             </span>
           </div>
         ),

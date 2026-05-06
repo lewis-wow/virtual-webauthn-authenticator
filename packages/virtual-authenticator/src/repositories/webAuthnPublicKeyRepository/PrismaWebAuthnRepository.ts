@@ -78,7 +78,8 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         },
         select: {
           id: true,
-          name: true,
+          rpUserName: true,
+          rpUserDisplayName: true,
           user: {
             select: {
               id: true,
@@ -95,10 +96,14 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
     return webAuthnPublicKeyCredentialCandidates.map(
       (webAuthnPublicKeyCredentialCandidate) => ({
         id: webAuthnPublicKeyCredentialCandidate.id,
-        name: webAuthnPublicKeyCredentialCandidate.name,
+
         userId: webAuthnPublicKeyCredentialCandidate.user.id,
-        userDisplayName: webAuthnPublicKeyCredentialCandidate.user.name,
         userEmail: webAuthnPublicKeyCredentialCandidate.user.email,
+        userName: webAuthnPublicKeyCredentialCandidate.user.name,
+
+        rpUserName: webAuthnPublicKeyCredentialCandidate.rpUserName,
+        rpUserDisplayName:
+          webAuthnPublicKeyCredentialCandidate.rpUserDisplayName,
       }),
     );
   }
@@ -136,16 +141,17 @@ export class PrismaWebAuthnRepository implements IWebAuthnRepository {
         await this.prisma.webAuthnPublicKeyCredential.create({
           data: {
             id: data.id,
-            name: data.name,
+            userId: data.userId,
 
             COSEPublicKey: data.COSEPublicKey,
             rpId: data.rpId,
 
             counter: 0,
-            isClientSideDiscoverable: data.isClientSideDiscoverable,
 
-            userId: data.userId,
-            userHandle: data.userHandle ?? null,
+            userHandle: data.userHandle,
+            rpUserName: data.rpUserName,
+            rpUserDisplayName: data.rpUserDisplayName,
+
             virtualAuthenticatorId: data.virtualAuthenticatorId,
             apiKeyId: data.apiKeyId,
 

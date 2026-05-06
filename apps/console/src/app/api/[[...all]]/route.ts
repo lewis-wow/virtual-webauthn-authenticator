@@ -15,7 +15,7 @@ const handler = async (request: Request): Promise<Response> => {
 
   let jwt: string | null = null;
   if (sessionToken !== undefined) {
-    jwt = await tokenFetch.fetchToken(sessionToken.value, {
+    jwt = await tokenFetch.fetchToken({
       headers: request.headers,
     });
   }

@@ -67,6 +67,7 @@ export class AuthorizationGesture {
     requireUserPresence: boolean;
     meta: AuthenticatorMetaArgs;
     state?: RegistrationState | AuthenticationState;
+    userDisplayName: string;
   }) {
     const {
       applicablePublicKeyCredentials,
@@ -74,6 +75,7 @@ export class AuthorizationGesture {
       requireUserVerification,
       meta,
       state,
+      userDisplayName,
     } = opts;
 
     const virtualAuthenticator =
@@ -106,6 +108,7 @@ export class AuthorizationGesture {
         requireUserVerification,
         requireUserPresence,
         userVerificationType: meta.userVerificationType,
+        userDisplayName,
       });
     }
 
@@ -122,6 +125,7 @@ export class AuthorizationGesture {
           requireUserPresence,
           requireUserVerification,
           userVerificationType: meta.userVerificationType,
+          userDisplayName,
         });
       }
 

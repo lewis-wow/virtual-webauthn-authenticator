@@ -4,7 +4,6 @@ import { Logger } from '@repo/logger';
 import { createAuthClient } from 'better-auth/client';
 import { jwtClient } from 'better-auth/client/plugins';
 import { nextCookies } from 'better-auth/next-js';
-import { LRUCache } from 'lru-cache';
 
 import { env } from './env';
 
@@ -24,15 +23,8 @@ export const container = new DependencyContainer()
 
     return authClient;
   })
-  .register('cache', () => {
-    return new LRUCache<string, string>({
-      max: 100,
-      ttl: 1000 * 60 * 60, // 1 hour in milliseconds
-    });
-  })
-  .register('tokenFetch', ({ cache, authClient }) => {
+  .register('tokenFetch', ({ authClient }) => {
     return new TokenFetch({
-      cache,
       fetch: async (opts: { headers: Headers }) => {
         const { data } = await authClient.token({
           fetchOptions: {
