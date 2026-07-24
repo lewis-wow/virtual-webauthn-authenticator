@@ -2,27 +2,33 @@
 
 # Creates (or reuses) a git worktree for the given branch and launches Claude
 # Code inside a Docker Sandbox (sbx) pointed at it, in bypass-permissions mode.
+# If no branch is given, runs directly against the current checkout on the
+# current branch instead of creating a worktree.
 # Requires the sbx CLI and daemon (https://docs.docker.com/ai/sandboxes/agents/claude-code/):
 #   sbx daemon start
 #
-# Usage: pnpm claude <branch-name> [extra claude args...]
+# Usage: pnpm claude [branch-name] [extra claude args...]
 
 set -e
 
-BRANCH="$1"
-
-if [ -z "$BRANCH" ]; then
-  echo "Usage: pnpm claude <branch-name> [extra claude args...]" >&2
-  exit 1
-fi
-shift
-
 REPO_ROOT=$(git rev-parse --show-toplevel)
 REPO_NAME=$(basename "$REPO_ROOT")
-WORKTREES_ROOT="$(dirname "$REPO_ROOT")/${REPO_NAME}-worktrees"
-WORKTREE_DIR="${WORKTREES_ROOT}/${BRANCH}"
 
 cd "$REPO_ROOT"
+
+if [ -z "$1" ]; then
+  BRANCH=$(git branch --show-current)
+  SANDBOX_NAME=$(echo "claude-${BRANCH}" | tr '/' '-')
+
+  echo "No branch given, running against current checkout on '${BRANCH}'..."
+  exec sbx run claude "$REPO_ROOT" --name "$SANDBOX_NAME" -- --dangerously-skip-permissions "$@"
+fi
+
+BRANCH="$1"
+shift
+
+WORKTREES_ROOT="$(dirname "$REPO_ROOT")/${REPO_NAME}-worktrees"
+WORKTREE_DIR="${WORKTREES_ROOT}/${BRANCH}"
 
 if [ ! -d "$WORKTREE_DIR" ]; then
   mkdir -p "$WORKTREES_ROOT"
