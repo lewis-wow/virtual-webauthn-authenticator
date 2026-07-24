@@ -8,7 +8,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 ENV TURBO_TELEMETRY_DISABLED=1
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME:$PNPM_HOME/bin:$PATH"
 ENV CI=1
 RUN corepack enable pnpm
 
@@ -16,9 +16,8 @@ RUN corepack enable pnpm
 # STAGE 2: Prune the monorepo for the Next.js app
 # =========================================================================== #
 FROM base AS pruner
-RUN pnpm install --global turbo
 COPY . .
-RUN turbo prune @repo/console --docker
+RUN pnpx turbo prune @repo/console --docker
 
 # =========================================================================== #
 # STAGE 3: Build the application using the pruned workspace
@@ -41,8 +40,6 @@ FROM base AS production
 
 RUN pnpm add -g @dotenvx/dotenvx
 WORKDIR /app
-
-ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/packages/prisma/src/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node"
 
 # 1. Copy dependency-related files from the pruner stage
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
