@@ -1,0 +1,5 @@
+# @repo/keys
+
+This package owns the representation and conversion of public keys as they move between the different formats a WebAuthn/CTAP2 flow requires. COSE keys are the CBOR-encoded map format (`COSEPublicKey`) that WebAuthn attestation objects and authenticator data embed on the wire, while JWK is the JSON format used by KMS/HSM providers like Azure Key Vault; `KeyMapper` and `COSEPublicKeyToJWKPublicKey`/`JWKPublicKeyToCOSEPublicKey` convert between the two for EC, RSA, and OKP key types. `KeyAlgorithmMapper` bridges COSE algorithm identifiers (e.g. ES256/-7) to their JWK/WebCrypto (`SubtleCrypto`) equivalents, and `cbor/` provides COSE-key-specific CBOR encode/decode built on `@repo/cbor`.
+
+It does not generate or hold any actual key material — that responsibility belongs to `@repo/key-vault` and other `IKeyProvider` implementations — this package is purely the shared vocabulary and conversion logic for key formats and algorithms, plus the enums (`COSEKeyAlgorithm`, `JWKKeyType`, etc.) and Zod validation schemas that keep those conversions type-safe.

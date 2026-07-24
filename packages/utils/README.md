@@ -1,0 +1,5 @@
+# @repo/utils
+
+Small, dependency-free helper functions shared across apps and packages, kept here so common operations aren't reimplemented (and re-tested) in every consumer. It's a grab-bag by design, but the code actually falls into a few recurring categories: binary/byte conversions (`bytes/` — base64, base64url, and hex encode/decode, `ArrayBuffer`/`Uint8Array`/`BufferSource` conversions, constant-time-ish equality), UUID handling (`uuid/` — converting UUIDs to and from their raw byte representation, since credential and entity IDs are stored as bytes), and general object/value helpers (`omit`, `omitUndefined`, `objectKeys`, `addPrefixToKeys`, `swapKeysAndValues`, `isNullish`/`wrapIsNullish`, `isError`).
+
+The byte and UUID helpers in particular exist because WebAuthn ceremonies and their database storage constantly move between binary buffers, base64url strings, and UUIDs, and getting those conversions subtly wrong is a real source of bugs — so they're centralized and unit-tested here rather than left to each call site.

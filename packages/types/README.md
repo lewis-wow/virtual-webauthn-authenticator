@@ -1,0 +1,5 @@
+# @repo/types
+
+Shared TypeScript types with no runtime code, used across the repo wherever apps and packages need to agree on a shape without importing implementation. Most of it is generic type-level utilities (`MergeShallow`/`MergedShallow`, `SwapKeysAndValues`, `AddPrefix`, `MakeNullableOptional`, `MaybePromise`, `TypedMap`, `TypedEventEmitter`, `ValueOfEnum`, `PropertyKey`) plus thin aliases over binary types (`Uint8Array_`, `ArrayBufferView_`, `BufferSource_`) that other packages (like `@repo/validation` and `@repo/utils`) build on.
+
+Its `./dom` entry point is different: `src/dom.ts` is generated (via `scripts/extract-dom-types.ts`, run as this package's `build` step) by pulling the WebAuthn-related interfaces — `PublicKeyCredential`, `AuthenticatorAttestationResponse`, `PublicKeyCredentialCreationOptions`, and friends — straight out of TypeScript's own `lib.dom.d.ts` and re-exporting them as named exports. Node-targeted code in this repo (the authenticator agent, the NestJS API) needs these WebAuthn browser types but doesn't have `lib.dom` in scope, so this package snapshots exactly the types it needs instead of depending on a browser lib globally.
