@@ -11,7 +11,7 @@ WORKDIR /app
 
 ENV TURBO_TELEMETRY_DISABLED=1
 ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+ENV PATH="$PNPM_HOME:$PNPM_HOME/bin:$PATH"
 ENV CI=1
 
 RUN corepack enable pnpm
@@ -20,9 +20,8 @@ RUN corepack enable pnpm
 # STAGE 2: Prune the monorepo
 # =========================================================================== #
 FROM base AS pruner
-RUN pnpm install --global turbo
 COPY . .
-RUN turbo prune @repo/auth-server --docker
+RUN pnpx turbo prune @repo/auth-server --docker
 
 # =========================================================================== #
 # STAGE 3: Build the application using the pruned workspace
