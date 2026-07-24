@@ -22,7 +22,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Restore Turborepo cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .turbo
           key: turbo-linux-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -38,6 +38,19 @@ jobs:
 
       - name: Build project
         run: pnpm build
+
+      - name: Save Turborepo cache (this run)
+        uses: actions/cache/save@v4
+        with:
+          path: .turbo
+          key: turbo-linux-run-${{ github.run_id }}
+
+      - name: Save Turborepo cache (branch)
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: .turbo
+          key: turbo-linux-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Run linter
         run: pnpm lint
@@ -65,13 +78,10 @@ jobs:
           cache: 'pnpm'
 
       - name: Restore Turborepo cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .turbo
-          key: turbo-linux-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            turbo-linux-${{ github.ref_name }}-
-            turbo-linux-main-
+          key: turbo-linux-run-${{ github.run_id }}
 
       - name: Install dependencies
         run: pnpm install
