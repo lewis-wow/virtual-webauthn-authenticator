@@ -19,13 +19,24 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'pnpm'
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm store
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
 
       - name: Restore Turborepo cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .turbo
-          key: turbo-linux-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
+          key: turbo-linux-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             turbo-linux-${{ github.ref_name }}-
             turbo-linux-main-
@@ -33,11 +44,30 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Save pnpm store
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Check formatting
         run: pnpm format:check
 
       - name: Build project
         run: pnpm build
+
+      - name: Save Turborepo cache (this run, for test job)
+        uses: actions/cache/save@v4
+        with:
+          path: .turbo
+          key: turbo-linux-run-${{ github.run_id }}
+
+      - name: Save Turborepo cache (branch, for future runs)
+        uses: actions/cache/save@v4
+        with:
+          path: .turbo
+          key: turbo-linux-${{ github.ref_name }}-${{ github.run_id }}
 
       - name: Run linter
         run: pnpm lint
@@ -62,19 +92,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'pnpm'
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm store
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
 
       - name: Restore Turborepo cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .turbo
-          key: turbo-linux-${{ github.ref_name }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            turbo-linux-${{ github.ref_name }}-
-            turbo-linux-main-
+          key: turbo-linux-run-${{ github.run_id }}
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Build project
+        run: pnpm build
 
       - name: Start services with Docker Compose
         run: ./docker-compose-test.sh
