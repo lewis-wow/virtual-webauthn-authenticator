@@ -1,3 +1,5 @@
 packages/prisma/src/generated
 apps/console/src/components/ui
 apps/console/src/components/ui
+.agents
+.docs
