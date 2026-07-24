@@ -42,8 +42,6 @@ FROM base AS production
 RUN pnpm add -g @dotenvx/dotenvx
 WORKDIR /app
 
-ENV PRISMA_QUERY_ENGINE_LIBRARY="/app/packages/prisma/src/generated/client/libquery_engine-linux-musl-arm64-openssl-3.0.x.so.node"
-
 # 1. Copy dependency-related files from the pruner stage
 COPY --from=pruner /app/out/json/pnpm-lock.yaml .
 COPY --from=pruner /app/out/json/pnpm-workspace.yaml .
