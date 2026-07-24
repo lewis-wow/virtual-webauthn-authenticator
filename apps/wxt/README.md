@@ -1,3 +1,5 @@
-# WXT + React
+# @repo/wxt
 
-This template should help get you started developing with React in WXT.
+The browser extension ("Keyless") described in the root README: it intercepts a page's `navigator.credentials.create`/`.get` WebAuthn calls and routes them to the virtual authenticator service instead of real hardware or platform authenticators. A main-world script overrides `navigator.credentials`, relaying each request through a content script (which handles any user-facing confirmation UI) to a background service worker, which authenticates with a stored API key and calls [`@repo/api-bff`](../api-bff) through the shared `@repo/contract` client, then converts the response back into real `PublicKeyCredential` objects the page expects.
+
+Built with [WXT](https://wxt.dev), it reuses `@repo/virtual-authenticator`'s browser-format conversion helpers so the CBOR/attestation data it hands back to the page is indistinguishable from a real authenticator's output. The popup lets the user configure the API key (created in [`@repo/console`](../console)) that the background worker uses to reach the backend.

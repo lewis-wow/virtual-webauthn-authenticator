@@ -1,0 +1,5 @@
+# @repo/assert
+
+Shared runtime type-assertion helpers so code can narrow an `unknown` value and fail loudly, with a consistent error, when it doesn't match what's expected — rather than each call site hand-rolling a check-and-throw. `assertSchema(data, zodSchema)` and `assertShape(data, shape)` are TypeScript assertion functions: they narrow the input type on success and throw a `TypeAssertionError` (a `@repo/exception` subclass carrying a `400 Bad Request` status) on failure, logging the mismatch via `@repo/logger` first. `isSchema` and `guardSchema` provide the non-throwing counterpart — plain type guards for use in conditionals — and `isShape` is the structural-shape comparator (recursively checks that `data` has at least the keys/values of `shape`) that `assertShape` builds on.
+
+This makes it the go-to package wherever code needs to validate data crossing a trust boundary (parsed JSON, external API responses, etc.) and either narrow its type or fail with a well-formed, catchable exception.
