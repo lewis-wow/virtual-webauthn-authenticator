@@ -39,6 +39,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -48,3 +49,21 @@ jobs:
           tags: |
             ghcr.io/lewis-wow/virtual-webauthn-authenticator/${{ steps.parse.outputs.app }}:${{ steps.parse.outputs.version }}
             ghcr.io/lewis-wow/virtual-webauthn-authenticator/${{ steps.parse.outputs.app }}:latest
+
+      - name: Summarize published image
+        run: |
+          IMAGE="ghcr.io/lewis-wow/virtual-webauthn-authenticator/${{ steps.parse.outputs.app }}"
+          VERSION="${{ steps.parse.outputs.version }}"
+          DIGEST="${{ steps.build.outputs.digest }}"
+          PACKAGE_URL="https://github.com/lewis-wow/virtual-webauthn-authenticator/pkgs/container/virtual-webauthn-authenticator%2F${{ steps.parse.outputs.app }}"
+
+          {
+            echo "## Published image"
+            echo
+            echo "- **Package:** [$PACKAGE_URL]($PACKAGE_URL)"
+            echo "- **Digest:** \`$DIGEST\`"
+            echo
+            echo '```bash'
+            echo "docker pull $IMAGE:$VERSION"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
