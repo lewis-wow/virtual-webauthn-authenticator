@@ -16,6 +16,9 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # The default GITHUB_TOKEN is deliberately prevented by GitHub from
+          # triggering other workflows, so tags pushed here would never fire
+          # release.yml's `on: push: tags:` trigger. A PAT avoids that.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json

@@ -7,5 +7,6 @@ const bootstrap = async (): Promise<void> => {
   const app = await NestFactory.create(AppModule);
 
   await app.listen(env.PORT);
+  console.log('Test Release');
 };
 void bootstrap();
