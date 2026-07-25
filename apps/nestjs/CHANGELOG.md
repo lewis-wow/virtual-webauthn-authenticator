@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/nestjs/v1.0.3...nestjs/v1.0.4) (2026-07-25)
+
+
+### Bug Fixes
+
+* nestjs ([#189](https://github.com/lewis-wow/virtual-webauthn-authenticator/issues/189)) ([627192a](https://github.com/lewis-wow/virtual-webauthn-authenticator/commit/627192a1b027d4089b4527e7a490ae7098f3816d))
+
 ## [1.0.3](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/nestjs/v1.0.2...nestjs/v1.0.3) (2026-07-25)
 
 
