@@ -16,8 +16,7 @@ then
   SANDBOX_NAME=$(echo "claude-${BRANCH}" | tr '/' '-')
 
   echo "No branch given, running against current checkout on '${BRANCH}'..."
-  # Added --rm flag so the sandbox container deletes on exit
-  exec sbx run claude "$REPO_ROOT" --name "$SANDBOX_NAME" --rm -- --dangerously-skip-permissions "$@"
+  exec sbx run claude "$REPO_ROOT" --name "$SANDBOX_NAME" -- --dangerously-skip-permissions "$@"
 fi
 
 BRANCH="$1"
@@ -43,5 +42,4 @@ fi
 
 SANDBOX_NAME=$(echo "claude-${BRANCH}" | tr '/' '-')
 
-# Added --rm flag so the sandbox container deletes on exit
-exec sbx run claude "$WORKTREE_DIR" --name "$SANDBOX_NAME" --rm -- --dangerously-skip-permissions "$@"
+exec sbx run claude "$WORKTREE_DIR" --name "$SANDBOX_NAME" -- --dangerously-skip-permissions "$@"

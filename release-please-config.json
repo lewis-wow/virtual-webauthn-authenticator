@@ -14,6 +14,105 @@
     },
     "apps/nestjs": {
       "component": "nestjs"
+    },
+    "packages/activity-log": {
+      "component": "activity-log"
+    },
+    "packages/api-key": {
+      "component": "api-key"
+    },
+    "packages/assert": {
+      "component": "assert"
+    },
+    "packages/auth": {
+      "component": "auth"
+    },
+    "packages/bff": {
+      "component": "bff"
+    },
+    "packages/cbor": {
+      "component": "cbor"
+    },
+    "packages/contract": {
+      "component": "contract"
+    },
+    "packages/crypto": {
+      "component": "crypto"
+    },
+    "packages/dependency-container": {
+      "component": "dependency-container"
+    },
+    "packages/enums": {
+      "component": "enums"
+    },
+    "packages/env-config": {
+      "component": "env-config"
+    },
+    "packages/eslint-config": {
+      "component": "eslint-config"
+    },
+    "packages/exception": {
+      "component": "exception"
+    },
+    "packages/http": {
+      "component": "http"
+    },
+    "packages/jwks": {
+      "component": "jwks"
+    },
+    "packages/jwt": {
+      "component": "jwt"
+    },
+    "packages/key-vault": {
+      "component": "key-vault"
+    },
+    "packages/keys": {
+      "component": "keys"
+    },
+    "packages/logger": {
+      "component": "logger"
+    },
+    "packages/pagination": {
+      "component": "pagination"
+    },
+    "packages/prisma": {
+      "component": "prisma"
+    },
+    "packages/proxy": {
+      "component": "proxy"
+    },
+    "packages/rollup-config": {
+      "component": "rollup-config"
+    },
+    "packages/shared-dts": {
+      "component": "shared-dts"
+    },
+    "packages/test-utils": {
+      "component": "test-utils"
+    },
+    "packages/types": {
+      "component": "types"
+    },
+    "packages/typescript-config": {
+      "component": "typescript-config"
+    },
+    "packages/ui": {
+      "component": "ui"
+    },
+    "packages/utils": {
+      "component": "utils"
+    },
+    "packages/validation": {
+      "component": "validation"
+    },
+    "packages/virtual-authenticator": {
+      "component": "virtual-authenticator"
+    },
+    "packages/virtual-authenticator-agent": {
+      "component": "virtual-authenticator-agent"
+    },
+    "packages/vitest-config": {
+      "component": "vitest-config"
     }
   }
 }
