@@ -66,40 +66,40 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)
       '@repo/activity-log':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/activity-log
       '@repo/auth':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/auth
       '@repo/bff':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/bff
       '@repo/contract':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/contract
       '@repo/dependency-container':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/dependency-container
       '@repo/env-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/env-config
       '@repo/exception':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/exception
       '@repo/jwt':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/jwt
       '@repo/logger':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/logger
       '@repo/prisma':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/prisma
       '@repo/proxy':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/proxy
       '@repo/utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/utils
       '@t3-oss/env-core':
         specifier: ^0.13.8
@@ -127,13 +127,13 @@ importers:
         version: 4.1.12
     devDependencies:
       '@repo/rollup-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/rollup-config
       '@repo/types':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/types
       '@repo/typescript-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/typescript-config
       '@simplewebauthn/server':
         specifier: ^13.2.2
@@ -172,40 +172,40 @@ importers:
         specifier: ^0.1.5
         version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.9.10)
       '@repo/activity-log':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/activity-log
       '@repo/api-key':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/api-key
       '@repo/auth':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/auth
       '@repo/contract':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/contract
       '@repo/crypto':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/crypto
       '@repo/dependency-container':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/dependency-container
       '@repo/env-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/env-config
       '@repo/exception':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/exception
       '@repo/jwks':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/jwks
       '@repo/jwt':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/jwt
       '@repo/logger':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/logger
       '@repo/prisma':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/prisma
       '@t3-oss/env-core':
         specifier: ^0.13.8
@@ -230,13 +230,13 @@ importers:
         version: 4.1.12
     devDependencies:
       '@repo/rollup-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/rollup-config
       '@repo/types':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/types
       '@repo/typescript-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/typescript-config
       '@simplewebauthn/server':
         specifier: ^13.2.2
@@ -311,43 +311,43 @@ importers:
         specifier: ^1.2.3
         version: 1.2.3(@types/react@19.2.2)(react@19.1.0)
       '@repo/api-key':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/api-key
       '@repo/auth':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/auth
       '@repo/bff':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/bff
       '@repo/contract':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/contract
       '@repo/dependency-container':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/dependency-container
       '@repo/env-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/env-config
       '@repo/logger':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/logger
       '@repo/pagination':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/pagination
       '@repo/prisma':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/prisma
       '@repo/proxy':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/proxy
       '@repo/ui':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/ui
       '@repo/utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/utils
       '@repo/validation':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/validation
       '@tanstack/react-query':
         specifier: ^5.90.5
@@ -426,16 +426,16 @@ importers:
         specifier: ^3
         version: 3.3.1
       '@repo/activity-log':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/activity-log
       '@repo/eslint-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/eslint-config
       '@repo/typescript-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/typescript-config
       '@repo/virtual-authenticator':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/virtual-authenticator
       '@repo/wxt':
         specifier: workspace:*
@@ -498,55 +498,55 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.8)(express@5.1.0)
       '@repo/activity-log':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/activity-log
       '@repo/auth':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/auth
       '@repo/contract':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/contract
       '@repo/crypto':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/crypto
       '@repo/env-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/env-config
       '@repo/exception':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/exception
       '@repo/http':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/http
       '@repo/jwks':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/jwks
       '@repo/jwt':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/jwt
       '@repo/key-vault':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/key-vault
       '@repo/keys':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/keys
       '@repo/logger':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/logger
       '@repo/pagination':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/pagination
       '@repo/prisma':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/prisma
       '@repo/utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/utils
       '@repo/virtual-authenticator':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/virtual-authenticator
       '@repo/virtual-authenticator-agent':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/virtual-authenticator-agent
       '@t3-oss/env-core':
         specifier: ^0.13.8
@@ -583,19 +583,19 @@ importers:
         specifier: ^11.0.1
         version: 11.1.8(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.8)(@nestjs/platform-express@11.1.8)
       '@repo/eslint-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/eslint-config
       '@repo/test-utils':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/test-utils
       '@repo/types':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/types
       '@repo/typescript-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/typescript-config
       '@repo/vitest-config':
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../packages/vitest-config
       '@simplewebauthn/server':
         specifier: ^13.2.2
