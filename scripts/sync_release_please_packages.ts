@@ -56,12 +56,16 @@ function discoverEntries(): DiscoveredEntry[] {
 }
 
 function readCurrentVersion(pkgPath: string): string {
-  const pkgJson = JSON.parse(readFileSync(join(ROOT, pkgPath, 'package.json'), 'utf-8'));
+  const pkgJson = JSON.parse(
+    readFileSync(join(ROOT, pkgPath, 'package.json'), 'utf-8'),
+  );
   return pkgJson.version ?? '0.0.0';
 }
 
 function sortedByKey<T>(obj: Record<string, T>): Record<string, T> {
-  return Object.fromEntries(Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)));
+  return Object.fromEntries(
+    Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)),
+  );
 }
 
 function main() {
@@ -74,12 +78,16 @@ function main() {
   const missing = discovered.filter(({ path }) => !(path in config.packages));
 
   if (missing.length === 0) {
-    console.log('release-please-config.json already tracks every deployable app and package.');
+    console.log(
+      'release-please-config.json already tracks every deployable app and package.',
+    );
     return;
   }
 
   if (check) {
-    console.error('release-please-config.json is missing these workspace members:');
+    console.error(
+      'release-please-config.json is missing these workspace members:',
+    );
     for (const { path } of missing) console.error(`  - ${path}`);
     console.error('\nRun `pnpm release:sync-config` and commit the result.');
     process.exit(1);
@@ -93,7 +101,10 @@ function main() {
 
   config.packages = sortedByKey(config.packages);
   writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + '\n');
-  writeFileSync(MANIFEST_PATH, JSON.stringify(sortedByKey(manifest), null, 2) + '\n');
+  writeFileSync(
+    MANIFEST_PATH,
+    JSON.stringify(sortedByKey(manifest), null, 2) + '\n',
+  );
 }
 
 main();
