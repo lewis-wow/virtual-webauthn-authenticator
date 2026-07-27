@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/console/v1.0.0...console/v1.0.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* deps ([#191](https://github.com/lewis-wow/virtual-webauthn-authenticator/issues/191)) ([21d868a](https://github.com/lewis-wow/virtual-webauthn-authenticator/commit/21d868a2c308e6f021d77a91dcebbccfa0aaaa81))
+
 ## 1.0.0 (2026-07-24)
 
 
