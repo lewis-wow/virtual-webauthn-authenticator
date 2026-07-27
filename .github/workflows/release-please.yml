@@ -1,9 +1,14 @@
 name: Release Please
 
 on:
+  # Manually gated: push a release/v*.*.* branch (the version in the branch
+  # name itself is not read by anything - it just triggers this run) to have
+  # release-please scan master's commit history and open/update the release
+  # PR. It still always targets master (see target-branch below), regardless
+  # of which branch triggered the run.
   push:
     branches:
-      - master
+      - 'release/v*.*.*'
   workflow_dispatch:
 
 permissions:
@@ -22,3 +27,4 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          target-branch: master
