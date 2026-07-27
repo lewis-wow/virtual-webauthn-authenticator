@@ -36,3 +36,6 @@ yarn-error.log*
 devstack_data
 
 *.tsbuildinfo
+
+# pnpm store
+.pnpm-store
