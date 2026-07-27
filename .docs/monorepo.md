@@ -13,14 +13,16 @@ packages:
   - 'examples/*'
 ```
 
-Internal cross-package dependencies always use the `workspace:*` protocol, never a version range or `file:`/`link:` path, e.g. `packages/jwt/package.json`:
+Internal cross-package dependencies never use a version range or `file:`/`link:` path — packages depending on other packages use `workspace:*`, e.g. `packages/jwt/package.json`:
 
 ```json
 "dependencies": { "@repo/auth": "workspace:*" },
 "devDependencies": { "@repo/eslint-config": "workspace:*", "@repo/typescript-config": "workspace:*" }
 ```
 
-pnpm resolves `workspace:*` to the local package via symlinks regardless of its `version` field (every internal package is pinned at `"version": "0.0.0"` and never bumped — versioning doesn't matter because nothing here is published). All internal packages are named `@repo/<name>` and are `"private": true`.
+Apps depending on packages use `workspace:^` instead, since apps get real semver bumps and `^` expresses "compatible with the package's current version."
+
+pnpm resolves both to the local package via symlinks regardless of the dependency's actual `version` field. Every `packages/*` package.json still carries a real, release-please-managed `version`, starting at `"0.0.0"` — release-please's `node-workspace` plugin (configured in `release-please-config.json`) builds the internal dependency graph and, when a package's version bumps, cascades a bump to every app that depends on it, so an app release reflects changes in the packages it's built from. Packages are configured with `"skip-github-release": true`, so a package release still gets its own `CHANGELOG.md`, version bump, and git tag, but no GitHub Release entry — only `apps/*` produce visible releases (and Docker image tags via `release.yml`). All internal packages are named `@repo/<name>` and are `"private": true`.
 
 Native/build-step dependencies that need `postinstall`/build scripts approved are listed once, at the root, in `package.json`'s `pnpm.onlyBuiltDependencies` array (`@nestjs/core`, `@prisma/client`, `@prisma/engines`, `bcrypt`, `sharp`, `esbuild`, etc.) — pnpm otherwise blocks arbitrary install scripts by default. Add a new dependency here if `pnpm install` warns about a blocked build script, rather than working around it per-package.
 
