@@ -1,0 +1,71 @@
+name: Version
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # The default GITHUB_TOKEN can't trigger other workflows, so tags
+          # pushed by scripts/tag_app_releases.ts (below) would never fire
+          # release.yml's tag-push trigger. A PAT avoids that - same one
+          # release-please used to use.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          # scripts/tag_app_releases.ts needs every existing `<app>/vX.Y.Z`
+          # tag to decide whether the current version was already released.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Set up pnpm from package.json
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js using .nvmrc
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Restore pnpm store
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Create Version Packages PR, or tag Docker app releases
+        # On a push to master with pending .changeset/*.md files, this bumps
+        # versions/changelogs (`version`) and opens/updates a "Version
+        # Packages" PR. On the push from merging that PR (no changesets left
+        # pending), it runs `publish` instead: `changeset publish` no-ops
+        # (every package here is private), then tag_app_releases.ts tags and
+        # pushes `<app>/vX.Y.Z` for whichever Dockerfile-bearing app(s) just
+        # got a new version - which is what triggers release.yml.
+        uses: changesets/action@v1
+        with:
+          title: 'chore: version packages'
+          commit: 'chore: version packages'
+          version: pnpm run changeset:version
+          publish: pnpm run release
+          createGithubReleases: false
+          github-token: ${{ secrets.RELEASE_PLEASE_TOKEN }}

@@ -20,6 +20,10 @@ Run from the repo root. Most accept `--filter <package-name>` to scope to one wo
 - `pnpm coverage:latex` — Render `coverage/coverage-final.json` into a LaTeX table (thesis docs).
 - `pnpm openapi:latex` — Render the generated OpenAPI spec into LaTeX (thesis docs).
 - `pnpm docs:toc` — Regenerate the table of contents in the root `README.md`.
+- `pnpm changeset` — Interactively record a change: pick which package(s) changed, the bump type, and a summary. Run this on any PR that should trigger a version bump; writes a markdown file under `.changeset/`.
+- `pnpm changeset:status` — Read-only preview of what the pending `.changeset/*.md` files would bump, including cascaded internal dependents. Safe to run any time, changes nothing.
+- `pnpm changeset:version` — Consumes pending changesets: bumps `package.json` versions, regenerates `CHANGELOG.md`s, deletes the consumed changeset files. Used by `.github/workflows/version.yml`'s "Version Packages" PR — not normally run by hand.
+- `pnpm release` — `changeset publish` (no-ops; every package here is private) followed by `scripts/tag_app_releases.ts`, which tags and pushes `<app>/vX.Y.Z` for whichever Dockerfile-bearing app(s) just got a new version. Used by `.github/workflows/version.yml` after a Version Packages PR is merged — not normally run by hand.
 
 Infrastructure (Postgres + a local Azure Key Vault mock) is started separately with `./docker-compose-test.sh`. Database migrations run via `pnpm --filter '@repo/prisma' db:migrate`.
 

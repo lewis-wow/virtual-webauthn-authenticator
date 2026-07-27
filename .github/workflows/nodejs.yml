@@ -54,9 +54,6 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - name: Check release-please config is in sync
-        run: pnpm release:check-config
-
       - name: Build project
         run: pnpm build
 
