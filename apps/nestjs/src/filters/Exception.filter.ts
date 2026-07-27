@@ -4,7 +4,11 @@ import {
   ArgumentsHost,
   Injectable,
 } from '@nestjs/common';
-import { Exception, RequestValidationFailed } from '@repo/exception';
+import {
+  Exception,
+  RequestValidationFailed,
+  exceptionToResponse,
+} from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
 import { Logger } from '@repo/logger';
 import { TsRestRequestValidationError } from '@ts-rest/nest';
@@ -33,7 +37,7 @@ export class ExceptionFilter implements NestjsExceptionFilter {
       exception = new InternalServerError();
     }
 
-    const webResponse = exception.toResponse();
+    const webResponse = exceptionToResponse(exception);
 
     const status = webResponse.status;
     const body = await webResponse.json();

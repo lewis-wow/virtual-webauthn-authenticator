@@ -17,6 +17,7 @@ import {
   CreatePublicKeyCredentialBodySchema,
   CreatePublicKeyAssertionBodySchema,
 } from '@repo/contract/dto';
+import { exceptionToJSON } from '@repo/exception';
 import { HttpStatusCode } from '@repo/http';
 import { JwtAudience } from '@repo/jwt';
 import { COSEKeyAlgorithm } from '@repo/keys/enums';
@@ -262,7 +263,9 @@ describe('CredentialsController - POST /api/assertion', () => {
           expectStatus: UserNotExists.status,
         });
 
-        expect(response.body).toStrictEqual(new UserNotExists().toJSON());
+        expect(response.body).toStrictEqual(
+          exceptionToJSON(new UserNotExists()),
+        );
       });
 
       test('Should not work when no active virtual authenticator exists', async () => {
@@ -288,7 +291,7 @@ describe('CredentialsController - POST /api/assertion', () => {
         });
 
         expect(response.body).toStrictEqual(
-          new NoActiveVirtualAuthenticator().toJSON(),
+          exceptionToJSON(new NoActiveVirtualAuthenticator()),
         );
 
         // Restore active authenticator for subsequent tests

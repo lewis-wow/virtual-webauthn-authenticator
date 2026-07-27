@@ -1,5 +1,5 @@
 import { container } from '@/container';
-import { Exception } from '@repo/exception';
+import { Exception, exceptionToResponse } from '@repo/exception';
 import { InternalServerError } from '@repo/exception/http';
 import { createFactory } from 'hono/factory';
 
@@ -23,7 +23,7 @@ export const factory = createFactory<{
       const exception =
         error instanceof Exception ? error : new InternalServerError();
 
-      return exception.toResponse();
+      return exceptionToResponse(exception);
     });
   },
 });
