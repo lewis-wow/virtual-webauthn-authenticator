@@ -106,7 +106,7 @@ export class AzureKeyVaultKeyProvider implements IKeyProvider {
 
   /**
    * Creates a new cryptographic key in Azure Key Vault.
-   * Supports EC (P-256, P-384, P-521) and RSA keys.
+   * Supports EC (P-256, P-384, P-521) and RSA keys
    *
    * @param opts.keyName - The name for the new key
    * @param opts.supportedPubKeyCredParam - Public key credential parameters
