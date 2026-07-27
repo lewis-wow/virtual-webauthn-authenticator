@@ -263,7 +263,9 @@ describe('CredentialsController - POST /api/assertion', () => {
           expectStatus: UserNotExists.status,
         });
 
-        expect(response.body).toStrictEqual(exceptionToJSON(new UserNotExists()));
+        expect(response.body).toStrictEqual(
+          exceptionToJSON(new UserNotExists()),
+        );
       });
 
       test('Should not work when no active virtual authenticator exists', async () => {

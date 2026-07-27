@@ -1,5 +1,5 @@
-import { ExceptionShapeSchema } from '../validation/ExceptionShapeSchema';
 import { Exception } from '../Exception';
+import { ExceptionShapeSchema } from '../validation/ExceptionShapeSchema';
 
 export function exceptionFromResponse(opts: {
   json: unknown;
