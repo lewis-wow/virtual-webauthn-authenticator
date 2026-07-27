@@ -47,7 +47,6 @@ function discoverEntries(): DiscoveredEntry[] {
       entry: {
         component: dir,
         'skip-github-release': true,
-        'skip-changelog': true,
       },
     });
   }
