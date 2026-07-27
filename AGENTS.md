@@ -37,6 +37,16 @@ Tests live next to the code they cover, in each app/package's own `__tests__/` f
 
 Not every package has both kinds — a package only gets the config file(s) for the kinds of tests it actually has. The root `vitest.config.ts` / `vitest.unit.config.ts` / `vitest.integration.config.ts` each glob for the matching `__tests__/vitest.*.config.{ts,mts}` across the whole monorepo as Vitest "projects," so `pnpm test` / `test:unit` / `test:integration` run everything in one pass. Run a single package's tests with `pnpm --filter <package-name> test:unit` (or `test:integration`) instead of scoping the root command.
 
+## Writing style for docs, ADRs, specs, and issues
+
+When writing ADRs, specs, issues, or any other project documentation:
+
+- Use bullet points for all lists, decisions, options, and rationale — avoid long paragraphs.
+- Keep sentences short and direct; one idea per bullet.
+- Use plain English — no jargon unless it is a defined term in this project's domain.
+- State the "what" and "why" explicitly; skip filler phrases ("it should be noted that…", "in order to…").
+- Prefer concrete nouns over abstract ones ("the credential store" not "the relevant component").
+
 ## Framework & tool conventions
 
 Best practices actually observed in this codebase, one file per topic. Before writing or changing code that touches one of these frameworks/tools, read its file first. Each one also links to that tool's official docs (and `llms.txt` where the tool publishes one) — if you need something the file below doesn't cover, go there rather than guessing.
