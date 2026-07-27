@@ -1,6 +1,6 @@
 {
-  "apps/api-bff": "1.0.0",
-  "apps/auth-server": "1.0.0",
-  "apps/console": "1.0.0",
-  "apps/nestjs": "1.0.4"
+  "apps/api-bff": "1.0.1",
+  "apps/auth-server": "1.0.1",
+  "apps/console": "1.0.1",
+  "apps/nestjs": "1.0.5"
 }
