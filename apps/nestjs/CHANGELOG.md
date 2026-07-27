@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.0.7](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/nestjs/v1.0.6...nestjs/v1.0.7) (2026-07-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @repo/activity-log bumped to 1.2.0
+    * @repo/auth bumped to 1.2.0
+    * @repo/http bumped to 1.2.0
+    * @repo/contract bumped to 1.2.0
+    * @repo/crypto bumped to 1.2.0
+    * @repo/env-config bumped to 0.0.3
+    * @repo/exception bumped to 1.2.0
+    * @repo/jwks bumped to 0.0.3
+    * @repo/jwt bumped to 1.2.0
+    * @repo/key-vault bumped to 1.2.0
+    * @repo/keys bumped to 1.2.0
+    * @repo/logger bumped to 1.2.0
+    * @repo/pagination bumped to 1.2.0
+    * @repo/prisma bumped to 1.2.0
+    * @repo/utils bumped to 1.2.0
+    * @repo/virtual-authenticator bumped to 1.2.0
+    * @repo/virtual-authenticator-agent bumped to 1.2.0
+  * devDependencies
+    * @repo/eslint-config bumped to 1.2.0
+    * @repo/test-utils bumped to 0.0.3
+    * @repo/types bumped to 1.2.0
+    * @repo/typescript-config bumped to 1.2.0
+    * @repo/vitest-config bumped to 1.2.0
+
 ## [1.0.6](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/nestjs/v1.0.5...nestjs/v1.0.6) (2026-07-27)
 
 
