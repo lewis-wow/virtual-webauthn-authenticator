@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.0.2](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/auth-server/v1.0.1...auth-server/v1.0.2) (2026-07-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @repo/api-key bumped to 1.1.0
+    * @repo/activity-log bumped to 1.1.0
+    * @repo/auth bumped to 1.1.0
+    * @repo/crypto bumped to 1.1.0
+    * @repo/contract bumped to 1.1.0
+    * @repo/env-config bumped to 0.0.2
+    * @repo/exception bumped to 1.1.0
+    * @repo/jwks bumped to 0.0.2
+    * @repo/jwt bumped to 1.1.0
+    * @repo/logger bumped to 1.1.0
+    * @repo/prisma bumped to 1.1.0
+    * @repo/dependency-container bumped to 0.0.2
+  * devDependencies
+    * @repo/types bumped to 1.1.0
+    * @repo/rollup-config bumped to 0.0.2
+    * @repo/typescript-config bumped to 1.1.0
+
 ## [1.0.1](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/auth-server/v1.0.0...auth-server/v1.0.1) (2026-07-27)
 
 
