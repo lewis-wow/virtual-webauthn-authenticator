@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.0.2](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/console/v1.0.1...console/v1.0.2) (2026-07-27)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @repo/api-key bumped to 1.1.0
+    * @repo/auth bumped to 1.1.0
+    * @repo/bff bumped to 1.1.0
+    * @repo/contract bumped to 1.1.0
+    * @repo/dependency-container bumped to 0.0.2
+    * @repo/env-config bumped to 0.0.2
+    * @repo/logger bumped to 1.1.0
+    * @repo/pagination bumped to 1.1.0
+    * @repo/prisma bumped to 1.1.0
+    * @repo/proxy bumped to 1.1.0
+    * @repo/ui bumped to 1.1.0
+    * @repo/utils bumped to 1.1.0
+    * @repo/validation bumped to 1.1.0
+  * devDependencies
+    * @repo/activity-log bumped to 1.1.0
+    * @repo/eslint-config bumped to 1.1.0
+    * @repo/typescript-config bumped to 1.1.0
+    * @repo/virtual-authenticator bumped to 1.1.0
+
 ## [1.0.1](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/console/v1.0.0...console/v1.0.1) (2026-07-27)
 
 
