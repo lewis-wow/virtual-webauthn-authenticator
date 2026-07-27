@@ -7,28 +7,6 @@
 
 * deps ([#191](https://github.com/lewis-wow/virtual-webauthn-authenticator/issues/191)) ([21d868a](https://github.com/lewis-wow/virtual-webauthn-authenticator/commit/21d868a2c308e6f021d77a91dcebbccfa0aaaa81))
 
-
-### Dependencies
-
-* The following workspace dependencies were updated
-  * dependencies
-    * @repo/activity-log bumped to 1.0.0
-    * @repo/auth bumped to 1.0.0
-    * @repo/bff bumped to 1.0.0
-    * @repo/contract bumped to 1.0.0
-    * @repo/dependency-container bumped to 0.0.1
-    * @repo/env-config bumped to 0.0.1
-    * @repo/exception bumped to 1.0.0
-    * @repo/jwt bumped to 1.0.0
-    * @repo/logger bumped to 1.0.0
-    * @repo/prisma bumped to 1.0.0
-    * @repo/proxy bumped to 1.0.0
-    * @repo/utils bumped to 1.0.0
-  * devDependencies
-    * @repo/rollup-config bumped to 0.0.1
-    * @repo/types bumped to 1.0.0
-    * @repo/typescript-config bumped to 1.0.0
-
 ## 1.0.0 (2026-07-24)
 
 
