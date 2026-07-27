@@ -1,9 +1,4 @@
-import { omitUndefined } from '@repo/utils';
-
-import {
-  ExceptionShapeSchema,
-  type AnyExceptionShape,
-} from './validation/ExceptionShapeSchema';
+import { type AnyExceptionShape } from './validation/ExceptionShapeSchema';
 
 export class Exception<TData = undefined>
   extends Error
@@ -18,7 +13,6 @@ export class Exception<TData = undefined>
   public readonly data: TData;
 
   constructor(opts?: Partial<AnyExceptionShape>) {
-    // Access static properties from the class being instantiated
     const ctor = new.target as typeof Exception;
 
     const status = opts?.status ?? ctor.status;
@@ -33,33 +27,6 @@ export class Exception<TData = undefined>
     this.code = code;
     this.status = status;
     this.data = data;
-  }
-
-  static fromResponse(opts: {
-    json: unknown;
-    status: number;
-  }): Exception | null {
-    const { json, status } = opts;
-
-    const parseResult = ExceptionShapeSchema.safeParse(json);
-
-    if (!parseResult.success) {
-      return null;
-    }
-
-    return new Exception({ ...parseResult.data, status });
-  }
-
-  toJSON(opts?: { omitData?: boolean }) {
-    return omitUndefined({
-      message: this.message,
-      code: this.code,
-      data: opts?.omitData === true ? undefined : this.data,
-    });
-  }
-
-  toResponse(): Response {
-    return Response.json(this.toJSON(), { status: this.status ?? 500 });
   }
 }
 
