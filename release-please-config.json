@@ -2,6 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "node",
   "tag-separator": "/",
+  "plugins": ["node-workspace"],
   "packages": {
     "apps/api-bff": {
       "component": "api-bff"
@@ -16,103 +17,136 @@
       "component": "nestjs"
     },
     "packages/activity-log": {
-      "component": "activity-log"
+      "component": "activity-log",
+      "skip-github-release": true
     },
     "packages/api-key": {
-      "component": "api-key"
+      "component": "api-key",
+      "skip-github-release": true
     },
     "packages/assert": {
-      "component": "assert"
+      "component": "assert",
+      "skip-github-release": true
     },
     "packages/auth": {
-      "component": "auth"
+      "component": "auth",
+      "skip-github-release": true
     },
     "packages/bff": {
-      "component": "bff"
+      "component": "bff",
+      "skip-github-release": true
     },
     "packages/cbor": {
-      "component": "cbor"
+      "component": "cbor",
+      "skip-github-release": true
     },
     "packages/contract": {
-      "component": "contract"
+      "component": "contract",
+      "skip-github-release": true
     },
     "packages/crypto": {
-      "component": "crypto"
+      "component": "crypto",
+      "skip-github-release": true
     },
     "packages/dependency-container": {
-      "component": "dependency-container"
+      "component": "dependency-container",
+      "skip-github-release": true
     },
     "packages/enums": {
-      "component": "enums"
+      "component": "enums",
+      "skip-github-release": true
     },
     "packages/env-config": {
-      "component": "env-config"
+      "component": "env-config",
+      "skip-github-release": true
     },
     "packages/eslint-config": {
-      "component": "eslint-config"
+      "component": "eslint-config",
+      "skip-github-release": true
     },
     "packages/exception": {
-      "component": "exception"
+      "component": "exception",
+      "skip-github-release": true
     },
     "packages/http": {
-      "component": "http"
+      "component": "http",
+      "skip-github-release": true
     },
     "packages/jwks": {
-      "component": "jwks"
+      "component": "jwks",
+      "skip-github-release": true
     },
     "packages/jwt": {
-      "component": "jwt"
+      "component": "jwt",
+      "skip-github-release": true
     },
     "packages/key-vault": {
-      "component": "key-vault"
+      "component": "key-vault",
+      "skip-github-release": true
     },
     "packages/keys": {
-      "component": "keys"
+      "component": "keys",
+      "skip-github-release": true
     },
     "packages/logger": {
-      "component": "logger"
+      "component": "logger",
+      "skip-github-release": true
     },
     "packages/pagination": {
-      "component": "pagination"
+      "component": "pagination",
+      "skip-github-release": true
     },
     "packages/prisma": {
-      "component": "prisma"
+      "component": "prisma",
+      "skip-github-release": true
     },
     "packages/proxy": {
-      "component": "proxy"
+      "component": "proxy",
+      "skip-github-release": true
     },
     "packages/rollup-config": {
-      "component": "rollup-config"
+      "component": "rollup-config",
+      "skip-github-release": true
     },
     "packages/shared-dts": {
-      "component": "shared-dts"
+      "component": "shared-dts",
+      "skip-github-release": true
     },
     "packages/test-utils": {
-      "component": "test-utils"
+      "component": "test-utils",
+      "skip-github-release": true
     },
     "packages/types": {
-      "component": "types"
+      "component": "types",
+      "skip-github-release": true
     },
     "packages/typescript-config": {
-      "component": "typescript-config"
+      "component": "typescript-config",
+      "skip-github-release": true
     },
     "packages/ui": {
-      "component": "ui"
+      "component": "ui",
+      "skip-github-release": true
     },
     "packages/utils": {
-      "component": "utils"
+      "component": "utils",
+      "skip-github-release": true
     },
     "packages/validation": {
-      "component": "validation"
+      "component": "validation",
+      "skip-github-release": true
     },
     "packages/virtual-authenticator": {
-      "component": "virtual-authenticator"
+      "component": "virtual-authenticator",
+      "skip-github-release": true
     },
     "packages/virtual-authenticator-agent": {
-      "component": "virtual-authenticator-agent"
+      "component": "virtual-authenticator-agent",
+      "skip-github-release": true
     },
     "packages/vitest-config": {
-      "component": "vitest-config"
+      "component": "vitest-config",
+      "skip-github-release": true
     }
   }
 }
