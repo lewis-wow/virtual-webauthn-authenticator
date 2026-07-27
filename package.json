@@ -21,6 +21,7 @@
     "docs:toc": "tsx ./scripts/generate_readme_toc.ts",
     "release:sync-config": "./scripts/sync_release_please_packages.ts",
     "release:check-config": "./scripts/sync_release_please_packages.ts --check",
+    "release:trigger": "./scripts/release_trigger.ts",
     "openapi:latex": "./scripts/generate_latex_openapi.ts packages/contract/generated/openapi.json",
     "claude": "./scripts/claude.sh"
   },

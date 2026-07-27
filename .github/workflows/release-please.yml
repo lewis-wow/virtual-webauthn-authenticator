@@ -1,14 +1,16 @@
 name: Release Please
 
 on:
-  # Manually gated: push a release/v*.*.* branch (the version in the branch
-  # name itself is not read by anything - it just triggers this run) to have
-  # release-please scan master's commit history and open/update the release
-  # PR. It still always targets master (see target-branch below), regardless
-  # of which branch triggered the run.
+  # Manually gated: push a fixed `release` branch (its content is irrelevant -
+  # it just triggers this run; see scripts/release_trigger.ts / `pnpm
+  # release:trigger`) to have release-please scan master's commit history and
+  # open/update the release PR. It still always targets master (see
+  # target-branch below) from its own auto-generated head branch, regardless
+  # of which branch triggered the run. The `release` branch is deleted again
+  # at the end of this job so it never lingers.
   push:
     branches:
-      - 'release/v*.*.*'
+      - 'release'
   workflow_dispatch:
 
 permissions:
@@ -28,3 +30,15 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           target-branch: master
+
+      - name: Delete trigger branch
+        # Only the `release` branch push should be cleaned up; a
+        # workflow_dispatch run has no such branch to delete. `if: always()`
+        # ensures cleanup happens even if release-please-action above fails.
+        # Deleting a ref doesn't need the PAT's cross-workflow-triggering
+        # power, so the default token (already granted contents: write above)
+        # is enough here.
+        if: always() && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh api -X DELETE "repos/${{ github.repository }}/git/refs/heads/release"
