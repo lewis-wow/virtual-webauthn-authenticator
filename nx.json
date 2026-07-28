@@ -49,7 +49,9 @@
   },
   "release": {
     "projectsRelationship": "independent",
-    "releaseTagPattern": "{projectName}/v{version}",
+    "releaseTag": {
+      "pattern": "{projectName}/v{version}"
+    },
     "version": {
       "conventionalCommits": true,
       "updateDependents": "auto"
