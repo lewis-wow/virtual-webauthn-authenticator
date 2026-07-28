@@ -1,6 +1,8 @@
 packages/prisma/src/generated
 apps/console/src/components/ui
 apps/console/src/components/ui
+packages/types/src/dom.ts
+apps/wxt/.wxt
 .agents
 .docs
 **/CHANGELOG.md

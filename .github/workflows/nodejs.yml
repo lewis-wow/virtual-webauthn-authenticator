@@ -57,23 +57,25 @@ jobs:
       - name: Build project
         run: pnpm build
 
+      - name: Run linter
+        run: pnpm lint
+
+      - name: Run check-types
+        run: pnpm check-types
+
       - name: Save Nx cache (this run, for test job)
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: .nx/cache
           key: nx-linux-run-${{ github.run_id }}
 
       - name: Save Nx cache (branch, for future runs)
+        if: always()
         uses: actions/cache/save@v4
         with:
           path: .nx/cache
           key: nx-linux-${{ github.ref_name }}-${{ github.run_id }}
-
-      - name: Run linter
-        run: pnpm lint
-
-      - name: Run check-types
-        run: pnpm check-types
 
   test:
     runs-on: ubuntu-latest
@@ -110,6 +112,9 @@ jobs:
         with:
           path: .nx/cache
           key: nx-linux-run-${{ github.run_id }}
+          restore-keys: |
+            nx-linux-${{ github.ref_name }}-
+            nx-linux-main-
 
       - name: Install dependencies
         run: pnpm install

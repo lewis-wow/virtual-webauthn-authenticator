@@ -15,7 +15,7 @@
     "test:integration:coverage": "vitest run --coverage --config vitest.integration.config.ts",
     "test:ui": "vitest --ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
-    "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
+    "format:check": "nx run-many -t format:check",
     "check-types": "nx run-many -t check-types",
     "coverage:latex": "./scripts/generate_latex_coverage.ts coverage/coverage-final.json",
     "docs:toc": "tsx ./scripts/generate_readme_toc.ts",
