@@ -1,3 +1,22 @@
+## 1.1.0 (2026-07-28)
+
+### 🚀 Features
+
+- containerize apps and add release workflow for ghcr.io publishing ([#174](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/174))
+- store user display name ([#166](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/166))
+- state token ([#114](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/114))
+- **virtual-authenticator:** multiple credentials UI ([#76](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/76))
+
+### 🩹 Fixes
+
+- deps ([#191](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/191))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- Copilot
+- Ludvík Prokopec @lewis-wow
+
 # Changelog
 
 ## [1.0.2](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/api-bff/v1.0.1...api-bff/v1.0.2) (2026-07-27)
