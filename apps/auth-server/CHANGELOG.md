@@ -1,3 +1,27 @@
+## 1.1.0 (2026-07-28)
+
+### 🚀 Features
+
+- containerize apps and add release workflow for ghcr.io publishing ([#174](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/174))
+- state token ([#114](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/114))
+- **virtual-authenticator:** multiple credentials UI ([#76](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/76))
+- packed attestation ([#64](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/64))
+- plasmo extension ([#62](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/62))
+- api key integration ([#61](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/61))
+- migrate from hono ([#56](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/56))
+- better auth api keys ([#54](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/54))
+- ts-rest ([#52](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/52))
+
+### 🩹 Fixes
+
+- deps ([#191](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/191))
+- permission values ([#160](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/160))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- Ludvík Prokopec @lewis-wow
+
 # Changelog
 
 ## [1.0.2](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/auth-server/v1.0.1...auth-server/v1.0.2) (2026-07-27)

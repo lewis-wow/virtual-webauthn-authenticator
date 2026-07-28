@@ -1,3 +1,38 @@
+## 1.1.0 (2026-07-28)
+
+### 🚀 Features
+
+- containerize apps and add release workflow for ghcr.io publishing ([#174](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/174))
+- store user display name ([#166](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/166))
+- uv pin ([#118](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/118))
+- state token ([#114](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/114))
+- Virtual authenticator parser ([#75](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/75))
+- example ([#67](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/67))
+- packed attestation ([#64](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/64))
+- plasmo extension ([#62](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/62))
+- api key integration ([#61](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/61))
+- migrate from hono ([#56](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/56))
+- better auth api keys ([#54](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/54))
+- ts-rest ([#52](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/52))
+- auth server ([#50](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/50))
+- jwt ([#49](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/49))
+- auth ([#48](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/48))
+- docker ([#33](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/33))
+- prettier plugin sort imports ([#28](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/28))
+- console ([#22](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/22))
+
+### 🩹 Fixes
+
+- deps ([#191](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/191))
+- release ([#177](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/177))
+- rename endpoints ([#150](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/150))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- Copilot
+- Ludvík Prokopec @lewis-wow
+
 # Changelog
 
 ## [1.0.2](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/console/v1.0.1...console/v1.0.2) (2026-07-27)

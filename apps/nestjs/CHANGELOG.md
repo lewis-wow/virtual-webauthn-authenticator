@@ -1,3 +1,48 @@
+## 1.1.0 (2026-07-28)
+
+### 🚀 Features
+
+- containerize apps and add release workflow for ghcr.io publishing ([#174](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/174))
+- store user display name ([#166](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/166))
+- flexible user handle ([#162](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/162))
+- uv pin ([#118](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/118))
+- state token ([#114](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/114))
+- extensions ([#112](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/112))
+- **virtual-authenticator:** multiple credentials UI ([#76](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/76))
+- Virtual authenticator parser ([#75](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/75))
+- packed attestation ([#64](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/64))
+- plasmo extension ([#62](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/62))
+- api key integration ([#61](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/61))
+- **nestjs:** openapi scalar ([#59](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/59))
+- webauthn credentials API ([#58](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/58))
+- migrate from hono ([#56](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/56))
+- better auth api keys ([#54](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/54))
+- ts-rest ([#52](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/52))
+- auth server ([#50](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/50))
+- passport ([#9](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/9))
+- webpack sourcemaps ([#8](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/8))
+- prisma ([#7](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/7))
+- turbo ([#5](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/5))
+
+### 🩹 Fixes
+
+- deps ([#191](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/191))
+- nestjs ([#189](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/189))
+- release please trigger workflow ([#185](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/185))
+- remove console.log ([#183](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/183))
+- test release ([#181](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/181))
+- release ([#177](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/177))
+- permission values ([#160](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/160))
+- rename endpoints ([#150](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/150))
+- **nestjs:** vitest esm ([#55](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/55))
+- ci ([#16](https://github.com/lewis-wow/virtual-webauthn-authenticator/pull/16))
+
+### ❤️ Thank You
+
+- Claude Sonnet 4.6
+- Copilot
+- Ludvík Prokopec @lewis-wow
+
 # Changelog
 
 ## [1.0.6](https://github.com/lewis-wow/virtual-webauthn-authenticator/compare/nestjs/v1.0.5...nestjs/v1.0.6) (2026-07-27)
