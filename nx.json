@@ -78,10 +78,7 @@
       },
       "packages": {
         "projects": ["packages/*"],
-        "changelog": {
-          "createRelease": false,
-          "projectChangelogs": false
-        }
+        "changelog": false
       }
     }
   },
