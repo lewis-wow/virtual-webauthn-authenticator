@@ -1,0 +1,76 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "defaultBase": "master",
+  "namedInputs": {
+    "sharedGlobals": [
+      "{workspaceRoot}/scripts/**",
+      "{workspaceRoot}/.env.*",
+      { "env": "NODE_ENV" },
+      { "env": "ENVIRONMENT" }
+    ],
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": ["default", "!{projectRoot}/__tests__/**/*"]
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production", "{projectRoot}/.env*"],
+      "outputs": [
+        "{projectRoot}/dist/**",
+        "{projectRoot}/generated/**",
+        "{projectRoot}/build/**"
+      ],
+      "cache": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "cache": true
+    },
+    "check-types": {
+      "dependsOn": ["^check-types"],
+      "cache": true
+    },
+    "format": {
+      "cache": true
+    },
+    "format:check": {
+      "cache": true
+    },
+    "start": {
+      "cache": false
+    },
+    "dev": {
+      "cache": false
+    }
+  },
+  "release": {
+    "projectsRelationship": "independent",
+    "releaseTagPattern": "{projectName}/v{version}",
+    "version": {
+      "conventionalCommits": true,
+      "updateDependents": "auto"
+    },
+    "git": {
+      "commit": true,
+      "commitMessage": "chore(release): {version}",
+      "tag": true,
+      "push": true
+    },
+    "groups": {
+      "apps": {
+        "projects": ["apps/api-bff", "apps/auth-server", "apps/console", "apps/nestjs"],
+        "changelog": {
+          "createRelease": "github",
+          "projectChangelogs": true
+        }
+      },
+      "packages": {
+        "projects": ["packages/*"],
+        "changelog": {
+          "createRelease": false,
+          "projectChangelogs": false
+        }
+      }
+    }
+  }
+}

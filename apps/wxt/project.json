@@ -1,0 +1,8 @@
+{
+  "name": "@repo/wxt",
+  "targets": {
+    "build": {
+      "outputs": ["{projectRoot}/.output/**"]
+    }
+  }
+}

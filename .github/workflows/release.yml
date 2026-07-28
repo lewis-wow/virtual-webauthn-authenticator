@@ -3,7 +3,10 @@ name: Release
 on:
   push:
     tags:
-      - '**/v*.*.*'
+      - 'api-bff/v*.*.*'
+      - 'auth-server/v*.*.*'
+      - 'console/v*.*.*'
+      - 'nestjs/v*.*.*'
 
 jobs:
   publish:

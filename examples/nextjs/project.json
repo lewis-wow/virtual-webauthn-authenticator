@@ -1,0 +1,8 @@
+{
+  "name": "@repo/nextjs-example",
+  "targets": {
+    "build": {
+      "outputs": ["{projectRoot}/.next/**", "!{projectRoot}/.next/cache/**"]
+    }
+  }
+}

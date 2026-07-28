@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "start": "turbo run start",
-    "lint": "turbo run lint",
+    "build": "nx run-many -t build",
+    "dev": "nx run-many -t dev",
+    "start": "nx run-many -t start",
+    "lint": "nx run-many -t lint",
     "test": "vitest run --config vitest.config.ts",
     "test:coverage": "vitest run --coverage --config vitest.config.ts",
     "test:unit": "vitest run --config vitest.unit.config.ts",
@@ -16,15 +16,13 @@
     "test:ui": "vitest --ui",
     "format": "prettier --write \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
     "format:check": "prettier --check \"**/*.{ts,tsx,md}\" --check-ignore-pragma",
-    "check-types": "turbo run check-types",
+    "check-types": "nx run-many -t check-types",
     "coverage:latex": "./scripts/generate_latex_coverage.ts coverage/coverage-final.json",
     "docs:toc": "tsx ./scripts/generate_readme_toc.ts",
-    "release:sync-config": "./scripts/sync_release_please_packages.ts",
-    "release:check-config": "./scripts/sync_release_please_packages.ts --check",
-    "release:trigger": "./scripts/release_trigger.ts",
+    "release": "nx release",
     "openapi:latex": "./scripts/generate_latex_openapi.ts packages/contract/generated/openapi.json",
     "claude": "./scripts/claude.sh",
-    "graph": "turbo run build --graph | tsx scripts/open_graph.ts"
+    "graph": "nx graph"
   },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.0",
@@ -41,7 +39,7 @@
     "prettier": "^3.6.2",
     "skott": "^0.35.11",
     "tsx": "^4.20.6",
-    "turbo": "^2.5.8",
+    "nx": "^23.1.0",
     "typescript": "5.9.2",
     "vitest": "^3.2.4"
   },

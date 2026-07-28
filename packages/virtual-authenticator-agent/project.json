@@ -1,0 +1,15 @@
+{
+  "name": "@repo/virtual-authenticator-agent",
+  "targets": {
+    "build": {
+      "outputs": [
+        "{projectRoot}/src/index.ts",
+        "{projectRoot}/src/dto/index.ts",
+        "{projectRoot}/src/exceptions/index.ts",
+        "{projectRoot}/src/extensions/index.ts",
+        "{projectRoot}/src/helpers/index.ts",
+        "{projectRoot}/src/validation/index.ts"
+      ]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@repo/contract",
+  "targets": {
+    "build": {
+      "outputs": [
+        "{projectRoot}/src/validation/index.ts",
+        "{projectRoot}/src/dto/index.ts"
+      ]
+    }
+  }
+}

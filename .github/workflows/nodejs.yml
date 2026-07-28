@@ -32,14 +32,14 @@ jobs:
           restore-keys: |
             pnpm-${{ runner.os }}-
 
-      - name: Restore Turborepo cache
+      - name: Restore Nx cache
         uses: actions/cache/restore@v4
         with:
-          path: .turbo
-          key: turbo-linux-${{ github.ref_name }}-${{ github.run_id }}
+          path: .nx/cache
+          key: nx-linux-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
-            turbo-linux-${{ github.ref_name }}-
-            turbo-linux-main-
+            nx-linux-${{ github.ref_name }}-
+            nx-linux-main-
 
       - name: Install dependencies
         run: pnpm install
@@ -54,23 +54,20 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
-      - name: Check release-please config is in sync
-        run: pnpm release:check-config
-
       - name: Build project
         run: pnpm build
 
-      - name: Save Turborepo cache (this run, for test job)
+      - name: Save Nx cache (this run, for test job)
         uses: actions/cache/save@v4
         with:
-          path: .turbo
-          key: turbo-linux-run-${{ github.run_id }}
+          path: .nx/cache
+          key: nx-linux-run-${{ github.run_id }}
 
-      - name: Save Turborepo cache (branch, for future runs)
+      - name: Save Nx cache (branch, for future runs)
         uses: actions/cache/save@v4
         with:
-          path: .turbo
-          key: turbo-linux-${{ github.ref_name }}-${{ github.run_id }}
+          path: .nx/cache
+          key: nx-linux-${{ github.ref_name }}-${{ github.run_id }}
 
       - name: Run linter
         run: pnpm lint
@@ -108,11 +105,11 @@ jobs:
           restore-keys: |
             pnpm-${{ runner.os }}-
 
-      - name: Restore Turborepo cache
+      - name: Restore Nx cache
         uses: actions/cache/restore@v4
         with:
-          path: .turbo
-          key: turbo-linux-run-${{ github.run_id }}
+          path: .nx/cache
+          key: nx-linux-run-${{ github.run_id }}
 
       - name: Install dependencies
         run: pnpm install
