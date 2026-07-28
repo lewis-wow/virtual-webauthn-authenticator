@@ -24,6 +24,24 @@
     "claude": "./scripts/claude.sh",
     "graph": "nx graph"
   },
+  "nx": {
+    "includedScripts": [
+      "test",
+      "test:coverage",
+      "test:unit",
+      "test:unit:coverage",
+      "test:integration",
+      "test:integration:coverage",
+      "test:ui",
+      "format",
+      "coverage:latex",
+      "docs:toc",
+      "release",
+      "openapi:latex",
+      "claude",
+      "graph"
+    ]
+  },
   "devDependencies": {
     "@dotenvx/dotenvx": "^1.51.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
