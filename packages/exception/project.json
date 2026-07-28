@@ -1,3 +1,4 @@
 {
-  "name": "@repo/exception"
+  "name": "@repo/exception",
+  "projectType": "library"
 }

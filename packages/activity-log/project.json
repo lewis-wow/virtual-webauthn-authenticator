@@ -1,3 +1,4 @@
 {
-  "name": "@repo/activity-log"
+  "name": "@repo/activity-log",
+  "projectType": "library"
 }

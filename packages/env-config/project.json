@@ -1,3 +1,4 @@
 {
-  "name": "@repo/env-config"
+  "name": "@repo/env-config",
+  "projectType": "library"
 }

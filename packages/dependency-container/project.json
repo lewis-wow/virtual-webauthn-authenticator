@@ -1,3 +1,4 @@
 {
-  "name": "@repo/dependency-container"
+  "name": "@repo/dependency-container",
+  "projectType": "library"
 }

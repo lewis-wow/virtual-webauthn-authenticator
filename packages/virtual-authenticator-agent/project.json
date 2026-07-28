@@ -11,5 +11,6 @@
         "{projectRoot}/src/validation/index.ts"
       ]
     }
-  }
+  },
+  "projectType": "library"
 }

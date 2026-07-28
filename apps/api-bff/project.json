@@ -1,3 +1,4 @@
 {
-  "name": "api-bff"
+  "name": "api-bff",
+  "projectType": "application"
 }

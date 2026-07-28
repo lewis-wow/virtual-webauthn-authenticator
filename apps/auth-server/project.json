@@ -1,3 +1,4 @@
 {
-  "name": "auth-server"
+  "name": "auth-server",
+  "projectType": "application"
 }

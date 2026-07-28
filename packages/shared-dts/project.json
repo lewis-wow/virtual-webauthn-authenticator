@@ -1,3 +1,4 @@
 {
-  "name": "@repo/shared-dts"
+  "name": "@repo/shared-dts",
+  "projectType": "library"
 }

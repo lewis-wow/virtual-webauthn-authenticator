@@ -1,3 +1,4 @@
 {
-  "name": "@repo/typescript-config"
+  "name": "@repo/typescript-config",
+  "projectType": "library"
 }

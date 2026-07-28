@@ -1,3 +1,4 @@
 {
-  "name": "@repo/api-key"
+  "name": "@repo/api-key",
+  "projectType": "library"
 }

@@ -1,3 +1,4 @@
 {
-  "name": "@repo/jwt"
+  "name": "@repo/jwt",
+  "projectType": "library"
 }

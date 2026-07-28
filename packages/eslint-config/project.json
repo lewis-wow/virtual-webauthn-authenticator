@@ -1,3 +1,4 @@
 {
-  "name": "@repo/eslint-config"
+  "name": "@repo/eslint-config",
+  "projectType": "library"
 }

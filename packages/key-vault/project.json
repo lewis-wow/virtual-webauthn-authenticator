@@ -1,3 +1,4 @@
 {
-  "name": "@repo/key-vault"
+  "name": "@repo/key-vault",
+  "projectType": "library"
 }

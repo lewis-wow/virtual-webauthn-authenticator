@@ -1,3 +1,4 @@
 {
-  "name": "@repo/ui"
+  "name": "@repo/ui",
+  "projectType": "library"
 }

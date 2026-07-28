@@ -1,3 +1,4 @@
 {
-  "name": "@repo/vitest-config"
+  "name": "@repo/vitest-config",
+  "projectType": "library"
 }

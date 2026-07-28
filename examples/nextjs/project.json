@@ -2,7 +2,11 @@
   "name": "@repo/nextjs-example",
   "targets": {
     "build": {
-      "outputs": ["{projectRoot}/.next/**", "!{projectRoot}/.next/cache/**"]
+      "outputs": [
+        "{projectRoot}/.next/**",
+        "!{projectRoot}/.next/cache/**"
+      ]
     }
-  }
+  },
+  "projectType": "application"
 }
