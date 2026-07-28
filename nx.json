@@ -75,10 +75,6 @@
           "createRelease": "github",
           "projectChangelogs": true
         }
-      },
-      "packages": {
-        "projects": ["packages/*"],
-        "changelog": false
       }
     }
   },

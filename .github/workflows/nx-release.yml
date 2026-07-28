@@ -10,6 +10,16 @@ permissions:
   contents: write
   pull-requests: write
 
+# Only one release run should touch the chore/nx-release branch at a time; queue
+# overlapping runs instead of letting them race on the same force-push/PR.
+concurrency:
+  group: nx-release
+  cancel-in-progress: false
+
+env:
+  RELEASE_BRANCH: chore/nx-release
+  GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -24,6 +34,14 @@ jobs:
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
+
+      - name: Create release branch
+        run: |
+          git checkout -B "$RELEASE_BRANCH"
+          # Reset the remote branch to the current master and establish upstream tracking so that
+          # `nx release`'s own internal `git push` (a bare `git push --follow-tags`, no explicit
+          # refspec) has somewhere to push to and never touches refs/heads/master.
+          git push --force -u origin "$RELEASE_BRANCH"
 
       - name: Set up pnpm from package.json
         uses: pnpm/action-setup@v4
@@ -52,3 +70,16 @@ jobs:
         run: pnpm exec nx release --skip-publish
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      - name: Open release pull request
+        run: |
+          if git diff --quiet origin/master HEAD; then
+            echo "No release changes, nothing to open a PR for"
+          else
+            gh pr create \
+              --base master \
+              --head "$RELEASE_BRANCH" \
+              --title "chore(release): version bump" \
+              --body "Automated version bump and changelog update from \`nx release\`. The release tags have already been pushed and their GitHub Releases created; merge this PR to bring the version bump onto \`master\`." \
+              || echo "A pull request for $RELEASE_BRANCH already exists"
+          fi
