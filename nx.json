@@ -5,8 +5,12 @@
     "sharedGlobals": [
       "{workspaceRoot}/scripts/**",
       "{workspaceRoot}/.env.*",
-      { "env": "NODE_ENV" },
-      { "env": "ENVIRONMENT" }
+      {
+        "env": "NODE_ENV"
+      },
+      {
+        "env": "ENVIRONMENT"
+      }
     ],
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
     "production": ["default", "!{projectRoot}/__tests__/**/*"]
@@ -58,7 +62,12 @@
     },
     "groups": {
       "apps": {
-        "projects": ["apps/api-bff", "apps/auth-server", "apps/console", "apps/nestjs"],
+        "projects": [
+          "apps/api-bff",
+          "apps/auth-server",
+          "apps/console",
+          "apps/nestjs"
+        ],
         "changelog": {
           "createRelease": "github",
           "projectChangelogs": true
@@ -72,5 +81,6 @@
         }
       }
     }
-  }
+  },
+  "analytics": true
 }

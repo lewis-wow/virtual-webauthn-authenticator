@@ -36,33 +36,15 @@
     "ejs": "^3.1.10",
     "eslint": "^9.34.0",
     "npm-run-all": "^4.1.5",
+    "nx": "^23.1.0",
     "prettier": "^3.6.2",
     "skott": "^0.35.11",
     "tsx": "^4.20.6",
-    "nx": "^23.1.0",
     "typescript": "5.9.2",
     "vitest": "^3.2.4"
   },
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=18"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@nestjs/core",
-      "@parcel/watcher",
-      "@prisma/client",
-      "@prisma/engines",
-      "@swc/core",
-      "@tailwindcss/oxide",
-      "bcrypt",
-      "esbuild",
-      "lmdb",
-      "msgpackr-extract",
-      "prisma",
-      "sharp",
-      "spawn-sync",
-      "unrs-resolver"
-    ]
   }
 }
