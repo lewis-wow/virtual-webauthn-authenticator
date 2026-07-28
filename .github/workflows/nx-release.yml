@@ -5,6 +5,11 @@ on:
     branches:
       - master
   workflow_dispatch:
+    inputs:
+      first_release:
+        description: 'Bootstrap: pass --first-release to nx release (use once after tags were deleted)'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -21,7 +26,20 @@ env:
   GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
 jobs:
+  check-pending-release:
+    runs-on: ubuntu-latest
+    outputs:
+      pending: ${{ steps.check.outputs.pending }}
+    steps:
+      - name: Check for an already-open release PR
+        id: check
+        run: |
+          count=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$RELEASE_BRANCH" --state open --json number --jq 'length')
+          echo "pending=$([ "$count" -gt 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
   release:
+    needs: check-pending-release
+    if: needs.check-pending-release.outputs.pending != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -67,7 +85,7 @@ jobs:
         run: pnpm install
 
       - name: Release
-        run: pnpm exec nx release --skip-publish
+        run: pnpm exec nx release --skip-publish ${{ inputs.first_release && '--first-release' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
 
