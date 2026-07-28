@@ -54,7 +54,8 @@
     },
     "version": {
       "conventionalCommits": true,
-      "updateDependents": "auto"
+      "updateDependents": "auto",
+      "fallbackCurrentVersionResolver": "disk"
     },
     "git": {
       "commit": true,
