@@ -1,8 +1,4 @@
 import { USER_ID } from '../../../jwt/__tests__/helpers';
-import {
-  KEY_VAULT_KEY_ID,
-  KEY_VAULT_KEY_NAME,
-} from '../../../key-vault/__tests__/helpers';
 import { COSEPublicKey } from '../../../keys/__tests__/helpers/COSEPublicKey';
 
 import * as cbor from '@repo/cbor';
@@ -12,6 +8,8 @@ import {
 } from '@repo/prisma';
 
 import {
+  KEY_VAULT_KEY_ID,
+  KEY_VAULT_KEY_NAME,
   RP_ID,
   VIRTUAL_AUTHENTICATOR_ID,
   WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID,

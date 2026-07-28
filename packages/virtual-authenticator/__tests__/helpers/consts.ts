@@ -25,6 +25,10 @@ export const WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_ID =
 export const WEB_AUTHN_PUBLIC_KEY_CREDENTIAL_KEYVAULT_KEY_META_ID =
   '2721c4a0-1581-49f2-8fcc-8677a84e717d';
 
+export const KEY_VAULT_KEY_NAME =
+  Buffer.from('KEY_VAULT_KEY_NAME').toString('hex');
+export const KEY_VAULT_KEY_ID = Buffer.from('KEY_VAULT_KEY_ID').toString('hex');
+
 export const PUBLIC_KEY_CREDENTIAL_CREATION_OPTIONS = {
   rp: {
     name: RP_NAME,
