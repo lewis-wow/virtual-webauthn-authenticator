@@ -11,7 +11,10 @@ node_modules
 # Testing
 coverage
 
-# Turbo
+# Nx
+.nx
+
+# Turbo (cache dirs left on disk from previous runs)
 .turbo
 
 # Vercel

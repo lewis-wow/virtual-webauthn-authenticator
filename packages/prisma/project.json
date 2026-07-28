@@ -1,0 +1,11 @@
+{
+  "name": "@repo/prisma",
+  "targets": {
+    "build": {
+      "outputs": [
+        "{projectRoot}/src/generated/client/**"
+      ]
+    }
+  },
+  "projectType": "library"
+}

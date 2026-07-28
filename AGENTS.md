@@ -1,12 +1,12 @@
 # Agent Instructions
 
-Server-side WebAuthn authenticator thesis project. pnpm + Turborepo monorepo: `apps/`, `packages/`, `examples/`. See [README.md](./README.md) for what the project is and how to run it end to end, and each app/package's own `README.md` for what that specific piece does and why it exists.
+Server-side WebAuthn authenticator thesis project. pnpm + Nx monorepo: `apps/`, `packages/`, `examples/`. See [README.md](./README.md) for what the project is and how to run it end to end, and each app/package's own `README.md` for what that specific piece does and why it exists.
 
 ## Commands
 
 Run from the repo root. Most accept `--filter <package-name>` to scope to one workspace member (e.g. `pnpm build --filter @repo/nestjs`).
 
-- `pnpm build` — Build all apps/packages (Turborepo, dependency-ordered).
+- `pnpm build` — Build all apps/packages (Nx, dependency-ordered).
 - `pnpm dev` — Run all apps/packages in dev/watch mode.
 - `pnpm start` — Run all apps/packages in production mode (requires `pnpm build` first).
 - `pnpm lint` — Lint all apps/packages.
@@ -62,4 +62,4 @@ Best practices actually observed in this codebase, one file per topic. Before wr
 - [Next.js](.docs/nextjs.md)
 - [WXT](.docs/wxt.md)
 - [Vitest](.docs/vitest.md)
-- [Monorepo (pnpm + Turborepo)](.docs/monorepo.md)
+- [Monorepo (pnpm + Nx)](.docs/monorepo.md)

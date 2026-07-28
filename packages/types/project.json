@@ -1,0 +1,11 @@
+{
+  "name": "@repo/types",
+  "targets": {
+    "build": {
+      "outputs": [
+        "{projectRoot}/src/dom.ts"
+      ]
+    }
+  },
+  "projectType": "library"
+}

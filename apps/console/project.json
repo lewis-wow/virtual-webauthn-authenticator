@@ -1,0 +1,12 @@
+{
+  "name": "console",
+  "targets": {
+    "build": {
+      "outputs": [
+        "{projectRoot}/.next/**",
+        "{projectRoot}/public/generated/**"
+      ]
+    }
+  },
+  "projectType": "application"
+}
